@@ -95,6 +95,48 @@ class CvMvpTest extends TestCase
         $this->assertStringStartsWith('%PDF', $response->getContent());
     }
 
+    public function test_analysis_recommendations_are_formatted_for_users(): void
+    {
+        $analysis = CvAnalysis::create([
+            'target_job_title' => 'Laravel Backend Developer',
+            'input_method' => 'paste',
+            'resume_text' => $this->sampleResume(),
+            'score_total' => 82,
+            'grade' => 'A',
+            'job_match' => 78,
+            'criteria' => [],
+            'strengths' => [],
+            'weaknesses' => [],
+            'keywords_found' => [],
+            'keywords_missing' => [],
+            'quick_wins' => [],
+            'ai_status' => 'completed',
+            'ai_feedback' => [
+                'executive_summary' => 'السيرة قوية ومناسبة للدور المستهدف.',
+                'top_priorities' => ['تعزيز قسم الخبرات بتفاصيل أكثر.'],
+                'rewritten_summary' => 'مطور خلفية متخصص في Laravel.',
+                'bullet_improvements' => [
+                    [
+                        'before' => '- Built APIs.',
+                        'after' => '- صممت واجهات برمجة تطبيقات فعالة.',
+                        'reason' => 'صياغة أوضح وأكثر تأثيراً.',
+                    ],
+                ],
+                'keyword_recommendations' => ['Node.js'],
+            ],
+        ]);
+
+        $this->get(route('analyses.show', $analysis))
+            ->assertOk()
+            ->assertSee('ملخص عام')
+            ->assertSee('أهم الأولويات')
+            ->assertSee('صياغة مقترحة للملخص المهني')
+            ->assertSee('تحسينات مقترحة لنقاط الخبرة')
+            ->assertSee('كلمات مفتاحية مقترحة')
+            ->assertDontSee('executive_summary')
+            ->assertDontSee('bullet_improvements');
+    }
+
     public function test_admin_requires_token_when_configured(): void
     {
         config(['services.admin.access_token' => 'secret-token']);

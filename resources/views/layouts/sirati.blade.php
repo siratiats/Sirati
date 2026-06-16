@@ -66,6 +66,18 @@
         .alert { padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(245,158,11,.35); background: rgba(120,53,15,.25); color: #fde68a; margin-bottom: 16px; }
         .score { display: grid; place-items: center; width: 150px; height: 150px; border-radius: 50%; border: 10px solid #38bdf8; margin: 0 auto 18px; font-size: 34px; font-weight: 900; color: #7dd3fc; }
         .pill { display: inline-flex; padding: 4px 10px; border-radius: 999px; background: rgba(56,189,248,.12); color: #7dd3fc; font-size: 12px; font-weight: 800; margin: 0 0 6px 6px; }
+        .recommendations { display: grid; gap: 18px; }
+        .recommendation-block { border: 1px solid #1e3a5f; border-radius: 16px; background: rgba(2,6,23,.34); padding: 18px; }
+        .recommendation-block h3 { color: #bfdbfe; font-size: 18px; margin-bottom: 10px; }
+        .recommendation-block p:last-child { margin-bottom: 0; }
+        .priority-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+        .priority-list li { display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: start; color: #dbeafe; }
+        .priority-list strong { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: rgba(56,189,248,.14); color: #7dd3fc; font-size: 13px; }
+        .improvement-list { display: grid; gap: 12px; }
+        .improvement-item { border: 1px solid rgba(30,58,95,.78); border-radius: 14px; padding: 14px; background: rgba(15,23,42,.58); }
+        .improvement-item p { margin-bottom: 8px; }
+        .improvement-label { display: inline-flex; margin-inline-end: 6px; color: #93c5fd; font-size: 12px; font-weight: 900; }
+        .keyword-row { display: flex; flex-wrap: wrap; gap: 8px; }
         .bar { height: 10px; border-radius: 999px; background: #0f172a; overflow: hidden; }
         .bar span { display: block; height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8); }
         .list { margin: 0; padding: 0 18px 0 0; color: #dbeafe; }
