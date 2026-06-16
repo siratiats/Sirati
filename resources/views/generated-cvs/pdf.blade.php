@@ -9,6 +9,7 @@
             font-size: 12px;
             line-height: 1.7;
             margin: 28px;
+            text-align: {{ $generatedCv->language === 'ar' ? 'right' : 'left' }};
         }
 
         .header {
@@ -29,15 +30,16 @@
 
         .content {
             white-space: pre-wrap;
+            direction: {{ $generatedCv->language === 'ar' ? 'rtl' : 'ltr' }};
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>{{ $generatedCv->full_name }}</h1>
-        <div class="subtitle">{{ $generatedCv->target_job_title }}</div>
+        <h1>{{ $pdfData['name'] }}</h1>
+        <div class="subtitle">{{ $pdfData['targetJobTitle'] }}</div>
     </div>
 
-    <div class="content">{{ $generatedCv->generated_markdown }}</div>
+    <div class="content">{{ $pdfData['content'] }}</div>
 </body>
 </html>

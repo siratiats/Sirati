@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GeneratedCv;
 use App\Services\AtsScoringService;
 use App\Services\OpenAiCvService;
+use ArPHP\I18N\Arabic;
 use Dompdf\Dompdf;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
@@ -81,7 +82,13 @@ class GeneratedCvController extends Controller
             'isRemoteEnabled' => false,
         ]);
 
-        $pdf->loadHtml(view('generated-cvs.pdf', compact('generatedCv'))->render(), 'UTF-8');
+        $pdfData = [
+            'name' => $this->formatPdfText($generatedCv->full_name, $generatedCv->language),
+            'targetJobTitle' => $this->formatPdfText($generatedCv->target_job_title, $generatedCv->language),
+            'content' => $this->formatPdfText($generatedCv->generated_markdown, $generatedCv->language),
+        ];
+
+        $pdf->loadHtml(view('generated-cvs.pdf', compact('generatedCv', 'pdfData'))->render(), 'UTF-8');
         $pdf->setPaper('a4');
         $pdf->render();
 
@@ -91,6 +98,19 @@ class GeneratedCvController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
+    }
+
+    private function formatPdfText(string $text, string $language): string
+    {
+        if ($language !== 'ar') {
+            return $text;
+        }
+
+        $arabic = new Arabic();
+
+        return collect(preg_split('/\R/u', $text) ?: [])
+            ->map(fn (string $line) => $arabic->utf8Glyphs($line, 90, false, true))
+            ->implode("\n");
     }
 
     private function localTemplate(array $data): string
