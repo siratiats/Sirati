@@ -49,7 +49,8 @@ class OpenAiCvService
     {
         $response = Http::withToken(config('services.openai.api_key'))
             ->acceptJson()
-            ->timeout(45)
+            ->connectTimeout(config('services.openai.connect_timeout', 5))
+            ->timeout(config('services.openai.timeout', 15))
             ->post(rtrim(config('services.openai.base_url'), '/').'/chat/completions', [
                 'model' => config('services.openai.model'),
                 'temperature' => 0.2,

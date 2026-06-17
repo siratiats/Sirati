@@ -11,6 +11,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Throwable;
 use UnexpectedValueException;
 
 class GeneratedCvController extends Controller
@@ -48,6 +49,9 @@ class GeneratedCvController extends Controller
                 $markdown = (string) ($aiOutput['cv_markdown'] ?? $markdown);
                 $aiStatus = 'completed';
             } catch (ConnectionException|RequestException|UnexpectedValueException $exception) {
+                $aiStatus = 'failed';
+                $aiError = $exception->getMessage();
+            } catch (Throwable $exception) {
                 $aiStatus = 'failed';
                 $aiError = $exception->getMessage();
             }
@@ -115,10 +119,34 @@ class GeneratedCvController extends Controller
 
     private function localTemplate(array $data): string
     {
-        $summary = $data['summary_input'] ?: "Professional {$data['target_job_title']} with hands-on experience and measurable impact across relevant projects.";
-        $certifications = $data['certifications_input'] ? "\n\n## Certifications\n{$data['certifications_input']}" : '';
         $linkedin = $data['linkedin'] ? " | {$data['linkedin']}" : '';
         $location = $data['location'] ? " | {$data['location']}" : '';
+
+        if ($data['language'] === 'ar') {
+            $summary = $data['summary_input'] ?: "متخصص في {$data['target_job_title']} مع خبرة عملية في تنفيذ مشاريع تقنية ونتائج قابلة للقياس.";
+            $certifications = $data['certifications_input'] ? "\n\n## الشهادات والدورات\n{$data['certifications_input']}" : '';
+
+            return <<<MARKDOWN
+# {$data['full_name']}
+{$data['target_job_title']}
+{$data['email']} | {$data['phone']}{$linkedin}{$location}
+
+## الملخص المهني
+{$summary}
+
+## المهارات الأساسية
+{$data['skills_input']}
+
+## الخبرات العملية
+{$data['experience_input']}
+
+## التعليم
+{$data['education_input']}{$certifications}
+MARKDOWN;
+        }
+
+        $summary = $data['summary_input'] ?: "Professional {$data['target_job_title']} with hands-on experience and measurable impact across relevant projects.";
+        $certifications = $data['certifications_input'] ? "\n\n## Certifications\n{$data['certifications_input']}" : '';
 
         return <<<MARKDOWN
 # {$data['full_name']}

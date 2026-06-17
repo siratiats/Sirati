@@ -78,6 +78,28 @@
         .improvement-item p { margin-bottom: 8px; }
         .improvement-label { display: inline-flex; margin-inline-end: 6px; color: #93c5fd; font-size: 12px; font-weight: 900; }
         .keyword-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        .skill-builder { display: grid; gap: 10px; }
+        .skill-entry { display: flex; flex-wrap: wrap; gap: 10px; }
+        .skill-entry input { flex: 1 1 240px; }
+        .skill-entry .button { min-height: 46px; }
+        .skill-chips, .skill-suggestions { display: flex; flex-wrap: wrap; gap: 8px; }
+        .skill-chip, .skill-suggestion {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(56,189,248,.28);
+            border-radius: 999px;
+            background: rgba(56,189,248,.1);
+            color: #dbeafe;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            padding: 7px 11px;
+        }
+        .skill-chip button, .skill-suggestion { cursor: pointer; }
+        .skill-chip button { border: 0; background: transparent; color: #93c5fd; font: inherit; font-weight: 900; padding: 0; }
+        .skill-store { min-height: 88px; }
+        .js .skill-store { display: none; }
         .bar { height: 10px; border-radius: 999px; background: #0f172a; overflow: hidden; }
         .bar span { display: block; height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8); }
         .list { margin: 0; padding: 0 18px 0 0; color: #dbeafe; }
