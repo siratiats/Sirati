@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CvAnalysisResource;
 use App\Models\CvAnalysis;
 use App\Services\AtsScoringService;
 use App\Services\CvTextExtractor;
@@ -14,6 +15,13 @@ use UnexpectedValueException;
 
 class CvAnalysisController extends Controller
 {
+    public function indexApi()
+    {
+        return CvAnalysisResource::collection(
+            CvAnalysis::latest()->limit(50)->get()
+        );
+    }
+
     public function create(Request $request)
     {
         return view('analyses.create', [
@@ -22,6 +30,32 @@ class CvAnalysisController extends Controller
     }
 
     public function store(Request $request, CvTextExtractor $extractor, AtsScoringService $scorer, OpenAiCvService $openAi)
+    {
+        $analysis = $this->createAnalysis($request, $extractor, $scorer, $openAi);
+
+        return redirect()->route('analyses.show', $analysis);
+    }
+
+    public function storeApi(Request $request, CvTextExtractor $extractor, AtsScoringService $scorer, OpenAiCvService $openAi)
+    {
+        $analysis = $this->createAnalysis($request, $extractor, $scorer, $openAi);
+
+        return (new CvAnalysisResource($analysis))
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    public function show(CvAnalysis $analysis)
+    {
+        return view('analyses.show', compact('analysis'));
+    }
+
+    public function showApi(CvAnalysis $analysis)
+    {
+        return new CvAnalysisResource($analysis);
+    }
+
+    private function createAnalysis(Request $request, CvTextExtractor $extractor, AtsScoringService $scorer, OpenAiCvService $openAi): CvAnalysis
     {
         $validated = $request->validate([
             'target_job_title' => ['required', 'string', 'max:160'],
@@ -51,7 +85,7 @@ class CvAnalysisController extends Controller
             }
         }
 
-        $analysis = CvAnalysis::create([
+        return CvAnalysis::create([
             'target_job_title' => $validated['target_job_title'],
             'original_filename' => $extracted['filename'],
             'input_method' => $extracted['input_method'],
@@ -69,13 +103,6 @@ class CvAnalysisController extends Controller
             'ai_feedback' => $aiFeedback,
             'ai_error' => $aiError,
         ]);
-
-        return redirect()->route('analyses.show', $analysis);
-    }
-
-    public function show(CvAnalysis $analysis)
-    {
-        return view('analyses.show', compact('analysis'));
     }
 
     private function demoCv(): array
