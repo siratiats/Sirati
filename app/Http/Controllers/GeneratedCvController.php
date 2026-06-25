@@ -18,10 +18,10 @@ use UnexpectedValueException;
 
 class GeneratedCvController extends Controller
 {
-    public function indexApi()
+    public function indexApi(Request $request)
     {
         return GeneratedCvResource::collection(
-            GeneratedCv::latest()->limit(50)->get()
+            $request->user()->generatedCvs()->latest()->limit(50)->get()
         );
     }
 
@@ -32,22 +32,42 @@ class GeneratedCvController extends Controller
 
     public function store(Request $request, OpenAiCvService $openAi, AtsScoringService $scorer)
     {
-        $generatedCv = $this->createGeneratedCv($this->validatedPayload($request), $openAi, $scorer);
+        $generatedCv = $this->createGeneratedCv($this->validatedPayload($request), $openAi, $scorer, $request->user()?->id);
 
         return redirect()->route('generated-cvs.show', $generatedCv);
     }
 
     public function storeApi(Request $request, OpenAiCvService $openAi, AtsScoringService $scorer)
     {
-        $generatedCv = $this->createGeneratedCv($this->validatedPayload($request), $openAi, $scorer);
+        $generatedCv = $this->createGeneratedCv($this->validatedPayload($request), $openAi, $scorer, $request->user()->id);
 
         return (new GeneratedCvResource($generatedCv))
             ->response()
             ->setStatusCode(201);
     }
 
+    public function updateApi(GeneratedCv $generatedCv, Request $request, OpenAiCvService $openAi, AtsScoringService $scorer)
+    {
+        $this->authorizeApiAccess($request, $generatedCv);
+
+        $this->updateGeneratedCv($generatedCv, $this->validatedPayload($request), $openAi, $scorer);
+
+        return new GeneratedCvResource($generatedCv->refresh());
+    }
+
+    public function destroyApi(GeneratedCv $generatedCv)
+    {
+        $this->authorizeApiAccess(request(), $generatedCv);
+
+        $generatedCv->delete();
+
+        return response()->json(['message' => 'Deleted']);
+    }
+
     public function storeFromAnalysisApi(CvAnalysis $analysis, Request $request, OpenAiCvService $openAi, AtsScoringService $scorer)
     {
+        abort_unless($analysis->user_id === $request->user()->id, 404);
+
         $overrides = $request->validate([
             'full_name' => ['nullable', 'string', 'max:160'],
             'email' => ['nullable', 'email', 'max:255'],
@@ -60,7 +80,8 @@ class GeneratedCvController extends Controller
         $generatedCv = $this->createGeneratedCv(
             $this->payloadFromAnalysis($analysis, $overrides),
             $openAi,
-            $scorer
+            $scorer,
+            $request->user()->id
         );
 
         return (new GeneratedCvResource($generatedCv))
@@ -68,13 +89,58 @@ class GeneratedCvController extends Controller
             ->setStatusCode(201);
     }
 
+    public function enhanceJobDescription(Request $request, OpenAiCvService $openAi)
+    {
+        $validated = $request->validate([
+            'target_job_title' => ['required', 'string', 'max:160'],
+            'job_description' => ['nullable', 'string', 'max:4000'],
+            'language' => ['required', 'in:ar,en'],
+        ]);
+
+        $aiStatus = 'not_configured';
+        $aiError = null;
+        $result = $this->localEnhancedJobDescription($validated);
+
+        if ($openAi->isConfigured()) {
+            try {
+                $aiResult = call_user_func(
+                    [$openAi, 'enhanceJobDescription'],
+                    $validated['target_job_title'],
+                    $validated['job_description'] ?? null,
+                    $validated['language'],
+                );
+
+                $result = [
+                    'enhanced_description' => (string) ($aiResult['enhanced_description'] ?? $result['enhanced_description']),
+                    'suggested_keywords' => array_values(array_filter(array_map('strval', $aiResult['suggested_keywords'] ?? $result['suggested_keywords']))),
+                    'responsibilities' => array_values(array_filter(array_map('strval', $aiResult['responsibilities'] ?? []))),
+                    'requirements' => array_values(array_filter(array_map('strval', $aiResult['requirements'] ?? []))),
+                ];
+                $aiStatus = 'completed';
+            } catch (ConnectionException|RequestException|UnexpectedValueException|Throwable $exception) {
+                $aiStatus = 'failed';
+                $aiError = $exception->getMessage();
+            }
+        }
+
+        return response()->json([
+            'data' => [
+                ...$result,
+                'ai_status' => $aiStatus,
+                'ai_error' => $aiError,
+            ],
+        ]);
+    }
+
     public function show(GeneratedCv $generatedCv)
     {
         return view('generated-cvs.show', compact('generatedCv'));
     }
 
-    public function showApi(GeneratedCv $generatedCv)
+    public function showApi(Request $request, GeneratedCv $generatedCv)
     {
+        $this->authorizeApiAccess($request, $generatedCv);
+
         return new GeneratedCvResource($generatedCv);
     }
 
@@ -123,6 +189,7 @@ class GeneratedCvController extends Controller
             'phone' => null,
             'linkedin' => null,
             'location' => null,
+            'job_description_input' => null,
             'summary_input' => null,
             'certifications_input' => null,
         ], $request->validate([
@@ -132,6 +199,7 @@ class GeneratedCvController extends Controller
             'linkedin' => ['nullable', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:160'],
             'target_job_title' => ['required', 'string', 'max:160'],
+            'job_description_input' => ['nullable', 'string', 'max:4000'],
             'language' => ['required', 'in:ar,en'],
             'summary_input' => ['nullable', 'string', 'max:2000'],
             'skills_input' => ['required', 'string', 'max:3000'],
@@ -141,7 +209,25 @@ class GeneratedCvController extends Controller
         ]));
     }
 
-    private function createGeneratedCv(array $validated, OpenAiCvService $openAi, AtsScoringService $scorer): GeneratedCv
+    private function createGeneratedCv(array $validated, OpenAiCvService $openAi, AtsScoringService $scorer, ?int $userId = null): GeneratedCv
+    {
+        return GeneratedCv::create([
+            ...$this->generatedCvAttributes($validated, $openAi, $scorer),
+            'user_id' => $userId,
+        ]);
+    }
+
+    private function updateGeneratedCv(GeneratedCv $generatedCv, array $validated, OpenAiCvService $openAi, AtsScoringService $scorer): void
+    {
+        $generatedCv->update($this->generatedCvAttributes($validated, $openAi, $scorer));
+    }
+
+    private function authorizeApiAccess(Request $request, GeneratedCv $generatedCv): void
+    {
+        abort_unless($generatedCv->user_id === $request->user()->id, 404);
+    }
+
+    private function generatedCvAttributes(array $validated, OpenAiCvService $openAi, AtsScoringService $scorer): array
     {
         $aiStatus = 'not_configured';
         $aiOutput = null;
@@ -164,7 +250,7 @@ class GeneratedCvController extends Controller
 
         $score = $scorer->score($markdown, $validated['target_job_title']);
 
-        return GeneratedCv::create([
+        return [
             ...$validated,
             'generated_markdown' => $markdown,
             'form_payload' => $validated,
@@ -174,7 +260,7 @@ class GeneratedCvController extends Controller
             'score_total' => $score['total'],
             'grade' => $score['grade'],
             'criteria' => $score['criteria'],
-        ]);
+        ];
     }
 
     private function payloadFromAnalysis(CvAnalysis $analysis, array $overrides): array
@@ -196,6 +282,7 @@ class GeneratedCvController extends Controller
                 ?? $this->firstMatch('/linkedin\.com\/in\/[^\s|]+/iu', $resumeText),
             'location' => $this->filledValue($overrides['location'] ?? null),
             'target_job_title' => $analysis->target_job_title,
+            'job_description_input' => null,
             'language' => $this->filledValue($overrides['language'] ?? null)
                 ?? $this->detectLanguage($resumeText),
             'summary_input' => data_get($analysis->ai_feedback, 'rewritten_summary'),
@@ -261,6 +348,32 @@ class GeneratedCvController extends Controller
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    private function localEnhancedJobDescription(array $data): array
+    {
+        $title = $data['target_job_title'];
+        $description = $this->filledValue($data['job_description'] ?? null);
+
+        if ($data['language'] === 'en') {
+            $base = $description ?: "We are looking for a {$title} who can deliver measurable outcomes, collaborate with stakeholders, and apply modern tools to solve business problems.";
+
+            return [
+                'enhanced_description' => trim($base)."\n\nKey focus areas:\n- Own core {$title} responsibilities with clear business impact.\n- Use relevant tools, data, and communication skills to improve outcomes.\n- Work with cross-functional teams and document measurable achievements.\n- Prioritize quality, reliability, and continuous improvement.",
+                'suggested_keywords' => [$title, 'stakeholder communication', 'measurable impact', 'process improvement', 'reporting', 'quality'],
+                'responsibilities' => [],
+                'requirements' => [],
+            ];
+        }
+
+        $base = $description ?: "نبحث عن {$title} قادر على تحقيق نتائج قابلة للقياس، والتعاون مع أصحاب المصلحة، واستخدام الأدوات الحديثة لحل مشكلات العمل.";
+
+        return [
+            'enhanced_description' => trim($base)."\n\nمحاور التركيز:\n- تنفيذ مسؤوليات {$title} مع أثر واضح على العمل.\n- استخدام الأدوات والبيانات ومهارات التواصل لتحسين النتائج.\n- التعاون مع الفرق المختلفة وتوثيق الإنجازات القابلة للقياس.\n- التركيز على الجودة والاعتمادية والتحسين المستمر.",
+            'suggested_keywords' => [$title, 'التواصل مع أصحاب المصلحة', 'أثر قابل للقياس', 'تحسين العمليات', 'التقارير', 'الجودة'],
+            'responsibilities' => [],
+            'requirements' => [],
+        ];
     }
 
     private function localTemplate(array $data): string

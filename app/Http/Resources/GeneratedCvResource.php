@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\URL;
 
 class GeneratedCvResource extends JsonResource
 {
@@ -17,7 +18,13 @@ class GeneratedCvResource extends JsonResource
             'linkedin' => $this->linkedin,
             'location' => $this->location,
             'target_job_title' => $this->target_job_title,
+            'job_description_input' => $this->job_description_input,
             'language' => $this->language,
+            'summary_input' => $this->summary_input,
+            'skills_input' => $this->skills_input,
+            'experience_input' => $this->experience_input,
+            'education_input' => $this->education_input,
+            'certifications_input' => $this->certifications_input,
             'generated_markdown' => $this->generated_markdown,
             'ai_status' => $this->ai_status,
             'ai_output' => $this->ai_output,
@@ -25,7 +32,11 @@ class GeneratedCvResource extends JsonResource
             'score_total' => $this->score_total,
             'grade' => $this->grade,
             'criteria' => $this->mobileList($this->criteria),
-            'pdf_url' => url("/api/generated-cvs/{$this->id}/pdf"),
+            'pdf_url' => URL::temporarySignedRoute(
+                'api.generated-cvs.pdf',
+                now()->addMinutes(30),
+                ['generatedCv' => $this->id]
+            ),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

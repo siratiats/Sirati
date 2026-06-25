@@ -15,10 +15,10 @@ use UnexpectedValueException;
 
 class CvAnalysisController extends Controller
 {
-    public function indexApi()
+    public function indexApi(Request $request)
     {
         return CvAnalysisResource::collection(
-            CvAnalysis::latest()->limit(50)->get()
+            $request->user()->cvAnalyses()->latest()->limit(50)->get()
         );
     }
 
@@ -50,8 +50,10 @@ class CvAnalysisController extends Controller
         return view('analyses.show', compact('analysis'));
     }
 
-    public function showApi(CvAnalysis $analysis)
+    public function showApi(Request $request, CvAnalysis $analysis)
     {
+        $this->authorizeApiAccess($request, $analysis);
+
         return new CvAnalysisResource($analysis);
     }
 
@@ -86,6 +88,7 @@ class CvAnalysisController extends Controller
         }
 
         return CvAnalysis::create([
+            'user_id' => $request->user()?->id,
             'target_job_title' => $validated['target_job_title'],
             'original_filename' => $extracted['filename'],
             'input_method' => $extracted['input_method'],
@@ -103,6 +106,11 @@ class CvAnalysisController extends Controller
             'ai_feedback' => $aiFeedback,
             'ai_error' => $aiError,
         ]);
+    }
+
+    private function authorizeApiAccess(Request $request, CvAnalysis $analysis): void
+    {
+        abort_unless($analysis->user_id === $request->user()->id, 404);
     }
 
     private function demoCv(): array

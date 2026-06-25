@@ -45,6 +45,21 @@ class OpenAiCvService
      * @throws RequestException
      * @throws UnexpectedValueException
      */
+    public function enhanceJobDescription(string $jobTitle, ?string $jobDescription, string $language): array
+    {
+        $languageName = $language === 'en' ? 'English' : 'Arabic';
+
+        return $this->requestJson(
+            'You improve job descriptions for ATS-focused CV tailoring. Return only valid JSON. Do not invent a company, salary, dates, or location. Keep the description useful for matching a CV to the role.',
+            "Enhance or complete this job description in {$languageName}.\n\nTarget job title: {$jobTitle}\n\nCurrent job description:\n".mb_substr((string) $jobDescription, 0, 4000)."\n\nReturn JSON with keys: enhanced_description string, suggested_keywords array of strings, responsibilities array of strings, requirements array of strings."
+        );
+    }
+
+    /**
+     * @throws ConnectionException
+     * @throws RequestException
+     * @throws UnexpectedValueException
+     */
     private function requestJson(string $systemPrompt, string $userPrompt): array
     {
         $response = Http::withToken(config('services.openai.api_key'))

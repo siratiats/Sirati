@@ -122,6 +122,12 @@
                 <a href="{{ route('analyses.create') }}">فحص السيرة</a>
                 <a href="{{ route('generated-cvs.create') }}">إنشاء سيرة متوافقة مع ATS</a>
                 <a href="{{ route('admin.index') }}">لوحة الإدارة</a>
+                @auth
+                    <form method="POST" action="{{ route('admin.logout') }}" style="display: inline;">
+                        @csrf
+                        <button class="button button-secondary" type="submit" style="padding: 8px 12px; border-radius: 999px; font-size: 14px;">خروج</button>
+                    </form>
+                @endauth
             </div>
         </nav>
 

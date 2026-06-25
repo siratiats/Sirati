@@ -32,6 +32,7 @@ return [
 
     'admin' => [
         'access_token' => env('ADMIN_ACCESS_TOKEN'),
+        'emails' => array_values(array_filter(array_map('trim', explode(',', (string) env('ADMIN_EMAILS', ''))))),
     ],
 
     'ses' => [

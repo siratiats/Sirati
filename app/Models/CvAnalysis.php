@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
 
 class CvAnalysis extends Model
 {
     protected $fillable = [
+        'user_id',
         'target_job_title',
         'original_filename',
         'input_method',
@@ -36,5 +38,10 @@ class CvAnalysis extends Model
             'quick_wins' => 'array',
             'ai_feedback' => 'array',
         ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

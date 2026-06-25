@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
 
 class GeneratedCv extends Model
 {
     protected $fillable = [
+        'user_id',
         'full_name',
         'email',
         'phone',
         'linkedin',
         'location',
         'target_job_title',
+        'job_description_input',
         'language',
         'summary_input',
         'skills_input',
@@ -36,5 +39,10 @@ class GeneratedCv extends Model
             'ai_output' => 'array',
             'criteria' => 'array',
         ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
