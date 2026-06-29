@@ -12,6 +12,7 @@ Route::post('/auth/forgot-password', [MobileAuthController::class, 'forgotPasswo
 
 Route::get('/mobile/education', [MobileContentController::class, 'education']);
 Route::get('/mobile/education/{educationContent}', [MobileContentController::class, 'educationShow']);
+Route::get('/mobile/cv-templates', [MobileContentController::class, 'cvTemplates']);
 Route::get('/mobile/job-news', [MobileContentController::class, 'jobNews']);
 Route::get('/mobile/job-news/{jobNews}', [MobileContentController::class, 'jobNewsShow']);
 Route::get('/generated-cvs/{generatedCv}/pdf', [GeneratedCvController::class, 'downloadPdf'])
@@ -36,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
 	Route::get('/generated-cvs', [GeneratedCvController::class, 'indexApi']);
 	Route::post('/generated-cvs', [GeneratedCvController::class, 'storeApi']);
 	Route::post('/generated-cvs/enhance-job-description', [GeneratedCvController::class, 'enhanceJobDescription']);
+	Route::get('/generated-cvs/{generatedCv}/download', [GeneratedCvController::class, 'downloadPdfApi']);
 	Route::get('/generated-cvs/{generatedCv}', [GeneratedCvController::class, 'showApi']);
 	Route::match(['put', 'patch'], '/generated-cvs/{generatedCv}', [GeneratedCvController::class, 'updateApi']);
 	Route::delete('/generated-cvs/{generatedCv}', [GeneratedCvController::class, 'destroyApi']);

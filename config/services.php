@@ -35,6 +35,10 @@ return [
         'emails' => array_values(array_filter(array_map('trim', explode(',', (string) env('ADMIN_EMAILS', ''))))),
     ],
 
+    'jobs_sheet' => [
+        'csv_url' => env('JOBS_SHEET_CSV_URL'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

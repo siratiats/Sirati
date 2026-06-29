@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CvAnalysis;
+use App\Models\CvTemplate;
 use App\Models\EducationContent;
 use App\Models\GeneratedCv;
 use App\Models\JobNews;
@@ -70,6 +71,7 @@ class MobileContentController extends Controller
                 'is_draft' => false,
                 'can_download' => true,
                 'pdf_url' => url("/api/generated-cvs/{$cv->id}/pdf"),
+                'template_pdf_url' => url("/api/generated-cvs/{$cv->id}/download"),
             ];
         })->values();
 
@@ -79,6 +81,40 @@ class MobileContentController extends Controller
                 'summary' => $language === 'en'
                     ? 'You have '.$items->count().' draft and completed files'
                     : 'لديك '.$items->count().' ملفات مسودة ومكتملة',
+                'items' => $items,
+            ],
+        ];
+    }
+
+    public function cvTemplates(Request $request): array
+    {
+        $language = $this->language($request);
+
+        $items = CvTemplate::query()
+            ->active()
+            ->ordered()
+            ->get()
+            ->filter(fn (CvTemplate $template): bool => $template->supportsLanguage($language))
+            ->map(fn (CvTemplate $template): array => [
+                'id' => $template->id,
+                'slug' => $template->slug,
+                'name' => $template->displayName($language),
+                'name_ar' => $template->name_ar,
+                'name_en' => $template->name_en,
+                'preview_image_url' => $template->preview_image_path ? asset('storage/'.$template->preview_image_path) : null,
+                'language_direction' => $template->language_direction,
+                'supported_languages' => $template->supported_languages ?: ['ar', 'en'],
+                'supported_sections' => $template->supported_sections ?: [],
+                'is_default' => $template->is_default,
+            ])
+            ->values();
+
+        return [
+            'data' => [
+                'title' => $language === 'en' ? 'CV Designs' : 'تصاميم السيرة الذاتية',
+                'subtitle' => $language === 'en'
+                    ? 'Choose the design that fits your next application.'
+                    : 'اختر التصميم الأنسب لتقديمك القادم.',
                 'items' => $items,
             ],
         ];
@@ -202,13 +238,13 @@ class MobileContentController extends Controller
         $language = $this->language($request);
         $items = JobNews::query()
             ->where('language', $language)
-            ->where('is_published', true)
+            ->active()
             ->orderBy('sort_order')
             ->latest('published_at')
             ->latest()
             ->limit(20)
             ->get()
-            ->map(fn (JobNews $item): array => $this->jobNewsPayload($item));
+            ->map(fn (JobNews $item): array => $this->jobNewsPayload($item, $language));
 
         return [
             'data' => [
@@ -223,9 +259,17 @@ class MobileContentController extends Controller
 
     public function jobNewsShow(Request $request, JobNews $jobNews): array
     {
-        abort_unless($jobNews->is_published, 404);
+        $language = $this->language($request);
+        $today = today();
 
-        return ['data' => $this->jobNewsPayload($jobNews)];
+        abort_unless(
+            $jobNews->is_published
+                && ($jobNews->valid_from === null || $jobNews->valid_from->lessThanOrEqualTo($today))
+                && ($jobNews->valid_until === null || $jobNews->valid_until->greaterThanOrEqualTo($today)),
+            404
+        );
+
+        return ['data' => $this->jobNewsPayload($jobNews, $language)];
     }
 
     public function notifications(Request $request): array
@@ -264,8 +308,15 @@ class MobileContentController extends Controller
         return ['message' => 'تم تعليم كل الإشعارات كمقروءة.'];
     }
 
-    private function jobNewsPayload(JobNews $item): array
+    private function jobNewsPayload(JobNews $item, string $language = 'ar'): array
     {
+        $validUntilLabel = null;
+        if ($item->valid_until !== null) {
+            $validUntilLabel = $language === 'en'
+                ? 'Apply by '.$item->valid_until->format('d M Y')
+                : 'التقديم حتى '.$item->valid_until->translatedFormat('d F Y');
+        }
+
         return [
             'id' => $item->id,
             'language' => $item->language,
@@ -274,6 +325,10 @@ class MobileContentController extends Controller
             'location' => $item->location,
             'body' => $item->body,
             'url' => $item->url,
+            'apply_url' => $item->apply_url,
+            'valid_from' => $item->valid_from?->toDateString(),
+            'valid_until' => $item->valid_until?->toDateString(),
+            'valid_until_label' => $validUntilLabel,
             'published_label' => $item->published_at?->diffForHumans(),
             'published_at' => $item->published_at?->toISOString(),
         ];

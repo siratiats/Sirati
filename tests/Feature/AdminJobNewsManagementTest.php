@@ -1,0 +1,108 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\JobNews;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class AdminJobNewsManagementTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_admin_can_filter_job_news_dashboard(): void
+    {
+        $admin = User::factory()->create();
+
+        JobNews::create([
+            'language' => 'ar',
+            'title' => 'مطور Flutter',
+            'company' => 'شركة الأمل',
+            'body' => 'تفاصيل الوظيفة',
+            'is_published' => true,
+            'source' => 'google_sheet',
+            'source_row_key' => 'JOB-1',
+        ]);
+        JobNews::create([
+            'language' => 'en',
+            'title' => 'Backend Engineer',
+            'company' => 'Example Co',
+            'body' => 'Build APIs',
+            'is_published' => true,
+            'source' => 'manual',
+            'source_row_key' => 'JOB-2',
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin?job_q=Flutter&job_source=google_sheet#job-news-table');
+
+        $response->assertOk();
+        $response->assertSee('مطور Flutter');
+        $response->assertDontSee('Backend Engineer');
+        $response->assertSee('إدارة الوظائف / Job management');
+    }
+
+    public function test_admin_can_update_job_news_from_edit_drawer(): void
+    {
+        $admin = User::factory()->create();
+        $job = JobNews::create([
+            'language' => 'ar',
+            'title' => 'قديم',
+            'body' => 'تفاصيل قديمة',
+            'is_published' => false,
+            'source' => 'manual',
+            'source_row_key' => 'JOB-3',
+        ]);
+
+        $response = $this->actingAs($admin)->patch(route('admin.job-news.update', $job), [
+            'language' => 'ar',
+            'title' => 'عنوان محدث',
+            'company' => 'شركة جديدة',
+            'location' => 'الرياض',
+            'body' => 'تفاصيل محدثة',
+            'url' => 'https://example.com/job',
+            'apply_url' => 'https://example.com/apply',
+            'valid_from' => '2026-06-29',
+            'valid_until' => '2026-07-29',
+            'sort_order' => 5,
+            'is_published' => '1',
+        ]);
+
+        $response->assertRedirect();
+        $job->refresh();
+        $this->assertSame('عنوان محدث', $job->title);
+        $this->assertSame('شركة جديدة', $job->company);
+        $this->assertTrue($job->is_published);
+        $this->assertSame('2026-07-29', $job->valid_until->toDateString());
+    }
+
+    public function test_admin_can_bulk_unpublish_job_news(): void
+    {
+        $admin = User::factory()->create();
+        $first = JobNews::create([
+            'language' => 'ar',
+            'title' => 'الأولى',
+            'body' => 'تفاصيل',
+            'is_published' => true,
+            'source' => 'manual',
+            'source_row_key' => 'JOB-4',
+        ]);
+        $second = JobNews::create([
+            'language' => 'ar',
+            'title' => 'الثانية',
+            'body' => 'تفاصيل',
+            'is_published' => true,
+            'source' => 'manual',
+            'source_row_key' => 'JOB-5',
+        ]);
+
+        $response = $this->actingAs($admin)->post(route('admin.job-news.bulk'), [
+            'ids' => [$first->id, $second->id],
+            'action' => 'unpublish',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertFalse($first->fresh()->is_published);
+        $this->assertFalse($second->fresh()->is_published);
+    }
+}

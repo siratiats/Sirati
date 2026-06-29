@@ -6,13 +6,11 @@ use App\Http\Resources\GeneratedCvResource;
 use App\Models\CvAnalysis;
 use App\Models\GeneratedCv;
 use App\Services\AtsScoringService;
+use App\Services\CvTemplateRenderer;
 use App\Services\OpenAiCvService;
-use ArPHP\I18N\Arabic;
-use Dompdf\Dompdf;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Throwable;
 use UnexpectedValueException;
 
@@ -144,42 +142,16 @@ class GeneratedCvController extends Controller
         return new GeneratedCvResource($generatedCv);
     }
 
-    public function downloadPdf(GeneratedCv $generatedCv)
+    public function downloadPdf(Request $request, GeneratedCv $generatedCv, CvTemplateRenderer $renderer)
     {
-        $pdf = new Dompdf([
-            'defaultFont' => 'DejaVu Sans',
-            'isRemoteEnabled' => false,
-        ]);
-
-        $pdfData = [
-            'name' => $this->formatPdfText($generatedCv->full_name, $generatedCv->language),
-            'targetJobTitle' => $this->formatPdfText($generatedCv->target_job_title, $generatedCv->language),
-            'content' => $this->formatPdfText($generatedCv->generated_markdown, $generatedCv->language),
-        ];
-
-        $pdf->loadHtml(view('generated-cvs.pdf', compact('generatedCv', 'pdfData'))->render(), 'UTF-8');
-        $pdf->setPaper('a4');
-        $pdf->render();
-
-        $filename = 'sirati-cv-'.Str::slug($generatedCv->full_name).'-'.$generatedCv->id.'.pdf';
-
-        return response($pdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
-        ]);
+        return $renderer->downloadResponse($generatedCv, $request->query('template'));
     }
 
-    private function formatPdfText(string $text, string $language): string
+    public function downloadPdfApi(Request $request, GeneratedCv $generatedCv, CvTemplateRenderer $renderer)
     {
-        if ($language !== 'ar') {
-            return $text;
-        }
+        $this->authorizeApiAccess($request, $generatedCv);
 
-        $arabic = new Arabic();
-
-        return collect(preg_split('/\R/u', $text) ?: [])
-            ->map(fn (string $line) => $arabic->utf8Glyphs($line, 90, false, true))
-            ->implode("\n");
+        return $renderer->downloadResponse($generatedCv, $request->query('template'));
     }
 
     private function validatedPayload(Request $request): array

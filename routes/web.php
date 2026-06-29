@@ -34,8 +34,17 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/admin/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::post('/admin/cv-templates', [AdminController::class, 'storeCvTemplate'])->name('admin.cv-templates.store');
+    Route::patch('/admin/cv-templates/{cvTemplate}', [AdminController::class, 'updateCvTemplate'])->name('admin.cv-templates.update');
+    Route::post('/admin/cv-templates/{cvTemplate}/default', [AdminController::class, 'setDefaultCvTemplate'])->name('admin.cv-templates.default');
+    Route::delete('/admin/cv-templates/{cvTemplate}', [AdminController::class, 'destroyCvTemplate'])->name('admin.cv-templates.destroy');
     Route::post('/admin/education-contents', [AdminController::class, 'storeEducationContent'])->name('admin.education-contents.store');
     Route::delete('/admin/education-contents/{educationContent}', [AdminController::class, 'destroyEducationContent'])->name('admin.education-contents.destroy');
     Route::post('/admin/job-news', [AdminController::class, 'storeJobNews'])->name('admin.job-news.store');
+    Route::post('/admin/job-news/bulk', [AdminController::class, 'bulkUpdateJobNews'])->name('admin.job-news.bulk');
+    Route::post('/admin/job-news/import', [AdminController::class, 'importJobsFromFile'])->name('admin.job-news.import');
+    Route::post('/admin/job-news/sync-from-sheet', [AdminController::class, 'syncJobsFromGoogleSheet'])->name('admin.job-news.sync');
+    Route::get('/admin/job-news/template.csv', [AdminController::class, 'downloadJobsTemplate'])->name('admin.job-news.template');
+    Route::patch('/admin/job-news/{jobNews}', [AdminController::class, 'updateJobNews'])->name('admin.job-news.update');
     Route::delete('/admin/job-news/{jobNews}', [AdminController::class, 'destroyJobNews'])->name('admin.job-news.destroy');
 });

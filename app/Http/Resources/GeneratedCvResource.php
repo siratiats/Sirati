@@ -37,6 +37,7 @@ class GeneratedCvResource extends JsonResource
                 now()->addMinutes(30),
                 ['generatedCv' => $this->id]
             ),
+            'template_pdf_url' => url("/api/generated-cvs/{$this->id}/download"),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];
