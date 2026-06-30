@@ -17,7 +17,9 @@ class LandingLeadTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('Sirati')
-            ->assertSee('احجز وصولك المبكر');
+            ->assertSee('حمّل التطبيق الآن')
+            ->assertDontSee('الوصول المبكر')
+            ->assertDontSee('احجز وصولك المبكر');
     }
 
     public function test_visitor_can_join_early_access_list(): void
