@@ -1,6 +1,9 @@
 @extends('layouts.sirati')
 
 @section('title', 'لوحة الإدارة | Sirati')
+@section('body_class', 'admin-body')
+@section('page_class', 'admin-page')
+@section('hide_nav', true)
 
 @section('content')
     @php
@@ -21,27 +24,67 @@
         $jobFilterUrl = fn (array $overrides = []) => route('admin.index', array_filter(array_merge($jobFilters, $overrides), fn ($value) => filled($value)));
     @endphp
 
-    <section class="hero-card">
-        <h1>لوحة متابعة النسخة الأولية</h1>
-        <p>عرض سريع للمهتمين، تحليلات السير، والسير المولدة حتى تعرف أين يوجد الطلب الحقيقي.</p>
-    </section>
+    <div class="admin-shell">
+        <aside class="admin-sidebar" aria-label="Admin navigation" dir="rtl">
+            <a class="admin-sidebar-brand" href="{{ route('admin.index') }}">
+                <span class="mark">س</span>
+                <span>
+                    <strong>Sirati Admin</strong>
+                    <span>مركز إدارة التطبيق</span>
+                </span>
+            </a>
 
-    <section class="grid grid-3" style="margin-top: 18px;">
-        <div class="card"><h3>المهتمون</h3><p style="font-size: 34px; font-weight: 900;">{{ $stats['landing_leads'] }}</p></div>
-        <div class="card"><h3>تحليلات السير</h3><p style="font-size: 34px; font-weight: 900;">{{ $stats['analyses'] }}</p><p class="muted">المتوسط: {{ $stats['average_analysis_score'] }}</p></div>
-        <div class="card"><h3>السير المنشأة</h3><p style="font-size: 34px; font-weight: 900;">{{ $stats['generated_cvs'] }}</p><p class="muted">المتوسط: {{ $stats['average_generated_score'] }}</p></div>
-    </section>
+            <nav class="admin-side-nav" aria-label="Admin sections">
+                <a href="#cv-templates"><span>قوالب السيرة</span><small>Templates</small></a>
+                <a href="#education"><span>محتوى التعليم</span><small>Education</small></a>
+                <a href="#job-news-form"><span>إضافة وظيفة</span><small>Add job</small></a>
+                <a href="#job-import"><span>استيراد الوظائف</span><small>Import</small></a>
+                <a href="#job-news-table"><span>إدارة الوظائف</span><small>Jobs</small></a>
+                <a href="#education-list"><span>قائمة التعليم</span><small>Library</small></a>
+                <a href="#leads"><span>المهتمون</span><small>Leads</small></a>
+                <a href="#analyses"><span>التحليلات</span><small>Analyses</small></a>
+                <a href="#generated-cvs"><span>السير المنشأة</span><small>CVs</small></a>
+            </nav>
 
-    <nav class="admin-anchors" aria-label="Admin sections">
-        <a href="#cv-templates">قوالب السيرة / CV Templates</a>
-        <a href="#education">التعليم / Education</a>
-        <a href="#job-news-form">إضافة وظيفة / Add job</a>
-        <a href="#job-import">استيراد الوظائف / Import jobs</a>
-        <a href="#job-news-table">إدارة الوظائف / Manage jobs</a>
-        <a href="#leads">المهتمون / Leads</a>
-        <a href="#analyses">التحليلات / Analyses</a>
-        <a href="#generated-cvs">السير المنشأة / Generated CVs</a>
-    </nav>
+            <div class="admin-sidebar-footer">
+                <a class="button button-secondary" href="{{ route('landing') }}">عرض الموقع / View site</a>
+                <form method="POST" action="{{ route('admin.logout') }}">
+                    @csrf
+                    <button class="button button-danger" type="submit" style="width:100%;">تسجيل الخروج / Logout</button>
+                </form>
+            </div>
+        </aside>
+
+        <section class="admin-main">
+            <header class="admin-topbar">
+                <div>
+                    <span class="admin-eyebrow">لوحة متابعة النسخة الأولية / Operations dashboard</span>
+                    <h1>إدارة سيرتي من مكان واحد</h1>
+                    <p>تابع الطلب الحقيقي، أدر قوالب السير ومحتوى التطبيق، وراجع الوظائف والتحليلات من واجهة عمل مخصصة للإدارة بدلاً من تخطيط صفحة الهبوط.</p>
+                </div>
+                <div class="admin-topbar-actions">
+                    <a class="button button-secondary" href="{{ route('generated-cvs.create') }}">إنشاء سيرة</a>
+                    <a class="button" href="#job-import">استيراد وظائف</a>
+                </div>
+            </header>
+
+            <section class="admin-kpi-grid" aria-label="Dashboard metrics">
+                <article class="admin-kpi-card">
+                    <span>المهتمون / Leads</span>
+                    <strong>{{ $stats['landing_leads'] }}</strong>
+                    <p class="muted">طلبات اهتمام من صفحة الهبوط.</p>
+                </article>
+                <article class="admin-kpi-card">
+                    <span>تحليلات السير / Analyses</span>
+                    <strong>{{ $stats['analyses'] }}</strong>
+                    <p class="muted">متوسط الدرجة: {{ $stats['average_analysis_score'] }}</p>
+                </article>
+                <article class="admin-kpi-card">
+                    <span>السير المنشأة / Generated CVs</span>
+                    <strong>{{ $stats['generated_cvs'] }}</strong>
+                    <p class="muted">متوسط الدرجة: {{ $stats['average_generated_score'] }}</p>
+                </article>
+            </section>
 
     @if (session('status') || session('jobs_import_error'))
         <div class="toast-stack" aria-live="polite">
@@ -69,6 +112,8 @@
             </ul>
         </section>
     @endif
+
+            <div class="admin-content">
 
     <section class="card" id="cv-templates" style="margin-top: 18px;">
         <div class="admin-section-header">
@@ -639,4 +684,7 @@
         </div>
         <div class="pagination-wrap">{{ $generatedCvs->links() }}</div>
     </section>
+            </div>
+        </section>
+    </div>
 @endsection
