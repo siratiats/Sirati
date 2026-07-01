@@ -25,30 +25,47 @@ class AdminController extends Controller
     {
         $this->authorizeAdmin($request);
 
-        $jobNewsQuery = $this->jobNewsAdminQuery($request);
-
         return view('admin.index', [
-            'stats' => [
-                'landing_leads' => LandingLead::count(),
-                'analyses' => CvAnalysis::count(),
-                'generated_cvs' => GeneratedCv::count(),
-                'average_analysis_score' => round((float) CvAnalysis::avg('score_total'), 1),
-                'average_generated_score' => round((float) GeneratedCv::avg('score_total'), 1),
-            ],
-            'leads' => LandingLead::latest()->paginate(20, ['*'], 'leads_page')->withQueryString(),
-            'analyses' => CvAnalysis::latest()->paginate(20, ['*'], 'analyses_page')->withQueryString(),
-            'generatedCvs' => GeneratedCv::latest()->paginate(20, ['*'], 'generated_page')->withQueryString(),
+            'stats' => $this->dashboardStats(),
+            'jobNewsSummary' => $this->jobNewsSummary(),
+            'jobsSheetLastSync' => Cache::get('jobs_sheet_last_sync'),
+        ]);
+    }
+
+    public function cvTemplates(Request $request)
+    {
+        $this->authorizeAdmin($request);
+
+        return view('admin.cv-templates', [
             'cvTemplates' => CvTemplate::query()
                 ->ordered()
                 ->paginate(12, ['*'], 'templates_page')
                 ->withQueryString(),
             'cvTemplateRenderers' => array_keys(config('cv_templates.renderers', [])),
+        ]);
+    }
+
+    public function education(Request $request)
+    {
+        $this->authorizeAdmin($request);
+
+        return view('admin.education', [
             'educationContents' => EducationContent::query()
                 ->orderBy('language')
                 ->orderBy('sort_order')
                 ->latest()
                 ->paginate(25, ['*'], 'education_page')
                 ->withQueryString(),
+        ]);
+    }
+
+    public function jobs(Request $request)
+    {
+        $this->authorizeAdmin($request);
+
+        $jobNewsQuery = $this->jobNewsAdminQuery($request);
+
+        return view('admin.jobs', [
             'jobNewsItems' => $jobNewsQuery
                 ->paginate(25, ['*'], 'jobs_page')
                 ->withQueryString(),
@@ -56,6 +73,44 @@ class AdminController extends Controller
             'jobNewsSummary' => $this->jobNewsSummary(),
             'jobsSheetLastSync' => Cache::get('jobs_sheet_last_sync'),
         ]);
+    }
+
+    public function leads(Request $request)
+    {
+        $this->authorizeAdmin($request);
+
+        return view('admin.leads', [
+            'leads' => LandingLead::latest()->paginate(20, ['*'], 'leads_page')->withQueryString(),
+        ]);
+    }
+
+    public function analyses(Request $request)
+    {
+        $this->authorizeAdmin($request);
+
+        return view('admin.analyses', [
+            'analyses' => CvAnalysis::latest()->paginate(20, ['*'], 'analyses_page')->withQueryString(),
+        ]);
+    }
+
+    public function generatedCvs(Request $request)
+    {
+        $this->authorizeAdmin($request);
+
+        return view('admin.generated-cvs', [
+            'generatedCvs' => GeneratedCv::latest()->paginate(20, ['*'], 'generated_page')->withQueryString(),
+        ]);
+    }
+
+    private function dashboardStats(): array
+    {
+        return [
+            'landing_leads' => LandingLead::count(),
+            'analyses' => CvAnalysis::count(),
+            'generated_cvs' => GeneratedCv::count(),
+            'average_analysis_score' => round((float) CvAnalysis::avg('score_total'), 1),
+            'average_generated_score' => round((float) GeneratedCv::avg('score_total'), 1),
+        ];
     }
 
     private function jobNewsAdminQuery(Request $request)
@@ -123,7 +178,7 @@ class AdminController extends Controller
             $this->storeCvTemplatePreview($request, $template);
         });
 
-        return redirect()->route('admin.index')->with('status', 'تم حفظ قالب السيرة / CV template saved.');
+        return redirect()->route('admin.cv-templates.index')->with('status', 'CV template saved.');
     }
 
     public function updateCvTemplate(Request $request, CvTemplate $cvTemplate)
@@ -142,7 +197,7 @@ class AdminController extends Controller
             $this->storeCvTemplatePreview($request, $cvTemplate);
         });
 
-        return redirect()->route('admin.index')->with('status', 'تم تحديث قالب السيرة / CV template updated.');
+        return redirect()->route('admin.cv-templates.index')->with('status', 'CV template updated.');
     }
 
     public function setDefaultCvTemplate(Request $request, CvTemplate $cvTemplate)
@@ -157,7 +212,7 @@ class AdminController extends Controller
             ])->save();
         });
 
-        return redirect()->route('admin.index')->with('status', 'تم تعيين القالب الافتراضي / Default template set.');
+        return redirect()->route('admin.cv-templates.index')->with('status', 'Default template set.');
     }
 
     public function destroyCvTemplate(Request $request, CvTemplate $cvTemplate)
@@ -165,8 +220,8 @@ class AdminController extends Controller
         $this->authorizeAdmin($request);
 
         if ($cvTemplate->is_default && CvTemplate::query()->active()->whereKeyNot($cvTemplate->id)->count() === 0) {
-            return redirect()->route('admin.index')
-                ->with('jobs_import_error', 'لا يمكن أرشفة القالب الافتراضي الوحيد / Cannot archive the only active default template.');
+            return redirect()->route('admin.cv-templates.index')
+                ->with('jobs_import_error', 'Cannot archive the only active default template.');
         }
 
         if ($cvTemplate->is_default) {
@@ -176,7 +231,7 @@ class AdminController extends Controller
 
         $cvTemplate->delete();
 
-        return redirect()->route('admin.index')->with('status', 'تمت أرشفة قالب السيرة / CV template archived.');
+        return redirect()->route('admin.cv-templates.index')->with('status', 'CV template archived.');
     }
 
     public function storeEducationContent(Request $request)
@@ -202,7 +257,7 @@ class AdminController extends Controller
             'is_published' => false,
         ]);
 
-        return redirect()->route('admin.index')->with('status', 'تم حفظ محتوى التعليم.');
+        return redirect()->route('admin.education.index')->with('status', 'Education content saved.');
     }
 
     public function destroyEducationContent(Request $request, EducationContent $educationContent)
@@ -211,7 +266,7 @@ class AdminController extends Controller
 
         $educationContent->delete();
 
-        return redirect()->route('admin.index')->with('status', 'تم حذف محتوى التعليم.');
+        return redirect()->route('admin.education.index')->with('status', 'Education content deleted.');
     }
 
     public function storeJobNews(Request $request)
@@ -224,7 +279,7 @@ class AdminController extends Controller
             'source' => JobsImportService::SOURCE_MANUAL,
         ]);
 
-        return redirect()->route('admin.index')->with('status', 'تم حفظ خبر الوظيفة.');
+        return redirect()->route('admin.jobs.index')->with('status', 'Job saved.');
     }
 
     public function updateJobNews(Request $request, JobNews $jobNews)
@@ -233,8 +288,8 @@ class AdminController extends Controller
 
         $jobNews->update($this->validatedJobNewsData($request));
 
-        return redirect()->route('admin.index', $request->only(['job_q', 'job_source', 'job_status', 'job_language', 'jobs_page']))
-            ->with('status', 'تم تحديث خبر الوظيفة / Job updated.');
+        return redirect()->route('admin.jobs.index', $request->only(['job_q', 'job_source', 'job_status', 'job_language', 'jobs_page']))
+            ->with('status', 'Job updated.');
     }
 
     public function bulkUpdateJobNews(Request $request)
@@ -257,12 +312,12 @@ class AdminController extends Controller
         };
 
         $message = match ($validated['action']) {
-            'publish' => "تم نشر {$count} وظيفة / {$count} jobs published.",
-            'unpublish' => "تم إلغاء نشر {$count} وظيفة / {$count} jobs unpublished.",
-            'delete' => "تم حذف {$count} وظيفة / {$count} jobs deleted.",
+            'publish' => "{$count} jobs published.",
+            'unpublish' => "{$count} jobs unpublished.",
+            'delete' => "{$count} jobs deleted.",
         };
 
-        return redirect()->route('admin.index', $request->only(['job_q', 'job_source', 'job_status', 'job_language']))
+        return redirect()->route('admin.jobs.index', $request->only(['job_q', 'job_source', 'job_status', 'job_language']))
             ->with('status', $message);
     }
 
@@ -272,7 +327,7 @@ class AdminController extends Controller
 
         $jobNews->delete();
 
-        return redirect()->route('admin.index')->with('status', 'تم حذف خبر الوظيفة.');
+        return redirect()->route('admin.jobs.index')->with('status', 'Job deleted.');
     }
 
     public function importJobsFromFile(Request $request, JobsImportService $importer)
@@ -289,12 +344,12 @@ class AdminController extends Controller
                 JobsImportService::SOURCE_UPLOAD,
             );
         } catch (\Throwable $e) {
-            return redirect()->route('admin.index')
-                ->with('jobs_import_error', 'فشل استيراد الملف: ' . $e->getMessage());
+            return redirect()->route('admin.jobs.index')
+                ->with('jobs_import_error', 'File import failed: ' . $e->getMessage());
         }
 
-        return redirect()->route('admin.index')
-            ->with('status', $this->formatImportStatus('استيراد الملف', $result))
+        return redirect()->route('admin.jobs.index')
+            ->with('status', $this->formatImportStatus('File import', $result))
             ->with('jobs_import_errors', $result['errors']);
     }
 
@@ -305,12 +360,12 @@ class AdminController extends Controller
         try {
             $result = $sync->sync();
         } catch (\Throwable $e) {
-            return redirect()->route('admin.index')
-                ->with('jobs_import_error', 'فشل السحب من Google Sheets: ' . $e->getMessage());
+            return redirect()->route('admin.jobs.index')
+                ->with('jobs_import_error', 'Google Sheets sync failed: ' . $e->getMessage());
         }
 
-        return redirect()->route('admin.index')
-            ->with('status', $this->formatImportStatus('سحب Google Sheets', $result))
+        return redirect()->route('admin.jobs.index')
+            ->with('status', $this->formatImportStatus('Google Sheets sync', $result))
             ->with('jobs_import_errors', $result['errors']);
     }
 
@@ -320,7 +375,7 @@ class AdminController extends Controller
 
         $rows = [
             ['job_id', 'language', 'title', 'company', 'location', 'body', 'url', 'apply_url', 'published_at', 'valid_from', 'valid_until', 'sort_order', 'is_published'],
-            ['JOB-001', 'ar', 'مطور Flutter', 'شركة الأمل', 'الرياض', 'بناء تطبيق Flutter مع ربط APIs.', 'https://example.com/jobs/JOB-001', 'https://example.com/apply/JOB-001', '2026-06-29', '2026-06-29', '2026-07-29', '0', '1'],
+            ['JOB-001', 'en', 'Flutter Developer', 'Hope Company', 'Riyadh', 'Build Flutter screens and integrate backend APIs.', 'https://example.com/jobs/JOB-001', 'https://example.com/apply/JOB-001', '2026-06-29', '2026-06-29', '2026-07-29', '0', '1'],
             ['JOB-002', 'en', 'Backend Engineer', 'Example Co.', 'Remote', 'Build and maintain Laravel services.', 'https://example.com/jobs/JOB-002', 'https://example.com/apply/JOB-002', '2026-06-29', '2026-06-29', '2026-07-29', '0', '1'],
         ];
 
@@ -340,7 +395,7 @@ class AdminController extends Controller
     private function formatImportStatus(string $action, array $result): string
     {
         return sprintf(
-            '%s — تم إنشاء %d، تحديث %d، تخطي %d، أخطاء %d.',
+            '%s: %d created, %d updated, %d skipped, %d errors.',
             $action,
             $result['created'],
             $result['updated'],

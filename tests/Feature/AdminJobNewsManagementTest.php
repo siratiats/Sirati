@@ -34,12 +34,15 @@ class AdminJobNewsManagementTest extends TestCase
             'source_row_key' => 'JOB-2',
         ]);
 
-        $response = $this->actingAs($admin)->get('/admin?job_q=Flutter&job_source=google_sheet#job-news-table');
+        $response = $this->actingAs($admin)->get(route('admin.jobs.index', [
+            'job_q' => 'Flutter',
+            'job_source' => 'google_sheet',
+        ]));
 
         $response->assertOk();
         $response->assertSee('مطور Flutter');
         $response->assertDontSee('Backend Engineer');
-        $response->assertSee('إدارة الوظائف / Job management');
+        $response->assertSee('Job management');
     }
 
     public function test_admin_can_update_job_news_from_edit_drawer(): void

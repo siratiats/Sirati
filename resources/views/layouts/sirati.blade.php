@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="@yield('html_lang', 'ar')" dir="@yield('html_dir', 'rtl')">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -244,7 +244,7 @@
             background: #07111f;
             color: #f8fafc;
             border-inline-end: 1px solid rgba(15,23,42,.1);
-            direction: rtl;
+            direction: ltr;
             overflow-y: auto;
         }
         .admin-sidebar-brand {
@@ -280,7 +280,8 @@
             border: 1px solid transparent;
         }
         .admin-side-nav a:hover,
-        .admin-side-nav a:focus {
+        .admin-side-nav a:focus,
+        .admin-side-nav a.active {
             background: rgba(14,165,233,.12);
             border-color: rgba(14,165,233,.22);
             color: #fff;
@@ -295,7 +296,7 @@
             border-top: 1px solid rgba(148,163,184,.18);
         }
         .admin-main {
-            direction: rtl;
+            direction: ltr;
             min-width: 0;
             padding: 28px;
         }
@@ -422,6 +423,7 @@
         .admin-body td {
             border-bottom-color: #e2e8f0;
             color: #334155;
+            text-align: left;
         }
         .admin-body th {
             color: #475569;
@@ -460,6 +462,43 @@
             color: #0f172a;
         }
         .admin-body .pagination-wrap { color: #475569; }
+        .admin-work-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+            margin-top: 10px;
+        }
+        .admin-work-card {
+            display: block;
+            min-height: 170px;
+            border: 1px solid #d9e2ec;
+            border-radius: 14px;
+            background: #fff;
+            padding: 18px;
+            color: #172033;
+            transition: border-color .18s ease, transform .18s ease;
+        }
+        .admin-work-card:hover,
+        .admin-work-card:focus {
+            border-color: #7dd3fc;
+            transform: translateY(-2px);
+            outline: none;
+        }
+        .admin-work-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 42px;
+            height: 34px;
+            margin-bottom: 14px;
+            border-radius: 10px;
+            background: #e0f2fe;
+            color: #075985;
+            font-size: 12px;
+            font-weight: 900;
+        }
+        .admin-work-card h3 { margin-bottom: 8px; }
+        .admin-work-card p { margin-bottom: 0; }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
         @media (max-width: 1080px) {
             .admin-shell { grid-template-columns: 1fr; }
@@ -505,7 +544,8 @@
                 button.disabled = true;
                 button.classList.add('button-loading');
                 const render = () => {
-                    label.textContent = `جاري التنفيذ… / Working… ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+                    const loadingText = document.body.classList.contains('admin-body') ? 'Working' : 'جاري التنفيذ… / Working';
+                    label.textContent = `${loadingText}… ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
                     seconds += 1;
                 };
                 render();

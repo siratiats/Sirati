@@ -354,7 +354,7 @@ class CvMvpTest extends TestCase
                 'sort_order' => 1,
                 'is_published' => '1',
             ])
-            ->assertRedirect(route('admin.index'));
+            ->assertRedirect(route('admin.education.index'));
 
         $this->assertDatabaseHas('education_contents', [
             'title' => 'تحليل البيانات من لوحة الإدارة',
@@ -369,7 +369,7 @@ class CvMvpTest extends TestCase
 
         $this->actingAs($admin)
             ->delete(route('admin.education-contents.destroy', $content))
-            ->assertRedirect(route('admin.index'));
+            ->assertRedirect(route('admin.education.index'));
 
         $this->assertDatabaseMissing('education_contents', [
             'title' => 'تحليل البيانات من لوحة الإدارة',
@@ -393,7 +393,7 @@ class CvMvpTest extends TestCase
                 'sort_order' => 1,
                 'is_published' => '1',
             ])
-            ->assertRedirect(route('admin.index'));
+            ->assertRedirect(route('admin.jobs.index'));
 
         $this->getJson('/api/mobile/job-news?lang=en')
             ->assertOk()
@@ -408,7 +408,7 @@ class CvMvpTest extends TestCase
 
         $this->actingAs($admin)
             ->delete(route('admin.job-news.destroy', $item))
-            ->assertRedirect(route('admin.index'));
+            ->assertRedirect(route('admin.jobs.index'));
 
         $this->assertDatabaseMissing('job_news', [
             'title' => 'Data Analyst hiring wave',
@@ -535,7 +535,7 @@ class CvMvpTest extends TestCase
 
         $this->get('/admin')
             ->assertOk()
-            ->assertSee('لوحة متابعة النسخة الأولية');
+            ->assertSee('Operations dashboard');
     }
 
     public function test_admin_rejects_unlisted_account_when_admin_emails_are_configured(): void
@@ -586,7 +586,17 @@ class CvMvpTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get('/admin')
             ->assertOk()
-            ->assertSee('Demo Lead')
+            ->assertSee('Landing leads')
+            ->assertSee('CV analyses');
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('admin.leads.index'))
+            ->assertOk()
+            ->assertSee('Demo Lead');
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('admin.analyses.index'))
+            ->assertOk()
             ->assertSee('Laravel Backend Developer');
     }
 

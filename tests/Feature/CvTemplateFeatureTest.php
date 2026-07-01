@@ -35,7 +35,7 @@ class CvTemplateFeatureTest extends TestCase
             'sort_order' => 2,
         ]);
 
-        $response->assertRedirect(route('admin.index'));
+        $response->assertRedirect(route('admin.cv-templates.index'));
         $template = CvTemplate::firstOrFail();
         $this->assertSame('modern-rtl', $template->slug);
         $this->assertTrue($template->is_default);
@@ -152,7 +152,7 @@ class CvTemplateFeatureTest extends TestCase
 
         $response = $this->actingAs($admin)->delete(route('admin.cv-templates.destroy', $template));
 
-        $response->assertRedirect(route('admin.index'));
+        $response->assertRedirect(route('admin.cv-templates.index'));
         $this->assertFalse($template->fresh()->trashed());
     }
 }
