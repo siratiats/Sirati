@@ -725,6 +725,22 @@
         /* Nav scroll-spy active state */
         .nav-links a.active { color: var(--teal); background: rgba(0, 168, 152, .12); }
 
+        /* Nav: elevated state once the page is scrolled */
+        .site-nav { transition: background .3s ease, box-shadow .3s ease, border-color .3s ease, backdrop-filter .3s ease; }
+        .site-nav.scrolled { box-shadow: 0 12px 34px rgba(0, 0, 0, .3); border-bottom-color: rgba(0, 168, 152, .35); backdrop-filter: blur(20px) saturate(1.15); }
+        body.light .site-nav.scrolled { box-shadow: 0 12px 30px rgba(13, 27, 42, .12); }
+
+        /* Hero: pulsing glow on the letter logo mark */
+        .hero-logo:not(.has-image) { animation: float-logo 4s ease-in-out infinite, logo-glow 3.6s ease-in-out infinite; }
+        @keyframes logo-glow {
+            0%, 100% { box-shadow: 0 0 40px var(--teal-glow), 0 20px 40px rgba(0, 0, 0, .34); }
+            50% { box-shadow: 0 0 78px rgba(0, 168, 152, .5), 0 20px 40px rgba(0, 0, 0, .34); }
+        }
+
+        /* Download: slow shifting gradient in addition to the drifting grid */
+        .download-wrap { background-size: 200% 200%; animation: download-gradient 16s ease infinite; }
+        @keyframes download-gradient { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
         /* Drawer: slide-in shell + staggered links */
         dialog.site-drawer[open] .drawer-shell { animation: drawer-slide .34s cubic-bezier(.22, .61, .36, 1) both; }
         @keyframes drawer-slide { from { transform: translateX(30px); opacity: .3; } to { transform: none; opacity: 1; } }
@@ -1100,13 +1116,15 @@
 
         (function initScrollProgress() {
             const bar = document.getElementById('scrollProgress');
-            if (!bar) return;
+            const nav = document.querySelector('.site-nav');
+            if (!bar && !nav) return;
             let ticking = false;
             function update() {
                 const doc = document.documentElement;
                 const max = doc.scrollHeight - doc.clientHeight;
                 const pct = max > 0 ? (doc.scrollTop / max) * 100 : 0;
-                bar.style.width = pct + '%';
+                if (bar) bar.style.width = pct + '%';
+                if (nav) nav.classList.toggle('scrolled', doc.scrollTop > 20);
                 ticking = false;
             }
             window.addEventListener('scroll', () => {
