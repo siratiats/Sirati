@@ -260,6 +260,12 @@
             background:
                 radial-gradient(ellipse 60% 50% at 50% 30%, rgba(0, 168, 152, .18) 0%, transparent 70%),
                 radial-gradient(ellipse 40% 40% at 80% 80%, rgba(245, 166, 35, .07) 0%, transparent 60%);
+            animation: hero-aurora 14s ease-in-out infinite alternate;
+        }
+        @keyframes hero-aurora {
+            0% { transform: translate3d(0, 0, 0) scale(1); opacity: .85; }
+            50% { transform: translate3d(-2%, 1.5%, 0) scale(1.06); opacity: 1; }
+            100% { transform: translate3d(2%, -1.5%, 0) scale(1.03); opacity: .9; }
         }
         .hero::after {
             background-image:
@@ -282,6 +288,28 @@
         .hero-proof { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 26px; }
         .hero-proof span { display: inline-flex; align-items: center; min-height: 34px; padding: 6px 12px; border: 1px solid var(--border-med); border-radius: 999px; background: rgba(0, 168, 152, .08); color: var(--text-main); font-size: .82rem; font-weight: 700; }
         .hero-copy .hero-cta { justify-content: flex-start; }
+        .hero-scroll-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 22px;
+            border: 1.5px solid var(--teal);
+            border-radius: 999px;
+            color: var(--teal);
+            font-weight: 700;
+            letter-spacing: .3px;
+            transition: background .25s ease, color .25s ease, transform .25s ease, box-shadow .25s ease;
+        }
+        .hero-scroll-link svg { width: 18px; height: 18px; transition: transform .25s ease; }
+        .hero-scroll-link:hover,
+        .hero-scroll-link:focus {
+            background: var(--teal);
+            color: #fff;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px var(--teal-glow);
+            outline: none;
+        }
+        .hero-scroll-link:hover svg { transform: translateY(3px); }
         .hero-logo {
             display: grid;
             width: 110px;
@@ -436,8 +464,10 @@
             height: 3px;
             margin: 24px 0;
             border-radius: 2px;
-            background: var(--teal);
+            background: linear-gradient(90deg, var(--teal), #00c4b3);
+            box-shadow: 0 0 16px var(--teal-glow);
         }
+        body.en .divider { margin-left: 0; }
         .section-title {
             max-width: 720px;
             margin: 0 0 20px;
@@ -490,7 +520,10 @@
             content: '';
             transform: translate(24px, -24px);
         }
-        .service-card:hover { transform: translateY(-6px); border-color: rgba(0, 168, 152, .42); }
+        .service-card:hover { transform: translateY(-8px); border-color: rgba(0, 168, 152, .45); box-shadow: 0 22px 50px rgba(0, 0, 0, .28), 0 0 0 1px var(--border-med); }
+        .service-card:hover::before { transform: translate(14px, -14px) scale(1.35); transition: transform .4s ease; }
+        .service-card .service-icon { transition: transform .3s ease; }
+        .service-card:hover .service-icon { transform: scale(1.12) rotate(-4deg); }
         .service-icon { display: block; margin-bottom: 20px; font-size: 2.35rem; }
         .service-title { margin: 0 0 12px; color: var(--text-main); font-size: 1.15rem; font-weight: 700; }
         .service-desc { margin: 0; color: var(--text-muted); font-size: .93rem; line-height: 1.75; }
@@ -553,6 +586,8 @@
         .btn-dl { padding: 16px 32px; box-shadow: 0 4px 14px rgba(0, 0, 0, .22); }
         .btn-dl.ios { background: var(--navy); color: #fff; }
         .btn-dl.android { background: #fff; color: var(--navy); }
+        .btn-dl.is-soon { cursor: default; opacity: .96; }
+        .btn-dl.is-soon:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 0, 0, .28); }
         footer {
             padding: 48px 24px;
             border-top: 1px solid var(--border-soft);
@@ -565,11 +600,29 @@
 
         .fade-in {
             opacity: 1;
-            transform: translateY(0);
-            transition: opacity .7s ease, transform .7s ease;
+            transform: none;
+            transition: opacity .85s cubic-bezier(.22, .61, .36, 1), transform .85s cubic-bezier(.22, .61, .36, 1);
+            transition-delay: var(--reveal-delay, 0ms);
         }
-        .js .fade-in { opacity: .001; transform: translateY(26px); }
-        .js .fade-in.visible { opacity: 1; transform: translateY(0); }
+        .js .fade-in { opacity: .001; transform: translateY(36px) scale(.98); }
+        .js .fade-in.visible { opacity: 1; transform: none; }
+
+        /* Staggered reveal for grouped items */
+        .proof-item:nth-child(2), .step-card:nth-child(2), .service-card:nth-child(2) { --reveal-delay: 90ms; }
+        .proof-item:nth-child(3), .step-card:nth-child(3), .service-card:nth-child(3) { --reveal-delay: 180ms; }
+        .service-card:nth-child(4) { --reveal-delay: 270ms; }
+
+        /* Scroll progress indicator */
+        .scroll-progress {
+            position: fixed;
+            inset: 0 auto auto 0;
+            z-index: 200;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--teal), #00c4b3);
+            box-shadow: 0 0 12px var(--teal-glow);
+            transition: width .12s ease-out;
+        }
         .ar { display: block; }
         .en-text { display: none; }
         body.en .ar { display: none; }
@@ -627,6 +680,7 @@
     </style>
 </head>
 <body>
+    <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
     <nav class="site-nav" aria-label="التنقل الرئيسي">
         <a href="{{ route('landing') }}" class="nav-logo" aria-label="Sirati">
             <span class="logo-img" aria-hidden="true">س</span>
@@ -666,8 +720,7 @@
                 <a href="#download"><span class="ar">ابدأ الآن</span><span class="en-text">Start now</span><span>Section</span></a>
             </div>
             <div class="drawer-actions">
-                <a href="{{ route('analyses.create') }}" class="btn-store button-primary"><span><span class="store-name">Start CV analysis</span></span></a>
-                <a href="{{ route('generated-cvs.create') }}" class="btn-store button-outline"><span><span class="store-name">Create CV</span></span></a>
+                <a href="#download" class="btn-store button-primary"><span><span class="store-name"><span class="ar">حمّل التطبيق</span><span class="en-text">Download the app</span></span></span></a>
             </div>
         </div>
     </dialog>
@@ -681,10 +734,7 @@
                     <h1 class="hero-headline"><span class="ar">&#1581;&#1604;&#1604; &#1587;&#1610;&#1585;&#1578;&#1603; &#1608;&#1575;&#1576;&#1606; &#1606;&#1587;&#1582;&#1577; &#1571;&#1602;&#1608;&#1609;.</span><span class="en-text">Analyze your CV and build a stronger version.</span></h1>
                     <p class="hero-sub"><span class="ar">&#1571;&#1583;&#1608;&#1575;&#1578; &#1593;&#1605;&#1604;&#1610;&#1577; &#1604;&#1578;&#1581;&#1587;&#1610;&#1606; &#1575;&#1604;&#1587;&#1610;&#1585;&#1577; &#1608;&#1575;&#1604;&#1578;&#1580;&#1607;&#1610;&#1586; &#1604;&#1604;&#1578;&#1602;&#1583;&#1610;&#1605;.</span><span class="en-text">Practical tools for CV analysis, improvement, and job applications.</span></p>
                     <div class="hero-proof"><span>ATS-ready</span><span>Arabic first</span><span>Saudi and Gulf jobs</span></div>
-                    <div class="hero-cta">
-                        <a href="{{ route('analyses.create') }}" class="btn-store button-primary"><span><span class="store-name">Start CV analysis</span></span></a>
-                        <a href="{{ route('generated-cvs.create') }}" class="btn-store button-outline"><span><span class="store-name">Create CV</span></span></a>
-                    </div>
+                    <a class="hero-scroll-link" href="#services"><span class="ar">تعرّف على خدماتنا</span><span class="en-text">Explore our services</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></a>
                 </div>
                 <div class="hero-visual fade-in" aria-hidden="true">
                     <div class="phone-preview"><div class="phone-screen">
@@ -791,14 +841,14 @@
                 <h2><span class="ar">حمّل التطبيق الآن</span><span class="en-text">Download the App Now</span></h2>
                 <p><span class="ar">جميع الخدمات متاحة داخل التطبيق. ابدأ مسيرتك المهنية الصحيحة اليوم.</span><span class="en-text">All services are available inside the app. Start your professional journey the right way, today.</span></p>
                 <div class="download-btns">
-                    <a href="{{ route('analyses.create') }}" class="btn-dl ios"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.84 4.36c0 1.13-.44 2.22-1.22 3.02-.8.83-1.87 1.28-2.98 1.23-.06-1.05.41-2.14 1.2-2.94.76-.78 1.96-1.36 3-1.31zM19.5 17.58c-.62 1.43-.92 2.06-1.72 3.3-1.13 1.73-2.73 3.89-4.73 3.91-1.78.02-2.24-1.17-4.66-1.15-2.42.01-2.93 1.17-4.71 1.15-2-.02-3.53-2-4.66-3.74C.74 18.52.03 15.57.86 12.82c.76-2.51 2.68-4.12 4.49-4.16 1.64-.03 3.19 1.15 4.2 1.15 1 0 2.86-1.43 4.84-1.22.83.03 3.15.33 4.72 2.63-1.24.77-2.03 2.09-2.03 3.56 0 1.8 1.08 3.39 2.42 4.2z"/></svg><span><span class="store-kicker">Start with</span><span class="store-name">CV analysis</span></span></a>
-                    <a href="{{ route('generated-cvs.create') }}" class="btn-dl android"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg><span><span class="store-kicker">Then create</span><span class="store-name">a new CV</span></span></a>
+                    <span class="btn-dl ios is-soon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.84 4.36c0 1.13-.44 2.22-1.22 3.02-.8.83-1.87 1.28-2.98 1.23-.06-1.05.41-2.14 1.2-2.94.76-.78 1.96-1.36 3-1.31zM19.5 17.58c-.62 1.43-.92 2.06-1.72 3.3-1.13 1.73-2.73 3.89-4.73 3.91-1.78.02-2.24-1.17-4.66-1.15-2.42.01-2.93 1.17-4.71 1.15-2-.02-3.53-2-4.66-3.74C.74 18.52.03 15.57.86 12.82c.76-2.51 2.68-4.12 4.49-4.16 1.64-.03 3.19 1.15 4.2 1.15 1 0 2.86-1.43 4.84-1.22.83.03 3.15.33 4.72 2.63-1.24.77-2.03 2.09-2.03 3.56 0 1.8 1.08 3.39 2.42 4.2z"/></svg><span><span class="store-kicker">Coming soon on</span><span class="store-name">App Store</span></span></span>
+                    <span class="btn-dl android is-soon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg><span><span class="store-kicker">Coming soon on</span><span class="store-name">Google Play</span></span></span>
                 </div>
             </div>
         </section>
     </main>
 
-    <div class="mobile-sticky-cta"><a href="{{ route('analyses.create') }}">Start CV analysis</a></div>
+    <div class="mobile-sticky-cta"><a href="#download"><span class="ar">حمّل التطبيق الآن</span><span class="en-text">Download the app</span></a></div>
     <footer>
         <p><span class="ar">© {{ now()->year }} <span class="teal">سيرتي</span> — جميع الحقوق محفوظة.</span><span class="en-text">© {{ now()->year }} <span class="teal">Sirati</span> — All rights reserved. Our services are available inside the app only.</span></p>
     </footer>
@@ -829,6 +879,23 @@
             document.documentElement.setAttribute('dir', isEn ? 'ltr' : 'rtl');
             document.getElementById('langBtn').textContent = isEn ? 'ع' : 'EN';
         }
+
+        (function initScrollProgress() {
+            const bar = document.getElementById('scrollProgress');
+            if (!bar) return;
+            let ticking = false;
+            function update() {
+                const doc = document.documentElement;
+                const max = doc.scrollHeight - doc.clientHeight;
+                const pct = max > 0 ? (doc.scrollTop / max) * 100 : 0;
+                bar.style.width = pct + '%';
+                ticking = false;
+            }
+            window.addEventListener('scroll', () => {
+                if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
+            }, { passive: true });
+            update();
+        })();
 
         if ('IntersectionObserver' in window) {
             const observer = new IntersectionObserver((entries) => {
