@@ -719,6 +719,127 @@
             .social-grid { flex-direction: column; }
             .social-card { width: 100%; }
         }
+        /* ============ Enhancement pass ============ */
+
+        /* Nav scroll-spy active state */
+        .nav-links a.active { color: var(--teal); background: rgba(0, 168, 152, .12); }
+
+        /* Drawer: slide-in shell + staggered links */
+        dialog.site-drawer[open] .drawer-shell { animation: drawer-slide .34s cubic-bezier(.22, .61, .36, 1) both; }
+        @keyframes drawer-slide { from { transform: translateX(30px); opacity: .3; } to { transform: none; opacity: 1; } }
+        dialog.site-drawer[open] .drawer-links a { animation: drawer-item .5s cubic-bezier(.22, .61, .36, 1) both; }
+        .drawer-links a:nth-child(1) { animation-delay: .08s; }
+        .drawer-links a:nth-child(2) { animation-delay: .14s; }
+        .drawer-links a:nth-child(3) { animation-delay: .2s; }
+        .drawer-links a:nth-child(4) { animation-delay: .26s; }
+        .drawer-links a:nth-child(5) { animation-delay: .32s; }
+        @keyframes drawer-item { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+        /* Hero: staggered entrance for copy children */
+        .js .hero-stagger > * { animation: hero-rise .8s cubic-bezier(.22, .61, .36, 1) both; }
+        .hero-stagger > *:nth-child(1) { animation-delay: .05s; }
+        .hero-stagger > *:nth-child(2) { animation-delay: .13s; }
+        .hero-stagger > *:nth-child(3) { animation-delay: .21s; }
+        .hero-stagger > *:nth-child(4) { animation-delay: .29s; }
+        .hero-stagger > *:nth-child(5) { animation-delay: .37s; }
+        .hero-stagger > *:nth-child(6) { animation-delay: .45s; }
+        @keyframes hero-rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+        /* Hero: idle score-gauge pulse */
+        .score-ring { position: relative; animation: ring-pulse 3.4s ease-in-out infinite; }
+        @keyframes ring-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 168, 152, .32); }
+            50% { box-shadow: 0 0 0 14px rgba(0, 168, 152, 0); }
+        }
+        @media (min-width: 821px) {
+            .floating-card { animation: card-bob 5.5s ease-in-out infinite; }
+            @keyframes card-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+        }
+
+        /* Proof band: hover lift + accent dot */
+        .proof-item { transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
+        .proof-item:hover { transform: translateY(-5px); border-color: rgba(0, 168, 152, .42); box-shadow: 0 18px 38px rgba(0, 0, 0, .22); }
+        .proof-item strong { display: inline-flex; align-items: center; gap: 9px; }
+        .proof-item strong::before { content: ''; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 10px var(--teal-glow); }
+
+        /* About: soft decorative glow */
+        #about .section { position: relative; }
+        #about .section::before {
+            content: '';
+            position: absolute;
+            inset-block-start: -10px;
+            inset-inline-start: -50px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--teal-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        #about .section > * { position: relative; z-index: 1; }
+
+        /* Workflow: connector line + richer number badges */
+        .steps-grid { position: relative; }
+        .step-card { position: relative; z-index: 1; }
+        .step-number {
+            width: 46px;
+            height: 46px;
+            font-size: 1.05rem;
+            background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+            color: #fff;
+            box-shadow: 0 10px 24px var(--teal-glow);
+        }
+        @media (min-width: 821px) {
+            .steps-grid::before {
+                content: '';
+                position: absolute;
+                inset-block-start: 47px;
+                inset-inline: 14%;
+                height: 2px;
+                background: linear-gradient(90deg, transparent, rgba(0, 168, 152, .5), transparent);
+                z-index: 0;
+            }
+        }
+
+        /* Services: icon badge treatment */
+        .service-icon {
+            display: inline-grid;
+            place-items: center;
+            width: 62px;
+            height: 62px;
+            margin-bottom: 18px;
+            border-radius: 16px;
+            background: rgba(0, 168, 152, .12);
+            border: 1px solid var(--border-soft);
+            font-size: 1.9rem;
+        }
+
+        /* Social cards: subtle icon color shift on hover */
+        .social-card svg { transition: transform .2s ease; }
+        .social-card:hover svg { transform: scale(1.12); }
+
+        /* Download: drifting grid pattern */
+        .download-wrap::before { animation: grid-drift 22s linear infinite; }
+        @keyframes grid-drift { from { background-position: 0 0; } to { background-position: 40px 40px; } }
+
+        /* Footer redesign */
+        .site-footer-inner { width: min(1100px, calc(100% - 48px)); margin: 0 auto; display: grid; gap: 22px; text-align: start; }
+        .footer-top { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 26px; }
+        .footer-brand { display: grid; gap: 10px; max-width: 320px; }
+        .footer-tagline { margin: 0; color: var(--text-muted); font-size: .9rem; line-height: 1.7; }
+        .footer-links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+        .footer-links a { color: var(--text-muted); font-size: .92rem; font-weight: 600; transition: color .2s ease; }
+        .footer-links a:hover { color: var(--teal); }
+        .footer-social { display: flex; flex-wrap: wrap; gap: 10px; }
+        .footer-social a { display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid var(--border-med); border-radius: 12px; color: var(--text-main); transition: border-color .2s ease, color .2s ease, transform .2s ease; }
+        .footer-social a:hover { border-color: var(--teal); color: var(--teal); transform: translateY(-3px); }
+        .footer-social svg { width: 18px; height: 18px; }
+        .footer-divider { height: 1px; background: var(--border-soft); }
+        .footer-copyright { margin: 0; }
+        @media (max-width: 640px) {
+            .footer-top { flex-direction: column; gap: 20px; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 scroll-behavior: auto !important;
@@ -784,7 +905,7 @@
     <main>
         <section class="hero">
             <div class="hero-shell">
-                <div class="hero-copy fade-in">
+                <div class="hero-copy hero-stagger">
                     <div class="hero-logo {{ $cms->image('branding.logo_image') ? 'has-image' : '' }}" aria-hidden="true">
                         @if ($cms->image('branding.logo_image'))
                             <img src="{{ $cms->image('branding.logo_image') }}" alt="">
@@ -915,7 +1036,38 @@
 
     <div class="mobile-sticky-cta"><a href="#download">{!! $cms->pair('cta.download') !!}</a></div>
     <footer>
-        <p><span class="ar">© {{ now()->year }} <span class="teal">{{ $cms->text('branding.brand_name', 'ar') }}</span> — {{ $cms->text('footer.rights', 'ar') }}</span><span class="en-text">© {{ now()->year }} <span class="teal">{{ $cms->text('branding.brand_name', 'en') }}</span> — {{ $cms->text('footer.rights', 'en') }}</span></p>
+        <div class="site-footer-inner">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="{{ route('landing') }}" class="nav-logo" aria-label="{{ $cms->text('branding.brand_name', 'en') ?: 'Sirati' }}">
+                        <span class="logo-img {{ $cms->image('branding.logo_image') ? 'has-image' : '' }}" aria-hidden="true">
+                            @if ($cms->image('branding.logo_image'))
+                                <img src="{{ $cms->image('branding.logo_image') }}" alt="">
+                            @else
+                                {{ $cms->value('branding.logo_letter', 'س') }}
+                            @endif
+                        </span>
+                        {!! $cms->pair('branding.brand_name') !!}
+                    </a>
+                    <p class="footer-tagline">{!! $cms->pair('hero.tagline') !!}</p>
+                </div>
+                <nav class="footer-links" aria-label="Footer">
+                    <a href="#about">{!! $cms->pair('nav.about') !!}</a>
+                    <a href="#workflow">{!! $cms->pair('drawer.link_workflow') !!}</a>
+                    <a href="#services">{!! $cms->pair('nav.services') !!}</a>
+                    <a href="#social">{!! $cms->pair('nav.social') !!}</a>
+                    <a href="#download">{!! $cms->pair('nav.download') !!}</a>
+                </nav>
+                <div class="footer-social">
+                    <a href="{{ $cms->value('social.tiktok_url', '#') }}" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.91a8.16 8.16 0 004.77 1.52V7a4.85 4.85 0 01-1-.31z"/></svg></a>
+                    <a href="{{ $cms->value('social.instagram_url', '#') }}" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+                    <a href="{{ $cms->value('social.linkedin_url', '#') }}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+                    <a href="mailto:{{ $cms->value('social.email', 'hello@sirati.app') }}" aria-label="Email"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg></a>
+                </div>
+            </div>
+            <div class="footer-divider"></div>
+            <p class="footer-copyright"><span class="ar">© {{ now()->year }} <span class="teal">{{ $cms->text('branding.brand_name', 'ar') }}</span> — {{ $cms->text('footer.rights', 'ar') }}</span><span class="en-text">© {{ now()->year }} <span class="teal">{{ $cms->text('branding.brand_name', 'en') }}</span> — {{ $cms->text('footer.rights', 'en') }}</span></p>
+        </div>
     </footer>
 
     <script>
@@ -976,6 +1128,27 @@
         } else {
             document.querySelectorAll('.fade-in').forEach((element) => element.classList.add('visible'));
         }
+
+        (function initScrollSpy() {
+            const links = Array.from(document.querySelectorAll('.nav-links a[href^="#"]'));
+            if (!links.length || !('IntersectionObserver' in window)) return;
+
+            const map = new Map();
+            links.forEach((link) => {
+                const section = document.getElementById(link.getAttribute('href').slice(1));
+                if (section) map.set(section, link);
+            });
+
+            const spy = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    links.forEach((link) => link.classList.remove('active'));
+                    map.get(entry.target)?.classList.add('active');
+                });
+            }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+
+            map.forEach((_link, section) => spy.observe(section));
+        })();
 
         (function initDrawer() {
             const drawer = document.getElementById('siteDrawer');
