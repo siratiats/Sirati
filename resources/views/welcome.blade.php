@@ -107,6 +107,18 @@
         .nav-links a:hover,
         .nav-links a:focus { color: var(--teal); background: rgba(0, 168, 152, .09); outline: none; }
         .nav-right { gap: 10px; }
+        .nav-menu-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border: 1px solid var(--border-med);
+            border-radius: 12px;
+            background: rgba(0, 168, 152, .08);
+            color: var(--text-main);
+        }
+        .nav-menu-toggle svg { width: 20px; height: 20px; }
         .lang-toggle,
         .theme-toggle {
             display: inline-flex;
@@ -138,6 +150,94 @@
         body.light .theme-toggle .icon-sun { display: block; }
         body.light .theme-toggle .icon-moon { display: none; }
 
+        dialog.site-drawer {
+            position: fixed;
+            inset-block: 0;
+            inset-inline-end: 0;
+            inset-inline-start: auto;
+            width: min(360px, 88vw);
+            max-width: 100%;
+            height: 100%;
+            max-height: 100dvh;
+            margin: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+        dialog.site-drawer[open] { animation: drawer-in .25s ease; }
+        @keyframes drawer-in { from { opacity: 0; } to { opacity: 1; } }
+        dialog.site-drawer::backdrop {
+            background: rgba(5, 12, 20, .62);
+            backdrop-filter: blur(3px);
+        }
+        .drawer-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 26px;
+            height: 100%;
+            padding: 24px;
+            background: var(--bg-mid);
+            border-inline-start: 1px solid var(--border-med);
+            box-shadow: 0 0 60px rgba(0, 0, 0, .4);
+            overflow-y: auto;
+        }
+        .drawer-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .drawer-title {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+        .drawer-close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border-med);
+            border-radius: 12px;
+            background: rgba(0, 168, 152, .08);
+            color: var(--text-main);
+            font-size: 1.5rem;
+            line-height: 1;
+            transition: background .2s ease, color .2s ease;
+        }
+        .drawer-close:hover,
+        .drawer-close:focus { background: var(--teal); color: #fff; outline: none; }
+        .drawer-links { display: grid; gap: 8px; }
+        .drawer-links a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            border: 1px solid var(--border-soft);
+            border-radius: 14px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-weight: 700;
+            transition: transform .2s ease, border-color .2s ease, background .2s ease;
+        }
+        .drawer-links a:hover,
+        .drawer-links a:focus { border-color: var(--teal); background: rgba(0, 168, 152, .07); outline: none; }
+        .drawer-links a span:last-child {
+            color: var(--text-muted);
+            font-family: var(--font-en);
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .5px;
+        }
+        .drawer-actions { display: grid; gap: 12px; margin-top: auto; }
+        .drawer-actions .btn-store { justify-content: center; min-height: 54px; }
+
         .hero {
             position: relative;
             display: flex;
@@ -168,12 +268,20 @@
             background-size: 60px 60px;
             mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
         }
-        .hero-logo,
-        .hero-tagline,
-        .hero-headline,
-        .hero-sub,
-        .hero-cta,
+        .hero-shell,
         .scroll-hint { position: relative; z-index: 1; }
+        .hero-shell {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(300px, 440px);
+            align-items: center;
+            gap: clamp(32px, 7vw, 86px);
+            width: min(1120px, 100%);
+            margin: auto;
+        }
+        .hero-copy { max-width: 680px; text-align: start; }
+        .hero-proof { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 26px; }
+        .hero-proof span { display: inline-flex; align-items: center; min-height: 34px; padding: 6px 12px; border: 1px solid var(--border-med); border-radius: 999px; background: rgba(0, 168, 152, .08); color: var(--text-main); font-size: .82rem; font-weight: 700; }
+        .hero-copy .hero-cta { justify-content: flex-start; }
         .hero-logo {
             display: grid;
             width: 110px;
@@ -245,6 +353,47 @@
         .social-card svg { width: 24px; height: 24px; flex: 0 0 auto; }
         .store-kicker { display: block; font-size: .72rem; font-weight: 400; line-height: 1.15; opacity: .74; }
         .store-name { display: block; font-size: 1rem; line-height: 1.2; }
+        .hero-visual { position: relative; min-height: 560px; perspective: 1200px; }
+        .phone-preview { position: absolute; inset: 20px 34px auto auto; width: min(330px, 88vw); min-height: 520px; border: 1px solid rgba(255,255,255,.12); border-radius: 34px; background: linear-gradient(180deg, #102238, #07111f); box-shadow: 0 26px 70px rgba(0,0,0,.34); padding: 18px; transform: rotateY(-7deg) rotateX(3deg); animation: preview-float 6s ease-in-out infinite; }
+        .phone-screen { min-height: 484px; border-radius: 24px; background: var(--bg-card); padding: 18px; overflow: hidden; }
+        .preview-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; color: var(--text-muted); font-size: .78rem; font-weight: 700; }
+        .score-ring { display: grid; place-items: center; width: 132px; height: 132px; margin: 6px auto 20px; border-radius: 50%; background: conic-gradient(var(--teal) 0 84%, rgba(255,255,255,.1) 84%); color: #fff; font-size: 2rem; font-weight: 800; }
+        .score-ring span { display: grid; place-items: center; width: 104px; height: 104px; border-radius: 50%; background: var(--bg-card); }
+        .preview-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+        .preview-list li { display: flex; justify-content: space-between; gap: 12px; padding: 11px 12px; border: 1px solid var(--border-soft); border-radius: 14px; background: rgba(0, 168, 152, .07); color: var(--text-main); font-size: .86rem; font-weight: 700; }
+        .floating-card { position: absolute; left: 0; bottom: 54px; width: 210px; border: 1px solid var(--border-med); border-radius: 18px; background: var(--bg-card); padding: 16px; box-shadow: 0 18px 45px rgba(0,0,0,.24); }
+        .floating-card strong { display: block; margin-bottom: 8px; color: var(--text-main); }
+        .floating-card p { margin: 0; color: var(--text-muted); font-size: .86rem; line-height: 1.6; }
+        @keyframes preview-float { 0%, 100% { transform: rotateY(-7deg) rotateX(3deg) translateY(0); } 50% { transform: rotateY(-7deg) rotateX(3deg) translateY(-12px); } }
+        .button-primary { background: var(--teal); color: #fff; }
+        .button-outline { border: 1px solid var(--border-med); background: transparent; color: var(--text-main); }
+        .proof-band {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            width: min(1120px, calc(100% - 48px));
+            margin: -18px auto 0;
+            padding: 0 0 30px;
+        }
+        .proof-item {
+            display: grid;
+            gap: 6px;
+            min-height: 100%;
+            padding: 16px 18px;
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            background: var(--bg-card);
+        }
+        .proof-item strong {
+            color: var(--text-main);
+            font-size: .96rem;
+            font-weight: 800;
+        }
+        .proof-item span {
+            color: var(--text-muted);
+            font-size: .88rem;
+            line-height: 1.6;
+        }
         .scroll-hint {
             position: absolute;
             bottom: 34px;
@@ -346,6 +495,12 @@
         .service-title { margin: 0 0 12px; color: var(--text-main); font-size: 1.15rem; font-weight: 700; }
         .service-desc { margin: 0; color: var(--text-muted); font-size: .93rem; line-height: 1.75; }
 
+        .steps-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 42px; }
+        .step-card { border: 1px solid var(--border-soft); border-radius: 18px; background: var(--bg-card); padding: 24px; transition: transform .22s ease, border-color .22s ease; }
+        .step-card:hover { transform: translateY(-4px); border-color: var(--border-med); }
+        .step-number { display: grid; place-items: center; width: 38px; height: 38px; margin-bottom: 16px; border-radius: 999px; background: rgba(0,168,152,.13); color: var(--teal); font-weight: 800; }
+        .step-card h3 { margin: 0 0 10px; color: var(--text-main); font-size: 1.05rem; }
+        .step-card p { margin: 0; color: var(--text-muted); font-size: .93rem; line-height: 1.75; }
         .social-grid {
             display: flex;
             flex-wrap: wrap;
@@ -424,15 +579,31 @@
         body.en span.ar { display: none; }
         body.en span.en-text { display: inline; }
 
+        .mobile-sticky-cta { display: none; }
+        .mobile-sticky-cta a { display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; border-radius: 16px; background: var(--teal); color: #fff; font-weight: 800; box-shadow: 0 12px 34px rgba(0,0,0,.22); }
         @media (max-width: 820px) {
             .site-nav { padding: 14px 20px; }
             .nav-links { display: none; }
+            .nav-menu-toggle { display: inline-flex; }
             .hero { padding: 104px 20px 74px; }
+            .hero-shell { grid-template-columns: 1fr; gap: 34px; }
+            .hero-copy { text-align: center; margin: 0 auto; }
+            .hero-proof, .hero-cta { justify-content: center; }
+            .hero-visual { min-height: 500px; }
+            .phone-preview { position: relative; inset: auto; margin: 0 auto; transform: none; }
+            .floating-card { left: 50%; bottom: 0; transform: translateX(-50%); }
+            .steps-grid { grid-template-columns: 1fr; }
             .section,
             .social-wrap,
             .services-inner { width: min(100% - 40px, 1100px); padding-top: 72px; padding-bottom: 72px; }
         }
         @media (max-width: 640px) {
+            body { padding-bottom: 84px; }
+            .mobile-sticky-cta { position: fixed; inset: auto 16px 16px; z-index: 120; display: block; }
+            .hero-visual { min-height: 470px; }
+            .phone-preview { width: min(310px, 100%); min-height: 490px; }
+            .phone-screen { min-height: 454px; }
+            .floating-card { width: min(210px, 82vw); }
             .nav-logo span { font-size: 1.05rem; }
             .logo-img { width: 38px; height: 38px; }
             .lang-toggle { min-width: 58px; padding-inline: 12px; }
@@ -474,39 +645,67 @@
                 <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
             </button>
             <button class="lang-toggle" type="button" onclick="toggleLang()" id="langBtn">EN</button>
+            <button class="nav-menu-toggle" type="button" id="menuBtn" aria-label="Open menu" aria-controls="siteDrawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
         </div>
     </nav>
 
+    <dialog class="site-drawer" id="siteDrawer" aria-label="Site navigation">
+        <div class="drawer-shell">
+            <div class="drawer-header">
+                <div>
+                    <p class="drawer-title"><span class="ar">القائمة</span><span class="en-text">Menu</span></p>
+                    <p class="section-body" style="margin: 4px 0 0; font-size: .9rem;"><span class="ar">تنقّل بين أقسام المنصة الرئيسية.</span><span class="en-text">Move between the main parts of the platform.</span></p>
+                </div>
+                <button type="button" class="drawer-close" aria-label="Close menu">&times;</button>
+            </div>
+            <div class="drawer-links">
+                <a href="#about"><span class="ar">من نحن</span><span class="en-text">About</span><span>Section</span></a>
+                <a href="#workflow"><span class="ar">كيف يعمل</span><span class="en-text">How it works</span><span>Section</span></a>
+                <a href="#services"><span class="ar">خدماتنا</span><span class="en-text">Services</span><span>Section</span></a>
+                <a href="#social"><span class="ar">تابعنا</span><span class="en-text">Follow</span><span>Section</span></a>
+                <a href="#download"><span class="ar">ابدأ الآن</span><span class="en-text">Start now</span><span>Section</span></a>
+            </div>
+            <div class="drawer-actions">
+                <a href="{{ route('analyses.create') }}" class="btn-store button-primary"><span><span class="store-name">Start CV analysis</span></span></a>
+                <a href="{{ route('generated-cvs.create') }}" class="btn-store button-outline"><span><span class="store-name">Create CV</span></span></a>
+            </div>
+        </div>
+    </dialog>
+
     <main>
         <section class="hero">
-            <div class="hero-logo" aria-hidden="true">س</div>
-            <p class="hero-tagline">
-                <span class="ar">منصة المسار المهني</span>
-                <span class="en-text">Career Development Platform</span>
-            </p>
-            <h1 class="hero-headline">
-                <span class="ar">عندما تسعى لتطوير مسارك المهني،<br>لابد أن تمر على <span class="accent">محطتنا.</span></span>
-                <span class="en-text">When you seek to develop your career,<br>you must pass through <span class="accent">our station.</span></span>
-            </h1>
-            <p class="hero-sub">
-                <span class="ar">سيرتي، منصتك المتكاملة لبناء سيرتك الذاتية، وتحليلها، واستكشاف فرص العمل في السوق الخليجي.</span>
-                <span class="en-text">Sirati, your all-in-one platform for building your CV, analyzing it, and discovering job opportunities across the Gulf market.</span>
-            </p>
-            <div class="hero-cta">
-                <a href="#download" class="btn-store" aria-label="Download on the App Store">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-                    <span><span class="store-kicker">Download on the</span><span class="store-name">App Store</span></span>
-                </a>
-                <a href="#download" class="btn-store android" aria-label="Get it on Google Play">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg>
-                    <span><span class="store-kicker">Get it on</span><span class="store-name">Google Play</span></span>
-                </a>
+            <div class="hero-shell">
+                <div class="hero-copy fade-in">
+                    <div class="hero-logo" aria-hidden="true">&#1587;</div>
+                    <p class="hero-tagline"><span class="ar">&#1605;&#1606;&#1589;&#1577; &#1575;&#1604;&#1605;&#1587;&#1575;&#1585; &#1575;&#1604;&#1605;&#1607;&#1606;&#1610;</span><span class="en-text">Career Development Platform</span></p>
+                    <h1 class="hero-headline"><span class="ar">&#1581;&#1604;&#1604; &#1587;&#1610;&#1585;&#1578;&#1603; &#1608;&#1575;&#1576;&#1606; &#1606;&#1587;&#1582;&#1577; &#1571;&#1602;&#1608;&#1609;.</span><span class="en-text">Analyze your CV and build a stronger version.</span></h1>
+                    <p class="hero-sub"><span class="ar">&#1571;&#1583;&#1608;&#1575;&#1578; &#1593;&#1605;&#1604;&#1610;&#1577; &#1604;&#1578;&#1581;&#1587;&#1610;&#1606; &#1575;&#1604;&#1587;&#1610;&#1585;&#1577; &#1608;&#1575;&#1604;&#1578;&#1580;&#1607;&#1610;&#1586; &#1604;&#1604;&#1578;&#1602;&#1583;&#1610;&#1605;.</span><span class="en-text">Practical tools for CV analysis, improvement, and job applications.</span></p>
+                    <div class="hero-proof"><span>ATS-ready</span><span>Arabic first</span><span>Saudi and Gulf jobs</span></div>
+                    <div class="hero-cta">
+                        <a href="{{ route('analyses.create') }}" class="btn-store button-primary"><span><span class="store-name">Start CV analysis</span></span></a>
+                        <a href="{{ route('generated-cvs.create') }}" class="btn-store button-outline"><span><span class="store-name">Create CV</span></span></a>
+                    </div>
+                </div>
+                <div class="hero-visual fade-in" aria-hidden="true">
+                    <div class="phone-preview"><div class="phone-screen">
+                        <div class="preview-top"><span>Sirati ATS</span><strong>CV Score</strong></div>
+                        <div class="score-ring"><span>84%</span></div>
+                        <ul class="preview-list">
+                            <li><span>Keywords</span><strong>Good</strong></li>
+                            <li><span>Experience</span><strong>Improve</strong></li>
+                            <li><span>ATS format</span><strong>Ready</strong></li>
+                        </ul>
+                    </div></div>
+                    <div class="floating-card"><strong>Smart template</strong><p>Clean layout ready for recruiters and screening systems.</p></div>
+                </div>
             </div>
-            <a class="scroll-hint" href="#about">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5"/></svg>
-                <span class="ar">اكتشف أكثر</span>
-                <span class="en-text">Discover more</span>
-            </a>
+            <a class="scroll-hint" href="#about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5"/></svg><span class="ar">&#1575;&#1603;&#1578;&#1588;&#1601; &#1571;&#1603;&#1579;&#1585;</span><span class="en-text">Discover more</span></a>
+        </section>
+
+        <section class="proof-band" aria-label="Platform highlights">
+            <div class="proof-item fade-in"><strong>Clear analysis</strong><span>See what is blocking the CV quickly.</span></div>
+            <div class="proof-item fade-in"><strong>Practical edits</strong><span>Turn feedback into better wording.</span></div>
+            <div class="proof-item fade-in"><strong>Ready to apply</strong><span>Move from analysis to a stronger CV.</span></div>
         </section>
 
         <section id="about">
@@ -524,6 +723,19 @@
             </div>
         </section>
 
+        <section class="section" id="workflow">
+            <div class="fade-in">
+                <span class="section-label"><span class="ar">&#1603;&#1610;&#1601; &#1610;&#1593;&#1605;&#1604;</span><span class="en-text">How it works</span></span>
+                <div class="divider"></div>
+                <h2 class="section-title">Three steps to a better CV</h2>
+                <p class="section-body">Upload your CV, review clear recommendations, then generate a stronger version.</p>
+            </div>
+            <div class="steps-grid">
+                <article class="step-card fade-in"><span class="step-number">1</span><h3>Analyze</h3><p>Find ATS issues, missing keywords, and weak sections.</p></article>
+                <article class="step-card fade-in"><span class="step-number">2</span><h3>Improve</h3><p>Turn recommendations into stronger, recruiter-ready wording.</p></article>
+                <article class="step-card fade-in"><span class="step-number">3</span><h3>Apply</h3><p>Use a clean generated CV and move faster on applications.</p></article>
+            </div>
+        </section>
         <section class="services-wrap" id="services">
             <div class="services-inner">
                 <div class="fade-in">
@@ -567,9 +779,9 @@
                 <p class="section-body"><span class="ar">تابع سيرتي وابق على اطلاع بأحدث فرص العمل والنصائح المهنية والمحتوى التعليمي.</span><span class="en-text">Follow Sirati and stay up to date with the latest job opportunities, career tips, and educational content.</span></p>
             </div>
             <div class="social-grid fade-in">
-                <a href="#" class="social-card" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.91a8.16 8.16 0 004.77 1.52V7a4.85 4.85 0 01-1-.31z"/></svg>TikTok</a>
-                <a href="#" class="social-card" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>Instagram</a>
-                <a href="#" class="social-card" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LinkedIn</a>
+                <a href="https://www.tiktok.com/@sirati" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.91a8.16 8.16 0 004.77 1.52V7a4.85 4.85 0 01-1-.31z"/></svg>TikTok</a>
+                <a href="https://www.instagram.com/sirati" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>Instagram</a>
+                <a href="https://www.linkedin.com/company/sirati" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LinkedIn</a>
                 <a href="mailto:hello@sirati.app" class="social-card"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg><span class="ar">تواصل معنا عبر الإيميل</span><span class="en-text">Contact us via Email</span></a>
             </div>
         </section>
@@ -579,13 +791,14 @@
                 <h2><span class="ar">حمّل التطبيق الآن</span><span class="en-text">Download the App Now</span></h2>
                 <p><span class="ar">جميع الخدمات متاحة داخل التطبيق. ابدأ مسيرتك المهنية الصحيحة اليوم.</span><span class="en-text">All services are available inside the app. Start your professional journey the right way, today.</span></p>
                 <div class="download-btns">
-                    <a href="#download" class="btn-dl ios"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg><span><span class="store-kicker">Download on the</span><span class="store-name">App Store</span></span></a>
-                    <a href="#download" class="btn-dl android"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg><span><span class="store-kicker">Get it on</span><span class="store-name">Google Play</span></span></a>
+                    <a href="{{ route('analyses.create') }}" class="btn-dl ios"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.84 4.36c0 1.13-.44 2.22-1.22 3.02-.8.83-1.87 1.28-2.98 1.23-.06-1.05.41-2.14 1.2-2.94.76-.78 1.96-1.36 3-1.31zM19.5 17.58c-.62 1.43-.92 2.06-1.72 3.3-1.13 1.73-2.73 3.89-4.73 3.91-1.78.02-2.24-1.17-4.66-1.15-2.42.01-2.93 1.17-4.71 1.15-2-.02-3.53-2-4.66-3.74C.74 18.52.03 15.57.86 12.82c.76-2.51 2.68-4.12 4.49-4.16 1.64-.03 3.19 1.15 4.2 1.15 1 0 2.86-1.43 4.84-1.22.83.03 3.15.33 4.72 2.63-1.24.77-2.03 2.09-2.03 3.56 0 1.8 1.08 3.39 2.42 4.2z"/></svg><span><span class="store-kicker">Start with</span><span class="store-name">CV analysis</span></span></a>
+                    <a href="{{ route('generated-cvs.create') }}" class="btn-dl android"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg><span><span class="store-kicker">Then create</span><span class="store-name">a new CV</span></span></a>
                 </div>
             </div>
         </section>
     </main>
 
+    <div class="mobile-sticky-cta"><a href="{{ route('analyses.create') }}">Start CV analysis</a></div>
     <footer>
         <p><span class="ar">© {{ now()->year }} <span class="teal">سيرتي</span> — جميع الحقوق محفوظة.</span><span class="en-text">© {{ now()->year }} <span class="teal">Sirati</span> — All rights reserved. Our services are available inside the app only.</span></p>
     </footer>
@@ -631,6 +844,45 @@
         } else {
             document.querySelectorAll('.fade-in').forEach((element) => element.classList.add('visible'));
         }
+
+        (function initDrawer() {
+            const drawer = document.getElementById('siteDrawer');
+            const menuBtn = document.getElementById('menuBtn');
+            if (!drawer || !menuBtn) return;
+            const closeBtn = drawer.querySelector('.drawer-close');
+
+            function openDrawer() {
+                if (typeof drawer.showModal === 'function') {
+                    if (!drawer.open) drawer.showModal();
+                } else {
+                    drawer.setAttribute('open', '');
+                }
+                menuBtn.setAttribute('aria-expanded', 'true');
+            }
+
+            function closeDrawer() {
+                if (typeof drawer.close === 'function' && drawer.open) {
+                    drawer.close();
+                } else {
+                    drawer.removeAttribute('open');
+                }
+                menuBtn.setAttribute('aria-expanded', 'false');
+            }
+
+            menuBtn.addEventListener('click', openDrawer);
+            if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+
+            // Close when the backdrop (outside the shell) is clicked.
+            drawer.addEventListener('click', (event) => {
+                if (event.target === drawer) closeDrawer();
+            });
+
+            // Close after tapping any link inside the drawer.
+            drawer.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeDrawer));
+
+            // Keep aria-expanded correct when closed via Esc or dialog.close().
+            drawer.addEventListener('close', () => menuBtn.setAttribute('aria-expanded', 'false'));
+        })();
     </script>
 </body>
 </html>

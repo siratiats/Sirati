@@ -7,19 +7,22 @@
 @section('admin_description', 'Manage the trusted template records that mobile users can choose when exporting a generated CV.')
 
 @section('admin_actions')
+    <button class="button" type="button" onclick="document.getElementById('cv-template-create-dialog').showModal()">Create template</button>
     <a class="button button-secondary" href="{{ route('admin.index') }}">Back to overview</a>
 @endsection
 
 @section('admin_content')
-    <section class="card">
+    <dialog class="admin-drawer" id="cv-template-create-dialog">
+        <div class="drawer-body">
         <div class="admin-section-header">
             <div>
                 <h2>Create template</h2>
                 <p class="muted">The Blade renderers are trusted server templates. This page controls metadata, preview image, language support, and availability.</p>
             </div>
+            <button class="drawer-close" type="button" onclick="document.getElementById('cv-template-create-dialog').close()">Close</button>
         </div>
 
-        <form method="POST" action="{{ route('admin.cv-templates.store') }}" enctype="multipart/form-data" style="margin-top: 16px;">
+        <form method="POST" action="{{ route('admin.cv-templates.store') }}" enctype="multipart/form-data" data-ajax-form data-ajax-target="#cv-template-tbody" data-ajax-dialog-target="#cv-template-dialogs" data-ajax-empty-target="#cv-template-empty" data-ajax-prepend="true" style="margin-top: 16px;">
             @csrf
             <div class="grid grid-3">
                 <label>Arabic name<input name="name_ar" required placeholder="Classic"></label>
@@ -58,7 +61,8 @@
             </div>
             <button class="button" type="submit">Save template</button>
         </form>
-    </section>
+        </div>
+    </dialog>
 
     <section class="card">
         <div class="admin-section-header">
@@ -68,11 +72,20 @@
             </div>
         </div>
 
+        <form method="GET" action="{{ route('admin.cv-templates.index') }}" class="filter-panel">
+            <div class="filter-row">
+                <label>Search<input name="template_q" value="{{ $cvTemplateFilters['template_q'] ?? '' }}" placeholder="Name, slug, or renderer"></label>
+                <label>Status<select name="template_status"><option value="">All statuses</option><option value="active" @selected(($cvTemplateFilters['template_status'] ?? '') === 'active')>Active</option><option value="inactive" @selected(($cvTemplateFilters['template_status'] ?? '') === 'inactive')>Inactive</option><option value="default" @selected(($cvTemplateFilters['template_status'] ?? '') === 'default')>Default</option></select></label>
+                <label>Direction<select name="template_direction"><option value="">All directions</option><option value="rtl" @selected(($cvTemplateFilters['template_direction'] ?? '') === 'rtl')>RTL</option><option value="ltr" @selected(($cvTemplateFilters['template_direction'] ?? '') === 'ltr')>LTR</option><option value="both" @selected(($cvTemplateFilters['template_direction'] ?? '') === 'both')>RTL + LTR</option></select></label>
+                <label>Renderer<select name="template_renderer"><option value="">All renderers</option>@foreach ($cvTemplateRenderers as $renderer)<option value="{{ $renderer }}" @selected(($cvTemplateFilters['template_renderer'] ?? '') === $renderer)>{{ $renderer }}</option>@endforeach</select></label>
+            </div>
+            <div class="filter-actions"><button class="button" type="submit">Apply filters</button><a class="button button-secondary" href="{{ route('admin.cv-templates.index') }}">Clear</a></div>
+        </form>
         @if ($cvTemplates->count() > 0)
             <div class="table-wrap">
                 <table>
                     <thead><tr><th>Preview</th><th>Template</th><th>Slug</th><th>Status</th><th>Languages</th><th>Actions</th></tr></thead>
-                    <tbody>
+                    <tbody id="cv-template-tbody">
                         @foreach ($cvTemplates as $template)
                             <tr>
                                 <td>
@@ -112,6 +125,7 @@
                     </tbody>
                 </table>
             </div>
+            <div id="cv-template-dialogs">
             @foreach ($cvTemplates as $template)
                 <dialog class="admin-drawer" id="cv-template-edit-{{ $template->id }}">
                     <div class="drawer-body">
@@ -167,12 +181,14 @@
                     </div>
                 </dialog>
             @endforeach
+            </div>
             <div class="pagination-wrap">{{ $cvTemplates->links() }}</div>
         @else
-            <div class="empty-state">
+            <div class="empty-state" id="cv-template-empty">
                 <div class="empty-state-icon">+</div>
                 <h3>No CV templates yet</h3>
                 <p class="muted">Add the first template so users can choose a CV design when exporting.</p>
+                <button class="button" type="button" onclick="document.getElementById('cv-template-create-dialog').showModal()">Create template</button>
             </div>
         @endif
     </section>

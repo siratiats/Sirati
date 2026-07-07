@@ -22,7 +22,9 @@
     @endphp
 
     <div class="admin-shell">
-        <aside class="admin-sidebar" aria-label="Admin navigation">
+        <div class="admin-mobile-bar"><a class="admin-sidebar-brand" href="{{ route('admin.index') }}"><span class="mark">S</span><span><strong>Sirati Admin</strong><span>Application management</span></span></a><button class="button button-secondary" type="button" data-admin-menu-toggle aria-controls="admin-sidebar" aria-expanded="false">Menu</button></div>
+        <button class="admin-sidebar-backdrop" type="button" data-admin-menu-close aria-label="Close admin navigation"></button>
+        <aside class="admin-sidebar" id="admin-sidebar" aria-label="Admin navigation">
             <a class="admin-sidebar-brand" href="{{ route('admin.index') }}">
                 <span class="mark">S</span>
                 <span>

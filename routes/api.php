@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CvAnalysisController;
+use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\GeneratedCvController;
 use App\Http\Controllers\MobileAuthController;
 use App\Http\Controllers\MobileContentController;
@@ -22,6 +23,8 @@ Route::get('/generated-cvs/{generatedCv}/pdf', [GeneratedCvController::class, 'd
 Route::middleware('auth:sanctum')->group(function () {
 	Route::get('/auth/me', [MobileAuthController::class, 'me']);
 	Route::post('/auth/logout', [MobileAuthController::class, 'logout']);
+	Route::post('/fcm-tokens', [FcmTokenController::class, 'store']);
+	Route::delete('/fcm-tokens', [FcmTokenController::class, 'destroy']);
 
 	Route::get('/mobile/dashboard', [MobileContentController::class, 'dashboard']);
 	Route::get('/mobile/my-cvs', [MobileContentController::class, 'myCvs']);
