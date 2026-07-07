@@ -8,8 +8,10 @@ use App\Models\EducationContent;
 use App\Models\GeneratedCv;
 use App\Models\JobNews;
 use App\Models\LandingLead;
+use App\Models\SiteSetting;
 use App\Services\JobsGoogleSheetSyncService;
 use App\Services\JobsImportService;
+use App\Support\SiteContent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -85,6 +87,84 @@ class AdminController extends Controller
         return view('admin.leads', [
             'leads' => LandingLead::latest()->paginate(20, ['*'], 'leads_page')->withQueryString(),
         ]);
+    }
+
+    public function landingContent(Request $request)
+    {
+        $this->authorizeAdmin($request);
+
+        return view('admin.landing', [
+            'settingGroups' => SiteSetting::query()
+                ->orderBy('sort_order')
+                ->get()
+                ->groupBy('group'),
+        ]);
+    }
+
+    public function updateLandingContent(Request $request, SiteContent $siteContent)
+    {
+        $this->authorizeAdmin($request);
+
+        $settings = SiteSetting::query()->get()->keyBy('id');
+
+        $validated = $request->validate([
+            'settings' => ['array'],
+            'settings.*.value_ar' => ['nullable', 'string', 'max:4000'],
+            'settings.*.value_en' => ['nullable', 'string', 'max:4000'],
+            'settings.*.value' => ['nullable', 'string', 'max:2000'],
+            'logos' => ['array'],
+            'logos.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:2048'],
+            'clear_logos' => ['array'],
+        ]);
+
+        DB::transaction(function () use ($request, $settings, $validated): void {
+            foreach ($validated['settings'] ?? [] as $id => $input) {
+                $setting = $settings->get((int) $id);
+                if (! $setting) {
+                    continue;
+                }
+
+                if ($setting->type === 'image') {
+                    continue; // images handled below
+                }
+
+                if (in_array($setting->type, ['text', 'textarea'], true)) {
+                    $setting->value_ar = $input['value_ar'] ?? null;
+                    $setting->value_en = $input['value_en'] ?? null;
+                } else { // plain, url
+                    $setting->value = $input['value'] ?? null;
+                }
+
+                $setting->save();
+            }
+
+            // Image (logo) uploads and clears, keyed by setting id.
+            foreach ($settings->where('type', 'image') as $setting) {
+                $clear = (array) $request->input('clear_logos', []);
+
+                if (isset($clear[$setting->id])) {
+                    if ($setting->value) {
+                        Storage::disk('public')->delete($setting->value);
+                    }
+                    $setting->value = null;
+                    $setting->save();
+                    continue;
+                }
+
+                if ($request->hasFile("logos.{$setting->id}")) {
+                    if ($setting->value) {
+                        Storage::disk('public')->delete($setting->value);
+                    }
+                    $setting->value = $request->file("logos.{$setting->id}")
+                        ->store('branding', 'public');
+                    $setting->save();
+                }
+            }
+        });
+
+        $siteContent->flush();
+
+        return redirect()->route('admin.landing.index')->with('status', 'Landing content updated.');
     }
 
     public function analyses(Request $request)

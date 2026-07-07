@@ -37,6 +37,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/templates', [AdminController::class, 'cvTemplates'])->name('admin.cv-templates.index');
     Route::get('/admin/education', [AdminController::class, 'education'])->name('admin.education.index');
     Route::get('/admin/jobs', [AdminController::class, 'jobs'])->name('admin.jobs.index');
+    Route::get('/admin/landing', [AdminController::class, 'landingContent'])->name('admin.landing.index');
+    Route::post('/admin/landing', [AdminController::class, 'updateLandingContent'])->name('admin.landing.update');
     Route::get('/admin/leads', [AdminController::class, 'leads'])->name('admin.leads.index');
     Route::get('/admin/analyses', [AdminController::class, 'analyses'])->name('admin.analyses.index');
     Route::get('/admin/generated-cvs', [AdminController::class, 'generatedCvs'])->name('admin.generated-cvs.index');

@@ -15,6 +15,7 @@
             ['key' => 'templates', 'route' => 'admin.cv-templates.index', 'label' => 'CV Templates', 'hint' => 'Designs'],
             ['key' => 'education', 'route' => 'admin.education.index', 'label' => 'Education', 'hint' => 'Content'],
             ['key' => 'jobs', 'route' => 'admin.jobs.index', 'label' => 'Jobs', 'hint' => 'Import & manage'],
+            ['key' => 'landing', 'route' => 'admin.landing.index', 'label' => 'Landing Content', 'hint' => 'Labels & logo'],
             ['key' => 'leads', 'route' => 'admin.leads.index', 'label' => 'Leads', 'hint' => 'Landing'],
             ['key' => 'analyses', 'route' => 'admin.analyses.index', 'label' => 'CV Analyses', 'hint' => 'Scores'],
             ['key' => 'generated-cvs', 'route' => 'admin.generated-cvs.index', 'label' => 'Generated CVs', 'hint' => 'Exports'],
