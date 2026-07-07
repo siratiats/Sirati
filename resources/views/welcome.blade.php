@@ -18,6 +18,15 @@
             $cms->value('social.instagram_url'),
             $cms->value('social.linkedin_url'),
         ]));
+        $jsonLd = json_encode(array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => $brandName,
+            'url' => url('/'),
+            'description' => $metaDesc,
+            'logo' => $ogImage,
+            'sameAs' => $socialLinks ?: null,
+        ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     @endphp
 
     <link rel="canonical" href="{{ url('/') }}">
@@ -41,15 +50,7 @@
     @endif
 
     <script type="application/ld+json">
-        @json([
-            '@context' => 'https://schema.org',
-            '@type' => 'Organization',
-            'name' => $brandName,
-            'url' => url('/'),
-            'description' => $metaDesc,
-            'logo' => $ogImage ?: null,
-            'sameAs' => $socialLinks,
-        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+        {!! $jsonLd !!}
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
