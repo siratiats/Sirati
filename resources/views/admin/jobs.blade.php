@@ -7,6 +7,7 @@
 @section('admin_description', 'Add jobs manually, upload Excel files, sync Google Sheets, and manage what appears in the Flutter jobs tab.')
 
 @section('admin_actions')
+    <button class="button" type="button" onclick="document.getElementById('job-create-dialog').showModal()">Add job</button>
     <a class="button button-secondary" href="{{ route('admin.job-news.template') }}">Download template</a>
 @endsection
 
@@ -29,36 +30,34 @@
         $jobFilterUrl = fn (array $overrides = []) => route('admin.jobs.index', array_filter(array_merge($jobFilters, $overrides), fn ($value) => filled($value)));
     @endphp
 
-    <section class="card">
-        <h2>Add job</h2>
-        <p class="muted">Create a single job listing that appears in the mobile app when it is published and within its validity window.</p>
-
-        <form method="POST" action="{{ route('admin.job-news.store') }}" style="margin-top: 16px;">
-            @csrf
-            <div class="grid grid-3">
-                <label>Language
-                    <select name="language" required>
-                        <option value="ar">Arabic</option>
-                        <option value="en">English</option>
-                    </select>
-                </label>
-                <label>Company<input name="company" placeholder="Company name"></label>
-                <label>Location<input name="location" placeholder="Riyadh or Remote"></label>
-                <label>Published at<input name="published_at" type="datetime-local"></label>
-                <label>Valid from<input name="valid_from" type="date"></label>
-                <label>Valid until<input name="valid_until" type="date"></label>
-                <label>Sort order<input name="sort_order" type="number" value="0" min="0"></label>
-                <label>Source URL<input name="url" type="url" placeholder="https://..."></label>
-                <label>Apply URL<input name="apply_url" type="url" placeholder="https://..."></label>
+    <dialog class="admin-drawer" id="job-create-dialog">
+        <div class="drawer-body">
+            <div class="drawer-header">
+                <div><h3>Add job</h3><p class="muted">Create a single job listing that appears in the mobile app when it is published and within its validity window.</p></div>
+                <button class="drawer-close" type="button" onclick="document.getElementById('job-create-dialog').close()">Close</button>
             </div>
-            <label>Title<input name="title" required></label>
-            <label>Description<textarea name="body" required placeholder="Write the job description, requirements, and application details."></textarea></label>
-            <label style="display: flex; gap: 8px; align-items: center;"><input type="checkbox" name="is_published" value="1" checked style="width: auto;"> Published in app</label>
-            <button class="button" type="submit">Save job</button>
-        </form>
-    </section>
+            <form method="POST" action="{{ route('admin.job-news.store') }}" data-ajax-form data-ajax-target="#job-news-tbody" data-ajax-dialog-target="#job-dialogs" data-ajax-empty-target="#job-news-empty" data-ajax-prepend="true">
+                @csrf
+                <div class="grid grid-3">
+                    <label>Language<select name="language" required><option value="ar">Arabic</option><option value="en">English</option></select></label>
+                    <label>Company<input name="company" placeholder="Company name"></label>
+                    <label>Location<input name="location" placeholder="Riyadh or Remote"></label>
+                    <label>Published at<input name="published_at" type="datetime-local"></label>
+                    <label>Valid from<input name="valid_from" type="date"></label>
+                    <label>Valid until<input name="valid_until" type="date"></label>
+                    <label>Sort order<input name="sort_order" type="number" value="0" min="0"></label>
+                    <label>Source URL<input name="url" type="url" placeholder="https://..."></label>
+                    <label>Apply URL<input name="apply_url" type="url" placeholder="https://..."></label>
+                </div>
+                <label>Title<input name="title" required></label>
+                <label>Description<textarea name="body" required placeholder="Write the job description, requirements, and application details."></textarea></label>
+                <label style="display: flex; gap: 8px; align-items: center;"><input type="checkbox" name="is_published" value="1" checked style="width: auto;"> Published in app</label>
+                <div class="filter-actions"><button class="button" type="submit" data-loading-button><span data-loading-label>Save job</span></button><button class="button button-secondary" type="button" onclick="document.getElementById('job-create-dialog').close()">Cancel</button></div>
+            </form>
+        </div>
+    </dialog>
 
-    <section class="card">
+    <section class="card" id="import-jobs">
         <div class="admin-section-header">
             <div>
                 <h2>Import jobs</h2>
@@ -83,7 +82,7 @@
                 </p>
                 @if ($jobsSheetLastSync)
                     <p>
-                        Last sync: {{ \Illuminate\Support\Carbon::parse($jobsSheetLastSync['synced_at'])->diffForHumans() }} ·
+                        Last sync: {{ \Illuminate\Support\Carbon::parse($jobsSheetLastSync['synced_at'])->diffForHumans() }} Â·
                         {{ $jobsSheetLastSync['created'] }} created, {{ $jobsSheetLastSync['updated'] }} updated, {{ $jobsSheetLastSync['skipped'] }} skipped
                     </p>
                     <p class="muted">{{ $jobsSheetLastSync['errors'] }} import warnings were reported during the last sync.</p>
@@ -184,7 +183,7 @@
             <div class="table-wrap">
                 <table>
                     <thead><tr><th></th><th>Language</th><th>Title</th><th>Company</th><th>Location</th><th>Validity</th><th>Source</th><th>Published</th><th>Actions</th></tr></thead>
-                    <tbody>
+                    <tbody id="job-news-tbody">
                         @foreach ($jobNewsItems as $item)
                             @php
                                 $today = today();
@@ -232,6 +231,7 @@
                 </table>
             </div>
 
+            <div id="job-dialogs">
             @foreach ($jobNewsItems as $item)
                 <dialog class="admin-drawer" id="job-edit-{{ $item->id }}">
                     <div class="drawer-body">
@@ -240,7 +240,7 @@
                                 <h3>Edit job</h3>
                                 <p class="muted">{{ $item->title }}</p>
                             </div>
-                            <button class="drawer-close" type="button" onclick="document.getElementById('job-edit-{{ $item->id }}').close()">×</button>
+                            <button class="drawer-close" type="button" onclick="document.getElementById('job-edit-{{ $item->id }}').close()">Ã—</button>
                         </div>
                         <form method="POST" action="{{ route('admin.job-news.update', $item) }}">
                             @csrf
@@ -280,15 +280,17 @@
                     </div>
                 </dialog>
             @endforeach
+            </div>
 
             <div class="pagination-wrap">{{ $jobNewsItems->links() }}</div>
         @else
-            <div class="empty-state">
+            <div class="empty-state" id="job-news-empty">
                 <div class="empty-state-icon">+</div>
                 <h3>No matching jobs</h3>
-                <p class="muted">Change the filters or import a new jobs file.</p>
-                <a class="button" href="{{ route('admin.jobs.index') }}">Reset filters</a>
+                <p class="muted">Create a job, import a jobs file, or clear filters to widen the results.</p>
+                <div class="filter-actions" style="justify-content:center;"><button class="button" type="button" onclick="document.getElementById('job-create-dialog').showModal()">Add job</button><a class="button button-secondary" href="#import-jobs">Import jobs</a><a class="button button-secondary" href="{{ route('admin.jobs.index') }}">Reset filters</a></div>
             </div>
         @endif
     </section>
 @endsection
+

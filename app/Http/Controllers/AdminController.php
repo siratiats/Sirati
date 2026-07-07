@@ -27,6 +27,7 @@ class AdminController extends Controller
 
         return view('admin.index', [
             'stats' => $this->dashboardStats(),
+            'recentActivity' => $this->dashboardRecentActivity(),
             'jobNewsSummary' => $this->jobNewsSummary(),
             'jobsSheetLastSync' => Cache::get('jobs_sheet_last_sync'),
         ]);
@@ -37,11 +38,12 @@ class AdminController extends Controller
         $this->authorizeAdmin($request);
 
         return view('admin.cv-templates', [
-            'cvTemplates' => CvTemplate::query()
+            'cvTemplates' => $this->cvTemplateAdminQuery($request)
                 ->ordered()
                 ->paginate(12, ['*'], 'templates_page')
                 ->withQueryString(),
             'cvTemplateRenderers' => array_keys(config('cv_templates.renderers', [])),
+            'cvTemplateFilters' => $request->only(['template_q', 'template_status', 'template_direction', 'template_renderer']),
         ]);
     }
 
@@ -50,12 +52,13 @@ class AdminController extends Controller
         $this->authorizeAdmin($request);
 
         return view('admin.education', [
-            'educationContents' => EducationContent::query()
+            'educationContents' => $this->educationAdminQuery($request)
                 ->orderBy('language')
                 ->orderBy('sort_order')
                 ->latest()
                 ->paginate(25, ['*'], 'education_page')
                 ->withQueryString(),
+            'educationFilters' => $request->only(['education_q', 'education_language', 'education_type', 'education_published', 'education_featured']),
         ]);
     }
 
@@ -113,6 +116,38 @@ class AdminController extends Controller
         ];
     }
 
+
+    private function dashboardRecentActivity(): array
+    {
+        return [
+            'jobs' => JobNews::query()->latest()->limit(5)->get(),
+            'education' => EducationContent::query()->latest()->limit(5)->get(),
+            'templates' => CvTemplate::query()->latest()->limit(5)->get(),
+            'analyses' => CvAnalysis::query()->latest()->limit(5)->get(),
+            'generated_cvs' => GeneratedCv::query()->latest()->limit(5)->get(),
+        ];
+    }
+
+    private function cvTemplateAdminQuery(Request $request)
+    {
+        return CvTemplate::query()
+            ->when($request->filled('template_q'), fn ($query) => $query->where('name_en', 'like', '%'.$request->input('template_q').'%')->orWhere('name_ar', 'like', '%'.$request->input('template_q').'%')->orWhere('slug', 'like', '%'.$request->input('template_q').'%'))
+            ->when($request->input('template_status') === 'active', fn ($query) => $query->where('is_active', true))
+            ->when($request->input('template_status') === 'inactive', fn ($query) => $query->where('is_active', false))
+            ->when($request->input('template_status') === 'default', fn ($query) => $query->where('is_default', true))
+            ->when($request->filled('template_direction'), fn ($query) => $query->where('language_direction', $request->input('template_direction')))
+            ->when($request->filled('template_renderer'), fn ($query) => $query->where('renderer_key', $request->input('template_renderer')));
+    }
+
+    private function educationAdminQuery(Request $request)
+    {
+        return EducationContent::query()
+            ->when($request->filled('education_q'), fn ($query) => $query->where('title', 'like', '%'.$request->input('education_q').'%')->orWhere('body', 'like', '%'.$request->input('education_q').'%')->orWhere('target_role', 'like', '%'.$request->input('education_q').'%'))
+            ->when($request->filled('education_language'), fn ($query) => $query->where('language', $request->input('education_language')))
+            ->when($request->filled('education_type'), fn ($query) => $query->where('type', $request->input('education_type')))
+            ->when($request->filled('education_published'), fn ($query) => $query->where('is_published', $request->input('education_published') === '1'))
+            ->when($request->filled('education_featured'), fn ($query) => $query->where('is_featured', $request->input('education_featured') === '1'));
+    }
     private function jobNewsAdminQuery(Request $request)
     {
         return JobNews::query()
@@ -178,6 +213,25 @@ class AdminController extends Controller
             $this->storeCvTemplatePreview($request, $template);
         });
 
+        if ($request->expectsJson()) {
+            $template->refresh();
+
+            return response()->json([
+                'message' => 'CV template saved.',
+                'item' => $template,
+                'row_html' => $this->renderAdminPartial('admin.partials.cv-template-row', [
+                    'template' => $template,
+                ]),
+                'dialog_html' => $this->renderAdminPartial('admin.partials.cv-template-edit-dialog', [
+                    'template' => $template,
+                    'cvTemplateRenderers' => array_keys(config('cv_templates.renderers', [])),
+                ]),
+                'stats' => [
+                    'templates_total' => CvTemplate::count(),
+                ],
+            ], 201);
+        }
+
         return redirect()->route('admin.cv-templates.index')->with('status', 'CV template saved.');
     }
 
@@ -238,7 +292,7 @@ class AdminController extends Controller
     {
         $this->authorizeAdmin($request);
 
-        EducationContent::create($request->validate([
+        $content = EducationContent::create($request->validate([
             'language' => ['required', 'in:ar,en'],
             'type' => ['required', 'in:study,certificate,news'],
             'title' => ['required', 'string', 'max:180'],
@@ -257,6 +311,19 @@ class AdminController extends Controller
             'is_published' => false,
         ]);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Education content saved.',
+                'item' => $content,
+                'row_html' => $this->renderAdminPartial('admin.partials.education-row', [
+                    'content' => $content,
+                ]),
+                'stats' => [
+                    'education_total' => EducationContent::count(),
+                ],
+            ], 201);
+        }
+
         return redirect()->route('admin.education.index')->with('status', 'Education content saved.');
     }
 
@@ -273,11 +340,27 @@ class AdminController extends Controller
     {
         $this->authorizeAdmin($request);
 
-        JobNews::create($this->validatedJobNewsData($request) + [
+        $jobNews = JobNews::create($this->validatedJobNewsData($request) + [
             'sort_order' => 0,
             'is_published' => false,
             'source' => JobsImportService::SOURCE_MANUAL,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Job saved.',
+                'item' => $jobNews,
+                'row_html' => $this->renderAdminPartial('admin.partials.job-row', [
+                    'item' => $jobNews,
+                ]),
+                'dialog_html' => $this->renderAdminPartial('admin.partials.job-edit-dialog', [
+                    'item' => $jobNews,
+                    'jobFilters' => [],
+                    'jobNewsItems' => null,
+                ]),
+                'stats' => $this->jobNewsSummary(),
+            ], 201);
+        }
 
         return redirect()->route('admin.jobs.index')->with('status', 'Job saved.');
     }
@@ -392,6 +475,11 @@ class AdminController extends Controller
         ]);
     }
 
+    private function renderAdminPartial(string $view, array $data = []): string
+    {
+        return trim(view($view, $data)->render());
+    }
+
     private function formatImportStatus(string $action, array $result): string
     {
         return sprintf(
@@ -488,3 +576,8 @@ class AdminController extends Controller
         }
     }
 }
+
+
+
+
+
