@@ -666,7 +666,7 @@
             .lang-toggle { min-width: 58px; padding-inline: 12px; }
             .hero-logo { width: 92px; height: 92px; font-size: 2.6rem; }
             .hero-cta,
-            .download-btns { align-items: stretch; flex-direction: column; width: min(100%, 320px); }
+            .download-btns { align-items: stretch; flex-direction: column; width: min(100%, 320px); margin-inline: auto; }
             .btn-store,
             .btn-dl { width: 100%; justify-content: center; }
             .social-grid { flex-direction: column; }
