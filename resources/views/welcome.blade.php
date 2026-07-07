@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="سيرتي منصة عربية لتطوير المسار المهني، بناء السيرة الذاتية، تحليلها، واكتشاف فرص العمل في السوق السعودي والخليجي.">
-    <title>سيرتي | Sirati</title>
+    <meta name="description" content="{{ $cms->value('meta.description') }}">
+    <title>{{ $cms->value('meta.title', 'سيرتي | Sirati') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -102,6 +102,10 @@
             box-shadow: 0 0 26px var(--teal-glow);
         }
         .nav-logo span { font-size: 1.3rem; letter-spacing: 0; }
+        .logo-img img,
+        .hero-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
+        .logo-img.has-image,
+        .hero-logo.has-image { background: transparent; box-shadow: none; padding: 4px; }
         .nav-links { gap: 10px; color: var(--text-muted); font-size: .9rem; font-weight: 600; }
         .nav-links a { padding: 7px 10px; border-radius: 999px; transition: color .2s ease, background .2s ease; }
         .nav-links a:hover,
@@ -682,16 +686,21 @@
 <body>
     <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
     <nav class="site-nav" aria-label="التنقل الرئيسي">
-        <a href="{{ route('landing') }}" class="nav-logo" aria-label="Sirati">
-            <span class="logo-img" aria-hidden="true">س</span>
-            <span class="ar">سيرتي</span>
-            <span class="en-text">Sirati</span>
+        <a href="{{ route('landing') }}" class="nav-logo" aria-label="{{ $cms->text('branding.brand_name', 'en') ?: 'Sirati' }}">
+            <span class="logo-img {{ $cms->image('branding.logo_image') ? 'has-image' : '' }}" aria-hidden="true">
+                @if ($cms->image('branding.logo_image'))
+                    <img src="{{ $cms->image('branding.logo_image') }}" alt="">
+                @else
+                    {{ $cms->value('branding.logo_letter', 'س') }}
+                @endif
+            </span>
+            {!! $cms->pair('branding.brand_name') !!}
         </a>
         <div class="nav-links">
-            <a href="#about"><span class="ar">من نحن</span><span class="en-text">About</span></a>
-            <a href="#services"><span class="ar">خدماتنا</span><span class="en-text">Services</span></a>
-            <a href="#social"><span class="ar">تابعنا</span><span class="en-text">Follow</span></a>
-            <a href="#download"><span class="ar">تحميل التطبيق</span><span class="en-text">Download</span></a>
+            <a href="#about">{!! $cms->pair('nav.about') !!}</a>
+            <a href="#services">{!! $cms->pair('nav.services') !!}</a>
+            <a href="#social">{!! $cms->pair('nav.social') !!}</a>
+            <a href="#download">{!! $cms->pair('nav.download') !!}</a>
         </div>
         <div class="nav-right">
             <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="تبديل المظهر">
@@ -707,20 +716,20 @@
         <div class="drawer-shell">
             <div class="drawer-header">
                 <div>
-                    <p class="drawer-title"><span class="ar">القائمة</span><span class="en-text">Menu</span></p>
-                    <p class="section-body" style="margin: 4px 0 0; font-size: .9rem;"><span class="ar">تنقّل بين أقسام المنصة الرئيسية.</span><span class="en-text">Move between the main parts of the platform.</span></p>
+                    <p class="drawer-title">{!! $cms->pair('drawer.title') !!}</p>
+                    <p class="section-body" style="margin: 4px 0 0; font-size: .9rem;">{!! $cms->pair('drawer.subtitle') !!}</p>
                 </div>
                 <button type="button" class="drawer-close" aria-label="Close menu">&times;</button>
             </div>
             <div class="drawer-links">
-                <a href="#about"><span class="ar">من نحن</span><span class="en-text">About</span><span>Section</span></a>
-                <a href="#workflow"><span class="ar">كيف يعمل</span><span class="en-text">How it works</span><span>Section</span></a>
-                <a href="#services"><span class="ar">خدماتنا</span><span class="en-text">Services</span><span>Section</span></a>
-                <a href="#social"><span class="ar">تابعنا</span><span class="en-text">Follow</span><span>Section</span></a>
-                <a href="#download"><span class="ar">ابدأ الآن</span><span class="en-text">Start now</span><span>Section</span></a>
+                <a href="#about">{!! $cms->pair('drawer.link_about') !!}<span>Section</span></a>
+                <a href="#workflow">{!! $cms->pair('drawer.link_workflow') !!}<span>Section</span></a>
+                <a href="#services">{!! $cms->pair('drawer.link_services') !!}<span>Section</span></a>
+                <a href="#social">{!! $cms->pair('drawer.link_social') !!}<span>Section</span></a>
+                <a href="#download">{!! $cms->pair('drawer.link_download') !!}<span>Section</span></a>
             </div>
             <div class="drawer-actions">
-                <a href="#download" class="btn-store button-primary"><span><span class="store-name"><span class="ar">حمّل التطبيق</span><span class="en-text">Download the app</span></span></span></a>
+                <a href="#download" class="btn-store button-primary"><span><span class="store-name">{!! $cms->pair('drawer.download_btn') !!}</span></span></a>
             </div>
         </div>
     </dialog>
@@ -729,12 +738,18 @@
         <section class="hero">
             <div class="hero-shell">
                 <div class="hero-copy fade-in">
-                    <div class="hero-logo" aria-hidden="true">&#1587;</div>
-                    <p class="hero-tagline"><span class="ar">&#1605;&#1606;&#1589;&#1577; &#1575;&#1604;&#1605;&#1587;&#1575;&#1585; &#1575;&#1604;&#1605;&#1607;&#1606;&#1610;</span><span class="en-text">Career Development Platform</span></p>
-                    <h1 class="hero-headline"><span class="ar">&#1581;&#1604;&#1604; &#1587;&#1610;&#1585;&#1578;&#1603; &#1608;&#1575;&#1576;&#1606; &#1606;&#1587;&#1582;&#1577; &#1571;&#1602;&#1608;&#1609;.</span><span class="en-text">Analyze your CV and build a stronger version.</span></h1>
-                    <p class="hero-sub"><span class="ar">&#1571;&#1583;&#1608;&#1575;&#1578; &#1593;&#1605;&#1604;&#1610;&#1577; &#1604;&#1578;&#1581;&#1587;&#1610;&#1606; &#1575;&#1604;&#1587;&#1610;&#1585;&#1577; &#1608;&#1575;&#1604;&#1578;&#1580;&#1607;&#1610;&#1586; &#1604;&#1604;&#1578;&#1602;&#1583;&#1610;&#1605;.</span><span class="en-text">Practical tools for CV analysis, improvement, and job applications.</span></p>
-                    <div class="hero-proof"><span>ATS-ready</span><span>Arabic first</span><span>Saudi and Gulf jobs</span></div>
-                    <a class="hero-scroll-link" href="#services"><span class="ar">تعرّف على خدماتنا</span><span class="en-text">Explore our services</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></a>
+                    <div class="hero-logo {{ $cms->image('branding.logo_image') ? 'has-image' : '' }}" aria-hidden="true">
+                        @if ($cms->image('branding.logo_image'))
+                            <img src="{{ $cms->image('branding.logo_image') }}" alt="">
+                        @else
+                            {{ $cms->value('branding.logo_letter', 'س') }}
+                        @endif
+                    </div>
+                    <p class="hero-tagline">{!! $cms->pair('hero.tagline') !!}</p>
+                    <h1 class="hero-headline">{!! $cms->pair('hero.headline') !!}</h1>
+                    <p class="hero-sub">{!! $cms->pair('hero.sub') !!}</p>
+                    <div class="hero-proof"><span>{!! $cms->pair('hero.chip1') !!}</span><span>{!! $cms->pair('hero.chip2') !!}</span><span>{!! $cms->pair('hero.chip3') !!}</span></div>
+                    <a class="hero-scroll-link" href="#services">{!! $cms->pair('hero.explore') !!}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg></a>
                 </div>
                 <div class="hero-visual fade-in" aria-hidden="true">
                     <div class="phone-preview"><div class="phone-screen">
@@ -749,73 +764,64 @@
                     <div class="floating-card"><strong>Smart template</strong><p>Clean layout ready for recruiters and screening systems.</p></div>
                 </div>
             </div>
-            <a class="scroll-hint" href="#about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5"/></svg><span class="ar">&#1575;&#1603;&#1578;&#1588;&#1601; &#1571;&#1603;&#1579;&#1585;</span><span class="en-text">Discover more</span></a>
+            <a class="scroll-hint" href="#about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5"/></svg>{!! $cms->pair('hero.scroll_hint') !!}</a>
         </section>
 
         <section class="proof-band" aria-label="Platform highlights">
-            <div class="proof-item fade-in"><strong>Clear analysis</strong><span>See what is blocking the CV quickly.</span></div>
-            <div class="proof-item fade-in"><strong>Practical edits</strong><span>Turn feedback into better wording.</span></div>
-            <div class="proof-item fade-in"><strong>Ready to apply</strong><span>Move from analysis to a stronger CV.</span></div>
+            <div class="proof-item fade-in"><strong>{!! $cms->pair('proof.item1_title') !!}</strong><span>{!! $cms->pair('proof.item1_body') !!}</span></div>
+            <div class="proof-item fade-in"><strong>{!! $cms->pair('proof.item2_title') !!}</strong><span>{!! $cms->pair('proof.item2_body') !!}</span></div>
+            <div class="proof-item fade-in"><strong>{!! $cms->pair('proof.item3_title') !!}</strong><span>{!! $cms->pair('proof.item3_body') !!}</span></div>
         </section>
 
         <section id="about">
             <div class="section fade-in">
-                <span class="section-label"><span class="ar">من نحن :</span><span class="en-text">About Us :</span></span>
+                <span class="section-label">{!! $cms->pair('about.label') !!}</span>
                 <div class="divider"></div>
-                <h2 class="section-title">
-                    <span class="ar">منصة إلكترونية متخصصة في تطوير مسارك المهني</span>
-                    <span class="en-text">A digital platform specialized in developing your professional career</span>
-                </h2>
-                <p class="section-body">
-                    <span class="ar">سيرتي منصة إلكترونية متخصصة في تطوير المسار المهني، نقدم مجموعة متكاملة من الخدمات التي تجمع بين الذكاء التقني وفهم متطلبات سوق العمل في المملكة العربية السعودية والخليج. نؤمن بأن كل محترف يستحق أدوات احترافية تفتح له الأبواب.</span>
-                    <span class="en-text">Sirati is a digital platform specialized in career development, offering an integrated suite of services that combine technical intelligence with a deep understanding of the job market in Saudi Arabia and the Gulf. We believe every professional deserves the right tools to open doors.</span>
-                </p>
+                <h2 class="section-title">{!! $cms->pair('about.title') !!}</h2>
+                <p class="section-body">{!! $cms->pair('about.body') !!}</p>
             </div>
         </section>
 
         <section class="section" id="workflow">
             <div class="fade-in">
-                <span class="section-label"><span class="ar">&#1603;&#1610;&#1601; &#1610;&#1593;&#1605;&#1604;</span><span class="en-text">How it works</span></span>
+                <span class="section-label">{!! $cms->pair('workflow.label') !!}</span>
                 <div class="divider"></div>
-                <h2 class="section-title">Three steps to a better CV</h2>
-                <p class="section-body">Upload your CV, review clear recommendations, then generate a stronger version.</p>
+                <h2 class="section-title">{!! $cms->pair('workflow.title') !!}</h2>
+                <p class="section-body">{!! $cms->pair('workflow.body') !!}</p>
             </div>
             <div class="steps-grid">
-                <article class="step-card fade-in"><span class="step-number">1</span><h3>Analyze</h3><p>Find ATS issues, missing keywords, and weak sections.</p></article>
-                <article class="step-card fade-in"><span class="step-number">2</span><h3>Improve</h3><p>Turn recommendations into stronger, recruiter-ready wording.</p></article>
-                <article class="step-card fade-in"><span class="step-number">3</span><h3>Apply</h3><p>Use a clean generated CV and move faster on applications.</p></article>
+                <article class="step-card fade-in"><span class="step-number">1</span><h3>{!! $cms->pair('workflow.step1_title') !!}</h3><p>{!! $cms->pair('workflow.step1_body') !!}</p></article>
+                <article class="step-card fade-in"><span class="step-number">2</span><h3>{!! $cms->pair('workflow.step2_title') !!}</h3><p>{!! $cms->pair('workflow.step2_body') !!}</p></article>
+                <article class="step-card fade-in"><span class="step-number">3</span><h3>{!! $cms->pair('workflow.step3_title') !!}</h3><p>{!! $cms->pair('workflow.step3_body') !!}</p></article>
             </div>
         </section>
         <section class="services-wrap" id="services">
             <div class="services-inner">
                 <div class="fade-in">
-                    <span class="section-label"><span class="ar">خدماتنا :</span><span class="en-text">Our Services :</span></span>
+                    <span class="section-label">{!! $cms->pair('services.label') !!}</span>
                     <div class="divider"></div>
-                    <h2 class="section-title">
-                        <span class="ar">كل ما تحتاجه لمسارك المهني في مكان واحد</span>
-                        <span class="en-text">Everything you need for your career, in one place</span>
-                    </h2>
+                    <h2 class="section-title">{!! $cms->pair('services.title') !!}</h2>
                 </div>
                 <div class="services-grid">
                     <article class="service-card fade-in">
-                        <span class="service-icon" aria-hidden="true">📂</span>
-                        <h3 class="service-title"><span class="ar">بناء السيرة الذاتية الاحترافية</span><span class="en-text">Professional CV Builder</span></h3>
-                        <p class="service-desc"><span class="ar">نساعدك في إنشاء سيرة ذاتية وفق المعايير الدولية، مهيأة للنجاح في أنظمة فرز السير الذاتية الآلي، مع إمكانية التعديل عليها لاحقاً.</span><span class="en-text">We help you create a CV to international standards, optimized for Applicant Tracking Systems, with the ability to edit it at any time.</span></p>
+                        <span class="service-icon" aria-hidden="true">{{ $cms->value('services.card1_icon', '📂') }}</span>
+                        <h3 class="service-title">{!! $cms->pair('services.card1_title') !!}</h3>
+                        <p class="service-desc">{!! $cms->pair('services.card1_body') !!}</p>
                     </article>
                     <article class="service-card fade-in">
-                        <span class="service-icon" aria-hidden="true">📈</span>
-                        <h3 class="service-title"><span class="ar">تحليل السيرة الذاتية</span><span class="en-text">CV Analysis</span></h3>
-                        <p class="service-desc"><span class="ar">نحلل سيرتك الذاتية ونكشف نقاط ضعفها أمام أنظمة Applicant Tracking System، ونقدم توصيات عملية لاجتياز الفرز الآلي الذي تعتمده الشركات الكبرى.</span><span class="en-text">We analyze your CV and reveal its weaknesses against Applicant Tracking Systems, offering practical recommendations to pass automated screening used by top companies.</span></p>
+                        <span class="service-icon" aria-hidden="true">{{ $cms->value('services.card2_icon', '📈') }}</span>
+                        <h3 class="service-title">{!! $cms->pair('services.card2_title') !!}</h3>
+                        <p class="service-desc">{!! $cms->pair('services.card2_body') !!}</p>
                     </article>
                     <article class="service-card fade-in">
-                        <span class="service-icon" aria-hidden="true">💼</span>
-                        <h3 class="service-title"><span class="ar">فرص العمل</span><span class="en-text">Job Opportunities</span></h3>
-                        <p class="service-desc"><span class="ar">نوفر قاعدة محدثة من الوظائف في المملكة العربية السعودية، تشمل الجهات الحكومية والقطاع الخاص.</span><span class="en-text">We provide an updated database of jobs in Saudi Arabia, covering both government entities and the private sector.</span></p>
+                        <span class="service-icon" aria-hidden="true">{{ $cms->value('services.card3_icon', '💼') }}</span>
+                        <h3 class="service-title">{!! $cms->pair('services.card3_title') !!}</h3>
+                        <p class="service-desc">{!! $cms->pair('services.card3_body') !!}</p>
                     </article>
                     <article class="service-card fade-in">
-                        <span class="service-icon" aria-hidden="true">📚</span>
-                        <h3 class="service-title"><span class="ar">التعليم والتوجيه المهني</span><span class="en-text">Education & Career Guidance</span></h3>
-                        <p class="service-desc"><span class="ar">نقدم محتوى تعليمياً مستمراً وإرشاداً متخصصاً لمساعدتك في بناء مسارك المهني وتطويره نحو الأفضل.</span><span class="en-text">We provide continuous educational content and specialized guidance to help you build and advance your professional career.</span></p>
+                        <span class="service-icon" aria-hidden="true">{{ $cms->value('services.card4_icon', '📚') }}</span>
+                        <h3 class="service-title">{!! $cms->pair('services.card4_title') !!}</h3>
+                        <p class="service-desc">{!! $cms->pair('services.card4_body') !!}</p>
                     </article>
                 </div>
             </div>
@@ -823,34 +829,34 @@
 
         <section class="social-wrap" id="social">
             <div class="fade-in">
-                <span class="section-label"><span class="ar">تابعنا :</span><span class="en-text">Follow Us :</span></span>
+                <span class="section-label">{!! $cms->pair('social.label') !!}</span>
                 <div class="divider"></div>
-                <h2 class="section-title"><span class="ar">نحن على منصاتك المفضلة</span><span class="en-text">We're on your favourite platforms</span></h2>
-                <p class="section-body"><span class="ar">تابع سيرتي وابق على اطلاع بأحدث فرص العمل والنصائح المهنية والمحتوى التعليمي.</span><span class="en-text">Follow Sirati and stay up to date with the latest job opportunities, career tips, and educational content.</span></p>
+                <h2 class="section-title">{!! $cms->pair('social.title') !!}</h2>
+                <p class="section-body">{!! $cms->pair('social.body') !!}</p>
             </div>
             <div class="social-grid fade-in">
-                <a href="https://www.tiktok.com/@sirati" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.91a8.16 8.16 0 004.77 1.52V7a4.85 4.85 0 01-1-.31z"/></svg>TikTok</a>
-                <a href="https://www.instagram.com/sirati" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>Instagram</a>
-                <a href="https://www.linkedin.com/company/sirati" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LinkedIn</a>
-                <a href="mailto:hello@sirati.app" class="social-card"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg><span class="ar">تواصل معنا عبر الإيميل</span><span class="en-text">Contact us via Email</span></a>
+                <a href="{{ $cms->value('social.tiktok_url', '#') }}" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.91a8.16 8.16 0 004.77 1.52V7a4.85 4.85 0 01-1-.31z"/></svg>TikTok</a>
+                <a href="{{ $cms->value('social.instagram_url', '#') }}" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>Instagram</a>
+                <a href="{{ $cms->value('social.linkedin_url', '#') }}" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LinkedIn</a>
+                <a href="mailto:{{ $cms->value('social.email', 'hello@sirati.app') }}" class="social-card"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>{!! $cms->pair('social.email_label') !!}</a>
             </div>
         </section>
 
         <section class="download-wrap" id="download">
             <div class="download-inner fade-in">
-                <h2><span class="ar">حمّل التطبيق الآن</span><span class="en-text">Download the App Now</span></h2>
-                <p><span class="ar">جميع الخدمات متاحة داخل التطبيق. ابدأ مسيرتك المهنية الصحيحة اليوم.</span><span class="en-text">All services are available inside the app. Start your professional journey the right way, today.</span></p>
+                <h2>{!! $cms->pair('download.title') !!}</h2>
+                <p>{!! $cms->pair('download.body') !!}</p>
                 <div class="download-btns">
-                    <span class="btn-dl ios is-soon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.84 4.36c0 1.13-.44 2.22-1.22 3.02-.8.83-1.87 1.28-2.98 1.23-.06-1.05.41-2.14 1.2-2.94.76-.78 1.96-1.36 3-1.31zM19.5 17.58c-.62 1.43-.92 2.06-1.72 3.3-1.13 1.73-2.73 3.89-4.73 3.91-1.78.02-2.24-1.17-4.66-1.15-2.42.01-2.93 1.17-4.71 1.15-2-.02-3.53-2-4.66-3.74C.74 18.52.03 15.57.86 12.82c.76-2.51 2.68-4.12 4.49-4.16 1.64-.03 3.19 1.15 4.2 1.15 1 0 2.86-1.43 4.84-1.22.83.03 3.15.33 4.72 2.63-1.24.77-2.03 2.09-2.03 3.56 0 1.8 1.08 3.39 2.42 4.2z"/></svg><span><span class="store-kicker">Coming soon on</span><span class="store-name">App Store</span></span></span>
-                    <span class="btn-dl android is-soon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg><span><span class="store-kicker">Coming soon on</span><span class="store-name">Google Play</span></span></span>
+                    <span class="btn-dl ios is-soon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.84 4.36c0 1.13-.44 2.22-1.22 3.02-.8.83-1.87 1.28-2.98 1.23-.06-1.05.41-2.14 1.2-2.94.76-.78 1.96-1.36 3-1.31zM19.5 17.58c-.62 1.43-.92 2.06-1.72 3.3-1.13 1.73-2.73 3.89-4.73 3.91-1.78.02-2.24-1.17-4.66-1.15-2.42.01-2.93 1.17-4.71 1.15-2-.02-3.53-2-4.66-3.74C.74 18.52.03 15.57.86 12.82c.76-2.51 2.68-4.12 4.49-4.16 1.64-.03 3.19 1.15 4.2 1.15 1 0 2.86-1.43 4.84-1.22.83.03 3.15.33 4.72 2.63-1.24.77-2.03 2.09-2.03 3.56 0 1.8 1.08 3.39 2.42 4.2z"/></svg><span><span class="store-kicker">{!! $cms->pair('download.ios_kicker') !!}</span><span class="store-name">{!! $cms->pair('download.ios_name') !!}</span></span></span>
+                    <span class="btn-dl android is-soon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg><span><span class="store-kicker">{!! $cms->pair('download.android_kicker') !!}</span><span class="store-name">{!! $cms->pair('download.android_name') !!}</span></span></span>
                 </div>
             </div>
         </section>
     </main>
 
-    <div class="mobile-sticky-cta"><a href="#download"><span class="ar">حمّل التطبيق الآن</span><span class="en-text">Download the app</span></a></div>
+    <div class="mobile-sticky-cta"><a href="#download">{!! $cms->pair('cta.download') !!}</a></div>
     <footer>
-        <p><span class="ar">© {{ now()->year }} <span class="teal">سيرتي</span> — جميع الحقوق محفوظة.</span><span class="en-text">© {{ now()->year }} <span class="teal">Sirati</span> — All rights reserved. Our services are available inside the app only.</span></p>
+        <p><span class="ar">© {{ now()->year }} <span class="teal">{{ $cms->text('branding.brand_name', 'ar') }}</span> — {{ $cms->text('footer.rights', 'ar') }}</span><span class="en-text">© {{ now()->year }} <span class="teal">{{ $cms->text('branding.brand_name', 'en') }}</span> — {{ $cms->text('footer.rights', 'en') }}</span></p>
     </footer>
 
     <script>
