@@ -72,6 +72,17 @@
     </section>
 
     <section class="card">
+        <h2>Recent activity</h2>
+        <div class="admin-work-grid">
+            <a class="admin-work-card" href="{{ route('admin.jobs.index') }}"><h3>{{ $recentActivity['jobs']->first()?->title ?? 'No recent jobs' }}</h3><p class="muted">Latest job</p></a>
+            <a class="admin-work-card" href="{{ route('admin.education.index') }}"><h3>{{ $recentActivity['education']->first()?->title ?? 'No education content' }}</h3><p class="muted">Latest education content</p></a>
+            <a class="admin-work-card" href="{{ route('admin.cv-templates.index') }}"><h3>{{ $recentActivity['templates']->first()?->name_en ?? 'No templates' }}</h3><p class="muted">Latest CV template</p></a>
+            <a class="admin-work-card" href="{{ route('admin.analyses.index') }}"><h3>{{ $recentActivity['analyses']->first()?->target_job_title ?? 'No analyses' }}</h3><p class="muted">Latest CV analysis</p></a>
+            <a class="admin-work-card" href="{{ route('admin.generated-cvs.index') }}"><h3>{{ $recentActivity['generated_cvs']->first()?->full_name ?? 'No generated CVs' }}</h3><p class="muted">Latest generated CV</p></a>
+        </div>
+    </section>
+
+    <section class="card">
         <h2>Jobs sync status</h2>
         <div class="metric-row">
             <div class="metric-card"><strong>{{ $jobNewsSummary['total'] }}</strong><span>Total jobs</span></div>

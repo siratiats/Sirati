@@ -17,9 +17,9 @@ class AdminJobNewsManagementTest extends TestCase
 
         JobNews::create([
             'language' => 'ar',
-            'title' => 'مطور Flutter',
-            'company' => 'شركة الأمل',
-            'body' => 'تفاصيل الوظيفة',
+            'title' => 'Ù…Ø·ÙˆØ± Flutter',
+            'company' => 'Ø´Ø±ÙƒØ© Ø§Ù„Ø£Ù…Ù„',
+            'body' => 'ØªÙØ§ØµÙŠÙ„ Ø§Ù„ÙˆØ¸ÙŠÙØ©',
             'is_published' => true,
             'source' => 'google_sheet',
             'source_row_key' => 'JOB-1',
@@ -40,7 +40,7 @@ class AdminJobNewsManagementTest extends TestCase
         ]));
 
         $response->assertOk();
-        $response->assertSee('مطور Flutter');
+        $response->assertSee('Ù…Ø·ÙˆØ± Flutter');
         $response->assertDontSee('Backend Engineer');
         $response->assertSee('Job management');
     }
@@ -50,8 +50,8 @@ class AdminJobNewsManagementTest extends TestCase
         $admin = User::factory()->create();
         $job = JobNews::create([
             'language' => 'ar',
-            'title' => 'قديم',
-            'body' => 'تفاصيل قديمة',
+            'title' => 'Ù‚Ø¯ÙŠÙ…',
+            'body' => 'ØªÙØ§ØµÙŠÙ„ Ù‚Ø¯ÙŠÙ…Ø©',
             'is_published' => false,
             'source' => 'manual',
             'source_row_key' => 'JOB-3',
@@ -59,10 +59,10 @@ class AdminJobNewsManagementTest extends TestCase
 
         $response = $this->actingAs($admin)->patch(route('admin.job-news.update', $job), [
             'language' => 'ar',
-            'title' => 'عنوان محدث',
-            'company' => 'شركة جديدة',
-            'location' => 'الرياض',
-            'body' => 'تفاصيل محدثة',
+            'title' => 'Ø¹Ù†ÙˆØ§Ù† Ù…Ø­Ø¯Ø«',
+            'company' => 'Ø´Ø±ÙƒØ© Ø¬Ø¯ÙŠØ¯Ø©',
+            'location' => 'Ø§Ù„Ø±ÙŠØ§Ø¶',
+            'body' => 'ØªÙØ§ØµÙŠÙ„ Ù…Ø­Ø¯Ø«Ø©',
             'url' => 'https://example.com/job',
             'apply_url' => 'https://example.com/apply',
             'valid_from' => '2026-06-29',
@@ -73,8 +73,8 @@ class AdminJobNewsManagementTest extends TestCase
 
         $response->assertRedirect();
         $job->refresh();
-        $this->assertSame('عنوان محدث', $job->title);
-        $this->assertSame('شركة جديدة', $job->company);
+        $this->assertSame('Ø¹Ù†ÙˆØ§Ù† Ù…Ø­Ø¯Ø«', $job->title);
+        $this->assertSame('Ø´Ø±ÙƒØ© Ø¬Ø¯ÙŠØ¯Ø©', $job->company);
         $this->assertTrue($job->is_published);
         $this->assertSame('2026-07-29', $job->valid_until->toDateString());
     }
@@ -84,16 +84,16 @@ class AdminJobNewsManagementTest extends TestCase
         $admin = User::factory()->create();
         $first = JobNews::create([
             'language' => 'ar',
-            'title' => 'الأولى',
-            'body' => 'تفاصيل',
+            'title' => 'Ø§Ù„Ø£ÙˆÙ„Ù‰',
+            'body' => 'ØªÙØ§ØµÙŠÙ„',
             'is_published' => true,
             'source' => 'manual',
             'source_row_key' => 'JOB-4',
         ]);
         $second = JobNews::create([
             'language' => 'ar',
-            'title' => 'الثانية',
-            'body' => 'تفاصيل',
+            'title' => 'Ø§Ù„Ø«Ø§Ù†ÙŠØ©',
+            'body' => 'ØªÙØ§ØµÙŠÙ„',
             'is_published' => true,
             'source' => 'manual',
             'source_row_key' => 'JOB-5',
@@ -108,4 +108,32 @@ class AdminJobNewsManagementTest extends TestCase
         $this->assertFalse($first->fresh()->is_published);
         $this->assertFalse($second->fresh()->is_published);
     }
+    public function test_admin_can_create_job_news_with_json_response(): void
+    {
+        $admin = User::factory()->create();
+
+        $response = $this->actingAs($admin)->postJson(route('admin.job-news.store'), [
+            'language' => 'en',
+            'title' => 'Frontend Engineer',
+            'company' => 'Sirati Labs',
+            'body' => 'Build responsive dashboard workflows for the admin team.',
+            'is_published' => '1',
+        ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('message', 'Job saved.')
+            ->assertJsonStructure(['item', 'row_html', 'dialog_html', 'stats']);
+
+        $this->assertDatabaseHas('job_news', ['title' => 'Frontend Engineer']);
+    }
+
+    public function test_admin_job_news_json_validation_errors_are_returned(): void
+    {
+        $admin = User::factory()->create();
+
+        $this->actingAs($admin)->postJson(route('admin.job-news.store'), [
+            'language' => 'en',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['title', 'body']);
+    }
 }
+

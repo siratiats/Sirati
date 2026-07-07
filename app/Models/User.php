@@ -63,4 +63,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(MobileNotification::class);
     }
+
+    public function fcmTokens(): HasMany
+    {
+        return $this->hasMany(UserFcmToken::class);
+    }
 }

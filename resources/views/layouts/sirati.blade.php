@@ -499,6 +499,13 @@
         }
         .admin-work-card h3 { margin-bottom: 8px; }
         .admin-work-card p { margin-bottom: 0; }
+        .admin-mobile-bar { display: none; }
+        .admin-sidebar-backdrop { display: none; }
+        .field-error { color: #b91c1c; font-size: 12px; font-weight: 800; margin-top: 4px; }
+        .admin-body [aria-invalid="true"] { border-color: #ef4444; }
+        @media (max-width: 1080px) { .admin-mobile-bar { display: flex; position: sticky; top: 0; z-index: 42; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: #fff; border-bottom: 1px solid #d9e2ec; } }
+        @media (max-width: 1080px) { .admin-sidebar { position: fixed; inset: 0 auto 0 0; width: min(320px, 86vw); height: 100vh; z-index: 44; transform: translateX(-100%); transition: transform .2s ease; } .admin-body.admin-menu-open .admin-sidebar { transform: translateX(0); } }
+        @media (max-width: 1080px) { .admin-sidebar-backdrop { position: fixed; inset: 0; z-index: 43; display: none; border: 0; background: rgba(15,23,42,.48); } .admin-body.admin-menu-open .admin-sidebar-backdrop { display: block; } }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
         @media (max-width: 1080px) {
             .admin-shell { grid-template-columns: 1fr; }
@@ -507,6 +514,7 @@
             .admin-sidebar-footer { margin-top: 0; }
         }
         @media (max-width: 820px) { .grid-2, .grid-3, .admin-kpi-grid { grid-template-columns: 1fr; } .nav, .admin-section-header, .admin-topbar { align-items: flex-start; flex-direction: column; } .admin-main { padding: 18px; } .admin-side-nav { grid-template-columns: 1fr; } }
+        @media (max-width: 1080px) { .admin-body .admin-sidebar { position: fixed; height: 100vh; transform: translateX(-100%); } .admin-body.admin-menu-open .admin-sidebar { transform: translateX(0); } }
     </style>
 </head>
 <body class="@yield('body_class')">
@@ -514,16 +522,16 @@
         @hasSection('hide_nav')
         @else
         <nav class="nav">
-            <a class="brand" href="{{ route('landing') }}"><span class="mark">س</span><span>Sirati</span></a>
+            <a class="brand" href="{{ route('landing') }}"><span class="mark">Ø³</span><span>Sirati</span></a>
             <div class="links">
-                <a href="{{ route('landing') }}">الرئيسية</a>
-                <a href="{{ route('analyses.create') }}">فحص السيرة</a>
-                <a href="{{ route('generated-cvs.create') }}">إنشاء سيرة متوافقة مع ATS</a>
-                <a href="{{ route('admin.index') }}">لوحة الإدارة</a>
+                <a href="{{ route('landing') }}">Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</a>
+                <a href="{{ route('analyses.create') }}">ÙØ­Øµ Ø§Ù„Ø³ÙŠØ±Ø©</a>
+                <a href="{{ route('generated-cvs.create') }}">Ø¥Ù†Ø´Ø§Ø¡ Ø³ÙŠØ±Ø© Ù…ØªÙˆØ§ÙÙ‚Ø© Ù…Ø¹ ATS</a>
+                <a href="{{ route('admin.index') }}">Ù„ÙˆØ­Ø© Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©</a>
                 @auth
                     <form method="POST" action="{{ route('admin.logout') }}" style="display: inline;">
                         @csrf
-                        <button class="button button-secondary" type="submit" style="padding: 8px 12px; border-radius: 999px; font-size: 14px;">خروج</button>
+                        <button class="button button-secondary" type="submit" style="padding: 8px 12px; border-radius: 999px; font-size: 14px;">Ø®Ø±ÙˆØ¬</button>
                     </form>
                 @endauth
             </div>
@@ -544,8 +552,8 @@
                 button.disabled = true;
                 button.classList.add('button-loading');
                 const render = () => {
-                    const loadingText = document.body.classList.contains('admin-body') ? 'Working' : 'جاري التنفيذ… / Working';
-                    label.textContent = `${loadingText}… ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+                    const loadingText = document.body.classList.contains('admin-body') ? 'Working' : 'Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªÙ†ÙÙŠØ°â€¦ / Working';
+                    label.textContent = `${loadingText}â€¦ ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
                     seconds += 1;
                 };
                 render();
@@ -557,6 +565,10 @@
             window.setTimeout(() => toast.remove(), 6000);
         });
 
+
+        const adminToast=(m,t='success')=>{let s=document.querySelector('.toast-stack')||document.body.appendChild(Object.assign(document.createElement('div'),{className:'toast-stack'}));let n=document.createElement('section');n.className='toast toast-'+t;n.innerHTML='<p>'+m+'</p>';s.appendChild(n);setTimeout(()=>n.remove(),6000)};
+        document.querySelectorAll('[data-ajax-form]').forEach(f=>f.addEventListener('submit',async e=>{e.preventDefault();let b=f.querySelector('button[type="submit"]');if(b)b.disabled=true;let r=await fetch(f.action,{method:f.method,body:new FormData(f),headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'}});let p=await r.json();if(!r.ok){if(b)b.disabled=false;adminToast(p.message||'Request failed','error');return}document.querySelector(f.dataset.ajaxTarget)?.insertAdjacentHTML(f.dataset.ajaxPrepend==='false'?'beforeend':'afterbegin',p.row_html||'');document.querySelector(f.dataset.ajaxDialogTarget)?.insertAdjacentHTML('beforeend',p.dialog_html||'');document.querySelector(f.dataset.ajaxEmptyTarget)?.remove();adminToast(p.message||'Saved');f.reset();f.closest('dialog')?.close();if(b)b.disabled=false}));
+        document.querySelector('[data-admin-menu-toggle]')?.addEventListener('click',()=>{document.body.classList.toggle('admin-menu-open');document.querySelector('[data-admin-menu-toggle]')?.setAttribute('aria-expanded',document.body.classList.contains('admin-menu-open')?'true':'false')});document.querySelectorAll('[data-admin-menu-close],.admin-side-nav a').forEach(x=>x.addEventListener('click',()=>{document.body.classList.remove('admin-menu-open');document.querySelector('[data-admin-menu-toggle]')?.setAttribute('aria-expanded','false')}));
         document.querySelectorAll('[data-check-all]').forEach((checkbox) => {
             checkbox.addEventListener('change', () => {
                 document.querySelectorAll(checkbox.dataset.checkAll).forEach((item) => {
@@ -567,3 +579,5 @@
     </script>
 </body>
 </html>
+
+
