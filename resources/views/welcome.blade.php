@@ -846,9 +846,21 @@
             <div class="download-inner fade-in">
                 <h2>{!! $cms->pair('download.title') !!}</h2>
                 <p>{!! $cms->pair('download.body') !!}</p>
+                @php
+                    $iosUrl = $cms->value('download.ios_url');
+                    $androidUrl = $cms->value('download.android_url');
+                @endphp
                 <div class="download-btns">
-                    <span class="btn-dl ios is-soon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.84 4.36c0 1.13-.44 2.22-1.22 3.02-.8.83-1.87 1.28-2.98 1.23-.06-1.05.41-2.14 1.2-2.94.76-.78 1.96-1.36 3-1.31zM19.5 17.58c-.62 1.43-.92 2.06-1.72 3.3-1.13 1.73-2.73 3.89-4.73 3.91-1.78.02-2.24-1.17-4.66-1.15-2.42.01-2.93 1.17-4.71 1.15-2-.02-3.53-2-4.66-3.74C.74 18.52.03 15.57.86 12.82c.76-2.51 2.68-4.12 4.49-4.16 1.64-.03 3.19 1.15 4.2 1.15 1 0 2.86-1.43 4.84-1.22.83.03 3.15.33 4.72 2.63-1.24.77-2.03 2.09-2.03 3.56 0 1.8 1.08 3.39 2.42 4.2z"/></svg><span><span class="store-kicker">{!! $cms->pair('download.ios_kicker') !!}</span><span class="store-name">{!! $cms->pair('download.ios_name') !!}</span></span></span>
-                    <span class="btn-dl android is-soon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg><span><span class="store-kicker">{!! $cms->pair('download.android_kicker') !!}</span><span class="store-name">{!! $cms->pair('download.android_name') !!}</span></span></span>
+                    @if ($iosUrl)
+                        <a href="{{ $iosUrl }}" class="btn-dl ios" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.84 4.36c0 1.13-.44 2.22-1.22 3.02-.8.83-1.87 1.28-2.98 1.23-.06-1.05.41-2.14 1.2-2.94.76-.78 1.96-1.36 3-1.31zM19.5 17.58c-.62 1.43-.92 2.06-1.72 3.3-1.13 1.73-2.73 3.89-4.73 3.91-1.78.02-2.24-1.17-4.66-1.15-2.42.01-2.93 1.17-4.71 1.15-2-.02-3.53-2-4.66-3.74C.74 18.52.03 15.57.86 12.82c.76-2.51 2.68-4.12 4.49-4.16 1.64-.03 3.19 1.15 4.2 1.15 1 0 2.86-1.43 4.84-1.22.83.03 3.15.33 4.72 2.63-1.24.77-2.03 2.09-2.03 3.56 0 1.8 1.08 3.39 2.42 4.2z"/></svg><span><span class="store-kicker">{!! $cms->pair('download.ios_kicker') !!}</span><span class="store-name">{!! $cms->pair('download.ios_name') !!}</span></span></a>
+                    @else
+                        <span class="btn-dl ios is-soon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.84 4.36c0 1.13-.44 2.22-1.22 3.02-.8.83-1.87 1.28-2.98 1.23-.06-1.05.41-2.14 1.2-2.94.76-.78 1.96-1.36 3-1.31zM19.5 17.58c-.62 1.43-.92 2.06-1.72 3.3-1.13 1.73-2.73 3.89-4.73 3.91-1.78.02-2.24-1.17-4.66-1.15-2.42.01-2.93 1.17-4.71 1.15-2-.02-3.53-2-4.66-3.74C.74 18.52.03 15.57.86 12.82c.76-2.51 2.68-4.12 4.49-4.16 1.64-.03 3.19 1.15 4.2 1.15 1 0 2.86-1.43 4.84-1.22.83.03 3.15.33 4.72 2.63-1.24.77-2.03 2.09-2.03 3.56 0 1.8 1.08 3.39 2.42 4.2z"/></svg><span><span class="store-kicker">{!! $cms->pair('download.ios_kicker') !!}</span><span class="store-name">{!! $cms->pair('download.ios_name') !!}</span></span></span>
+                    @endif
+                    @if ($androidUrl)
+                        <a href="{{ $androidUrl }}" class="btn-dl android" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg><span><span class="store-kicker">{!! $cms->pair('download.android_kicker') !!}</span><span class="store-name">{!! $cms->pair('download.android_name') !!}</span></span></a>
+                    @else
+                        <span class="btn-dl android is-soon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg><span><span class="store-kicker">{!! $cms->pair('download.android_kicker') !!}</span><span class="store-name">{!! $cms->pair('download.android_name') !!}</span></span></span>
+                    @endif
                 </div>
             </div>
         </section>
