@@ -5,6 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{ $cms->value('meta.description') }}">
     <title>{{ $cms->value('meta.title', 'سيرتي | Sirati') }}</title>
+
+    @php
+        $metaTitle = $cms->value('meta.title', 'سيرتي | Sirati');
+        $metaDesc = $cms->value('meta.description');
+        $brandName = $cms->text('branding.brand_name', 'ar') ?: 'سيرتي';
+        $ogImage = $cms->image('branding.logo_image');
+        $logoLetter = $cms->value('branding.logo_letter', 'س');
+        $favicon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#00a898"/><text x="50%" y="52%" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="38" font-weight="700" fill="#ffffff">'.e($logoLetter).'</text></svg>';
+        $socialLinks = array_values(array_filter([
+            $cms->value('social.tiktok_url'),
+            $cms->value('social.instagram_url'),
+            $cms->value('social.linkedin_url'),
+        ]));
+    @endphp
+
+    <link rel="canonical" href="{{ url('/') }}">
+    <link rel="icon" href="data:image/svg+xml,{{ rawurlencode($favicon) }}">
+    <link rel="apple-touch-icon" href="{{ $ogImage ?: 'data:image/svg+xml,'.rawurlencode($favicon) }}">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ $brandName }}">
+    <meta property="og:title" content="{{ $metaTitle }}">
+    <meta property="og:description" content="{{ $metaDesc }}">
+    <meta property="og:url" content="{{ url('/') }}">
+    <meta property="og:locale" content="ar_AR">
+    @if ($ogImage)
+        <meta property="og:image" content="{{ $ogImage }}">
+    @endif
+    <meta name="twitter:card" content="{{ $ogImage ? 'summary_large_image' : 'summary' }}">
+    <meta name="twitter:title" content="{{ $metaTitle }}">
+    <meta name="twitter:description" content="{{ $metaDesc }}">
+    @if ($ogImage)
+        <meta name="twitter:image" content="{{ $ogImage }}">
+    @endif
+
+    <script type="application/ld+json">
+        @json([
+            '@context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => $brandName,
+            'url' => url('/'),
+            'description' => $metaDesc,
+            'logo' => $ogImage ?: null,
+            'sameAs' => $socialLinks,
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
