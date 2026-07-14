@@ -11,8 +11,8 @@
         $metaDesc = $cms->value('meta.description');
         $brandName = $cms->text('branding.brand_name', 'ar') ?: 'سيرتي';
         $ogImage = $cms->image('branding.logo_image');
-        $logoLetter = $cms->value('branding.logo_letter', 'س');
-        $favicon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#00a898"/><text x="50%" y="52%" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="38" font-weight="700" fill="#ffffff">'.e($logoLetter).'</text></svg>';
+        $brandMarkSvg = '<svg viewBox="0 0 100 100" role="img" focusable="false"><path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27"></path><circle cx="78" cy="23" r="6"></circle></svg>';
+        $favicon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12384f"/><stop offset="1" stop-color="#0e8f86"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#g)"/><path d="M14 35 C17 42 22 48 27 48 C31 48 34 43 37 38 C42 31 46 24 50 18" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="52" cy="15" r="4" fill="#ffffff"/></svg>';
         $socialLinks = array_values(array_filter([
             $cms->value('social.tiktok_url'),
             $cms->value('social.instagram_url'),
@@ -151,9 +151,26 @@
         }
         .nav-logo span { font-size: 1.3rem; letter-spacing: 0; }
         .logo-img img,
-        .hero-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
+        .logo-img svg,
+        .hero-logo img,
+        .hero-logo svg { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
         .logo-img.has-image,
         .hero-logo.has-image { background: transparent; box-shadow: none; padding: 4px; }
+        .logo-img svg,
+        .hero-logo svg { padding: 8px; }
+        .logo-img svg path,
+        .hero-logo svg path {
+            fill: none;
+            stroke: #fff;
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .logo-img svg circle,
+        .hero-logo svg circle {
+            fill: #fff;
+            stroke: none;
+        }
         .nav-links { gap: 10px; color: var(--text-muted); font-size: .9rem; font-weight: 600; }
         .nav-links a { padding: 7px 10px; border-radius: 999px; transition: color .2s ease, background .2s ease; }
         .nav-links a:hover,
@@ -437,10 +454,31 @@
         .phone-preview { position: absolute; inset: 20px 34px auto auto; width: min(330px, 88vw); min-height: 520px; border: 1px solid rgba(255,255,255,.12); border-radius: 34px; background: linear-gradient(180deg, #102238, #07111f); box-shadow: 0 26px 70px rgba(0,0,0,.34); padding: 18px; transform: rotateY(-7deg) rotateX(3deg); animation: preview-float 6s ease-in-out infinite; }
         .phone-screen { min-height: 484px; border-radius: 24px; background: var(--bg-card); padding: 18px; overflow: hidden; }
         .preview-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; color: var(--text-muted); font-size: .78rem; font-weight: 700; }
-        .score-ring { display: grid; place-items: center; width: 132px; height: 132px; margin: 6px auto 20px; border-radius: 50%; background: conic-gradient(var(--teal) 0 84%, rgba(255,255,255,.1) 84%); color: #fff; font-size: 2rem; font-weight: 800; }
-        .score-ring span { display: grid; place-items: center; width: 104px; height: 104px; border-radius: 50%; background: var(--bg-card); }
+        .score-ring { display: grid; place-items: center; width: 132px; height: 132px; margin: 6px auto 20px; border-radius: 50%; background: conic-gradient(var(--teal) 0 84%, rgba(255,255,255,.1) 84%); color: #fff; font-size: 2rem; font-weight: 800; transition: background .1s linear; }
+        .score-ring span {
+            display: grid;
+            place-items: center;
+            width: 104px;
+            height: 104px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            color: var(--text-main);
+        }
+        #scoreVal {
+            font-weight: 900;
+            letter-spacing: .01em;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1;
+        }
         .preview-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-        .preview-list li { display: flex; justify-content: space-between; gap: 12px; padding: 11px 12px; border: 1px solid var(--border-soft); border-radius: 14px; background: rgba(0, 168, 152, .07); color: var(--text-main); font-size: .86rem; font-weight: 700; }
+        .preview-list li { display: flex; justify-content: space-between; gap: 12px; padding: 11px 12px; border: 1px solid var(--border-soft); border-radius: 14px; background: rgba(0, 168, 152, .07); color: var(--text-main); font-size: .86rem; font-weight: 700; transition: opacity .5s ease, transform .5s ease; }
+        .js .preview-list li { opacity: 0; transform: translateX(12px); }
+        .js[dir="rtl"] .preview-list li { transform: translateX(-12px); }
+        .js .preview-list.in-view li { opacity: 1; transform: translateX(0); }
+        .preview-list.in-view li:nth-child(1) { transition-delay: .1s; }
+        .preview-list.in-view li:nth-child(2) { transition-delay: .25s; }
+        .preview-list.in-view li:nth-child(3) { transition-delay: .4s; }
         .floating-card { position: absolute; left: 0; bottom: 54px; width: 210px; border: 1px solid var(--border-med); border-radius: 18px; background: var(--bg-card); padding: 16px; box-shadow: 0 18px 45px rgba(0,0,0,.24); }
         .floating-card strong { display: block; margin-bottom: 8px; color: var(--text-main); }
         .floating-card p { margin: 0; color: var(--text-muted); font-size: .86rem; line-height: 1.6; }
@@ -484,6 +522,7 @@
             color: var(--text-muted);
             font-size: .75rem;
             animation: hint-bounce 2s ease-in-out infinite;
+            transition: opacity .3s ease;
         }
         .scroll-hint svg { width: 20px; opacity: .56; }
         @keyframes hint-bounce {
@@ -518,8 +557,12 @@
             border-radius: 2px;
             background: linear-gradient(90deg, var(--teal), #00c4b3);
             box-shadow: 0 0 16px var(--teal-glow);
+            transform-origin: right center;
         }
         body.en .divider { margin-left: 0; }
+        [dir="ltr"] .divider { transform-origin: left center; }
+        .js .divider { transform: scaleX(0); transition: transform .6s ease .1s; }
+        .js .fade-in.visible .divider { transform: scaleX(1); }
         .section-title {
             max-width: 720px;
             margin: 0 0 20px;
@@ -609,7 +652,7 @@
             font-weight: 600;
             transition: transform .2s ease, border-color .2s ease, background .35s ease;
         }
-        .social-card:hover { transform: translateY(-4px); border-color: var(--teal); }
+        .social-card:hover { transform: translateY(-4px) scale(1.03); border-color: var(--teal); }
 
         .download-wrap {
             position: relative;
@@ -640,6 +683,8 @@
         .btn-dl.android { background: #fff; color: var(--navy); }
         .btn-dl.is-soon { cursor: default; opacity: .96; }
         .btn-dl.is-soon:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 0, 0, .28); }
+        .btn-dl:hover { animation: pulse-scale .5s ease; }
+        @keyframes pulse-scale { 50% { transform: translateY(-3px) scale(1.04); } }
         footer {
             padding: 48px 24px;
             border-top: 1px solid var(--border-soft);
@@ -660,9 +705,9 @@
         .js .fade-in.visible { opacity: 1; transform: none; }
 
         /* Staggered reveal for grouped items */
-        .proof-item:nth-child(2), .step-card:nth-child(2), .service-card:nth-child(2) { --reveal-delay: 90ms; }
-        .proof-item:nth-child(3), .step-card:nth-child(3), .service-card:nth-child(3) { --reveal-delay: 180ms; }
-        .service-card:nth-child(4) { --reveal-delay: 270ms; }
+        .proof-item:nth-child(2), .step-card:nth-child(2), .service-card:nth-child(2), .social-card:nth-child(2) { --reveal-delay: 90ms; }
+        .proof-item:nth-child(3), .step-card:nth-child(3), .service-card:nth-child(3), .social-card:nth-child(3) { --reveal-delay: 180ms; }
+        .service-card:nth-child(4), .social-card:nth-child(4) { --reveal-delay: 270ms; }
 
         /* Scroll progress indicator */
         .scroll-progress {
@@ -726,8 +771,8 @@
         .nav-links a.active { color: var(--teal); background: rgba(0, 168, 152, .12); }
 
         /* Nav: elevated state once the page is scrolled */
-        .site-nav { transition: background .3s ease, box-shadow .3s ease, border-color .3s ease, backdrop-filter .3s ease; }
-        .site-nav.scrolled { box-shadow: 0 12px 34px rgba(0, 0, 0, .3); border-bottom-color: rgba(0, 168, 152, .35); backdrop-filter: blur(20px) saturate(1.15); }
+        .site-nav { transition: padding .25s ease, background .3s ease, box-shadow .3s ease, border-color .3s ease, backdrop-filter .3s ease; }
+        .site-nav.scrolled { padding-block: 10px; box-shadow: 0 12px 34px rgba(0, 0, 0, .3); border-bottom-color: rgba(0, 168, 152, .35); backdrop-filter: blur(20px) saturate(1.15); }
         body.light .site-nav.scrolled { box-shadow: 0 12px 30px rgba(13, 27, 42, .12); }
 
         /* Hero: pulsing glow on the letter logo mark */
@@ -805,7 +850,9 @@
             background: linear-gradient(135deg, var(--teal), var(--teal-dark));
             color: #fff;
             box-shadow: 0 10px 24px var(--teal-glow);
+            transition: transform .3s ease;
         }
+        .step-card:hover .step-number { transform: scale(1.1); }
         @media (min-width: 821px) {
             .steps-grid::before {
                 content: '';
@@ -865,6 +912,8 @@
                 transition-duration: .001ms !important;
             }
             .js .fade-in { opacity: 1; transform: none; }
+            .js .preview-list li { opacity: 1; transform: none; }
+            .js .divider { transform: none; }
         }
     </style>
 </head>
@@ -876,7 +925,7 @@
                 @if ($cms->image('branding.logo_image'))
                     <img src="{{ $cms->image('branding.logo_image') }}" alt="">
                 @else
-                    {{ $cms->value('branding.logo_letter', 'س') }}
+                    {!! $brandMarkSvg !!}
                 @endif
             </span>
             {!! $cms->pair('branding.brand_name') !!}
@@ -927,7 +976,7 @@
                         @if ($cms->image('branding.logo_image'))
                             <img src="{{ $cms->image('branding.logo_image') }}" alt="">
                         @else
-                            {{ $cms->value('branding.logo_letter', 'س') }}
+                            {!! $brandMarkSvg !!}
                         @endif
                     </div>
                     <p class="hero-tagline">{!! $cms->pair('hero.tagline') !!}</p>
@@ -939,8 +988,8 @@
                 <div class="hero-visual fade-in" aria-hidden="true">
                     <div class="phone-preview"><div class="phone-screen">
                         <div class="preview-top"><span>Sirati ATS</span><strong>CV Score</strong></div>
-                        <div class="score-ring"><span>84%</span></div>
-                        <ul class="preview-list">
+                        <div class="score-ring" id="scoreRing"><span id="scoreVal">84%</span></div>
+                        <ul class="preview-list" id="previewList">
                             <li><span>Keywords</span><strong>Good</strong></li>
                             <li><span>Experience</span><strong>Improve</strong></li>
                             <li><span>ATS format</span><strong>Ready</strong></li>
@@ -949,7 +998,7 @@
                     <div class="floating-card"><strong>Smart template</strong><p>Clean layout ready for recruiters and screening systems.</p></div>
                 </div>
             </div>
-            <a class="scroll-hint" href="#about"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5"/></svg>{!! $cms->pair('hero.scroll_hint') !!}</a>
+            <a class="scroll-hint" href="#about" id="scrollHint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5"/></svg>{!! $cms->pair('hero.scroll_hint') !!}</a>
         </section>
 
         <section class="proof-band" aria-label="Platform highlights">
@@ -1019,11 +1068,11 @@
                 <h2 class="section-title">{!! $cms->pair('social.title') !!}</h2>
                 <p class="section-body">{!! $cms->pair('social.body') !!}</p>
             </div>
-            <div class="social-grid fade-in">
-                <a href="{{ $cms->value('social.tiktok_url', '#') }}" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.91a8.16 8.16 0 004.77 1.52V7a4.85 4.85 0 01-1-.31z"/></svg>TikTok</a>
-                <a href="{{ $cms->value('social.instagram_url', '#') }}" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>Instagram</a>
-                <a href="{{ $cms->value('social.linkedin_url', '#') }}" class="social-card" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LinkedIn</a>
-                <a href="mailto:{{ $cms->value('social.email', 'hello@sirati.app') }}" class="social-card"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>{!! $cms->pair('social.email_label') !!}</a>
+            <div class="social-grid">
+                <a href="{{ $cms->value('social.tiktok_url', '#') }}" class="social-card fade-in" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.91a8.16 8.16 0 004.77 1.52V7a4.85 4.85 0 01-1-.31z"/></svg>TikTok</a>
+                <a href="{{ $cms->value('social.instagram_url', '#') }}" class="social-card fade-in" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>Instagram</a>
+                <a href="{{ $cms->value('social.linkedin_url', '#') }}" class="social-card fade-in" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LinkedIn</a>
+                <a href="mailto:{{ $cms->value('social.email', 'hello@sirati.app') }}" class="social-card fade-in"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>{!! $cms->pair('social.email_label') !!}</a>
             </div>
         </section>
 
@@ -1061,7 +1110,7 @@
                             @if ($cms->image('branding.logo_image'))
                                 <img src="{{ $cms->image('branding.logo_image') }}" alt="">
                             @else
-                                {{ $cms->value('branding.logo_letter', 'س') }}
+                                {!! $brandMarkSvg !!}
                             @endif
                         </span>
                         {!! $cms->pair('branding.brand_name') !!}
@@ -1117,7 +1166,8 @@
         (function initScrollProgress() {
             const bar = document.getElementById('scrollProgress');
             const nav = document.querySelector('.site-nav');
-            if (!bar && !nav) return;
+            const hint = document.getElementById('scrollHint');
+            if (!bar && !nav && !hint) return;
             let ticking = false;
             function update() {
                 const doc = document.documentElement;
@@ -1125,12 +1175,42 @@
                 const pct = max > 0 ? (doc.scrollTop / max) * 100 : 0;
                 if (bar) bar.style.width = pct + '%';
                 if (nav) nav.classList.toggle('scrolled', doc.scrollTop > 20);
+                if (hint) hint.style.opacity = Math.max(0, 1 - doc.scrollTop / 300);
                 ticking = false;
             }
             window.addEventListener('scroll', () => {
                 if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
             }, { passive: true });
             update();
+        })();
+
+        // Score ring count-up (0 -> 84%) shortly after load
+        (function initScoreRing() {
+            const ring = document.getElementById('scoreRing');
+            const valEl = document.getElementById('scoreVal');
+            const list = document.getElementById('previewList');
+            if (!ring || !valEl) return;
+            const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduceMotion) {
+                if (list) list.classList.add('in-view');
+                return;
+            }
+            ring.style.background = 'conic-gradient(var(--teal) 0 0%, rgba(255,255,255,.1) 0%)';
+            valEl.textContent = '0%';
+            function animateScore() {
+                const target = 84, dur = 1200, start = performance.now();
+                function tick(t) {
+                    const p = Math.min((t - start) / dur, 1);
+                    const val = Math.round(target * p);
+                    ring.style.background = 'conic-gradient(var(--teal) 0 ' + val + '%, rgba(255,255,255,.1) ' + val + '%)';
+                    valEl.textContent = val + '%';
+                    if (p < 1) requestAnimationFrame(tick);
+                }
+                requestAnimationFrame(tick);
+                if (list) list.classList.add('in-view');
+            }
+            // score ring is above the fold, so trigger shortly after load
+            setTimeout(animateScore, 900);
         })();
 
         if ('IntersectionObserver' in window) {
