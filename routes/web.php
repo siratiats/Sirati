@@ -5,10 +5,11 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CvAnalysisController;
 use App\Http\Controllers\GeneratedCvController;
 use App\Http\Controllers\LandingLeadController;
+use App\Support\LandingContent;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('welcome', ['cms' => new LandingContent()]);
 })->name('landing');
 
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
@@ -37,11 +38,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/templates', [AdminController::class, 'cvTemplates'])->name('admin.cv-templates.index');
     Route::get('/admin/education', [AdminController::class, 'education'])->name('admin.education.index');
     Route::get('/admin/jobs', [AdminController::class, 'jobs'])->name('admin.jobs.index');
-    Route::get('/admin/landing', [AdminController::class, 'landingContent'])->name('admin.landing.index');
-    Route::post('/admin/landing', [AdminController::class, 'updateLandingContent'])->name('admin.landing.update');
     Route::get('/admin/leads', [AdminController::class, 'leads'])->name('admin.leads.index');
     Route::get('/admin/analyses', [AdminController::class, 'analyses'])->name('admin.analyses.index');
     Route::get('/admin/generated-cvs', [AdminController::class, 'generatedCvs'])->name('admin.generated-cvs.index');
+    Route::get('/admin/notifications', [AdminController::class, 'notifications'])->name('admin.notifications.index');
+    Route::post('/admin/notifications/count', [AdminController::class, 'notificationRecipientCount'])->name('admin.notifications.count');
+    Route::post('/admin/notifications/send', [AdminController::class, 'sendNotification'])->name('admin.notifications.send');
     Route::post('/admin/cv-templates', [AdminController::class, 'storeCvTemplate'])->name('admin.cv-templates.store');
     Route::patch('/admin/cv-templates/{cvTemplate}', [AdminController::class, 'updateCvTemplate'])->name('admin.cv-templates.update');
     Route::post('/admin/cv-templates/{cvTemplate}/default', [AdminController::class, 'setDefaultCvTemplate'])->name('admin.cv-templates.default');

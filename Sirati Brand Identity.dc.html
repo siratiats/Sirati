@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Tajawal:wght@500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body{margin:0;background:#E7EAEE;}
+    ::selection{background:#12B3A6;color:#fff;}
+  </style>
+</helmet>
+<x-import component-from-global-scope="doc-page" from="./doc-page.js" size="letter" orientation="landscape" margin="0.55in" hint-size="100%,100%">
+
+<div style="font-family:'Manrope',sans-serif;color:#101B33;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #101B33;padding-bottom:14px;margin-bottom:22px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <svg viewBox="0 0 100 100" style="width:40px;height:40px;">
+        <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" fill="none" stroke="#101B33" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
+        <circle cx="78" cy="23" r="5.5" fill="#12B3A6"></circle>
+      </svg>
+      <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;">sirati — Brand Identity System</div>
+    </div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:#5B6B82;text-transform:uppercase;">Backend · Mobile · v1.0</div>
+  </div>
+
+  <h1 style="font-size:26px;margin:0 0 12px;">1. Direction Summary</h1>
+  <ul style="font-size:14px;line-height:1.7;margin:0 0 26px;padding-left:20px;">
+    <li><strong>Name meaning drives the mark.</strong> Sirati (سيرتي, "my CV/my path") is a CV-improvement product for Arabic-speaking job seekers — the identity should visualize progress and a passed check, not a generic tech logo.</li>
+    <li><strong>Confidence through evidence.</strong> Every mark reads as a completed, structured action (a check, an ascent) — never decorative flourish — matching the product's ATS-scoring, evidence-based tone.</li>
+    <li><strong>One mark, two contexts.</strong> Backend and Mobile share one symbol and one color system; geometry of the container (chip vs. squircle) is the only differentiator — same DNA, instantly distinguishable in a stack.</li>
+    <li><strong>Bilingual by construction, not by translation.</strong> The system ships a Latin lockup (Manrope) and an Arabic lockup (Tajawal) as equal, native-feeling siblings — not a Latin mark with Arabic bolted on.</li>
+    <li><strong>Restraint at every size.</strong> Two brand colors, one geometric mark, monoline construction — built to survive a 16px favicon and a 20ft conference screen without redrawing.</li>
+  </ul>
+
+  <h1 style="font-size:26px;margin:0 0 12px;">2. Concept Family A — Ascent Mark <span style="font-size:12px;font-weight:700;color:#fff;background:#12B3A6;padding:3px 10px;border-radius:20px;vertical-align:middle;">SELECTED</span></h1>
+  <div style="display:flex;gap:22px;margin-bottom:8px;">
+    <div style="width:160px;height:160px;flex:none;background:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;border:1px solid #D8DEE6;">
+      <svg viewBox="0 0 100 100" style="width:80px;height:80px;">
+        <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" fill="none" stroke="#101B33" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
+        <circle cx="78" cy="23" r="5.5" fill="#12B3A6"></circle>
+      </svg>
+    </div>
+    <div style="font-size:13.5px;line-height:1.7;flex:1;">
+      <p style="margin:0 0 8px;"><strong>Core symbol:</strong> a single monoline stroke that dips like a checkmark and rises into an ascending path, capped with a solid accent dot — reads simultaneously as "passed" and "moving forward." Fully custom, not a stock check icon.</p>
+      <p style="margin:0 0 8px;"><strong>Wordmark style:</strong> lowercase Manrope ExtraBold, tight tracking (-2%), paired with Tajawal Bold for سيرتي — both geometric, humanist sans with matching x-height weight.</p>
+      <p style="margin:0 0 8px;"><strong>Palette:</strong> Ink Navy <code style="background:#F1F4F7;padding:1px 6px;border-radius:4px;">#101B33</code> · Signal Teal <code style="background:#F1F4F7;padding:1px 6px;border-radius:4px;">#12B3A6</code> · Slate <code style="background:#F1F4F7;padding:1px 6px;border-radius:4px;">#5B6B82</code> · Mist <code style="background:#F1F4F7;padding:1px 6px;border-radius:4px;">#EEF2F6</code></p>
+      <p style="margin:0;"><strong>Why it fits:</strong> the stroke is a literal "check" for Backend's job (ATS validation, scoring, pass/fail logic) and a literal "ascent" for Mobile's job (a user's CV visibly improving); one shape, two honest readings.</p>
+    </div>
+  </div>
+
+  <h1 style="font-size:26px;margin:22px 0 12px;">3. Concept Family B — Folded Page</h1>
+  <div style="display:flex;gap:22px;margin-bottom:8px;">
+    <div style="width:160px;height:160px;flex:none;background:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;border:1px solid #D8DEE6;">
+      <svg viewBox="0 0 100 100" style="width:78px;height:78px;">
+        <path d="M28 18 H62 L78 34 V82 H28 Z" fill="none" stroke="#101B33" stroke-width="7" stroke-linejoin="round"></path>
+        <path d="M62 18 V34 H78" fill="none" stroke="#101B33" stroke-width="7" stroke-linejoin="round"></path>
+        <path d="M39 56 L48 65 L68 43" fill="none" stroke="#12B3A6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </div>
+    <div style="font-size:13.5px;line-height:1.7;flex:1;">
+      <p style="margin:0 0 8px;"><strong>Core symbol:</strong> a geometric document with a folded corner (the CV itself) with a check cut through its body — the most literal of the three families, still built from straight geometric strokes, no skeuomorphism.</p>
+      <p style="margin:0 0 8px;"><strong>Wordmark style:</strong> same Manrope / Tajawal pairing as Family A, set slightly wider to balance the boxier mark.</p>
+      <p style="margin:0 0 8px;"><strong>Palette:</strong> identical Ink Navy / Signal Teal system — only the symbol changes across families, keeping the palette question separate from the symbol question.</p>
+      <p style="margin:0;"><strong>Why it fits:</strong> instantly legible as "your document" for Mobile's upload/edit flow; for Backend it reads as the data object the API processes — but the folded corner loses definition below ~20px and competes with real document/file icons in-product.</p>
+    </div>
+  </div>
+
+  <h1 style="font-size:26px;margin:22px 0 12px;">4. Concept Family C — Threaded Path</h1>
+  <div style="display:flex;gap:22px;margin-bottom:6px;">
+    <div style="width:160px;height:160px;flex:none;background:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;border:1px solid #D8DEE6;">
+      <svg viewBox="0 0 100 100" style="width:80px;height:80px;">
+        <path d="M20 78 C20 48 30 24 50 24 C70 24 80 48 80 78" fill="none" stroke="#101B33" stroke-width="9" stroke-linecap="round"></path>
+        <circle cx="50" cy="24" r="6" fill="#12B3A6"></circle>
+      </svg>
+    </div>
+    <div style="font-size:13.5px;line-height:1.7;flex:1;">
+      <p style="margin:0 0 8px;"><strong>Core symbol:</strong> a single arch — two paths converging upward to one point — evoking "سيرة" (a path/journey) and a gateway toward a goal, capped with the same accent dot as a destination marker.</p>
+      <p style="margin:0 0 8px;"><strong>Wordmark style:</strong> Manrope / Tajawal, generously spaced to echo the mark's symmetry.</p>
+      <p style="margin:0 0 8px;"><strong>Palette:</strong> same Ink Navy / Signal Teal core.</p>
+      <p style="margin:0;"><strong>Why it fits:</strong> strong metaphor for "your career path," but symmetric arches are a common fintech/data trope and the mark reads as static rather than active — it illustrates the name's meaning better than it illustrates the product's job (evaluate → fix → improve).</p>
+    </div>
+  </div>
+
+  <div style="page-break-before:always;"></div>
+
+  <h1 style="font-size:26px;margin:0 0 12px;">5. Final Direction Chosen</h1>
+  <div style="background:#101B33;color:#fff;border-radius:16px;padding:20px 24px;font-size:14px;line-height:1.7;margin-bottom:24px;">
+    <strong style="color:#12B3A6;">Family A — Ascent Mark</strong> is the production direction. It is the only concept that encodes both product jobs in one honest gesture (validate = check, improve = ascent) rather than illustrating the brand name literally. It survives 16px far better than Family B's folded corner, and it reads as active progress rather than Family C's static, over-used arch. Its monoline construction scales cleanly from a favicon to a splash screen without redraws, and its two-color system (one ink, one accent) keeps every future surface — Backend dashboards, Mobile screens, marketing — visually disciplined.
+  </div>
+
+  <h1 style="font-size:26px;margin:0 0 12px;">6. Logo System Specs</h1>
+
+  <h2 style="font-size:16px;margin:0 0 8px;">Master Brand — Sirati</h2>
+  <div style="display:flex;gap:18px;align-items:center;margin-bottom:14px;">
+    <div style="background:#fff;border:1px solid #D8DEE6;border-radius:14px;padding:22px 30px;display:flex;align-items:center;gap:14px;">
+      <svg viewBox="0 0 100 100" style="width:44px;height:44px;">
+        <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" fill="none" stroke="#101B33" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
+        <circle cx="78" cy="23" r="5.5" fill="#12B3A6"></circle>
+      </svg>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;">sirati</div>
+    </div>
+    <div style="background:#fff;border:1px solid #D8DEE6;border-radius:14px;padding:22px 30px;display:flex;align-items:center;gap:14px;direction:rtl;">
+      <div style="font-family:'Tajawal',sans-serif;font-size:28px;font-weight:900;">سيرتي</div>
+      <svg viewBox="0 0 100 100" style="width:44px;height:44px;">
+        <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" fill="none" stroke="#101B33" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
+        <circle cx="78" cy="23" r="5.5" fill="#12B3A6"></circle>
+      </svg>
+    </div>
+  </div>
+  <p style="font-size:13px;line-height:1.6;margin:0 0 16px;color:#334;">Mark : wordmark ratio is fixed at roughly 1:2.4. Latin lockup reads mark-then-word (LTR); Arabic lockup mirrors to word-then-mark (RTL) — never mirror the mark itself, only reorder the lockup.</p>
+
+  <h2 style="font-size:16px;margin:0 0 8px;">Sirati Backend</h2>
+  <div style="display:flex;gap:18px;align-items:center;margin-bottom:14px;">
+    <div style="background:#101B33;border-radius:14px;padding:20px 30px;display:flex;align-items:center;gap:16px;">
+      <div style="width:56px;height:56px;border-radius:12px;background:#1B2A4A;display:flex;align-items:center;justify-content:center;flex:none;">
+        <svg viewBox="0 0 100 100" style="width:34px;height:34px;">
+          <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="78" cy="23" r="5.5" fill="#12B3A6"></circle>
+        </svg>
+      </div>
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;">sirati</div>
+        <div style="font-size:11px;font-weight:700;color:#8FA0B8;letter-spacing:0.12em;">BACKEND</div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:13px;line-height:1.6;margin:0 0 16px;color:#334;">Container: rounded-square "chip" (corner radius = 21% of side) — a nod to server/board geometry. Default surface: Ink Navy badge (#101B33) with a lighter navy tile (#1B2A4A) holding the mark in reverse (white stroke, teal dot unchanged). "BACKEND" descriptor: uppercase, 12% tracking, Slate-on-navy (#8FA0B8).</p>
+
+  <h2 style="font-size:16px;margin:0 0 8px;">Sirati Mobile</h2>
+  <div style="display:flex;gap:18px;align-items:center;margin-bottom:14px;">
+    <div style="background:#fff;border:1px solid #D8DEE6;border-radius:14px;padding:20px 30px;display:flex;align-items:center;gap:16px;">
+      <div style="width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,#12384F 0%,#0E8F86 100%);display:flex;align-items:center;justify-content:center;flex:none;">
+        <svg viewBox="0 0 100 100" style="width:34px;height:34px;">
+          <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="78" cy="23" r="6" fill="#fff"></circle>
+        </svg>
+      </div>
+      <div>
+        <div style="font-size:22px;font-weight:800;color:#101B33;letter-spacing:-0.02em;">sirati</div>
+        <div style="font-size:11px;font-weight:700;color:#0E8F86;letter-spacing:0.12em;">MOBILE</div>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:13px;line-height:1.6;margin:0 0 20px;color:#334;">Container: squircle (corner radius = 26% of side, iOS/Android superellipse-friendly), navy→teal diagonal gradient (#12384F → #0E8F86). Mark is full monochrome white here (stroke and dot) — the gradient itself carries the accent color, so the mark stays a single flat tone for maximum legibility on a moving/colored surface.</p>
+
+  <h2 style="font-size:16px;margin:0 0 8px;">Monochrome &amp; Color Variants</h2>
+  <div style="display:flex;gap:14px;margin-bottom:10px;flex-wrap:wrap;">
+    <div style="background:#fff;border:1px solid #D8DEE6;border-radius:12px;padding:16px;width:150px;text-align:center;">
+      <svg viewBox="0 0 100 100" style="width:48px;height:48px;"><path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" fill="none" stroke="#101B33" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="78" cy="23" r="5.5" fill="#12B3A6"></circle></svg>
+      <div style="font-size:11px;margin-top:8px;color:#5B6B82;">Full color (light bg)</div>
+    </div>
+    <div style="background:#101B33;border-radius:12px;padding:16px;width:150px;text-align:center;">
+      <svg viewBox="0 0 100 100" style="width:48px;height:48px;"><path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="78" cy="23" r="5.5" fill="#12B3A6"></circle></svg>
+      <div style="font-size:11px;margin-top:8px;color:#8FA0B8;">Reverse (dark bg)</div>
+    </div>
+    <div style="background:#fff;border:1px solid #D8DEE6;border-radius:12px;padding:16px;width:150px;text-align:center;">
+      <svg viewBox="0 0 100 100" style="width:48px;height:48px;"><path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" fill="none" stroke="#101B33" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="78" cy="23" r="5.5" fill="#101B33"></circle></svg>
+      <div style="font-size:11px;margin-top:8px;color:#5B6B82;">Mono ink (stamp/print)</div>
+    </div>
+    <div style="background:#101B33;border-radius:12px;padding:16px;width:150px;text-align:center;">
+      <svg viewBox="0 0 100 100" style="width:48px;height:48px;"><path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="78" cy="23" r="5.5" fill="#fff"></circle></svg>
+      <div style="font-size:11px;margin-top:8px;color:#8FA0B8;">Mono white (on-photo)</div>
+    </div>
+  </div>
+
+  <h2 style="font-size:16px;margin:14px 0 8px;">Clear Space, Minimum Size &amp; Misuse</h2>
+  <div style="display:flex;gap:20px;font-size:13px;line-height:1.7;">
+    <ul style="margin:0;padding-left:18px;flex:1;">
+      <li><strong>Clear space:</strong> keep empty space around the full lockup equal to the height of the accent dot (≈1 unit) on every side; nothing else may enter that margin.</li>
+      <li><strong>Minimum size:</strong> mark-only down to 16px (favicon/tab); full lockup down to 96px wide on screen, 20mm in print.</li>
+      <li><strong>Contrast floor:</strong> ink #101B33 on white = 15.8:1; white on ink = 15.8:1 — both exceed WCAG AAA for text. Teal is accent-only, never used as text on light backgrounds.</li>
+    </ul>
+    <ul style="margin:0;padding-left:18px;flex:1;color:#8A1F1F;">
+      <li>Don't recolor the stroke to anything outside Ink Navy / White / approved mono.</li>
+      <li>Don't separate the accent dot from the stroke or resize it independently.</li>
+      <li>Don't rotate, skew, mirror, or add a drop shadow to the mark.</li>
+      <li>Don't set the wordmark in any typeface other than Manrope (Latin) or Tajawal (Arabic).</li>
+      <li>Don't place the two-tone version on a busy photo — use mono white instead.</li>
+    </ul>
+  </div>
+
+  <div style="page-break-before:always;"></div>
+
+  <h1 style="font-size:26px;margin:0 0 12px;">7. App Icon Specs — Sirati Mobile</h1>
+  <div style="display:flex;gap:24px;align-items:flex-end;margin-bottom:14px;">
+    <div style="text-align:center;">
+      <div style="width:120px;height:120px;border-radius:31px;background:linear-gradient(135deg,#12384F 0%,#0E8F86 100%);display:flex;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 100 100" style="width:70px;height:70px;"><path d="M20 54 C25 64 34 75 42 75 C49 75 53 67 58 58 C65 46 71 35 78 25" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="81" cy="21" r="8" fill="#fff"></circle></svg>
+      </div>
+      <div style="font-size:11px;color:#5B6B82;margin-top:6px;">1024px master</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#12384F 0%,#0E8F86 100%);display:flex;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 100 100" style="width:38px;height:38px;"><path d="M20 54 C25 64 34 75 42 75 C49 75 53 67 58 58 C65 46 71 35 78 25" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="81" cy="21" r="8" fill="#fff"></circle></svg>
+      </div>
+      <div style="font-size:11px;color:#5B6B82;margin-top:6px;">60pt @2x (120px)</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#12384F 0%,#0E8F86 100%);display:flex;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 100 100" style="width:24px;height:24px;"><path d="M20 54 C25 64 34 75 42 75 C49 75 53 67 58 58 C65 46 71 35 78 25" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="81" cy="21" r="8" fill="#fff"></circle></svg>
+      </div>
+      <div style="font-size:11px;color:#5B6B82;margin-top:6px;">24px</div>
+    </div>
+    <div style="text-align:center;">
+      <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#12384F 0%,#0E8F86 100%);display:flex;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 100 100" style="width:15px;height:15px;"><path d="M20 54 C25 64 34 75 42 75 C49 75 53 67 58 58 C65 46 71 35 78 25" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="81" cy="21" r="8" fill="#fff"></circle></svg>
+      </div>
+      <div style="font-size:11px;color:#5B6B82;margin-top:6px;">16px favicon</div>
+    </div>
+  </div>
+  <ul style="font-size:13px;line-height:1.7;margin:0 0 20px;padding-left:18px;">
+    <li>Icon-specific mark is re-drawn heavier than the wordmark lockup (stroke 13 vs. 9 on a 100-unit grid) — small-size legibility beats consistency with the print mark.</li>
+    <li>Full monochrome white on the navy→teal gradient — no two-tone dot at icon scale, it disappears below 40px.</li>
+    <li>Safe area: mark occupies the centre 66% of the canvas; iOS/Android both apply their own corner mask, so export the icon as a full square (no pre-rounded corners) at 1024×1024 and let each OS mask it.</li>
+    <li>Background never goes transparent — flat gradient fill only, per both platforms' opaque-icon requirement.</li>
+  </ul>
+
+  <h1 style="font-size:26px;margin:18px 0 12px;">8. SVG Assets</h1>
+  <p style="font-size:13px;color:#5B6B82;margin:0 0 10px;">Production source, ready to paste. All on a 100×100 viewBox unless noted.</p>
+
+  <div style="font-size:12px;font-weight:700;color:#101B33;margin:0 0 4px;">Master Logo (mark, two-tone)</div>
+  <pre style="background:#101B33;color:#D7E1EE;font-size:10.5px;line-height:1.55;padding:14px 16px;border-radius:10px;overflow-x:auto;margin:0 0 14px;">&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"&gt;
+  &lt;path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27"
+        fill="none" stroke="#101B33" stroke-width="9"
+        stroke-linecap="round" stroke-linejoin="round"/&gt;
+  &lt;circle cx="78" cy="23" r="5.5" fill="#12B3A6"/&gt;
+&lt;/svg&gt;</pre>
+
+  <div style="font-size:12px;font-weight:700;color:#101B33;margin:0 0 4px;">Backend Lockup</div>
+  <pre style="background:#101B33;color:#D7E1EE;font-size:10.5px;line-height:1.55;padding:14px 16px;border-radius:10px;overflow-x:auto;margin:0 0 14px;">&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100"&gt;
+  &lt;rect width="320" height="100" rx="0" fill="#101B33"/&gt;
+  &lt;rect x="14" y="14" width="72" height="72" rx="15" fill="#1B2A4A"/&gt;
+  &lt;g transform="translate(28,28) scale(0.44)"&gt;
+    &lt;path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27"
+          fill="none" stroke="#FFFFFF" stroke-width="9"
+          stroke-linecap="round" stroke-linejoin="round"/&gt;
+    &lt;circle cx="78" cy="23" r="5.5" fill="#12B3A6"/&gt;
+  &lt;/g&gt;
+  &lt;text x="102" y="48" font-family="Manrope" font-weight="800" font-size="26"
+        fill="#FFFFFF" letter-spacing="-0.5"&gt;sirati&lt;/text&gt;
+  &lt;text x="103" y="66" font-family="Manrope" font-weight="700" font-size="11"
+        fill="#8FA0B8" letter-spacing="1.6"&gt;BACKEND&lt;/text&gt;
+&lt;/svg&gt;</pre>
+
+  <div style="font-size:12px;font-weight:700;color:#101B33;margin:0 0 4px;">Mobile Lockup</div>
+  <pre style="background:#101B33;color:#D7E1EE;font-size:10.5px;line-height:1.55;padding:14px 16px;border-radius:10px;overflow-x:auto;margin:0 0 14px;">&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100"&gt;
+  &lt;defs&gt;
+    &lt;linearGradient id="siratiGrad" x1="0" y1="0" x2="1" y2="1"&gt;
+      &lt;stop offset="0" stop-color="#12384F"/&gt;
+      &lt;stop offset="1" stop-color="#0E8F86"/&gt;
+    &lt;/linearGradient&gt;
+  &lt;/defs&gt;
+  &lt;rect x="14" y="14" width="72" height="72" rx="19" fill="url(#siratiGrad)"/&gt;
+  &lt;g transform="translate(28,28) scale(0.44)"&gt;
+    &lt;path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27"
+          fill="none" stroke="#FFFFFF" stroke-width="10"
+          stroke-linecap="round" stroke-linejoin="round"/&gt;
+    &lt;circle cx="78" cy="23" r="6" fill="#FFFFFF"/&gt;
+  &lt;/g&gt;
+  &lt;text x="102" y="48" font-family="Manrope" font-weight="800" font-size="26"
+        fill="#101B33" letter-spacing="-0.5"&gt;sirati&lt;/text&gt;
+  &lt;text x="103" y="66" font-family="Manrope" font-weight="700" font-size="11"
+        fill="#0E8F86" letter-spacing="1.6"&gt;MOBILE&lt;/text&gt;
+&lt;/svg&gt;</pre>
+
+  <div style="font-size:12px;font-weight:700;color:#101B33;margin:0 0 4px;">Mobile App Icon (1024 master, square, unmasked)</div>
+  <pre style="background:#101B33;color:#D7E1EE;font-size:10.5px;line-height:1.55;padding:14px 16px;border-radius:10px;overflow-x:auto;margin:0 0 4px;">&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"&gt;
+  &lt;defs&gt;
+    &lt;linearGradient id="iconGrad" x1="0" y1="0" x2="1" y2="1"&gt;
+      &lt;stop offset="0" stop-color="#12384F"/&gt;
+      &lt;stop offset="1" stop-color="#0E8F86"/&gt;
+    &lt;/linearGradient&gt;
+  &lt;/defs&gt;
+  &lt;rect width="1024" height="1024" fill="url(#iconGrad)"/&gt;
+  &lt;g transform="translate(102,102) scale(8.2)"&gt;
+    &lt;path d="M20 54 C25 64 34 75 42 75 C49 75 53 67 58 58 C65 46 71 35 78 25"
+          fill="none" stroke="#FFFFFF" stroke-width="13"
+          stroke-linecap="round" stroke-linejoin="round"/&gt;
+    &lt;circle cx="81" cy="21" r="8" fill="#FFFFFF"/&gt;
+  &lt;/g&gt;
+&lt;/svg&gt;</pre>
+
+  <h1 style="font-size:26px;margin:20px 0 12px;">9. Export Checklist</h1>
+  <ul style="font-size:13px;line-height:1.8;margin:0 0 10px;padding-left:18px;columns:2;column-gap:32px;">
+    <li>Master logo — SVG (2-tone + mono ink + mono white)</li>
+    <li>Backend lockup — SVG, PNG 1024 &amp; 512</li>
+    <li>Mobile lockup — SVG, PNG 1024 &amp; 512</li>
+    <li>Mobile app icon — SVG master, PNG 1024, 512, 192</li>
+    <li>Favicon set — 16, 32, 48 PNG + favicon.ico + apple-touch-icon 180</li>
+    <li>Arabic lockup — SVG (سيرتي, RTL-correct)</li>
+    <li>Clear-space + min-size one-pager (this document, §6)</li>
+    <li>Color tokens — HEX + WCAG contrast table</li>
+  </ul>
+</div>
+
+</x-import>
+
+</x-dc>
+</body>
+</html>
