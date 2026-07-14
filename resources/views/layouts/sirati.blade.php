@@ -30,7 +30,20 @@
         .page { width: min(1060px, calc(100% - 32px)); margin: 0 auto; padding: 24px 0 48px; }
         .nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 28px; }
         .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 900; }
-        .mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 14px; color: #38bdf8; border: 1px solid #1e3a5f; background: #0f172a; }
+        .mark {
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            border: 1px solid #1e3a5f;
+            background: linear-gradient(135deg, #12384f, #0e8f86);
+        }
+        .mark svg { width: 24px; height: 24px; display: block; }
+        .mark path,
+        .mark circle { fill: none; stroke: #fff; }
+        .mark path { stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
+        .mark circle { fill: #fff; stroke: none; }
         .links { display: flex; flex-wrap: wrap; gap: 10px; color: #cbd5e1; font-size: 14px; }
         .links a { padding: 8px 12px; border: 1px solid #1e3a5f; border-radius: 999px; background: rgba(15,23,42,.72); }
         .hero-card, .card {
@@ -522,7 +535,15 @@
         @hasSection('hide_nav')
         @else
         <nav class="nav">
-            <a class="brand" href="{{ route('landing') }}"><span class="mark">Ø³</span><span>Sirati</span></a>
+            <a class="brand" href="{{ route('landing') }}">
+                <span class="mark" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" role="img" focusable="false">
+                        <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27"></path>
+                        <circle cx="78" cy="23" r="6"></circle>
+                    </svg>
+                </span>
+                <span>Sirati</span>
+            </a>
             <div class="links">
                 <a href="{{ route('landing') }}">Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</a>
                 <a href="{{ route('analyses.create') }}">ÙØ­Øµ Ø§Ù„Ø³ÙŠØ±Ø©</a>

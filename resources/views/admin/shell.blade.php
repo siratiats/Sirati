@@ -15,19 +15,24 @@
             ['key' => 'templates', 'route' => 'admin.cv-templates.index', 'label' => 'CV Templates', 'hint' => 'Designs'],
             ['key' => 'education', 'route' => 'admin.education.index', 'label' => 'Education', 'hint' => 'Content'],
             ['key' => 'jobs', 'route' => 'admin.jobs.index', 'label' => 'Jobs', 'hint' => 'Import & manage'],
-            ['key' => 'landing', 'route' => 'admin.landing.index', 'label' => 'Landing Content', 'hint' => 'Labels & logo'],
             ['key' => 'leads', 'route' => 'admin.leads.index', 'label' => 'Leads', 'hint' => 'Landing'],
             ['key' => 'analyses', 'route' => 'admin.analyses.index', 'label' => 'CV Analyses', 'hint' => 'Scores'],
             ['key' => 'generated-cvs', 'route' => 'admin.generated-cvs.index', 'label' => 'Generated CVs', 'hint' => 'Exports'],
+            ['key' => 'notifications', 'route' => 'admin.notifications.index', 'label' => 'Notifications', 'hint' => 'Push messages'],
         ];
     @endphp
 
     <div class="admin-shell">
-        <div class="admin-mobile-bar"><a class="admin-sidebar-brand" href="{{ route('admin.index') }}"><span class="mark">S</span><span><strong>Sirati Admin</strong><span>Application management</span></span></a><button class="button button-secondary" type="button" data-admin-menu-toggle aria-controls="admin-sidebar" aria-expanded="false">Menu</button></div>
+        <div class="admin-mobile-bar"><a class="admin-sidebar-brand" href="{{ route('admin.index') }}"><span class="mark" aria-hidden="true"><svg viewBox="0 0 100 100" role="img" focusable="false"><path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27"></path><circle cx="78" cy="23" r="6"></circle></svg></span><span><strong>Sirati Admin</strong><span>Application management</span></span></a><button class="button button-secondary" type="button" data-admin-menu-toggle aria-controls="admin-sidebar" aria-expanded="false">Menu</button></div>
         <button class="admin-sidebar-backdrop" type="button" data-admin-menu-close aria-label="Close admin navigation"></button>
         <aside class="admin-sidebar" id="admin-sidebar" aria-label="Admin navigation">
             <a class="admin-sidebar-brand" href="{{ route('admin.index') }}">
-                <span class="mark">S</span>
+                <span class="mark" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" role="img" focusable="false">
+                        <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27"></path>
+                        <circle cx="78" cy="23" r="6"></circle>
+                    </svg>
+                </span>
                 <span>
                     <strong>Sirati Admin</strong>
                     <span>Application management</span>
