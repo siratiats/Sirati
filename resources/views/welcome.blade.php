@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+@php($cms = $cms ?? new \App\Support\LandingContent())
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
