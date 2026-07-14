@@ -1,5 +1,14 @@
 <!DOCTYPE html>
-@php($cms = $cms ?? new \App\Support\LandingContent())
+@php
+    $cms = $cms ?? new \App\Support\LandingContent();
+
+    $metaTitle = 'سيرتي | Sirati';
+    $metaDesc = '';
+    $brandName = 'سيرتي';
+    $ogImage = null;
+    $brandMarkSvg = '<svg viewBox="0 0 100 100" role="img" focusable="false"><path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27"></path><circle cx="78" cy="23" r="6"></circle></svg>';
+    $favicon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12384f"/><stop offset="1" stop-color="#0e8f86"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#g)"/><path d="M14 35 C17 42 22 48 27 48 C31 48 34 43 37 38 C42 31 46 24 50 18" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="52" cy="15" r="4" fill="#ffffff"/></svg>';
+@endphp
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
@@ -8,12 +17,10 @@
     <title>{{ $cms->value('meta.title', 'سيرتي | Sirati') }}</title>
 
     @php
-        $metaTitle = $cms->value('meta.title', 'سيرتي | Sirati');
-        $metaDesc = $cms->value('meta.description');
-        $brandName = $cms->text('branding.brand_name', 'ar') ?: 'سيرتي';
-        $ogImage = $cms->image('branding.logo_image');
-        $brandMarkSvg = '<svg viewBox="0 0 100 100" role="img" focusable="false"><path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27"></path><circle cx="78" cy="23" r="6"></circle></svg>';
-        $favicon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12384f"/><stop offset="1" stop-color="#0e8f86"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#g)"/><path d="M14 35 C17 42 22 48 27 48 C31 48 34 43 37 38 C42 31 46 24 50 18" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="52" cy="15" r="4" fill="#ffffff"/></svg>';
+        $metaTitle = $cms->value('meta.title', $metaTitle);
+        $metaDesc = $cms->value('meta.description', $metaDesc);
+        $brandName = $cms->text('branding.brand_name', 'ar') ?: $brandName;
+        $ogImage = $cms->image('branding.logo_image') ?: $ogImage;
         $socialLinks = array_values(array_filter([
             $cms->value('social.tiktok_url'),
             $cms->value('social.instagram_url'),
@@ -33,6 +40,10 @@
     @php
         $favicon = $favicon ?? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12384f"/><stop offset="1" stop-color="#0e8f86"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#g)"/><path d="M14 35 C17 42 22 48 27 48 C31 48 34 43 37 38 C42 31 46 24 50 18" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="52" cy="15" r="4" fill="#ffffff"/></svg>';
         $ogImage = $ogImage ?? null;
+<<<<<<< Updated upstream
+=======
+        $brandName = $brandName ?? 'سيرتي';
+>>>>>>> Stashed changes
     @endphp
 
     <link rel="canonical" href="{{ url('/') }}">

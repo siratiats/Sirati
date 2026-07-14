@@ -8,15 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // A previous deploy created this table but failed before adding its
-        // indexes, leaving a partial table that was never recorded as migrated.
-        // Drop any such leftover so the create below runs cleanly.
-        Schema::dropIfExists('user_fcm_tokens');
-
         Schema::create('user_fcm_tokens', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('token', 512)->unique();
+            $table->string('token', 4096)->unique();
             $table->string('device_id')->nullable()->index();
             $table->string('platform', 20)->nullable();
             $table->string('app_version', 50)->nullable();

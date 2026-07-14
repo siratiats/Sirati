@@ -116,6 +116,53 @@ class JobsImportTest extends TestCase
         $this->assertNotContains('وظيفة قادمة', $titles);
     }
 
+
+    public function test_mobile_endpoint_filters_job_news_by_search_and_category(): void
+    {
+        Carbon::setTestNow('2026-06-29 12:00:00');
+
+        JobNews::create([
+            'language' => 'en',
+            'title' => 'Senior Frontend Developer',
+            'company' => 'Future Solutions Co.',
+            'location' => 'Riyadh',
+            'body' => 'Build Flutter and web software experiences.',
+            'is_published' => true,
+            'source' => 'manual',
+            'source_row_key' => 'TECH-1',
+        ]);
+        JobNews::create([
+            'language' => 'en',
+            'title' => 'Finance Analyst',
+            'company' => 'Capital House',
+            'location' => 'Jeddah',
+            'body' => 'Support accounting and investment reporting.',
+            'is_published' => true,
+            'source' => 'manual',
+            'source_row_key' => 'FIN-1',
+        ]);
+        JobNews::create([
+            'language' => 'en',
+            'title' => 'Nurse Coordinator',
+            'company' => 'Care Clinic',
+            'location' => 'Dammam',
+            'body' => 'Coordinate patient care and clinic operations.',
+            'is_published' => true,
+            'source' => 'manual',
+            'source_row_key' => 'HEALTH-1',
+        ]);
+
+        $techPayload = $this->getJson('/api/mobile/job-news?lang=en&category=tech')->assertOk()->json('data');
+        $this->assertSame('tech', $techPayload['selected_category']);
+        $this->assertSame(['Senior Frontend Developer'], collect($techPayload['items'])->pluck('title')->all());
+        $this->assertSame('tech', $techPayload['items'][0]['category']);
+
+        $searchTitles = collect($this->getJson('/api/mobile/job-news?lang=en&q=Capital')->assertOk()->json('data.items'))
+            ->pluck('title')
+            ->all();
+        $this->assertSame(['Finance Analyst'], $searchTitles);
+    }
+
     public function test_mobile_endpoint_payload_includes_validity_and_apply_url(): void
     {
         Carbon::setTestNow('2026-06-29 12:00:00');
