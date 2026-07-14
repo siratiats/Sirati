@@ -5,13 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\CvAnalysis;
 use App\Models\CvTemplate;
 use App\Models\EducationContent;
+use App\Jobs\SendBulkNotificationJob;
 use App\Models\GeneratedCv;
 use App\Models\JobNews;
 use App\Models\LandingLead;
-use App\Models\SiteSetting;
+use App\Models\MobileNotification;
+use App\Models\NotificationCampaign;
+use App\Models\User;
+use App\Models\UserFcmToken;
 use App\Services\JobsGoogleSheetSyncService;
 use App\Services\JobsImportService;
-use App\Support\SiteContent;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -89,84 +93,6 @@ class AdminController extends Controller
         ]);
     }
 
-    public function landingContent(Request $request)
-    {
-        $this->authorizeAdmin($request);
-
-        return view('admin.landing', [
-            'settingGroups' => SiteSetting::query()
-                ->orderBy('sort_order')
-                ->get()
-                ->groupBy('group'),
-        ]);
-    }
-
-    public function updateLandingContent(Request $request, SiteContent $siteContent)
-    {
-        $this->authorizeAdmin($request);
-
-        $settings = SiteSetting::query()->get()->keyBy('id');
-
-        $validated = $request->validate([
-            'settings' => ['array'],
-            'settings.*.value_ar' => ['nullable', 'string', 'max:4000'],
-            'settings.*.value_en' => ['nullable', 'string', 'max:4000'],
-            'settings.*.value' => ['nullable', 'string', 'max:2000'],
-            'logos' => ['array'],
-            'logos.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,svg', 'max:2048'],
-            'clear_logos' => ['array'],
-        ]);
-
-        DB::transaction(function () use ($request, $settings, $validated): void {
-            foreach ($validated['settings'] ?? [] as $id => $input) {
-                $setting = $settings->get((int) $id);
-                if (! $setting) {
-                    continue;
-                }
-
-                if ($setting->type === 'image') {
-                    continue; // images handled below
-                }
-
-                if (in_array($setting->type, ['text', 'textarea'], true)) {
-                    $setting->value_ar = $input['value_ar'] ?? null;
-                    $setting->value_en = $input['value_en'] ?? null;
-                } else { // plain, url
-                    $setting->value = $input['value'] ?? null;
-                }
-
-                $setting->save();
-            }
-
-            // Image (logo) uploads and clears, keyed by setting id.
-            foreach ($settings->where('type', 'image') as $setting) {
-                $clear = (array) $request->input('clear_logos', []);
-
-                if (isset($clear[$setting->id])) {
-                    if ($setting->value) {
-                        Storage::disk('public')->delete($setting->value);
-                    }
-                    $setting->value = null;
-                    $setting->save();
-                    continue;
-                }
-
-                if ($request->hasFile("logos.{$setting->id}")) {
-                    if ($setting->value) {
-                        Storage::disk('public')->delete($setting->value);
-                    }
-                    $setting->value = $request->file("logos.{$setting->id}")
-                        ->store('branding', 'public');
-                    $setting->save();
-                }
-            }
-        });
-
-        $siteContent->flush();
-
-        return redirect()->route('admin.landing.index')->with('status', 'Landing content updated.');
-    }
-
     public function analyses(Request $request)
     {
         $this->authorizeAdmin($request);
@@ -183,6 +109,140 @@ class AdminController extends Controller
         return view('admin.generated-cvs', [
             'generatedCvs' => GeneratedCv::latest()->paginate(20, ['*'], 'generated_page')->withQueryString(),
         ]);
+    }
+
+    /** Dispatch user IDs to bulk-send jobs in batches of this size. */
+    private const NOTIFICATION_CHUNK = 500;
+
+    /** A 'sending' campaign with no processed chunks after this long looks stalled. */
+    private const CAMPAIGN_STALLED_MINUTES = 3;
+
+    public function notifications(Request $request)
+    {
+        $this->authorizeAdmin($request);
+
+        // Campaigns still 'sending' well past dispatch with no chunk processed
+        // usually mean the queue worker isn't running — surface that to the admin.
+        $stalledCampaigns = NotificationCampaign::where('status', 'sending')
+            ->where('chunks_completed', 0)
+            ->where('created_at', '<', now()->subMinutes(self::CAMPAIGN_STALLED_MINUTES))
+            ->latest()
+            ->get(['id', 'title', 'created_at']);
+
+        return view('admin.notifications', [
+            'campaigns' => NotificationCampaign::latest()
+                ->paginate(15, ['*'], 'campaigns_page')
+                ->withQueryString(),
+            'stalledCampaigns' => $stalledCampaigns,
+            'stalledAfterMinutes' => self::CAMPAIGN_STALLED_MINUTES,
+            'notificationStats' => [
+                'reachable_users' => User::whereHas('fcmTokens', fn ($q) => $q->where('is_active', true))->count(),
+                'active_tokens' => UserFcmToken::where('is_active', true)->count(),
+                'sent_total' => MobileNotification::count(),
+            ],
+        ]);
+    }
+
+    /** Live recipient-count preview for the compose form (#5). */
+    public function notificationRecipientCount(Request $request): JsonResponse
+    {
+        $this->authorizeAdmin($request);
+
+        $validated = $request->validate([
+            'audience' => ['required', 'in:all,emails'],
+            'emails' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $count = $this->recipientQuery($validated['audience'], $validated['emails'] ?? null)->count();
+
+        return response()->json(['count' => $count]);
+    }
+
+    public function sendNotification(Request $request)
+    {
+        $this->authorizeAdmin($request);
+
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:180'],
+            'body' => ['required', 'string', 'max:1000'],
+            'type' => ['nullable', 'string', 'max:60'],
+            'action_type' => ['nullable', 'in:screen,url,notifications'],
+            'action_url' => ['nullable', 'required_if:action_type,screen', 'required_if:action_type,url', 'string', 'max:255'],
+            'audience' => ['required', 'in:all,emails'],
+            'emails' => ['nullable', 'string', 'max:5000'],
+            'mode' => ['nullable', 'in:send,test'],
+        ]);
+
+        $isTest = ($validated['mode'] ?? 'send') === 'test';
+
+        // A test send targets only the signed-in admin's own device(s).
+        $query = $isTest
+            ? User::whereKey($request->user()->id)
+                ->whereHas('fcmTokens', fn ($q) => $q->where('is_active', true))
+            : $this->recipientQuery($validated['audience'], $validated['emails'] ?? null);
+
+        $userIds = $query->pluck('id')->all();
+
+        if ($userIds === []) {
+            $reason = $isTest
+                ? 'Your admin account has no active device — open the app and sign in first.'
+                : 'No reachable users matched — nothing was queued.';
+
+            return redirect()->route('admin.notifications.index')->with('status', $reason);
+        }
+
+        $campaign = NotificationCampaign::create([
+            'title' => $validated['title'],
+            'body' => $validated['body'],
+            'type' => $validated['type'] ?: 'info',
+            'action_type' => $validated['action_type'] ?? null,
+            'action_url' => $validated['action_url'] ?: null,
+            'audience' => $isTest ? 'test' : $validated['audience'],
+            'sent_by' => $request->user()->email,
+            'recipients_queued' => count($userIds),
+            'chunks_total' => (int) ceil(count($userIds) / self::NOTIFICATION_CHUNK),
+            'status' => 'sending',
+        ]);
+
+        foreach (array_chunk($userIds, self::NOTIFICATION_CHUNK) as $chunk) {
+            SendBulkNotificationJob::dispatch(
+                userIds: $chunk,
+                title: $campaign->title,
+                body: $campaign->body,
+                type: $campaign->type,
+                actionType: $campaign->action_type,
+                actionUrl: $campaign->action_url,
+                campaignId: $campaign->id,
+            );
+        }
+
+        $message = $isTest
+            ? 'Test notification queued to your device.'
+            : "Notification queued for {$campaign->recipients_queued} recipient(s).";
+
+        return redirect()->route('admin.notifications.index')->with('status', $message);
+    }
+
+    /**
+     * Build the recipient query shared by the send action and the count preview.
+     * Only users with at least one active device token are ever included.
+     */
+    private function recipientQuery(string $audience, ?string $emails)
+    {
+        $query = User::whereHas('fcmTokens', fn ($q) => $q->where('is_active', true));
+
+        if ($audience === 'emails') {
+            $list = collect(preg_split('/[\s,;]+/', (string) $emails))
+                ->map(fn ($email) => trim($email))
+                ->filter()
+                ->unique()
+                ->values();
+
+            // No emails supplied → match nobody rather than everybody.
+            $query->whereIn('email', $list->isEmpty() ? [''] : $list->all());
+        }
+
+        return $query;
     }
 
     private function dashboardStats(): array

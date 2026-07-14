@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Support\SiteContent;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,7 +11,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(SiteContent::class);
+        //
     }
 
     /**
@@ -21,6 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::share('cms', $this->app->make(SiteContent::class));
+        //
     }
 }

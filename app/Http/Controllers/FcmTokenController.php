@@ -12,7 +12,7 @@ class FcmTokenController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'token' => ['required', 'string', 'max:512'],
+            'token' => ['required', 'string', 'max:4096'],
             'device_id' => ['nullable', 'string', 'max:255'],
             'platform' => ['nullable', 'string', Rule::in(['android', 'ios'])],
             'app_version' => ['nullable', 'string', 'max:50'],
@@ -64,7 +64,7 @@ class FcmTokenController extends Controller
     public function destroy(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'token' => ['required', 'string', 'max:512'],
+            'token' => ['required', 'string', 'max:4096'],
         ]);
 
         UserFcmToken::where('user_id', $request->user()->id)

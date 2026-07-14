@@ -17,8 +17,65 @@ class FirebaseNotificationService
 {
     public const DEFAULT_ANDROID_CHANNEL_ID = 'high_importance_channel';
 
+    /** FCM allows at most 500 tokens per multicast request. */
+    private const MULTICAST_CHUNK = 500;
+
+    /** Insert MobileNotification rows in batches to keep queries bounded. */
+    private const INSERT_CHUNK = 1000;
+
     public function __construct(private readonly Messaging $messaging)
     {
+    }
+
+    /**
+     * Bulk broadcast: persist one MobileNotification per user and push to all of
+     * their active tokens in a single multicast pass. Used by broadcast jobs so a
+     * campaign of N users costs a handful of queries instead of N round-trips.
+     *
+     * @param  array<int>  $userIds
+     */
+    public function createAndSendToUsers(
+        array $userIds,
+        string $title,
+        string $body,
+        string $type = 'info',
+        ?string $actionType = null,
+        ?string $actionUrl = null,
+    ): array {
+        $userIds = array_values(array_unique(array_map('intval', $userIds)));
+
+        if ($userIds === []) {
+            return $this->emptyResult();
+        }
+
+        $now = now();
+        $rows = array_map(static fn (int $id): array => [
+            'user_id' => $id,
+            'type' => $type,
+            'title' => $title,
+            'body' => $body,
+            'action_type' => $actionType,
+            'action_url' => $actionUrl,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $userIds);
+
+        foreach (array_chunk($rows, self::INSERT_CHUNK) as $chunk) {
+            MobileNotification::insert($chunk);
+        }
+
+        $tokens = UserFcmToken::whereIn('user_id', $userIds)
+            ->where('is_active', true)
+            ->pluck('token')
+            ->all();
+
+        // Broadcasts share one data payload, so per-user notification_id is omitted;
+        // tapping opens the notifications screen which lists the user's own records.
+        return $this->sendToTokens($tokens, $title, $body, [
+            'type' => $type,
+            'action_type' => $actionType,
+            'action_url' => $actionUrl,
+        ]);
     }
 
     public function createAndSendToUser(
@@ -136,27 +193,41 @@ class FirebaseNotificationService
 
     private function sendMulticast(CloudMessage $message, array $tokens): array
     {
-        try {
-            $report = $this->messaging->sendMulticast($message, $tokens);
-        } catch (MessagingException|Throwable $exception) {
-            Log::error('Firebase notification send failed.', [
-                'error' => $exception->getMessage(),
-            ]);
+        $total = 0;
+        $successes = 0;
+        $failures = 0;
+        $invalidTokens = [];
 
-            throw $exception;
-        }
+        // FCM caps a multicast at 500 tokens; chunk so any recipient count is safe.
+        foreach (array_chunk($tokens, self::MULTICAST_CHUNK) as $chunk) {
+            try {
+                $report = $this->messaging->sendMulticast($message, $chunk);
+            } catch (MessagingException|Throwable $exception) {
+                Log::error('Firebase notification send failed.', [
+                    'error' => $exception->getMessage(),
+                ]);
 
-        $this->deactivateInvalidTokens($report);
-        $this->logFailures($report);
+                throw $exception;
+            }
 
-        return [
-            'total' => count($tokens),
-            'successes' => $report->successes()->count(),
-            'failures' => $report->failures()->count(),
-            'invalid_tokens' => array_values(array_unique(array_merge(
+            $this->deactivateInvalidTokens($report);
+            $this->logFailures($report);
+
+            $total += count($chunk);
+            $successes += $report->successes()->count();
+            $failures += $report->failures()->count();
+            $invalidTokens = array_merge(
+                $invalidTokens,
                 $report->invalidTokens(),
                 $report->unknownTokens(),
-            ))),
+            );
+        }
+
+        return [
+            'total' => $total,
+            'successes' => $successes,
+            'failures' => $failures,
+            'invalid_tokens' => array_values(array_unique($invalidTokens)),
         ];
     }
 

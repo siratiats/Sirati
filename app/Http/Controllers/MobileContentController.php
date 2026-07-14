@@ -9,6 +9,7 @@ use App\Models\GeneratedCv;
 use App\Models\JobNews;
 use App\Models\MobileNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 
 class MobileContentController extends Controller
 {
@@ -70,8 +71,12 @@ class MobileContentController extends Controller
                 'score_total' => $cv->score_total,
                 'is_draft' => false,
                 'can_download' => true,
-                'pdf_url' => url("/api/generated-cvs/{$cv->id}/pdf"),
-                'template_pdf_url' => url("/api/generated-cvs/{$cv->id}/download"),
+                'pdf_url' => URL::temporarySignedRoute(
+                    'api.generated-cvs.pdf',
+                    now()->addMinutes(30),
+                    ['generatedCv' => $cv->id]
+                ),
+                'template_pdf_url' => url("/generated-cvs/{$cv->id}/pdf"),
             ];
         })->values();
 
@@ -236,14 +241,30 @@ class MobileContentController extends Controller
     public function jobNews(Request $request): array
     {
         $language = $this->language($request);
-        $items = JobNews::query()
+        $category = $this->jobNewsCategory($request->query('category'));
+        $search = trim((string) $request->query('q', ''));
+
+        $query = JobNews::query()
             ->where('language', $language)
             ->active()
             ->orderBy('sort_order')
             ->latest('published_at')
-            ->latest()
-            ->limit(20)
+            ->latest();
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search): void {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('company', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhere('body', 'like', "%{$search}%");
+            });
+        }
+
+        $items = $query
+            ->limit($category === null ? 20 : 80)
             ->get()
+            ->filter(fn (JobNews $item): bool => $category === null || $this->inferJobCategory($item) === $category)
+            ->take(20)
             ->map(fn (JobNews $item): array => $this->jobNewsPayload($item, $language));
 
         return [
@@ -252,6 +273,7 @@ class MobileContentController extends Controller
                 'subtitle' => $language === 'en'
                     ? 'Fresh opportunities and hiring updates for your next step.'
                     : 'فرص وتحديثات توظيف تساعدك في خطوتك القادمة.',
+                'selected_category' => $category ?? 'all',
                 'items' => $items,
             ],
         ];
@@ -324,6 +346,7 @@ class MobileContentController extends Controller
             'company' => $item->company,
             'location' => $item->location,
             'body' => $item->body,
+            'category' => $this->inferJobCategory($item),
             'url' => $item->url,
             'apply_url' => $item->apply_url,
             'valid_from' => $item->valid_from?->toDateString(),
@@ -332,6 +355,39 @@ class MobileContentController extends Controller
             'published_label' => $item->published_at?->diffForHumans(),
             'published_at' => $item->published_at?->toISOString(),
         ];
+    }
+
+    private function jobNewsCategory($value): ?string
+    {
+        $category = trim((string) $value);
+
+        return in_array($category, ['tech', 'finance', 'health'], true) ? $category : null;
+    }
+
+    private function inferJobCategory(JobNews $item): string
+    {
+        $text = mb_strtolower(implode(' ', array_filter([
+            $item->title,
+            $item->company,
+            $item->location,
+            $item->body,
+        ])), 'UTF-8');
+
+        $keywordMap = [
+            'tech' => ['developer', 'engineer', 'software', 'frontend', 'backend', 'full stack', 'flutter', 'laravel', 'data', 'cyber', 'cloud', 'devops', 'programmer', 'it ', 'qa ', 'ui ', 'ux '],
+            'finance' => ['finance', 'financial', 'accountant', 'accounting', 'bank', 'banking', 'investment', 'treasury', 'payroll', 'audit', 'auditor', 'tax'],
+            'health' => ['health', 'healthcare', 'medical', 'doctor', 'nurse', 'nursing', 'clinic', 'hospital', 'pharma', 'pharmacy', 'patient', 'laboratory'],
+        ];
+
+        foreach ($keywordMap as $category => $keywords) {
+            foreach ($keywords as $keyword) {
+                if (str_contains($text, $keyword)) {
+                    return $category;
+                }
+            }
+        }
+
+        return 'general';
     }
 
     private function notificationPayload(MobileNotification $notification): array
