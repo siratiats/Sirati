@@ -40,10 +40,7 @@
     @php
         $favicon = $favicon ?? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12384f"/><stop offset="1" stop-color="#0e8f86"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#g)"/><path d="M14 35 C17 42 22 48 27 48 C31 48 34 43 37 38 C42 31 46 24 50 18" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="52" cy="15" r="4" fill="#ffffff"/></svg>';
         $ogImage = $ogImage ?? null;
-<<<<<<< Updated upstream
-=======
         $brandName = $brandName ?? 'سيرتي';
->>>>>>> Stashed changes
     @endphp
 
     <link rel="canonical" href="{{ url('/') }}">
