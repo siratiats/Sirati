@@ -1,0 +1,135 @@
+diff --git a/lib/services/cv_api_service.dart b/lib/services/cv_api_service.dart
+--- a/lib/services/cv_api_service.dart
++++ b/lib/services/cv_api_service.dart
+@@ -66,7 +66,15 @@ class CvApiService {
+     );
+ 
+     final data = response['data'];
+-    return data is Map<String, dynamic> ? data : const {};
++    if (data is! Map<String, dynamic>) return const {};
++
++    return {
++      'enhanced_text': data['enhanced_text']?.toString() ?? '',
++      'changes_made': _stringList(data['changes_made']),
++      'missing_facts': _stringList(data['missing_facts']),
++      'ats_keywords_added': _stringList(data['ats_keywords_added']),
++      'unverified_claims': _unverifiedClaims(data['unverified_claims']),
++    };
+   }
+ 
+   Future<Map<String, dynamic>> enhanceJobDescription({
+@@ -90,6 +98,28 @@ class CvApiService {
+     return data is Map<String, dynamic> ? data : const {};
+   }
+ 
++  List<String> _stringList(dynamic value) => value is List
++      ? value
++          .map((item) => item.toString().trim())
++          .where((item) => item.isNotEmpty)
++          .toList()
++      : const [];
++
++  List<Map<String, String>> _unverifiedClaims(dynamic value) {
++    if (value is! List) return const [];
++
++    return value
++        .whereType<Map>()
++        .map((claim) => {
++              'text': claim['text']?.toString().trim() ?? '',
++              'kind': claim['kind']?.toString() ?? '',
++            })
++        .where((claim) =>
++            claim['text']!.isNotEmpty &&
++            (claim['kind'] == 'date' || claim['kind'] == 'employer'))
++        .toList();
++  }
++
+   Future<GeneratedCv> updateGeneratedCv(
+     int id,
+     Map<String, dynamic> payload,
+diff --git a/lib/widgets/ai_cv_field.dart b/lib/widgets/ai_cv_field.dart
+--- a/lib/widgets/ai_cv_field.dart
++++ b/lib/widgets/ai_cv_field.dart
+@@ -149,6 +149,16 @@ class _EnhancementResultCard extends StatelessWidget {
+       .where((item) => item.isNotEmpty)
+       .toList();
+ 
++  List<Map<String, String>> _claims() =>
++      (result['unverified_claims'] as List? ?? const [])
++          .whereType<Map>()
++          .map((claim) => {
++                'text': claim['text']?.toString().trim() ?? '',
++                'kind': claim['kind']?.toString() ?? '',
++              })
++          .where((claim) => claim['text']!.isNotEmpty)
++          .toList();
++
+   @override
+   Widget build(BuildContext context) {
+     final changes = _strings('changes_made');
+@@ -156,6 +166,7 @@ class _EnhancementResultCard extends StatelessWidget {
+     final missing = _strings('missing_facts');
+     final keywords = _strings('ats_keywords_added');
++    final claims = _claims();
+     final c = context.sirati;
+ 
+     return Container(
+@@ -234,6 +245,52 @@ class _EnhancementResultCard extends StatelessWidget {
+               ),
+             ),
+           ],
++          if (claims.isNotEmpty) ...[
++            const SizedBox(height: 10),
++            Container(
++              key: Key('unverified_claims_$field'),
++              width: double.infinity,
++              padding: const EdgeInsets.all(12),
++              decoration: BoxDecoration(
++                color: c.warningLight,
++                borderRadius: BorderRadius.circular(10),
++                border: Border.all(color: c.warning.withValues(alpha: 0.35)),
++              ),
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Text(
++                    english
++                        ? 'Verify these details in the enhanced text'
++                        : 'تحقق من هذه التفاصيل في النص المحسّن',
++                    style: TextStyle(
++                      color: c.textPrimary,
++                      fontSize: 12.5,
++                      fontWeight: FontWeight.w700,
++                    ),
++                  ),
++                  const SizedBox(height: 7),
++                  Wrap(
++                    spacing: 6,
++                    runSpacing: 6,
++                    children: claims
++                        .map((claim) => Chip(
++                              key: Key(
++                                  'unverified_${field}_${claim['kind']}_${claim['text']}'),
++                              avatar: Icon(
++                                claim['kind'] == 'date'
++                                    ? Icons.event_outlined
++                                    : Icons.business_outlined,
++                                size: 16,
++                                color: c.warning,
++                              ),
++                              label: Text(
++                                BidiText.protectLatinTokens(claim['text']!),
++                              ),
++                              visualDensity: VisualDensity.compact,
++                              backgroundColor: c.surfaceLow,
++                              side: BorderSide(color: c.warning),
++                            ))
++                        .toList(),
++                  ),
++                ],
++              ),
++            ),
++          ],
+           if (keywords.isNotEmpty) ...[
+             const SizedBox(height: 10),
+             Wrap(

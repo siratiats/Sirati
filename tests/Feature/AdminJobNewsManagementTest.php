@@ -17,9 +17,9 @@ class AdminJobNewsManagementTest extends TestCase
 
         JobNews::create([
             'language' => 'ar',
-            'title' => 'Ù…Ø·ÙˆØ± Flutter',
-            'company' => 'Ø´Ø±ÙƒØ© Ø§Ù„Ø£Ù…Ù„',
-            'body' => 'ØªÙØ§ØµÙŠÙ„ Ø§Ù„ÙˆØ¸ÙŠÙØ©',
+            'title' => 'مطور Flutter',
+            'company' => 'شركة الأمل',
+            'body' => 'تفاصيل الوظيفة',
             'is_published' => true,
             'source' => 'google_sheet',
             'source_row_key' => 'JOB-1',
@@ -40,7 +40,7 @@ class AdminJobNewsManagementTest extends TestCase
         ]));
 
         $response->assertOk();
-        $response->assertSee('Ù…Ø·ÙˆØ± Flutter');
+        $response->assertSee('مطور Flutter');
         $response->assertDontSee('Backend Engineer');
         $response->assertSee('Job management');
     }
@@ -50,8 +50,8 @@ class AdminJobNewsManagementTest extends TestCase
         $admin = User::factory()->create();
         $job = JobNews::create([
             'language' => 'ar',
-            'title' => 'Ù‚Ø¯ÙŠÙ…',
-            'body' => 'ØªÙØ§ØµÙŠÙ„ Ù‚Ø¯ÙŠÙ…Ø©',
+            'title' => 'قديم',
+            'body' => 'تفاصيل قديمة',
             'is_published' => false,
             'source' => 'manual',
             'source_row_key' => 'JOB-3',
@@ -59,10 +59,10 @@ class AdminJobNewsManagementTest extends TestCase
 
         $response = $this->actingAs($admin)->patch(route('admin.job-news.update', $job), [
             'language' => 'ar',
-            'title' => 'Ø¹Ù†ÙˆØ§Ù† Ù…Ø­Ø¯Ø«',
-            'company' => 'Ø´Ø±ÙƒØ© Ø¬Ø¯ÙŠØ¯Ø©',
-            'location' => 'Ø§Ù„Ø±ÙŠØ§Ø¶',
-            'body' => 'ØªÙØ§ØµÙŠÙ„ Ù…Ø­Ø¯Ø«Ø©',
+            'title' => 'عنوان محدث',
+            'company' => 'شركة جديدة',
+            'location' => 'الرياض',
+            'body' => 'تفاصيل محدثة',
             'url' => 'https://example.com/job',
             'apply_url' => 'https://example.com/apply',
             'valid_from' => '2026-06-29',
@@ -73,8 +73,8 @@ class AdminJobNewsManagementTest extends TestCase
 
         $response->assertRedirect();
         $job->refresh();
-        $this->assertSame('Ø¹Ù†ÙˆØ§Ù† Ù…Ø­Ø¯Ø«', $job->title);
-        $this->assertSame('Ø´Ø±ÙƒØ© Ø¬Ø¯ÙŠØ¯Ø©', $job->company);
+        $this->assertSame('عنوان محدث', $job->title);
+        $this->assertSame('شركة جديدة', $job->company);
         $this->assertTrue($job->is_published);
         $this->assertSame('2026-07-29', $job->valid_until->toDateString());
     }
@@ -84,16 +84,16 @@ class AdminJobNewsManagementTest extends TestCase
         $admin = User::factory()->create();
         $first = JobNews::create([
             'language' => 'ar',
-            'title' => 'Ø§Ù„Ø£ÙˆÙ„Ù‰',
-            'body' => 'ØªÙØ§ØµÙŠÙ„',
+            'title' => 'الأولى',
+            'body' => 'تفاصيل',
             'is_published' => true,
             'source' => 'manual',
             'source_row_key' => 'JOB-4',
         ]);
         $second = JobNews::create([
             'language' => 'ar',
-            'title' => 'Ø§Ù„Ø«Ø§Ù†ÙŠØ©',
-            'body' => 'ØªÙØ§ØµÙŠÙ„',
+            'title' => 'الثانية',
+            'body' => 'تفاصيل',
             'is_published' => true,
             'source' => 'manual',
             'source_row_key' => 'JOB-5',

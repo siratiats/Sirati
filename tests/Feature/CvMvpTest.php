@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\AiStatus;
 use App\Models\CvAnalysis;
 use App\Models\EducationContent;
 use App\Models\GeneratedCv;
@@ -31,7 +32,7 @@ class CvMvpTest extends TestCase
         $response->assertRedirect(route('analyses.show', $analysis));
         $this->assertNotNull($analysis);
         $this->assertGreaterThan(50, $analysis->score_total);
-        $this->assertSame('not_configured', $analysis->ai_status);
+        $this->assertSame(AiStatus::NotConfigured, $analysis->ai_status);
     }
 
     public function test_cv_generation_form_creates_local_template_without_openai(): void
@@ -57,7 +58,7 @@ class CvMvpTest extends TestCase
 
         $response->assertRedirect(route('generated-cvs.show', $generatedCv));
         $this->assertNotNull($generatedCv);
-        $this->assertSame('not_configured', $generatedCv->ai_status);
+        $this->assertSame(AiStatus::NotConfigured, $generatedCv->ai_status);
         $this->assertStringContainsString('Salem Sayer', $generatedCv->generated_markdown);
         $this->assertGreaterThan(50, $generatedCv->score_total);
     }

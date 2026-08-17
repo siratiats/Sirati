@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\AiStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\URL;
@@ -10,6 +11,14 @@ class GeneratedCvResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $publicBaseUrl = rtrim((string) config('app.public_url', 'https://siratie.com'), '/');
+        $signedPath = URL::temporarySignedRoute(
+            'api.generated-cvs.pdf',
+            now()->addMinutes(30),
+            ['generatedCv' => $this->id],
+            false
+        );
+
         return [
             'id' => $this->id,
             'full_name' => $this->full_name,
@@ -26,18 +35,16 @@ class GeneratedCvResource extends JsonResource
             'education_input' => $this->education_input,
             'certifications_input' => $this->certifications_input,
             'generated_markdown' => $this->generated_markdown,
-            'ai_status' => $this->ai_status,
+            'ai_status' => $this->ai_status instanceof AiStatus
+                ? $this->ai_status->value
+                : $this->ai_status,
             'ai_output' => $this->ai_output,
             'ai_error' => $this->ai_error,
             'score_total' => $this->score_total,
             'grade' => $this->grade,
             'criteria' => $this->mobileList($this->criteria),
-            'pdf_url' => URL::temporarySignedRoute(
-                'api.generated-cvs.pdf',
-                now()->addMinutes(30),
-                ['generatedCv' => $this->id]
-            ),
-            'template_pdf_url' => url("/generated-cvs/{$this->id}/pdf"),
+            'pdf_url' => $publicBaseUrl.$signedPath,
+            'template_pdf_url' => $publicBaseUrl."/generated-cvs/{$this->id}/pdf",
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

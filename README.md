@@ -7,6 +7,43 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Test suites
+
+Keep the SQLite suite for the fast development loop:
+
+```powershell
+composer test
+```
+
+Before deploying, also run the complete suite against the same MySQL release as
+the Laravel Cloud database. In the Laravel Cloud dashboard, open the production
+database resource and copy its exact MySQL version. Also confirm that the
+production queue worker is running; verification and password-reset mail is
+queued and will not be delivered without it. CV AI jobs use the dedicated `ai`
+queue, so the production worker must explicitly consume it (for example,
+run a separate `php artisan queue:work --queue=ai` worker without removing the
+existing `default` worker). A worker consuming only `default` will leave every
+queued analysis and generated CV stuck in `queued`.
+
+Do not guess or substitute the MySQL tag. Set the value read from the dashboard,
+then start a disposable local database:
+
+```powershell
+$env:SIRATI_MYSQL_IMAGE = 'mysql:<exact-version-from-Laravel-Cloud>'
+docker run --name sirati-mysql-tests --rm -d -p 3306:3306 -e MYSQL_DATABASE=sirati_testing -e MYSQL_USER=sirati -e MYSQL_PASSWORD=sirati -e MYSQL_ROOT_PASSWORD=root "$env:SIRATI_MYSQL_IMAGE" --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+```
+
+Wait until the container reports that it is ready for connections, then run:
+
+```powershell
+composer test:mysql
+```
+
+The MySQL test connection defaults are defined in `phpunit.mysql.xml`. Override
+them with environment variables when using a different host, port, database, or
+credentials. The test database is destroyed and recreated by the test suite, so
+never point this configuration at production or any database containing data.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

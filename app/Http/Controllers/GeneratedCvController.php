@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\CvAiProvider;
+use App\Enums\AiStatus;
 use App\Http\Resources\GeneratedCvResource;
+use App\Jobs\GenerateCvContentJob;
 use App\Models\CvAnalysis;
 use App\Models\GeneratedCv;
+use App\Services\Ai\CachedCvAiProvider;
 use App\Services\AtsScoringService;
 use App\Services\CvTemplateRenderer;
-use App\Services\OpenAiCvService;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\RequestException;
+use App\Services\ErrorReporter;
 use Illuminate\Http\Request;
 use Throwable;
-use UnexpectedValueException;
 
 class GeneratedCvController extends Controller
 {
@@ -28,23 +29,37 @@ class GeneratedCvController extends Controller
         return view('generated-cvs.create');
     }
 
-    public function store(Request $request, OpenAiCvService $openAi, AtsScoringService $scorer)
+    public function store(Request $request, CvAiProvider $openAi, AtsScoringService $scorer)
     {
         $generatedCv = $this->createGeneratedCv($this->validatedPayload($request), $openAi, $scorer, $request->user()?->id);
 
         return redirect()->route('generated-cvs.show', $generatedCv);
     }
 
-    public function storeApi(Request $request, OpenAiCvService $openAi, AtsScoringService $scorer)
+    public function storeApi(Request $request, CvAiProvider $openAi, AtsScoringService $scorer)
     {
-        $generatedCv = $this->createGeneratedCv($this->validatedPayload($request), $openAi, $scorer, $request->user()->id);
+        $queueAi = $request->header('X-Sirati-Async') === '1';
+        $generatedCv = $this->createGeneratedCv(
+            $this->validatedPayload($request),
+            $openAi,
+            $scorer,
+            $request->user()->id,
+            $queueAi,
+        );
+
+        if ($generatedCv->ai_status === AiStatus::Queued) {
+            GenerateCvContentJob::dispatch($generatedCv->id);
+        }
+
+        // TODO: Remove the synchronous compatibility path only after old app
+        // installs that omit X-Sirati-Async have drained from production.
 
         return (new GeneratedCvResource($generatedCv))
             ->response()
             ->setStatusCode(201);
     }
 
-    public function updateApi(GeneratedCv $generatedCv, Request $request, OpenAiCvService $openAi, AtsScoringService $scorer)
+    public function updateApi(GeneratedCv $generatedCv, Request $request, CvAiProvider $openAi, AtsScoringService $scorer)
     {
         $this->authorizeApiAccess($request, $generatedCv);
 
@@ -62,7 +77,7 @@ class GeneratedCvController extends Controller
         return response()->json(['message' => 'Deleted']);
     }
 
-    public function storeFromAnalysisApi(CvAnalysis $analysis, Request $request, OpenAiCvService $openAi, AtsScoringService $scorer)
+    public function storeFromAnalysisApi(CvAnalysis $analysis, Request $request, CvAiProvider $openAi, AtsScoringService $scorer)
     {
         abort_unless($analysis->user_id === $request->user()->id, 404);
 
@@ -75,19 +90,25 @@ class GeneratedCvController extends Controller
             'language' => ['nullable', 'in:ar,en'],
         ]);
 
+        $queueAi = $request->header('X-Sirati-Async') === '1';
         $generatedCv = $this->createGeneratedCv(
             $this->payloadFromAnalysis($analysis, $overrides),
             $openAi,
             $scorer,
-            $request->user()->id
+            $request->user()->id,
+            $queueAi,
         );
+
+        if ($generatedCv->ai_status === AiStatus::Queued) {
+            GenerateCvContentJob::dispatch($generatedCv->id);
+        }
 
         return (new GeneratedCvResource($generatedCv))
             ->response()
             ->setStatusCode(201);
     }
 
-    public function enhanceJobDescription(Request $request, OpenAiCvService $openAi)
+    public function enhanceJobDescription(Request $request, CvAiProvider $openAi)
     {
         $validated = $request->validate([
             'target_job_title' => ['required', 'string', 'max:160'],
@@ -95,11 +116,13 @@ class GeneratedCvController extends Controller
             'language' => ['required', 'in:ar,en'],
         ]);
 
-        $aiStatus = 'not_configured';
+        $aiStatus = AiStatus::NotConfigured;
         $aiError = null;
         $result = $this->localEnhancedJobDescription($validated);
 
         if ($openAi->isConfigured()) {
+            $startedAt = hrtime(true);
+
             try {
                 $aiResult = call_user_func(
                     [$openAi, 'enhanceJobDescription'],
@@ -114,20 +137,56 @@ class GeneratedCvController extends Controller
                     'responsibilities' => array_values(array_filter(array_map('strval', $aiResult['responsibilities'] ?? []))),
                     'requirements' => array_values(array_filter(array_map('strval', $aiResult['requirements'] ?? []))),
                 ];
-                $aiStatus = 'completed';
-            } catch (ConnectionException|RequestException|UnexpectedValueException|Throwable $exception) {
-                $aiStatus = 'failed';
+                $aiStatus = AiStatus::Completed;
+            } catch (Throwable $exception) {
+                $aiStatus = AiStatus::Failed;
                 $aiError = $exception->getMessage();
+                $this->reportAiFailure($exception, 'enhance_job_description', $startedAt, $request->user()?->id);
             }
         }
 
         return response()->json([
             'data' => [
                 ...$result,
-                'ai_status' => $aiStatus,
+                'ai_status' => $aiStatus->value,
                 'ai_error' => $aiError,
             ],
         ]);
+    }
+
+    public function enhanceField(Request $request, CvAiProvider $openAi)
+    {
+        $validated = $request->validate([
+            'field' => ['required', 'in:summary,skills,experience,education,certifications'],
+            'draft' => ['required', 'string', 'min:10', 'max:12000'],
+            'job_title' => ['required', 'string', 'max:160'],
+            'language' => ['required', 'in:ar,en'],
+        ]);
+
+        if (! $openAi->isConfigured()) {
+            return response()->json([
+                'data' => [
+                    'enhanced_text' => $validated['draft'],
+                    'changes_made' => [],
+                    'missing_facts' => [
+                        $validated['language'] === 'en'
+                            ? 'AI enhancement is temporarily unavailable.'
+                            : 'تحسين الذكاء الاصطناعي غير متاح مؤقتاً.',
+                    ],
+                    'ats_keywords_added' => [],
+                    'unverified_claims' => [],
+                ],
+            ]);
+        }
+
+        $result = $openAi->enhanceCvField(
+            $validated['field'],
+            $validated['draft'],
+            $validated['job_title'],
+            $validated['language'],
+        );
+
+        return response()->json(['data' => $result]);
     }
 
     public function show(GeneratedCv $generatedCv)
@@ -181,15 +240,20 @@ class GeneratedCvController extends Controller
         ]));
     }
 
-    private function createGeneratedCv(array $validated, OpenAiCvService $openAi, AtsScoringService $scorer, ?int $userId = null): GeneratedCv
-    {
+    private function createGeneratedCv(
+        array $validated,
+        CvAiProvider $openAi,
+        AtsScoringService $scorer,
+        ?int $userId = null,
+        bool $queueAi = false,
+    ): GeneratedCv {
         return GeneratedCv::create([
-            ...$this->generatedCvAttributes($validated, $openAi, $scorer),
+            ...$this->generatedCvAttributes($validated, $openAi, $scorer, $queueAi),
             'user_id' => $userId,
         ]);
     }
 
-    private function updateGeneratedCv(GeneratedCv $generatedCv, array $validated, OpenAiCvService $openAi, AtsScoringService $scorer): void
+    private function updateGeneratedCv(GeneratedCv $generatedCv, array $validated, CvAiProvider $openAi, AtsScoringService $scorer): void
     {
         $generatedCv->update($this->generatedCvAttributes($validated, $openAi, $scorer));
     }
@@ -199,24 +263,32 @@ class GeneratedCvController extends Controller
         abort_unless($generatedCv->user_id === $request->user()->id, 404);
     }
 
-    private function generatedCvAttributes(array $validated, OpenAiCvService $openAi, AtsScoringService $scorer): array
-    {
-        $aiStatus = 'not_configured';
+    private function generatedCvAttributes(
+        array $validated,
+        CvAiProvider $openAi,
+        AtsScoringService $scorer,
+        bool $queueAi = false,
+    ): array {
+        $aiStatus = AiStatus::NotConfigured;
         $aiOutput = null;
         $aiError = null;
         $markdown = $this->localTemplate($validated);
 
         if ($openAi->isConfigured()) {
-            try {
-                $aiOutput = $openAi->generateCv($validated);
-                $markdown = (string) ($aiOutput['cv_markdown'] ?? $markdown);
-                $aiStatus = 'completed';
-            } catch (ConnectionException|RequestException|UnexpectedValueException $exception) {
-                $aiStatus = 'failed';
-                $aiError = $exception->getMessage();
-            } catch (Throwable $exception) {
-                $aiStatus = 'failed';
-                $aiError = $exception->getMessage();
+            if ($queueAi) {
+                $aiStatus = AiStatus::Queued;
+            } else {
+                $startedAt = hrtime(true);
+
+                try {
+                    $aiOutput = $openAi->generateCv($validated);
+                    $markdown = (string) ($aiOutput['cv_markdown'] ?? $markdown);
+                    $aiStatus = AiStatus::Completed;
+                } catch (Throwable $exception) {
+                    $aiStatus = AiStatus::Failed;
+                    $aiError = $exception->getMessage();
+                    $this->reportAiFailure($exception, 'generate_cv', $startedAt);
+                }
             }
         }
 
@@ -320,6 +392,23 @@ class GeneratedCvController extends Controller
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    private function reportAiFailure(
+        Throwable $exception,
+        string $operation,
+        int $startedAt,
+        ?int $userId = null,
+    ): void {
+        $provider = CachedCvAiProvider::activeProvider();
+
+        app(ErrorReporter::class)->captureAiFailure(
+            exception: $exception,
+            operation: $operation,
+            model: CachedCvAiProvider::modelForProvider($provider),
+            durationMs: (int) max(0, round((hrtime(true) - $startedAt) / 1_000_000)),
+            userId: $userId ?? request()->user()?->id,
+        );
     }
 
     private function localEnhancedJobDescription(array $data): array

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             CvTemplateSeeder::class,
+            JobTitleSeeder::class,
         ]);
 
         // User::factory(10)->create();

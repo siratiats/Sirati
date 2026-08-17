@@ -1,21 +1,21 @@
 @extends('layouts.sirati')
 
-@section('title', 'السيرة الجاهزة | Sirati')
+@section('title', __('generated_cvs.show.title'))
 
 @section('content')
     <section class="grid grid-2">
         <div class="hero-card">
-            <h1>السيرة جاهزة</h1>
-            <p>الدرجة المتوقعة بعد التوليد: <strong>{{ $generatedCv->score_total }}/100</strong> — {{ $generatedCv->grade }}</p>
-            <p class="muted">الحالة: {{ $generatedCv->ai_status === 'completed' ? 'مكتمل' : 'مكتمل (الوضع الأساسي)' }}</p>
-            <a class="button" href="{{ route('generated-cvs.pdf', $generatedCv) }}">تحميل ملف PDF</a>
+            <h1>{{ __('generated_cvs.show.heading') }}</h1>
+            <p>{{ __('generated_cvs.show.expected_score') }} <strong>{{ $generatedCv->score_total }}/100</strong> — {{ $generatedCv->grade }}</p>
+            <p class="muted">{{ __('generated_cvs.show.status') }} {{ $generatedCv->ai_status === \App\Enums\AiStatus::Completed ? __('generated_cvs.show.status_completed') : __('generated_cvs.show.status_basic') }}</p>
+            <a class="button" href="{{ route('generated-cvs.pdf', $generatedCv) }}">{{ __('generated_cvs.show.download_pdf') }}</a>
         </div>
         <div class="card">
-            <h2>ملاحظات</h2>
-            @if ($generatedCv->ai_status === 'failed')
-                <div class="alert">تعذر تحميل الملاحظات الإضافية حالياً.</div>
-            @elseif ($generatedCv->ai_status === 'not_configured')
-                <div class="alert">الملاحظات الإضافية غير متاحة حالياً.</div>
+            <h2>{{ __('generated_cvs.show.notes') }}</h2>
+            @if ($generatedCv->ai_status === \App\Enums\AiStatus::Failed)
+                <div class="alert">{{ __('generated_cvs.show.notes_failed') }}</div>
+            @elseif ($generatedCv->ai_status === \App\Enums\AiStatus::NotConfigured)
+                <div class="alert">{{ __('generated_cvs.show.notes_unavailable') }}</div>
             @else
                 <ul class="list">
                     @foreach (($generatedCv->ai_output['ats_notes'] ?? []) as $note)
@@ -27,12 +27,12 @@
     </section>
 
     <section class="card" style="margin-top: 18px;">
-        <h2>نص السيرة</h2>
+        <h2>{{ __('generated_cvs.show.cv_text') }}</h2>
         <pre class="cv">{{ $generatedCv->generated_markdown }}</pre>
     </section>
 
     <section class="card" style="margin-top: 18px;">
-        <h2>درجة ATS المتوقعة</h2>
+        <h2>{{ __('generated_cvs.show.expected_ats_score') }}</h2>
         <div class="grid grid-3">
             @foreach (($generatedCv->criteria ?? []) as $criterion)
                 <div>

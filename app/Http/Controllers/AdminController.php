@@ -8,11 +8,13 @@ use App\Models\EducationContent;
 use App\Jobs\SendBulkNotificationJob;
 use App\Models\GeneratedCv;
 use App\Models\JobNews;
+use App\Models\JobTitle;
 use App\Models\LandingLead;
 use App\Models\MobileNotification;
 use App\Models\NotificationCampaign;
 use App\Models\User;
 use App\Models\UserFcmToken;
+use App\Services\AtsScoringService;
 use App\Services\JobsGoogleSheetSyncService;
 use App\Services\JobsImportService;
 use Illuminate\Http\JsonResponse;
@@ -135,6 +137,12 @@ class AdminController extends Controller
                 ->withQueryString(),
             'stalledCampaigns' => $stalledCampaigns,
             'stalledAfterMinutes' => self::CAMPAIGN_STALLED_MINUTES,
+            'jobTitles' => JobTitle::query()
+                ->active()
+                ->orderBy('sort_order')
+                ->orderBy('name_ar')
+                ->get(['id', 'slug', 'name_ar', 'name_en', 'category']),
+            'jobTitleCategories' => array_keys(AtsScoringService::jobKeywords()),
             'notificationStats' => [
                 'reachable_users' => User::whereHas('fcmTokens', fn ($q) => $q->where('is_active', true))->count(),
                 'active_tokens' => UserFcmToken::where('is_active', true)->count(),
@@ -148,12 +156,14 @@ class AdminController extends Controller
     {
         $this->authorizeAdmin($request);
 
-        $validated = $request->validate([
-            'audience' => ['required', 'in:all,emails'],
-            'emails' => ['nullable', 'string', 'max:5000'],
-        ]);
+        $validated = $request->validate($this->notificationAudienceRules());
 
-        $count = $this->recipientQuery($validated['audience'], $validated['emails'] ?? null)->count();
+        $count = $this->recipientQuery(
+            audience: $validated['audience'],
+            emails: $validated['emails'] ?? null,
+            jobTitleIds: array_map('intval', $validated['job_title_ids'] ?? []),
+            category: $validated['job_title_category'] ?? null,
+        )->count();
 
         return response()->json(['count' => $count]);
     }
@@ -162,16 +172,14 @@ class AdminController extends Controller
     {
         $this->authorizeAdmin($request);
 
-        $validated = $request->validate([
+        $validated = $request->validate(array_merge([
             'title' => ['required', 'string', 'max:180'],
             'body' => ['required', 'string', 'max:1000'],
             'type' => ['nullable', 'string', 'max:60'],
             'action_type' => ['nullable', 'in:screen,url,notifications'],
             'action_url' => ['nullable', 'required_if:action_type,screen', 'required_if:action_type,url', 'string', 'max:255'],
-            'audience' => ['required', 'in:all,emails'],
-            'emails' => ['nullable', 'string', 'max:5000'],
             'mode' => ['nullable', 'in:send,test'],
-        ]);
+        ], $this->notificationAudienceRules()));
 
         $isTest = ($validated['mode'] ?? 'send') === 'test';
 
@@ -179,7 +187,12 @@ class AdminController extends Controller
         $query = $isTest
             ? User::whereKey($request->user()->id)
                 ->whereHas('fcmTokens', fn ($q) => $q->where('is_active', true))
-            : $this->recipientQuery($validated['audience'], $validated['emails'] ?? null);
+            : $this->recipientQuery(
+                audience: $validated['audience'],
+                emails: $validated['emails'] ?? null,
+                jobTitleIds: array_map('intval', $validated['job_title_ids'] ?? []),
+                category: $validated['job_title_category'] ?? null,
+            );
 
         $userIds = $query->pluck('id')->all();
 
@@ -224,11 +237,33 @@ class AdminController extends Controller
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    private function notificationAudienceRules(): array
+    {
+        $categories = array_keys(AtsScoringService::jobKeywords());
+
+        return [
+            'audience' => ['required', 'in:all,emails'],
+            'emails' => ['nullable', 'string', 'max:5000'],
+            'job_title_ids' => ['nullable', 'array'],
+            'job_title_ids.*' => ['integer', 'exists:job_titles,id'],
+            'job_title_category' => ['nullable', 'string', Rule::in($categories)],
+        ];
+    }
+
+    /**
      * Build the recipient query shared by the send action and the count preview.
      * Only users with at least one active device token are ever included.
+     *
+     * @param  list<int>  $jobTitleIds
      */
-    private function recipientQuery(string $audience, ?string $emails)
-    {
+    private function recipientQuery(
+        string $audience,
+        ?string $emails,
+        array $jobTitleIds = [],
+        ?string $category = null,
+    ) {
         $query = User::whereHas('fcmTokens', fn ($q) => $q->where('is_active', true));
 
         if ($audience === 'emails') {
@@ -240,6 +275,15 @@ class AdminController extends Controller
 
             // No emails supplied → match nobody rather than everybody.
             $query->whereIn('email', $list->isEmpty() ? [''] : $list->all());
+        }
+
+        $jobTitleIds = array_values(array_filter($jobTitleIds));
+        if ($jobTitleIds !== []) {
+            $query->whereIn('job_title_id', $jobTitleIds);
+        }
+
+        if (filled($category)) {
+            $query->whereHas('jobTitle', fn ($q) => $q->where('category', $category));
         }
 
         return $query;

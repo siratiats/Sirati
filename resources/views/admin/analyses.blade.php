@@ -28,7 +28,7 @@
                             <td>{{ $analysis->target_job_title }}</td>
                             <td>{{ $analysis->score_total }}/100 · {{ $analysis->grade }}</td>
                             <td>{{ $analysis->job_match }}%</td>
-                            <td>{{ $analysis->ai_status === 'completed' ? 'Completed' : ($analysis->ai_status === 'failed' ? 'Failed' : 'Local fallback') }}</td>
+                            <td>{{ $analysis->ai_status === \App\Enums\AiStatus::Completed ? 'Completed' : ($analysis->ai_status === \App\Enums\AiStatus::Failed ? 'Failed' : 'Local fallback') }}</td>
                             <td>{{ $analysis->created_at->format('Y-m-d H:i') }}</td>
                         </tr>
                     @empty

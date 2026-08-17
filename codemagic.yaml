@@ -1,0 +1,65 @@
+workflows:
+  android-preview:
+    name: Android App Preview
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    working_directory: flutter_app
+
+    environment:
+      flutter: stable
+      vars:
+        SIRATI_API_BASE_URL: "https://sirati-main-shokc5.laravel.cloud/api"
+
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Analyze
+        script: flutter analyze
+
+      # Goldens are OS/engine-sensitive (Windows baselines vs macOS CI).
+      # Tagged `golden` — excluded here; run locally / on matching OS instead.
+      - name: Run tests
+        script: flutter test --exclude-tags golden
+
+      - name: Build Android debug APK for App Preview
+        script: |
+          flutter build apk --debug \
+            --dart-define=SIRATI_API_BASE_URL=$SIRATI_API_BASE_URL \
+            --dart-define=SENTRY_DSN=$SENTRY_DSN \
+            --dart-define=SENTRY_ENVIRONMENT=preview
+
+    artifacts:
+      - flutter_app/build/app/outputs/flutter-apk/app-debug.apk
+
+  ios-preview:
+    name: iOS Simulator App Preview
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    working_directory: flutter_app
+
+    environment:
+      flutter: stable
+      xcode: latest
+      vars:
+        SIRATI_API_BASE_URL: "https://sirati-main-shokc5.laravel.cloud/api"
+
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Analyze
+        script: flutter analyze
+
+      - name: Run tests
+        script: flutter test --exclude-tags golden
+
+      - name: Build iOS simulator app for App Preview
+        script: |
+          flutter build ios --simulator --debug \
+            --dart-define=SIRATI_API_BASE_URL=$SIRATI_API_BASE_URL \
+            --dart-define=SENTRY_DSN=$SENTRY_DSN \
+            --dart-define=SENTRY_ENVIRONMENT=preview
+
+    artifacts:
+      - flutter_app/build/ios/iphonesimulator/Runner.app

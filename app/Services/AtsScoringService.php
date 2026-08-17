@@ -4,6 +4,22 @@ namespace App\Services;
 
 class AtsScoringService
 {
+    /**
+     * Shared criteria metadata (max scores + Arabic labels).
+     * Used by scoring and by AI prompt builders — do not duplicate elsewhere.
+     *
+     * @var array<string, array{max: int, label: string}>
+     */
+    public const CRITERIA_META = [
+        'format' => ['max' => 15, 'label' => 'التنسيق وقابلية القراءة'],
+        'keywords' => ['max' => 30, 'label' => 'الكلمات المفتاحية والتطابق'],
+        'structure' => ['max' => 15, 'label' => 'الهيكل والأقسام'],
+        'experience' => ['max' => 20, 'label' => 'جودة الخبرة والإنجازات'],
+        'education' => ['max' => 10, 'label' => 'التعليم والشهادات'],
+        'summary' => ['max' => 5, 'label' => 'الملخص المهني'],
+        'contact' => ['max' => 5, 'label' => 'معلومات التواصل'],
+    ];
+
     private const JOB_KEYWORDS = [
         'ecommerce' => ['ecommerce', 'e-commerce', 'shopify', 'woocommerce', 'amazon', 'product listing', 'conversion', 'cart', 'marketplace', 'retail', 'campaign'],
         'marketing' => ['marketing', 'campaign', 'brand', 'content', 'social media', 'seo', 'sem', 'ppc', 'google ads', 'meta ads', 'analytics'],
@@ -14,6 +30,22 @@ class AtsScoringService
         'hr' => ['recruitment', 'talent acquisition', 'onboarding', 'performance management', 'employee relations', 'hr policies'],
         'sales' => ['sales', 'revenue', 'quota', 'pipeline', 'crm', 'salesforce', 'hubspot', 'prospecting', 'negotiation'],
     ];
+
+    /**
+     * @return array<string, list<string>>
+     */
+    public static function jobKeywords(): array
+    {
+        return self::JOB_KEYWORDS;
+    }
+
+    /**
+     * @return array<string, array{max: int, label: string}>
+     */
+    public static function criteriaMeta(): array
+    {
+        return self::CRITERIA_META;
+    }
 
     private const SECTION_PATTERNS = [
         'experience' => '/\b(experience|work history|employment|career|الخبرات|خبرة|العمل)\b/iu',
@@ -36,11 +68,15 @@ class AtsScoringService
         'قدت', 'أدرت', 'طورت', 'أنشأت', 'رفعت', 'خفضت', 'حسنت', 'أطلقت', 'نفذت', 'حللت',
     ];
 
-    public function score(string $resumeText, string $jobTitle): array
+    /**
+     * @param  string|null  $categoryHint  Authoritative category (e.g. from users.job_title.category).
+     *                                     When set and valid, skips free-text inference.
+     */
+    public function score(string $resumeText, string $jobTitle, ?string $categoryHint = null): array
     {
         $text = mb_strtolower($resumeText);
         $lines = array_values(array_filter(preg_split('/\R/u', $resumeText) ?: [], fn ($line) => trim($line) !== ''));
-        $category = $this->jobCategory($jobTitle);
+        $category = $this->jobCategory($jobTitle, $categoryHint);
         $keywords = self::JOB_KEYWORDS[$category];
 
         $formatScore = $this->formatScore($resumeText, $lines);
@@ -51,24 +87,34 @@ class AtsScoringService
         $summaryScore = $this->summaryScore($resumeText);
         $contactScore = $this->contactScore($resumeText);
 
-        $criteria = [
-            'format' => ['score' => $formatScore, 'max' => 15, 'label' => 'التنسيق وقابلية القراءة'],
-            'keywords' => ['score' => $keywordScore, 'max' => 30, 'label' => 'الكلمات المفتاحية والتطابق'],
-            'structure' => ['score' => $structureScore, 'max' => 15, 'label' => 'الهيكل والأقسام'],
-            'experience' => ['score' => $experienceScore, 'max' => 20, 'label' => 'جودة الخبرة والإنجازات'],
-            'education' => ['score' => $educationScore, 'max' => 10, 'label' => 'التعليم والشهادات'],
-            'summary' => ['score' => $summaryScore, 'max' => 5, 'label' => 'الملخص المهني'],
-            'contact' => ['score' => $contactScore, 'max' => 5, 'label' => 'معلومات التواصل'],
+        $scoresByKey = [
+            'format' => $formatScore,
+            'keywords' => $keywordScore,
+            'structure' => $structureScore,
+            'experience' => $experienceScore,
+            'education' => $educationScore,
+            'summary' => $summaryScore,
+            'contact' => $contactScore,
         ];
+
+        $criteria = [];
+        foreach (self::CRITERIA_META as $key => $meta) {
+            $criteria[$key] = [
+                'score' => $scoresByKey[$key],
+                'max' => $meta['max'],
+                'label' => $meta['label'],
+            ];
+        }
 
         $total = array_sum(array_column($criteria, 'score'));
         $grade = $this->grade($total);
         $missingKeywords = array_values(array_diff($keywords, $foundKeywords));
+        $keywordsMax = self::CRITERIA_META['keywords']['max'];
 
         return [
             'total' => $total,
             'grade' => $grade,
-            'job_match' => (int) round(($keywordScore / 30) * 100),
+            'job_match' => (int) round(($keywordScore / $keywordsMax) * 100),
             'category' => $category,
             'criteria' => $criteria,
             'strengths' => $this->strengths($foundKeywords, $sections, $verbCount, $quantifiedCount, $educationScore, $summaryScore, $resumeText),
@@ -79,8 +125,17 @@ class AtsScoringService
         ];
     }
 
-    private function jobCategory(string $jobTitle): string
+    /**
+     * Infer (or accept) a job category key from AtsScoringService::JOB_KEYWORDS.
+     *
+     * @param  string|null  $categoryHint  When provided and valid, wins over free-text inference.
+     */
+    private function jobCategory(string $jobTitle, ?string $categoryHint = null): string
     {
+        if ($categoryHint !== null && array_key_exists($categoryHint, self::JOB_KEYWORDS)) {
+            return $categoryHint;
+        }
+
         $title = mb_strtolower($jobTitle);
 
         return match (true) {

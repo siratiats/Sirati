@@ -75,7 +75,7 @@
 
     <section class="card" style="margin-top: 18px;">
         <h2>توصيات إضافية</h2>
-        @if ($analysis->ai_status === 'completed')
+        @if ($analysis->ai_status === \App\Enums\AiStatus::Completed)
             @php($feedback = $analysis->ai_feedback ?? [])
 
             @if (filled(data_get($feedback, 'warnings')))
@@ -144,7 +144,7 @@
                     <div class="alert">لا توجد توصيات إضافية قابلة للعرض حالياً.</div>
                 @endif
             </div>
-        @elseif ($analysis->ai_status === 'failed')
+        @elseif ($analysis->ai_status === \App\Enums\AiStatus::Failed)
             <div class="alert">تعذر تحميل التوصيات الإضافية حالياً. يمكنك متابعة العمل بالنتيجة الحالية.</div>
         @else
             <div class="alert">التوصيات الإضافية غير متاحة حالياً.</div>

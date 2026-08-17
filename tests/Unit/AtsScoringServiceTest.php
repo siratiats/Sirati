@@ -33,10 +33,21 @@ Certifications
 AWS Certified Cloud Practitioner
 CV;
 
-        $score = (new AtsScoringService)->score($resume, 'Laravel Backend Developer');
+        $scorer = new AtsScoringService;
+        $score = $scorer->score($resume, 'Laravel Backend Developer');
 
         $this->assertGreaterThanOrEqual(70, $score['total']);
         $this->assertSame('software', $score['category']);
         $this->assertContains('laravel', $score['keywords_found']);
+
+        // Optional category hint must not be required — scores stay stable when omitted.
+        $again = $scorer->score($resume, 'Laravel Backend Developer');
+        $this->assertSame($score['total'], $again['total']);
+        $this->assertSame($score['criteria'], $again['criteria']);
+        $this->assertSame($score['category'], $again['category']);
+
+        // When provided, a valid hint is authoritative over free-text inference.
+        $hinted = $scorer->score($resume, 'Laravel Backend Developer', 'finance');
+        $this->assertSame('finance', $hinted['category']);
     }
 }

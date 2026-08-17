@@ -15,7 +15,9 @@
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^2.10.1",
         "phpoffice/phpspreadsheet": "3.5",
-        "smalot/pdfparser": "^2.12"
+        "sentry/sentry-laravel": "^4.27",
+        "smalot/pdfparser": "^2.12",
+        "yethee/tiktoken": "^1.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -55,6 +57,7 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "test:mysql": "@php vendor/bin/phpunit -c phpunit.mysql.xml",
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
