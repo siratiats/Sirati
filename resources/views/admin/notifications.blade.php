@@ -49,6 +49,28 @@
                     <textarea name="emails" placeholder="Separate with commas, spaces, or new lines&#10;user1@example.com, user2@example.com"></textarea>
                 </label>
 
+                <div class="grid grid-2">
+                    <label>Job title filter (optional)
+                        <select name="job_title_ids[]" multiple size="8" data-job-title-ids style="min-height:140px;">
+                            @foreach ($jobTitles as $title)
+                                <option value="{{ $title->id }}">
+                                    {{ $title->name_ar }} · {{ $title->name_en }} ({{ $title->category }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="muted">Hold Ctrl/Cmd to multi-select. Leave empty for all titles.</small>
+                    </label>
+                    <label>Category filter (optional)
+                        <select name="job_title_category" data-job-title-category>
+                            <option value="">Any category</option>
+                            @foreach ($jobTitleCategories as $category)
+                                <option value="{{ $category }}">{{ $category }}</option>
+                            @endforeach
+                        </select>
+                        <small class="muted">Broad campaigns — uses the user’s declared job title category.</small>
+                    </label>
+                </div>
+
                 <label data-action-url-field style="display:none;">Deep link / URL
                     <input name="action_url" maxlength="255" placeholder="analysis/15" data-action-url-input>
                     <small class="muted" data-action-url-hint>Screen route like <code>analysis/15</code>.</small>
@@ -142,6 +164,8 @@
             var urlHint = form.querySelector('[data-action-url-hint]');
             var countEl = form.querySelector('[data-recipient-count]');
             var token = form.querySelector('input[name="_token"]');
+            var jobTitleSelect = form.querySelector('[data-job-title-ids]');
+            var categorySelect = form.querySelector('[data-job-title-category]');
 
             function syncAudience() {
                 emailsField.style.display = audienceSelect.value === 'emails' ? '' : 'none';
@@ -169,6 +193,12 @@
                 body.set('_token', token ? token.value : '');
                 body.set('audience', audienceSelect.value);
                 body.set('emails', emailsInput ? emailsInput.value : '');
+                body.set('job_title_category', categorySelect ? categorySelect.value : '');
+                if (jobTitleSelect) {
+                    Array.prototype.forEach.call(jobTitleSelect.selectedOptions, function (opt) {
+                        body.append('job_title_ids[]', opt.value);
+                    });
+                }
                 fetch('{{ route('admin.notifications.count') }}', {
                     method: 'POST',
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -184,6 +214,8 @@
 
             audienceSelect.addEventListener('change', function () { syncAudience(); queuePreview(); });
             if (emailsInput) emailsInput.addEventListener('input', queuePreview);
+            if (jobTitleSelect) jobTitleSelect.addEventListener('change', queuePreview);
+            if (categorySelect) categorySelect.addEventListener('change', queuePreview);
             actionSelect.addEventListener('change', syncAction);
 
             syncAudience();

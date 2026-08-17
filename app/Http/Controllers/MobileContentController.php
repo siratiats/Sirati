@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\JobTitleResource;
 use App\Models\CvAnalysis;
 use App\Models\CvTemplate;
 use App\Models\EducationContent;
 use App\Models\GeneratedCv;
 use App\Models\JobNews;
+use App\Models\JobTitle;
 use App\Models\MobileNotification;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
 
 class MobileContentController extends Controller
@@ -62,7 +66,15 @@ class MobileContentController extends Controller
     public function myCvs(Request $request): array
     {
         $language = $this->language($request);
-        $items = $request->user()->generatedCvs()->latest()->limit(20)->get()->map(function (GeneratedCv $cv) use ($language): array {
+        $publicBaseUrl = rtrim((string) config('app.public_url', 'https://siratie.com'), '/');
+        $items = $request->user()->generatedCvs()->latest()->limit(20)->get()->map(function (GeneratedCv $cv) use ($language, $publicBaseUrl): array {
+            $signedPath = URL::temporarySignedRoute(
+                'api.generated-cvs.pdf',
+                now()->addMinutes(30),
+                ['generatedCv' => $cv->id],
+                false
+            );
+
             return [
                 'id' => $cv->id,
                 'title' => $cv->target_job_title ?: $cv->full_name,
@@ -71,12 +83,8 @@ class MobileContentController extends Controller
                 'score_total' => $cv->score_total,
                 'is_draft' => false,
                 'can_download' => true,
-                'pdf_url' => URL::temporarySignedRoute(
-                    'api.generated-cvs.pdf',
-                    now()->addMinutes(30),
-                    ['generatedCv' => $cv->id]
-                ),
-                'template_pdf_url' => url("/generated-cvs/{$cv->id}/pdf"),
+                'pdf_url' => $publicBaseUrl.$signedPath,
+                'template_pdf_url' => $publicBaseUrl."/generated-cvs/{$cv->id}/pdf",
             ];
         })->values();
 
@@ -89,6 +97,19 @@ class MobileContentController extends Controller
                 'items' => $items,
             ],
         ];
+    }
+
+    public function jobTitles(): AnonymousResourceCollection
+    {
+        $titles = Cache::remember('mobile.job_titles.active.v1', now()->addDay(), function () {
+            return JobTitle::query()
+                ->active()
+                ->orderBy('sort_order')
+                ->orderBy('name_ar')
+                ->get();
+        });
+
+        return JobTitleResource::collection($titles);
     }
 
     public function cvTemplates(Request $request): array

@@ -54,6 +54,9 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Public web origin used in mobile payload links (PDF, shared pages, etc.).
+    'public_url' => env('APP_PUBLIC_URL', 'https://siratie.com'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

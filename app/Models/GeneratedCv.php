@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Enums\AiStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GeneratedCv extends Model
 {
@@ -38,6 +39,7 @@ class GeneratedCv extends Model
             'form_payload' => 'array',
             'ai_output' => 'array',
             'criteria' => 'array',
+            'ai_status' => AiStatus::class,
         ];
     }
 

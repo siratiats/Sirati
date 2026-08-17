@@ -4,13 +4,17 @@ namespace App\Services;
 
 use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
-use ArPHP\I18N\Arabic;
+use App\Services\Cv\CvMarkdownRenderer;
 use Dompdf\Dompdf;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CvTemplateRenderer
 {
+    public function __construct(
+        private readonly CvMarkdownRenderer $markdownRenderer,
+    ) {}
+
     public function resolve(?string $templateKey, string $language): CvTemplate
     {
         $requested = $templateKey !== null && trim($templateKey) !== ''
@@ -59,7 +63,17 @@ class CvTemplateRenderer
         $pdfData = [
             'name' => $this->formatPdfText($generatedCv->full_name, $language),
             'targetJobTitle' => $this->formatPdfText($generatedCv->target_job_title, $language),
-            'content' => $this->formatPdfText($generatedCv->generated_markdown, $language),
+            'contacts' => array_values(array_filter([
+                $this->formatPdfText($generatedCv->email, $language),
+                $this->formatPdfText($generatedCv->phone, $language),
+                $this->formatPdfText($generatedCv->linkedin, $language),
+                $this->formatPdfText($generatedCv->location, $language),
+            ], fn (string $value): bool => trim($value) !== '')),
+            'contentHtml' => $this->markdownRenderer->render(
+                (string) $generatedCv->generated_markdown,
+                $language,
+                $generatedCv->id,
+            ),
         ];
 
         return view($view, [
@@ -108,6 +122,12 @@ class CvTemplateRenderer
         return [
             'direction' => $language === 'en' ? 'ltr' : 'rtl',
             'language' => $language,
+            'labels' => [
+                'ats_score' => $this->formatPdfText(
+                    $language === 'en' ? 'ATS score' : 'نتيجة ATS',
+                    $language,
+                ),
+            ],
             'candidate' => [
                 'full_name' => $generatedCv->full_name,
                 'email' => $generatedCv->email,
@@ -159,15 +179,6 @@ class CvTemplateRenderer
 
     private function formatPdfText(?string $text, string $language): string
     {
-        $text = (string) $text;
-        if ($language !== 'ar') {
-            return $text;
-        }
-
-        $arabic = new Arabic();
-
-        return collect(preg_split('/\R/u', $text) ?: [])
-            ->map(fn (string $line) => $arabic->utf8Glyphs($line, 90, false, true))
-            ->implode("\n");
+        return $this->markdownRenderer->shapeText($text, $language);
     }
 }

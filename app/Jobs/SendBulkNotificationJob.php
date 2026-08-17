@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\NotificationCampaign;
+use App\Services\ErrorReporter;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -56,6 +57,11 @@ class SendBulkNotificationJob implements ShouldQueue
                 failed: (int) ($result['failures'] ?? 0),
             );
         } catch (Throwable $exception) {
+            app(ErrorReporter::class)->captureNotificationFailure(
+                $exception,
+                'bulk_notification_chunk_failed',
+            );
+
             // Count the whole chunk as failed so campaign totals stay consistent
             // and the campaign can still reach 'completed'. Not rethrown: retrying
             // would duplicate the notification rows inserted before the send.

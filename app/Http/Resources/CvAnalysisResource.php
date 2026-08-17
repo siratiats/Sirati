@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\AiStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,7 +24,9 @@ class CvAnalysisResource extends JsonResource
             'keywords_found' => $this->keywords_found ?? [],
             'keywords_missing' => $this->keywords_missing ?? [],
             'quick_wins' => $this->quick_wins ?? [],
-            'ai_status' => $this->ai_status,
+            'ai_status' => $this->ai_status instanceof AiStatus
+                ? $this->ai_status->value
+                : $this->ai_status,
             'ai_feedback' => $this->ai_feedback,
             'ai_error' => $this->ai_error,
             'created_at' => $this->created_at?->toISOString(),

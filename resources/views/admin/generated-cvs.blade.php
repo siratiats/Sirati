@@ -28,7 +28,7 @@
                             <td>{{ $cv->full_name }}</td>
                             <td>{{ $cv->target_job_title }}</td>
                             <td>{{ $cv->score_total }}/100 · {{ $cv->grade }}</td>
-                            <td>{{ $cv->ai_status === 'completed' ? 'Completed' : ($cv->ai_status === 'failed' ? 'Failed' : 'Local fallback') }}</td>
+                            <td>{{ $cv->ai_status === \App\Enums\AiStatus::Completed ? 'Completed' : ($cv->ai_status === \App\Enums\AiStatus::Failed ? 'Failed' : 'Local fallback') }}</td>
                             <td><a href="{{ route('generated-cvs.pdf', $cv) }}">Download</a></td>
                             <td>{{ $cv->created_at->format('Y-m-d H:i') }}</td>
                         </tr>

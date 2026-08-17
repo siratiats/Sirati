@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\CvAiProvider;
+use App\Enums\AiStatus;
 use App\Http\Resources\CvAnalysisResource;
+use App\Jobs\GenerateCvAdviceJob;
 use App\Models\CvAnalysis;
+use App\Services\Ai\CachedCvAiProvider;
 use App\Services\AtsScoringService;
 use App\Services\CvTextExtractor;
-use App\Services\OpenAiCvService;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\RequestException;
+use App\Services\ErrorReporter;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use UnexpectedValueException;
+use Throwable;
 
 class CvAnalysisController extends Controller
 {
@@ -29,16 +31,24 @@ class CvAnalysisController extends Controller
         ]);
     }
 
-    public function store(Request $request, CvTextExtractor $extractor, AtsScoringService $scorer, OpenAiCvService $openAi)
+    public function store(Request $request, CvTextExtractor $extractor, AtsScoringService $scorer, CvAiProvider $openAi)
     {
         $analysis = $this->createAnalysis($request, $extractor, $scorer, $openAi);
 
         return redirect()->route('analyses.show', $analysis);
     }
 
-    public function storeApi(Request $request, CvTextExtractor $extractor, AtsScoringService $scorer, OpenAiCvService $openAi)
+    public function storeApi(Request $request, CvTextExtractor $extractor, AtsScoringService $scorer, CvAiProvider $openAi)
     {
-        $analysis = $this->createAnalysis($request, $extractor, $scorer, $openAi);
+        $queueAi = $request->header('X-Sirati-Async') === '1';
+        $analysis = $this->createAnalysis($request, $extractor, $scorer, $openAi, $queueAi);
+
+        if ($analysis->ai_status === AiStatus::Queued) {
+            GenerateCvAdviceJob::dispatch($analysis->id);
+        }
+
+        // TODO: Remove the synchronous compatibility path only after old app
+        // installs that omit X-Sirati-Async have drained from production.
 
         return (new CvAnalysisResource($analysis))
             ->response()
@@ -57,8 +67,13 @@ class CvAnalysisController extends Controller
         return new CvAnalysisResource($analysis);
     }
 
-    private function createAnalysis(Request $request, CvTextExtractor $extractor, AtsScoringService $scorer, OpenAiCvService $openAi): CvAnalysis
-    {
+    private function createAnalysis(
+        Request $request,
+        CvTextExtractor $extractor,
+        AtsScoringService $scorer,
+        CvAiProvider $openAi,
+        bool $queueAi = false,
+    ): CvAnalysis {
         $validated = $request->validate([
             'target_job_title' => ['required', 'string', 'max:160'],
             'resume_text' => ['nullable', 'string'],
@@ -73,17 +88,32 @@ class CvAnalysisController extends Controller
 
         $extracted = $extractor->extract($request);
         $score = $scorer->score($extracted['text'], $validated['target_job_title']);
-        $aiStatus = 'not_configured';
+        $aiStatus = AiStatus::NotConfigured;
         $aiFeedback = null;
         $aiError = null;
 
         if ($openAi->isConfigured()) {
-            try {
-                $aiFeedback = $openAi->analysisAdvice($score, $extracted['text'], $validated['target_job_title']);
-                $aiStatus = 'completed';
-            } catch (ConnectionException|RequestException|UnexpectedValueException $exception) {
-                $aiStatus = 'failed';
-                $aiError = $exception->getMessage();
+            if ($queueAi) {
+                $aiStatus = AiStatus::Queued;
+            } else {
+                $startedAt = hrtime(true);
+
+                try {
+                    $aiFeedback = $openAi->analysisAdvice($score, $extracted['text'], $validated['target_job_title']);
+                    $aiStatus = AiStatus::Completed;
+                } catch (Throwable $exception) {
+                    $aiStatus = AiStatus::Failed;
+                    $aiError = $exception->getMessage();
+                    $provider = CachedCvAiProvider::activeProvider();
+
+                    app(ErrorReporter::class)->captureAiFailure(
+                        exception: $exception,
+                        operation: 'analysis_advice',
+                        model: CachedCvAiProvider::modelForProvider($provider),
+                        durationMs: (int) max(0, round((hrtime(true) - $startedAt) / 1_000_000)),
+                        userId: $request->user()?->id,
+                    );
+                }
             }
         }
 

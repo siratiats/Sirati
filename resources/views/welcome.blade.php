@@ -747,7 +747,19 @@
         .mobile-sticky-cta a { display: inline-flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; border-radius: 16px; background: var(--teal); color: #fff; font-weight: 800; box-shadow: 0 12px 34px rgba(0,0,0,.22); }
         @media (max-width: 820px) {
             .site-nav { padding: 14px 20px; }
-            .nav-links { display: none; }
+            .nav-links {
+                display: inline-flex;
+                flex-wrap: nowrap;
+                gap: 8px;
+                max-width: 52vw;
+                overflow-x: auto;
+                scrollbar-width: thin;
+            }
+            .nav-links a {
+                flex: 0 0 auto;
+                font-size: .82rem;
+                padding: 6px 9px;
+            }
             .nav-menu-toggle { display: inline-flex; }
             .hero { padding: 104px 20px 74px; }
             .hero-shell { grid-template-columns: 1fr; gap: 34px; }
@@ -1001,15 +1013,15 @@
                 </div>
                 <div class="hero-visual fade-in" aria-hidden="true">
                     <div class="phone-preview"><div class="phone-screen">
-                        <div class="preview-top"><span>Sirati ATS</span><strong>CV Score</strong></div>
+                        <div class="preview-top"><span>{!! $cms->pair('hero.preview_brand') !!}</span><strong>{!! $cms->pair('hero.preview_score') !!}</strong></div>
                         <div class="score-ring" id="scoreRing"><span id="scoreVal">84%</span></div>
                         <ul class="preview-list" id="previewList">
-                            <li><span>Keywords</span><strong>Good</strong></li>
-                            <li><span>Experience</span><strong>Improve</strong></li>
-                            <li><span>ATS format</span><strong>Ready</strong></li>
+                            <li><span>{!! $cms->pair('hero.preview_keywords') !!}</span><strong>{!! $cms->pair('hero.preview_keywords_status') !!}</strong></li>
+                            <li><span>{!! $cms->pair('hero.preview_experience') !!}</span><strong>{!! $cms->pair('hero.preview_experience_status') !!}</strong></li>
+                            <li><span>{!! $cms->pair('hero.preview_format') !!}</span><strong>{!! $cms->pair('hero.preview_format_status') !!}</strong></li>
                         </ul>
                     </div></div>
-                    <div class="floating-card"><strong>Smart template</strong><p>Clean layout ready for recruiters and screening systems.</p></div>
+                    <div class="floating-card"><strong>{!! $cms->pair('hero.preview_template_title') !!}</strong><p>{!! $cms->pair('hero.preview_template_body') !!}</p></div>
                 </div>
             </div>
             <a class="scroll-hint" href="#about" id="scrollHint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5"/></svg>{!! $cms->pair('hero.scroll_hint') !!}</a>

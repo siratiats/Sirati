@@ -545,14 +545,14 @@
                 <span>Sirati</span>
             </a>
             <div class="links">
-                <a href="{{ route('landing') }}">Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</a>
-                <a href="{{ route('analyses.create') }}">ÙØ­Øµ Ø§Ù„Ø³ÙŠØ±Ø©</a>
-                <a href="{{ route('generated-cvs.create') }}">Ø¥Ù†Ø´Ø§Ø¡ Ø³ÙŠØ±Ø© Ù…ØªÙˆØ§ÙÙ‚Ø© Ù…Ø¹ ATS</a>
-                <a href="{{ route('admin.index') }}">Ù„ÙˆØ­Ø© Ø§Ù„Ø¥Ø¯Ø§Ø±Ø©</a>
+                <a href="{{ route('landing') }}">الرئيسية</a>
+                <a href="{{ route('analyses.create') }}">فحص السيرة</a>
+                <a href="{{ route('generated-cvs.create') }}">إنشاء سيرة متوافقة مع ATS</a>
+                <a href="{{ route('admin.index') }}">لوحة الإدارة</a>
                 @auth
                     <form method="POST" action="{{ route('admin.logout') }}" style="display: inline;">
                         @csrf
-                        <button class="button button-secondary" type="submit" style="padding: 8px 12px; border-radius: 999px; font-size: 14px;">Ø®Ø±ÙˆØ¬</button>
+                        <button class="button button-secondary" type="submit" style="padding: 8px 12px; border-radius: 999px; font-size: 14px;">خروج</button>
                     </form>
                 @endauth
             </div>
@@ -573,8 +573,8 @@
                 button.disabled = true;
                 button.classList.add('button-loading');
                 const render = () => {
-                    const loadingText = document.body.classList.contains('admin-body') ? 'Working' : 'Ø¬Ø§Ø±ÙŠ Ø§Ù„ØªÙ†ÙÙŠØ°â€¦ / Working';
-                    label.textContent = `${loadingText}â€¦ ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+                    const loadingText = document.body.classList.contains('admin-body') ? 'Working' : 'جاري التنفيذ… / Working';
+                    label.textContent = `${loadingText}… ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
                     seconds += 1;
                 };
                 render();

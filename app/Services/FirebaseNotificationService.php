@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Exception\MessagingException;
 use Kreait\Firebase\Messaging\CloudMessage;
-use Kreait\Firebase\Messaging\Notification;
 use Kreait\Firebase\Messaging\MulticastSendReport;
+use Kreait\Firebase\Messaging\Notification;
 use Throwable;
 
 class FirebaseNotificationService
@@ -23,9 +23,7 @@ class FirebaseNotificationService
     /** Insert MobileNotification rows in batches to keep queries bounded. */
     private const INSERT_CHUNK = 1000;
 
-    public function __construct(private readonly Messaging $messaging)
-    {
-    }
+    public function __construct(private readonly Messaging $messaging) {}
 
     /**
      * Bulk broadcast: persist one MobileNotification per user and push to all of
@@ -242,7 +240,12 @@ class FirebaseNotificationService
             return;
         }
 
-        UserFcmToken::whereIn('token', $tokens)->update([
+        $tokenHashes = array_map(
+            static fn (string $token): string => UserFcmToken::hashToken($token),
+            $tokens,
+        );
+
+        UserFcmToken::whereIn('token_hash', $tokenHashes)->update([
             'is_active' => false,
             'last_seen_at' => now(),
         ]);

@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Enums\AiStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CvAnalysis extends Model
 {
@@ -37,6 +38,7 @@ class CvAnalysis extends Model
             'keywords_missing' => 'array',
             'quick_wins' => 'array',
             'ai_feedback' => 'array',
+            'ai_status' => AiStatus::class,
         ];
     }
 
