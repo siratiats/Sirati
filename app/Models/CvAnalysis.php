@@ -10,6 +10,7 @@ class CvAnalysis extends Model
 {
     protected $fillable = [
         'user_id',
+        'idempotency_key',
         'target_job_title',
         'original_filename',
         'input_method',

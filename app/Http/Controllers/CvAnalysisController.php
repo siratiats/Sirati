@@ -11,6 +11,8 @@ use App\Services\Ai\CachedCvAiProvider;
 use App\Services\AtsScoringService;
 use App\Services\CvTextExtractor;
 use App\Services\ErrorReporter;
+use App\Support\Idempotency;
+use App\Support\SignedRecordAccess;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -19,8 +21,10 @@ class CvAnalysisController extends Controller
 {
     public function indexApi(Request $request)
     {
+        $perPage = min(50, max(1, (int) $request->integer('per_page', 20)));
+
         return CvAnalysisResource::collection(
-            $request->user()->cvAnalyses()->latest()->limit(50)->get()
+            $request->user()->cvAnalyses()->latest()->paginate($perPage)
         );
     }
 
@@ -35,15 +39,22 @@ class CvAnalysisController extends Controller
     {
         $analysis = $this->createAnalysis($request, $extractor, $scorer, $openAi);
 
-        return redirect()->route('analyses.show', $analysis);
+        return redirect()->to(SignedRecordAccess::temporaryUrl('analyses.show', [
+            'analysis' => $analysis,
+        ]));
     }
 
     public function storeApi(Request $request, CvTextExtractor $extractor, AtsScoringService $scorer, CvAiProvider $openAi)
     {
+        $existing = Idempotency::find($request, CvAnalysis::query());
+        if ($existing instanceof CvAnalysis) {
+            return new CvAnalysisResource($existing);
+        }
+
         $queueAi = $request->header('X-Sirati-Async') === '1';
         $analysis = $this->createAnalysis($request, $extractor, $scorer, $openAi, $queueAi);
 
-        if ($analysis->ai_status === AiStatus::Queued) {
+        if ($analysis->wasRecentlyCreated && $analysis->ai_status === AiStatus::Queued) {
             GenerateCvAdviceJob::dispatch($analysis->id);
         }
 
@@ -55,8 +66,10 @@ class CvAnalysisController extends Controller
             ->setStatusCode(201);
     }
 
-    public function show(CvAnalysis $analysis)
+    public function show(Request $request, CvAnalysis $analysis)
     {
+        SignedRecordAccess::authorize($request, $analysis);
+
         return view('analyses.show', compact('analysis'));
     }
 
@@ -117,25 +130,32 @@ class CvAnalysisController extends Controller
             }
         }
 
-        return CvAnalysis::create([
-            'user_id' => $request->user()?->id,
-            'target_job_title' => $validated['target_job_title'],
-            'original_filename' => $extracted['filename'],
-            'input_method' => $extracted['input_method'],
-            'resume_text' => $extracted['text'],
-            'score_total' => $score['total'],
-            'grade' => $score['grade'],
-            'job_match' => $score['job_match'],
-            'criteria' => $score['criteria'],
-            'strengths' => $score['strengths'],
-            'weaknesses' => $score['weaknesses'],
-            'keywords_found' => $score['keywords_found'],
-            'keywords_missing' => $score['keywords_missing'],
-            'quick_wins' => $score['quick_wins'],
-            'ai_status' => $aiStatus,
-            'ai_feedback' => $aiFeedback,
-            'ai_error' => $aiError,
-        ]);
+        $analysis = Idempotency::firstOrCreate($request, CvAnalysis::query(), function () use ($request, $validated, $extracted, $score, $aiStatus, $aiFeedback, $aiError) {
+            return CvAnalysis::create([
+                'user_id' => $request->user()?->id,
+                'idempotency_key' => Idempotency::key($request),
+                'target_job_title' => $validated['target_job_title'],
+                'original_filename' => $extracted['filename'],
+                'input_method' => $extracted['input_method'],
+                'resume_text' => $extracted['text'],
+                'score_total' => $score['total'],
+                'grade' => $score['grade'],
+                'job_match' => $score['job_match'],
+                'criteria' => $score['criteria'],
+                'strengths' => $score['strengths'],
+                'weaknesses' => $score['weaknesses'],
+                'keywords_found' => $score['keywords_found'],
+                'keywords_missing' => $score['keywords_missing'],
+                'quick_wins' => $score['quick_wins'],
+                'ai_status' => $aiStatus,
+                'ai_feedback' => $aiFeedback,
+                'ai_error' => $aiError,
+            ]);
+        });
+
+        assert($analysis instanceof CvAnalysis);
+
+        return $analysis;
     }
 
     private function authorizeApiAccess(Request $request, CvAnalysis $analysis): void

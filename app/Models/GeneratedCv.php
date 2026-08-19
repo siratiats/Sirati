@@ -10,6 +10,7 @@ class GeneratedCv extends Model
 {
     protected $fillable = [
         'user_id',
+        'idempotency_key',
         'full_name',
         'email',
         'phone',

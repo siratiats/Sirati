@@ -3,25 +3,38 @@
 <head>
     <meta charset="utf-8">
     <style>
+        @page { margin: 26px; }
         body {
             font-family: "DejaVu Sans", sans-serif;
             color: #0f172a;
             font-size: 12px;
             line-height: 1.75;
-            margin: 26px;
+            margin: 0;
             text-align: {{ $cv['direction'] === 'rtl' ? 'right' : 'left' }};
         }
-        .shell { border: 1px solid #cbd5e1; padding: 22px; }
+        .shell { border: 1px solid #cbd5e1; padding: 18px; }
         .header {
             background: {{ $cv['template']['colors']['primary'] ?? '#1f2937' }};
             color: #ffffff;
             padding: 18px 20px;
-            margin: -22px -22px 18px;
+            margin: 0 0 18px;
             page-break-inside: avoid;
         }
         h1 { margin: 0 0 4px; font-size: 28px; }
         .role { font-size: 14px; color: #dbeafe; }
-        .meta { margin-top: 8px; color: #e2e8f0; font-size: 11px; }
+        .meta {
+            margin-top: 8px;
+            color: #e2e8f0;
+            font-size: 11px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .meta-item {
+            direction: ltr;
+            display: inline-block;
+            unicode-bidi: embed;
+        }
+        .meta-separator { color: #bfdbfe; }
         .section { margin-top: 14px; }
         .content h1,
         .content h2,
@@ -45,12 +58,12 @@
             padding-{{ $cv['direction'] === 'rtl' ? 'right' : 'left' }}: 22px;
             padding-{{ $cv['direction'] === 'rtl' ? 'left' : 'right' }}: 0;
         }
-        .content li { margin-bottom: 3px; }
+        .content li { margin-bottom: 3px; word-wrap: break-word; }
         .content strong { font-weight: bold; }
         .content em { font-style: italic; }
-        .content table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+        .content table { border-collapse: collapse; margin: 8px 0; table-layout: fixed; width: 100%; }
         .content th,
-        .content td { border: 1px solid #cbd5e1; padding: 5px; }
+        .content td { border: 1px solid #cbd5e1; padding: 5px; word-wrap: break-word; }
         .footer {
             border-top: 1px solid #cbd5e1;
             color: #64748b;
@@ -66,7 +79,11 @@
             <h1>{{ $pdfData['name'] }}</h1>
             <div class="role">{{ $pdfData['targetJobTitle'] }}</div>
             @if ($pdfData['contacts'])
-                <div class="meta">{{ implode(' · ', $pdfData['contacts']) }}</div>
+                <div class="meta">
+                    @foreach ($pdfData['contacts'] as $contact)
+                        @if (! $loop->first)<span class="meta-separator"> · </span>@endif<span class="meta-item">{{ $contact }}</span>
+                    @endforeach
+                </div>
             @endif
         </div>
 

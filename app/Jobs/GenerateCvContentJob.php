@@ -83,10 +83,8 @@ class GenerateCvContentJob implements ShouldQueue
             ]);
             $this->reportAiFailure($exception, $startedAt, $generatedCv->user_id);
         } catch (Throwable $exception) {
-            $generatedCv->update([
-                'ai_status' => AiStatus::Failed,
-                'ai_error' => $exception->getMessage(),
-            ]);
+            // Stay in processing so clients keep polling until Laravel
+            // exhausts retries and failed() marks the record.
             $this->reportAiFailure($exception, $startedAt, $generatedCv->user_id);
 
             throw $exception;

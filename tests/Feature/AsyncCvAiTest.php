@@ -150,8 +150,8 @@ class AsyncCvAiTest extends TestCase
             $this->fail('The transient exception should be rethrown for the queue retry.');
         } catch (ConnectionException) {
             $analysis->refresh();
-            $this->assertSame(AiStatus::Failed, $analysis->ai_status);
-            $this->assertSame('SMTP-style network outage', $analysis->ai_error);
+            $this->assertSame(AiStatus::Processing, $analysis->ai_status);
+            $this->assertNull($analysis->ai_error);
         }
     }
 

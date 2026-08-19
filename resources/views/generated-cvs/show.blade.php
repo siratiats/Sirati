@@ -8,7 +8,7 @@
             <h1>{{ __('generated_cvs.show.heading') }}</h1>
             <p>{{ __('generated_cvs.show.expected_score') }} <strong>{{ $generatedCv->score_total }}/100</strong> — {{ $generatedCv->grade }}</p>
             <p class="muted">{{ __('generated_cvs.show.status') }} {{ $generatedCv->ai_status === \App\Enums\AiStatus::Completed ? __('generated_cvs.show.status_completed') : __('generated_cvs.show.status_basic') }}</p>
-            <a class="button" href="{{ route('generated-cvs.pdf', $generatedCv) }}">{{ __('generated_cvs.show.download_pdf') }}</a>
+            <a class="button" href="{{ $pdfUrl }}">{{ __('generated_cvs.show.download_pdf') }}</a>
         </div>
         <div class="card">
             <h2>{{ __('generated_cvs.show.notes') }}</h2>
