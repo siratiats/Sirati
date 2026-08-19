@@ -1,0 +1,96 @@
+START TRANSACTION;
+
+INSERT INTO job_titles
+(slug, name_ar, name_en, category, keywords, is_active, sort_order, created_at, updated_at)
+VALUES
+('software-engineer', 'مهندس برمجيات', 'Software Engineer', 'software', '["software","engineer","programming","backend","frontend","api"]', 1, 1, NOW(), NOW()),
+('laravel-developer', 'مطور Laravel', 'Laravel Developer', 'software', '["laravel","php","backend","api","sql"]', 1, 2, NOW(), NOW()),
+('frontend-developer', 'مطور واجهات أمامية', 'Frontend Developer', 'software', '["frontend","react","javascript","ui","css"]', 1, 3, NOW(), NOW()),
+('backend-developer', 'مطور خلفية', 'Backend Developer', 'software', '["backend","api","php","node","sql"]', 1, 4, NOW(), NOW()),
+('mobile-developer', 'مطور تطبيقات جوال', 'Mobile Developer', 'software', '["flutter","mobile","ios","android","app"]', 1, 5, NOW(), NOW()),
+('full-stack-developer', 'مطور Full Stack', 'Full Stack Developer', 'software', '["fullstack","javascript","api","frontend","backend"]', 1, 6, NOW(), NOW()),
+('devops-engineer', 'مهندس DevOps', 'DevOps Engineer', 'software', '["devops","ci/cd","cloud","docker","kubernetes"]', 1, 7, NOW(), NOW()),
+('qa-engineer', 'مهندس ضمان جودة', 'QA Engineer', 'software', '["qa","testing","automation","selenium","quality"]', 1, 8, NOW(), NOW()),
+('android-developer', 'مطور أندرويد', 'Android Developer', 'software', '["android","kotlin","java","mobile","app"]', 1, 9, NOW(), NOW()),
+('ios-developer', 'مطور iOS', 'iOS Developer', 'software', '["ios","swift","mobile","app","xcode"]', 1, 10, NOW(), NOW()),
+('cybersecurity-specialist', 'أخصائي أمن سيبراني', 'Cybersecurity Specialist', 'software', '["security","cybersecurity","soc","penetration","network"]', 1, 11, NOW(), NOW()),
+('systems-administrator', 'مسؤول أنظمة', 'Systems Administrator', 'software', '["sysadmin","linux","windows","servers","network"]', 1, 12, NOW(), NOW()),
+
+('digital-marketing-specialist', 'أخصائي تسويق رقمي', 'Digital Marketing Specialist', 'marketing', '["marketing","digital","seo","sem","campaigns"]', 1, 13, NOW(), NOW()),
+('social-media-specialist', 'أخصائي وسائل تواصل', 'Social Media Specialist', 'marketing', '["social media","content","community","instagram","campaign"]', 1, 14, NOW(), NOW()),
+('seo-specialist', 'أخصائي تحسين محركات البحث', 'SEO Specialist', 'marketing', '["seo","search","keywords","analytics","content"]', 1, 15, NOW(), NOW()),
+('content-creator', 'صانع محتوى', 'Content Creator', 'marketing', '["content","writing","brand","social media","copywriting"]', 1, 16, NOW(), NOW()),
+('brand-manager', 'مدير علامة تجارية', 'Brand Manager', 'marketing', '["brand","marketing","strategy","positioning","campaign"]', 1, 17, NOW(), NOW()),
+('performance-marketer', 'مسوّق أداء', 'Performance Marketer', 'marketing', '["ppc","google ads","meta ads","roi","analytics"]', 1, 18, NOW(), NOW()),
+('marketing-manager', 'مدير تسويق', 'Marketing Manager', 'marketing', '["marketing","strategy","campaign","team","budget"]', 1, 19, NOW(), NOW()),
+('pr-specialist', 'أخصائي علاقات عامة', 'PR Specialist', 'marketing', '["pr","communications","media","brand","reputation"]', 1, 20, NOW(), NOW()),
+('email-marketing-specialist', 'أخصائي تسويق بالبريد', 'Email Marketing Specialist', 'marketing', '["email","crm","campaign","automation","nurture"]', 1, 21, NOW(), NOW()),
+('growth-marketer', 'مسوّق نمو', 'Growth Marketer', 'marketing', '["growth","acquisition","funnel","analytics","experimentation"]', 1, 22, NOW(), NOW()),
+
+('sales-representative', 'مندوب مبيعات', 'Sales Representative', 'sales', '["sales","quota","prospecting","crm","negotiation"]', 1, 23, NOW(), NOW()),
+('account-manager', 'مدير حسابات', 'Account Manager', 'sales', '["account management","crm","retention","revenue","clients"]', 1, 24, NOW(), NOW()),
+('business-development-manager', 'مدير تطوير أعمال', 'Business Development Manager', 'sales', '["business development","partnerships","pipeline","sales","negotiation"]', 1, 25, NOW(), NOW()),
+('sales-manager', 'مدير مبيعات', 'Sales Manager', 'sales', '["sales","team","quota","pipeline","leadership"]', 1, 26, NOW(), NOW()),
+('key-account-manager', 'مدير حسابات رئيسية', 'Key Account Manager', 'sales', '["key accounts","enterprise","revenue","crm","relationship"]', 1, 27, NOW(), NOW()),
+('inside-sales', 'مبيعات داخلية', 'Inside Sales Executive', 'sales', '["inside sales","telesales","crm","leads","pipeline"]', 1, 28, NOW(), NOW()),
+('retail-sales-associate', 'بائع تجزئة', 'Retail Sales Associate', 'sales', '["retail","sales","customer service","pos","upsell"]', 1, 29, NOW(), NOW()),
+('real-estate-agent', 'وسيط عقاري', 'Real Estate Agent', 'sales', '["real estate","sales","negotiation","clients","property"]', 1, 30, NOW(), NOW()),
+('channel-sales-manager', 'مدير مبيعات قنوات', 'Channel Sales Manager', 'sales', '["channel","partners","sales","pipeline","revenue"]', 1, 31, NOW(), NOW()),
+('pre-sales-consultant', 'استشاري ما قبل البيع', 'Pre-Sales Consultant', 'sales', '["presales","demo","solution","rfps","sales"]', 1, 32, NOW(), NOW()),
+
+('project-manager', 'مدير مشاريع', 'Project Manager', 'management', '["project management","planning","stakeholders","roadmap","agile"]', 1, 33, NOW(), NOW()),
+('product-manager', 'مدير منتج', 'Product Manager', 'management', '["product","roadmap","stakeholders","strategy","backlog"]', 1, 34, NOW(), NOW()),
+('operations-manager', 'مدير عمليات', 'Operations Manager', 'management', '["operations","process","efficiency","team","planning"]', 1, 35, NOW(), NOW()),
+('general-manager', 'مدير عام', 'General Manager', 'management', '["leadership","strategy","budget","operations","p&l"]', 1, 36, NOW(), NOW()),
+('office-manager', 'مدير مكتب', 'Office Manager', 'management', '["office","administration","coordination","vendors","team"]', 1, 37, NOW(), NOW()),
+('program-manager', 'مدير برامج', 'Program Manager', 'management', '["program","portfolio","stakeholders","planning","delivery"]', 1, 38, NOW(), NOW()),
+('team-lead', 'قائد فريق', 'Team Lead', 'management', '["leadership","team","coaching","delivery","planning"]', 1, 39, NOW(), NOW()),
+('strategy-manager', 'مدير استراتيجية', 'Strategy Manager', 'management', '["strategy","planning","analysis","stakeholders","roadmap"]', 1, 40, NOW(), NOW()),
+('customer-success-manager', 'مدير نجاح العملاء', 'Customer Success Manager', 'management', '["customer success","retention","onboarding","accounts","nps"]', 1, 41, NOW(), NOW()),
+('scrum-master', 'سكرم ماستر', 'Scrum Master', 'management', '["scrum","agile","facilitation","team","ceremony"]', 1, 42, NOW(), NOW()),
+
+('accountant', 'محاسب', 'Accountant', 'finance', '["accounting","bookkeeping","excel","audit","ledger"]', 1, 43, NOW(), NOW()),
+('financial-analyst', 'محلل مالي', 'Financial Analyst', 'finance', '["financial analysis","forecast","excel","budget","reporting"]', 1, 44, NOW(), NOW()),
+('finance-manager', 'مدير مالي', 'Finance Manager', 'finance', '["finance","budget","p&l","forecast","team"]', 1, 45, NOW(), NOW()),
+('auditor', 'مدقق', 'Auditor', 'finance', '["audit","compliance","controls","risk","accounting"]', 1, 46, NOW(), NOW()),
+('treasury-specialist', 'أخصائي خزينة', 'Treasury Specialist', 'finance', '["treasury","cash flow","banking","liquidity","finance"]', 1, 47, NOW(), NOW()),
+('credit-analyst', 'محلل ائتمان', 'Credit Analyst', 'finance', '["credit","risk","analysis","banking","underwriting"]', 1, 48, NOW(), NOW()),
+('payroll-specialist', 'أخصائي رواتب', 'Payroll Specialist', 'finance', '["payroll","compensation","accounting","compliance","hris"]', 1, 49, NOW(), NOW()),
+('investment-analyst', 'محلل استثمار', 'Investment Analyst', 'finance', '["investment","portfolio","valuation","equity","research"]', 1, 50, NOW(), NOW()),
+
+('data-analyst', 'محلل بيانات', 'Data Analyst', 'data', '["sql","excel","dashboard","analytics","reporting"]', 1, 51, NOW(), NOW()),
+('data-scientist', 'عالم بيانات', 'Data Scientist', 'data', '["machine learning","python","statistics","modeling","data analysis"]', 1, 52, NOW(), NOW()),
+('business-intelligence-analyst', 'محلل ذكاء أعمال', 'BI Analyst', 'data', '["power bi","tableau","dashboard","sql","reporting"]', 1, 53, NOW(), NOW()),
+('data-engineer', 'مهندس بيانات', 'Data Engineer', 'data', '["etl","pipelines","sql","python","warehouse"]', 1, 54, NOW(), NOW()),
+('reporting-analyst', 'محلل تقارير', 'Reporting Analyst', 'data', '["reporting","excel","sql","dashboard","kpi"]', 1, 55, NOW(), NOW()),
+('analytics-manager', 'مدير تحليلات', 'Analytics Manager', 'data', '["analytics","team","insights","dashboard","strategy"]', 1, 56, NOW(), NOW()),
+('ml-engineer', 'مهندس تعلم آلي', 'ML Engineer', 'data', '["machine learning","python","models","mlops","data"]', 1, 57, NOW(), NOW()),
+('research-analyst', 'محلل أبحاث', 'Research Analyst', 'data', '["research","analysis","excel","reporting","insights"]', 1, 58, NOW(), NOW()),
+
+('hr-specialist', 'أخصائي موارد بشرية', 'HR Specialist', 'hr', '["hr","policies","employee relations","onboarding","hris"]', 1, 59, NOW(), NOW()),
+('recruiter', 'مسؤول توظيف', 'Recruiter', 'hr', '["recruitment","talent acquisition","sourcing","interviews","hiring"]', 1, 60, NOW(), NOW()),
+('hr-manager', 'مدير موارد بشرية', 'HR Manager', 'hr', '["hr","leadership","policies","performance management","team"]', 1, 61, NOW(), NOW()),
+('talent-acquisition-specialist', 'أخصائي استقطاب مواهب', 'Talent Acquisition Specialist', 'hr', '["talent acquisition","recruitment","employer branding","sourcing","hiring"]', 1, 62, NOW(), NOW()),
+('compensation-benefits-specialist', 'أخصائي تعويضات ومزايا', 'Compensation & Benefits Specialist', 'hr', '["compensation","benefits","payroll","grading","hr"]', 1, 63, NOW(), NOW()),
+('learning-development-specialist', 'أخصائي تعلم وتطوير', 'L&D Specialist', 'hr', '["learning","training","development","onboarding","performance"]', 1, 64, NOW(), NOW()),
+('hrbp', 'شريك أعمال موارد بشرية', 'HR Business Partner', 'hr', '["hrbp","employee relations","strategy","performance management","coaching"]', 1, 65, NOW(), NOW()),
+
+('ecommerce-manager', 'مدير تجارة إلكترونية', 'E-commerce Manager', 'ecommerce', '["ecommerce","marketplace","conversion","catalog","campaign"]', 1, 66, NOW(), NOW()),
+('ecommerce-specialist', 'أخصائي تجارة إلكترونية', 'E-commerce Specialist', 'ecommerce', '["ecommerce","shopify","product listing","cart","orders"]', 1, 67, NOW(), NOW()),
+('marketplace-specialist', 'أخصائي أسواق إلكترونية', 'Marketplace Specialist', 'ecommerce', '["amazon","marketplace","listing","retail","campaign"]', 1, 68, NOW(), NOW()),
+('product-listing-specialist', 'أخصائي إدراج منتجات', 'Product Listing Specialist', 'ecommerce', '["product listing","catalog","seo","marketplace","content"]', 1, 69, NOW(), NOW()),
+('shopify-developer', 'مطور Shopify', 'Shopify Developer', 'ecommerce', '["shopify","ecommerce","liquid","storefront","api"]', 1, 70, NOW(), NOW()),
+('conversion-rate-optimizer', 'أخصائي تحسين التحويل', 'CRO Specialist', 'ecommerce', '["conversion","ab testing","ux","analytics","funnel"]', 1, 71, NOW(), NOW()),
+('catalog-manager', 'مدير كتالوج', 'Catalog Manager', 'ecommerce', '["catalog","product listing","pim","retail","marketplace"]', 1, 72, NOW(), NOW()),
+
+('other', 'أخرى', 'Other', 'management', '["other","custom","general"]', 1, 999, NOW(), NOW())
+ON DUPLICATE KEY UPDATE
+name_ar = VALUES(name_ar),
+name_en = VALUES(name_en),
+category = VALUES(category),
+keywords = VALUES(keywords),
+is_active = VALUES(is_active),
+sort_order = VALUES(sort_order),
+updated_at = VALUES(updated_at);
+
+COMMIT;

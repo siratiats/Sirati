@@ -12,6 +12,9 @@ use App\Services\Ai\CachedCvAiProvider;
 use App\Services\AtsScoringService;
 use App\Services\CvTemplateRenderer;
 use App\Services\ErrorReporter;
+use App\Support\CvMarkdownIdentityBlock;
+use App\Support\Idempotency;
+use App\Support\SignedRecordAccess;
 use Illuminate\Http\Request;
 use Throwable;
 
@@ -19,8 +22,10 @@ class GeneratedCvController extends Controller
 {
     public function indexApi(Request $request)
     {
+        $perPage = min(50, max(1, (int) $request->integer('per_page', 20)));
+
         return GeneratedCvResource::collection(
-            $request->user()->generatedCvs()->latest()->limit(50)->get()
+            $request->user()->generatedCvs()->latest()->paginate($perPage)
         );
     }
 
@@ -31,13 +36,20 @@ class GeneratedCvController extends Controller
 
     public function store(Request $request, CvAiProvider $openAi, AtsScoringService $scorer)
     {
-        $generatedCv = $this->createGeneratedCv($this->validatedPayload($request), $openAi, $scorer, $request->user()?->id);
+        $generatedCv = $this->createGeneratedCv($this->validatedPayload($request), $openAi, $scorer, $request->user()?->id, false, $request);
 
-        return redirect()->route('generated-cvs.show', $generatedCv);
+        return redirect()->to(SignedRecordAccess::temporaryUrl('generated-cvs.show', [
+            'generatedCv' => $generatedCv,
+        ]));
     }
 
     public function storeApi(Request $request, CvAiProvider $openAi, AtsScoringService $scorer)
     {
+        $existing = Idempotency::find($request, GeneratedCv::query());
+        if ($existing instanceof GeneratedCv) {
+            return new GeneratedCvResource($existing);
+        }
+
         $queueAi = $request->header('X-Sirati-Async') === '1';
         $generatedCv = $this->createGeneratedCv(
             $this->validatedPayload($request),
@@ -45,9 +57,10 @@ class GeneratedCvController extends Controller
             $scorer,
             $request->user()->id,
             $queueAi,
+            $request,
         );
 
-        if ($generatedCv->ai_status === AiStatus::Queued) {
+        if ($generatedCv->wasRecentlyCreated && $generatedCv->ai_status === AiStatus::Queued) {
             GenerateCvContentJob::dispatch($generatedCv->id);
         }
 
@@ -90,6 +103,11 @@ class GeneratedCvController extends Controller
             'language' => ['nullable', 'in:ar,en'],
         ]);
 
+        $existing = Idempotency::find($request, GeneratedCv::query());
+        if ($existing instanceof GeneratedCv) {
+            return new GeneratedCvResource($existing);
+        }
+
         $queueAi = $request->header('X-Sirati-Async') === '1';
         $generatedCv = $this->createGeneratedCv(
             $this->payloadFromAnalysis($analysis, $overrides),
@@ -97,9 +115,10 @@ class GeneratedCvController extends Controller
             $scorer,
             $request->user()->id,
             $queueAi,
+            $request,
         );
 
-        if ($generatedCv->ai_status === AiStatus::Queued) {
+        if ($generatedCv->wasRecentlyCreated && $generatedCv->ai_status === AiStatus::Queued) {
             GenerateCvContentJob::dispatch($generatedCv->id);
         }
 
@@ -189,9 +208,15 @@ class GeneratedCvController extends Controller
         return response()->json(['data' => $result]);
     }
 
-    public function show(GeneratedCv $generatedCv)
+    public function show(Request $request, GeneratedCv $generatedCv)
     {
-        return view('generated-cvs.show', compact('generatedCv'));
+        SignedRecordAccess::authorize($request, $generatedCv);
+
+        $pdfUrl = SignedRecordAccess::temporaryUrl('generated-cvs.pdf', [
+            'generatedCv' => $generatedCv,
+        ]);
+
+        return view('generated-cvs.show', compact('generatedCv', 'pdfUrl'));
     }
 
     public function showApi(Request $request, GeneratedCv $generatedCv)
@@ -203,6 +228,8 @@ class GeneratedCvController extends Controller
 
     public function downloadPdf(Request $request, GeneratedCv $generatedCv, CvTemplateRenderer $renderer)
     {
+        SignedRecordAccess::authorize($request, $generatedCv);
+
         return $renderer->downloadResponse($generatedCv, $request->query('template'));
     }
 
@@ -246,11 +273,24 @@ class GeneratedCvController extends Controller
         AtsScoringService $scorer,
         ?int $userId = null,
         bool $queueAi = false,
+        ?Request $request = null,
     ): GeneratedCv {
-        return GeneratedCv::create([
-            ...$this->generatedCvAttributes($validated, $openAi, $scorer, $queueAi),
-            'user_id' => $userId,
-        ]);
+        $create = function () use ($validated, $openAi, $scorer, $queueAi, $userId, $request) {
+            return GeneratedCv::create([
+                ...$this->generatedCvAttributes($validated, $openAi, $scorer, $queueAi),
+                'user_id' => $userId,
+                'idempotency_key' => $request ? Idempotency::key($request) : null,
+            ]);
+        };
+
+        if ($request === null) {
+            return $create();
+        }
+
+        $generatedCv = Idempotency::firstOrCreate($request, GeneratedCv::query(), $create);
+        assert($generatedCv instanceof GeneratedCv);
+
+        return $generatedCv;
     }
 
     private function updateGeneratedCv(GeneratedCv $generatedCv, array $validated, CvAiProvider $openAi, AtsScoringService $scorer): void
@@ -291,6 +331,17 @@ class GeneratedCvController extends Controller
                 }
             }
         }
+
+        $markdown = CvMarkdownIdentityBlock::strip(
+            $markdown,
+            (string) $validated['full_name'],
+            (string) $validated['target_job_title'],
+            [
+                (string) ($validated['email'] ?? ''),
+                (string) ($validated['phone'] ?? ''),
+                (string) ($validated['linkedin'] ?? ''),
+            ],
+        );
 
         $score = $scorer->score($markdown, $validated['target_job_title']);
 
@@ -439,18 +490,11 @@ class GeneratedCvController extends Controller
 
     private function localTemplate(array $data): string
     {
-        $linkedin = $data['linkedin'] ? " | {$data['linkedin']}" : '';
-        $location = $data['location'] ? " | {$data['location']}" : '';
-
         if ($data['language'] === 'ar') {
             $summary = $data['summary_input'] ?: "متخصص في {$data['target_job_title']} مع خبرة عملية في تنفيذ مشاريع تقنية ونتائج قابلة للقياس.";
             $certifications = $data['certifications_input'] ? "\n\n## الشهادات والدورات\n{$data['certifications_input']}" : '';
 
             return <<<MARKDOWN
-# {$data['full_name']}
-{$data['target_job_title']}
-{$data['email']} | {$data['phone']}{$linkedin}{$location}
-
 ## الملخص المهني
 {$summary}
 
@@ -469,10 +513,6 @@ MARKDOWN;
         $certifications = $data['certifications_input'] ? "\n\n## Certifications\n{$data['certifications_input']}" : '';
 
         return <<<MARKDOWN
-# {$data['full_name']}
-{$data['target_job_title']}
-{$data['email']} | {$data['phone']}{$linkedin}{$location}
-
 ## Professional Summary
 {$summary}
 

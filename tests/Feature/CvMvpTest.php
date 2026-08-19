@@ -11,6 +11,7 @@ use App\Models\LandingLead;
 use App\Models\MobileNotification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -29,7 +30,9 @@ class CvMvpTest extends TestCase
 
         $analysis = CvAnalysis::first();
 
-        $response->assertRedirect(route('analyses.show', $analysis));
+        $response->assertRedirect();
+        $this->assertStringContainsString('/analyses/'.$analysis->id, (string) $response->headers->get('Location'));
+        $this->assertStringContainsString('signature=', (string) $response->headers->get('Location'));
         $this->assertNotNull($analysis);
         $this->assertGreaterThan(50, $analysis->score_total);
         $this->assertSame(AiStatus::NotConfigured, $analysis->ai_status);
@@ -56,10 +59,14 @@ class CvMvpTest extends TestCase
 
         $generatedCv = GeneratedCv::first();
 
-        $response->assertRedirect(route('generated-cvs.show', $generatedCv));
+        $response->assertRedirect();
+        $this->assertStringContainsString('/generated-cvs/'.$generatedCv->id, (string) $response->headers->get('Location'));
+        $this->assertStringContainsString('signature=', (string) $response->headers->get('Location'));
         $this->assertNotNull($generatedCv);
         $this->assertSame(AiStatus::NotConfigured, $generatedCv->ai_status);
-        $this->assertStringContainsString('Salem Sayer', $generatedCv->generated_markdown);
+        $this->assertSame('Salem Sayer', $generatedCv->full_name);
+        $this->assertStringContainsString('## Professional Summary', $generatedCv->generated_markdown);
+        $this->assertStringNotContainsString('Salem Sayer', $generatedCv->generated_markdown);
         $this->assertGreaterThan(50, $generatedCv->score_total);
     }
 
@@ -94,7 +101,13 @@ class CvMvpTest extends TestCase
             'criteria' => [],
         ]);
 
-        $response = $this->get(route('generated-cvs.pdf', $generatedCv));
+        $this->get(route('generated-cvs.pdf', $generatedCv))->assertForbidden();
+
+        $response = $this->get(URL::temporarySignedRoute(
+            'generated-cvs.pdf',
+            now()->addMinutes(5),
+            ['generatedCv' => $generatedCv],
+        ));
 
         $response->assertOk();
         $this->assertSame('application/pdf', $response->headers->get('content-type'));
@@ -503,7 +516,13 @@ class CvMvpTest extends TestCase
             ],
         ]);
 
-        $this->get(route('analyses.show', $analysis))
+        $this->get(route('analyses.show', $analysis))->assertForbidden();
+
+        $this->get(URL::temporarySignedRoute(
+            'analyses.show',
+            now()->addMinutes(5),
+            ['analysis' => $analysis],
+        ))
             ->assertOk()
             ->assertSee('ملخص عام')
             ->assertSee('أهم الأولويات')

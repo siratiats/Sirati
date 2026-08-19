@@ -3,12 +3,13 @@
 <head>
     <meta charset="utf-8">
     <style>
+        @page { margin: 28px; }
         body {
             font-family: "DejaVu Sans", sans-serif;
             color: #111827;
             font-size: 12px;
             line-height: 1.7;
-            margin: 28px;
+            margin: 0;
             text-align: {{ $cv['direction'] === 'rtl' ? 'right' : 'left' }};
         }
         .header {
@@ -19,7 +20,19 @@
         }
         h1 { margin: 0 0 4px; font-size: 26px; }
         .subtitle { color: #374151; font-size: 14px; }
-        .contact { color: #4b5563; font-size: 10px; margin-top: 7px; }
+        .contact {
+            color: #4b5563;
+            font-size: 10px;
+            line-height: 1.5;
+            margin-top: 7px;
+            word-wrap: break-word;
+        }
+        .contact-item {
+            direction: ltr;
+            display: inline-block;
+            unicode-bidi: embed;
+        }
+        .contact-separator { color: #9ca3af; }
         .content { direction: {{ $cv['direction'] }}; }
         .content h1,
         .content h2,
@@ -43,12 +56,12 @@
             padding-{{ $cv['direction'] === 'rtl' ? 'right' : 'left' }}: 22px;
             padding-{{ $cv['direction'] === 'rtl' ? 'left' : 'right' }}: 0;
         }
-        .content li { margin-bottom: 3px; }
+        .content li { margin-bottom: 3px; word-wrap: break-word; }
         .content strong { font-weight: bold; }
         .content em { font-style: italic; }
-        .content table { border-collapse: collapse; margin: 8px 0; width: 100%; }
+        .content table { border-collapse: collapse; margin: 8px 0; table-layout: fixed; width: 100%; }
         .content th,
-        .content td { border: 1px solid #d1d5db; padding: 5px; }
+        .content td { border: 1px solid #d1d5db; padding: 5px; word-wrap: break-word; }
         .footer {
             border-top: 1px solid #d1d5db;
             color: #6b7280;
@@ -63,7 +76,11 @@
         <h1>{{ $pdfData['name'] }}</h1>
         <div class="subtitle">{{ $pdfData['targetJobTitle'] }}</div>
         @if ($pdfData['contacts'])
-            <div class="contact">{{ implode(' · ', $pdfData['contacts']) }}</div>
+            <div class="contact">
+                @foreach ($pdfData['contacts'] as $contact)
+                    @if (! $loop->first)<span class="contact-separator"> · </span>@endif<span class="contact-item">{{ $contact }}</span>
+                @endforeach
+            </div>
         @endif
     </div>
 

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\JobTitle;
 use App\Services\AtsScoringService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 
 class JobTitleSeeder extends Seeder
@@ -32,6 +33,9 @@ class JobTitleSeeder extends Seeder
                 ],
             );
         }
+
+        // Keep mobile taxonomy endpoint in sync right after seeding.
+        Cache::forget('mobile.job_titles.active.v1');
     }
 
     /**

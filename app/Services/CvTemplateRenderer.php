@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Services\Cv\CvMarkdownRenderer;
+use App\Support\CvMarkdownIdentityBlock;
 use Dompdf\Dompdf;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -70,7 +71,7 @@ class CvTemplateRenderer
                 $this->formatPdfText($generatedCv->location, $language),
             ], fn (string $value): bool => trim($value) !== '')),
             'contentHtml' => $this->markdownRenderer->render(
-                (string) $generatedCv->generated_markdown,
+                $this->bodyMarkdown($generatedCv),
                 $language,
                 $generatedCv->id,
             ),
@@ -180,5 +181,19 @@ class CvTemplateRenderer
     private function formatPdfText(?string $text, string $language): string
     {
         return $this->markdownRenderer->shapeText($text, $language);
+    }
+
+    private function bodyMarkdown(GeneratedCv $generatedCv): string
+    {
+        return CvMarkdownIdentityBlock::strip(
+            (string) $generatedCv->generated_markdown,
+            (string) $generatedCv->full_name,
+            (string) $generatedCv->target_job_title,
+            [
+                (string) $generatedCv->email,
+                (string) $generatedCv->phone,
+                (string) $generatedCv->linkedin,
+            ],
+        );
     }
 }

@@ -29,7 +29,11 @@ class CvPdfRenderingTest extends TestCase
         $html = app(CvTemplateRenderer::class)->renderHtml($cv, $template->slug);
 
         $this->assertStringContainsString('candidate@example.com', $html);
-        $this->assertMatchesRegularExpression('/<div class="contact">\s*candidate@example\.com\s*<\/div>/', $html);
+        $this->assertMatchesRegularExpression(
+            '/<div class="contact">\s*<span class="contact-item">candidate@example\.com<\/span>\s*<\/div>/',
+            $html,
+        );
+        $this->assertStringNotContainsString('<span class="contact-separator">', $html);
     }
 
     public function test_classic_template_contains_all_present_contact_values(): void
@@ -45,6 +49,39 @@ class CvPdfRenderingTest extends TestCase
         $this->assertStringContainsString('Riyadh', $html);
         $this->assertStringContainsString('<h2>Experience</h2>', $html);
         $this->assertStringContainsString('<li>Built APIs</li>', $html);
+    }
+
+    public function test_renderer_strips_duplicate_identity_block_from_body_markdown(): void
+    {
+        $template = $this->template('classic', 'classic_rtl');
+        $cv = $this->cv('en', [
+            'generated_markdown' => "# Ahmed Ali\nSoftware Developer\n"
+                ."candidate@example.com | +966500000000 | linkedin.com/in/candidate | Riyadh\n\n"
+                ."## Experience\n\n- Built APIs",
+        ]);
+
+        $html = app(CvTemplateRenderer::class)->renderHtml($cv, $template->slug);
+
+        $this->assertSame(1, substr_count($html, '<h1>Ahmed Ali</h1>'));
+        $this->assertSame(1, substr_count($html, 'candidate@example.com'));
+        $this->assertStringContainsString('<div class="content"><h2>Experience</h2>', $html);
+        $this->assertStringNotContainsString('<div class="content"><h1>Ahmed Ali</h1>', $html);
+    }
+
+    public function test_modern_template_renders_contacts_as_wrappable_items(): void
+    {
+        $template = $this->template('modern', 'modern_rtl');
+        $cv = $this->cv('en', [
+            'linkedin' => 'https://linkedin.com/in/candidate-with-a-very-long-profile-slug-for-wrapping',
+        ]);
+
+        $html = app(CvTemplateRenderer::class)->renderHtml($cv, $template->slug);
+
+        $this->assertStringContainsString('@page { margin: 26px; }', $html);
+        $this->assertStringNotContainsString('margin: -22px -22px 18px;', $html);
+        $this->assertSame(4, substr_count($html, 'class="meta-item"'));
+        $this->assertSame(3, substr_count($html, 'class="meta-separator"'));
+        $this->assertStringContainsString('word-wrap: break-word;', $html);
     }
 
     public function test_arabic_template_preserves_latin_contacts_and_shapes_mixed_location(): void
