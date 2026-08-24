@@ -72,7 +72,6 @@ class EnhanceCvFieldTest extends TestCase
                 'data' => ['enhanced_text', 'changes_made', 'missing_facts', 'ats_keywords_added', 'unverified_claims'],
             ]);
     }
-
     public function test_validation_rejects_unknown_fields_and_short_drafts(): void
     {
         $user = User::factory()->create();

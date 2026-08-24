@@ -198,7 +198,6 @@ class CvPdfRenderingTest extends TestCase
         $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
         $this->assertStringStartsWith('%PDF-', (string) $response->getContent());
     }
-
     private function template(string $slug, string $rendererKey): CvTemplate
     {
         return CvTemplate::create([

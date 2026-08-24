@@ -66,11 +66,13 @@ class MobileContentController extends Controller
     public function myCvs(Request $request): array
     {
         $language = $this->language($request);
-        $items = $request->user()->generatedCvs()->latest()->limit(20)->get()->map(function (GeneratedCv $cv) use ($language): array {
-            $signedUrl = URL::temporarySignedRoute(
+        $publicBaseUrl = rtrim((string) config('app.public_url', 'https://siratie.com'), '/');
+        $items = $request->user()->generatedCvs()->latest()->limit(20)->get()->map(function (GeneratedCv $cv) use ($language, $publicBaseUrl): array {
+            $signedPath = URL::temporarySignedRoute(
                 'api.generated-cvs.pdf',
-                now()->addDays(7),
-                ['generatedCv' => $cv->id]
+                now()->addMinutes(30),
+                ['generatedCv' => $cv->id],
+                false
             );
 
             return [
@@ -81,8 +83,8 @@ class MobileContentController extends Controller
                 'score_total' => $cv->score_total,
                 'is_draft' => false,
                 'can_download' => true,
-                'pdf_url' => $signedUrl,
-                'template_pdf_url' => $signedUrl,
+                'pdf_url' => $publicBaseUrl.$signedPath,
+                'template_pdf_url' => $publicBaseUrl."/generated-cvs/{$cv->id}/pdf",
             ];
         })->values();
 

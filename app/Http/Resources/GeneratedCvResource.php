@@ -11,10 +11,12 @@ class GeneratedCvResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $signedUrl = URL::temporarySignedRoute(
+        $publicBaseUrl = rtrim((string) config('app.public_url', 'https://siratie.com'), '/');
+        $signedPath = URL::temporarySignedRoute(
             'api.generated-cvs.pdf',
-            now()->addDays(7),
-            ['generatedCv' => $this->id]
+            now()->addMinutes(30),
+            ['generatedCv' => $this->id],
+            false
         );
 
         return [
@@ -41,8 +43,8 @@ class GeneratedCvResource extends JsonResource
             'score_total' => $this->score_total,
             'grade' => $this->grade,
             'criteria' => $this->mobileList($this->criteria),
-            'pdf_url' => $signedUrl,
-            'template_pdf_url' => $signedUrl,
+            'pdf_url' => $publicBaseUrl.$signedPath,
+            'template_pdf_url' => $publicBaseUrl."/generated-cvs/{$this->id}/pdf",
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];
