@@ -198,14 +198,34 @@ class GeneratedCvController extends Controller
             ]);
         }
 
-        $result = $openAi->enhanceCvField(
-            $validated['field'],
-            $validated['draft'],
-            $validated['job_title'],
-            $validated['language'],
-        );
+        $startedAt = hrtime(true);
 
-        return response()->json(['data' => $result]);
+        try {
+            $result = $openAi->enhanceCvField(
+                $validated['field'],
+                $validated['draft'],
+                $validated['job_title'],
+                $validated['language'],
+            );
+
+            return response()->json(['data' => $result]);
+        } catch (Throwable $exception) {
+            $this->reportAiFailure($exception, 'enhance_field', $startedAt, $request->user()?->id);
+
+            return response()->json([
+                'data' => [
+                    'enhanced_text' => $validated['draft'],
+                    'changes_made' => [],
+                    'missing_facts' => [
+                        $validated['language'] === 'en'
+                            ? 'AI enhancement encountered an issue. Your draft was preserved.'
+                            : 'حدث خطأ أثناء تحسين الحقل بالذكاء الاصطناعي. تم الاحتفاظ بمسودتك.',
+                    ],
+                    'ats_keywords_added' => [],
+                    'unverified_claims' => [],
+                ],
+            ]);
+        }
     }
 
     public function show(Request $request, GeneratedCv $generatedCv)

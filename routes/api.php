@@ -26,7 +26,6 @@ Route::get('/mobile/job-titles', [MobileContentController::class, 'jobTitles']);
 Route::get('/mobile/job-news', [MobileContentController::class, 'jobNews']);
 Route::get('/mobile/job-news/{jobNews}', [MobileContentController::class, 'jobNewsShow']);
 Route::get('/generated-cvs/{generatedCv}/pdf', [GeneratedCvController::class, 'downloadPdf'])
-    ->middleware('signed')
     ->name('api.generated-cvs.pdf');
 
 Route::middleware('auth:sanctum')->group(function () {

@@ -10,7 +10,10 @@ class SignedRecordAccess
 {
     public static function authorize(Request $request, Model $record, string $ownerColumn = 'user_id'): void
     {
-        if ($request->hasValidSignature()) {
+        if ($request->hasValidSignatureWhileIgnoring(['template']) ||
+            $request->hasValidSignatureWhileIgnoring(['template'], false) ||
+            $request->hasValidSignature(false) ||
+            $request->hasValidSignature()) {
             return;
         }
 

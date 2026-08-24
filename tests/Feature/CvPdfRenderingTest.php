@@ -179,6 +179,26 @@ class CvPdfRenderingTest extends TestCase
         }
     }
 
+    public function test_signed_pdf_download_route_accepts_valid_signature_with_template_parameter(): void
+    {
+        $template = $this->template('modern', 'modern_rtl');
+        $cv = $this->cv('en');
+
+        $signedUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'api.generated-cvs.pdf',
+            now()->addMinutes(30),
+            ['generatedCv' => $cv->id]
+        );
+
+        $urlWithTemplate = $signedUrl.'&template='.$template->slug;
+
+        $response = $this->get($urlWithTemplate);
+
+        $response->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
+        $this->assertStringStartsWith('%PDF-', (string) $response->getContent());
+    }
+
     private function template(string $slug, string $rendererKey): CvTemplate
     {
         return CvTemplate::create([

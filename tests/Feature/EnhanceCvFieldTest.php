@@ -51,6 +51,28 @@ class EnhanceCvFieldTest extends TestCase
         }
     }
 
+    public function test_endpoint_returns_fallback_response_when_ai_provider_throws_exception(): void
+    {
+        $provider = Mockery::mock(CvAiProvider::class);
+        $provider->shouldReceive('isConfigured')->once()->andReturn(true);
+        $provider->shouldReceive('enhanceCvField')->once()->andThrow(new \RuntimeException('Connection timed out.'));
+        $this->app->instance(CvAiProvider::class, $provider);
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->postJson('/api/generated-cvs/enhance-field', [
+            'field' => 'summary',
+            'draft' => 'Senior software engineer with 8 years experience.',
+            'job_title' => 'Senior Developer',
+            'language' => 'en',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.enhanced_text', 'Senior software engineer with 8 years experience.')
+            ->assertJsonStructure([
+                'data' => ['enhanced_text', 'changes_made', 'missing_facts', 'ats_keywords_added', 'unverified_claims'],
+            ]);
+    }
+
     public function test_validation_rejects_unknown_fields_and_short_drafts(): void
     {
         $user = User::factory()->create();
