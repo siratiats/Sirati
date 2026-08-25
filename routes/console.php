@@ -9,3 +9,13 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('fcm:clean-tokens')->weekly();
+
+// Aggregate Saudi jobs every 3 hours with automatic taxonomy matching & seeding
+Schedule::command('jobs:aggregate-saudi --seed')
+    ->everyThreeHours()
+    ->withoutOverlapping();
+
+// Dispatch smart daily notifications based on user activity, timezone & job preferences
+Schedule::command('notifications:plan-daily')
+    ->hourly()
+    ->withoutOverlapping();
