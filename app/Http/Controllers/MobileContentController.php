@@ -263,14 +263,30 @@ class MobileContentController extends Controller
     {
         $language = $this->language($request);
         $category = $this->jobNewsCategory($request->query('category'));
-        $search = trim((string) $request->query('q', ''));
+        $search = trim((string) ($request->query('q') ?? $request->query('query', '')));
+        $jobTitleId = $request->filled('job_title_id') ? (int) $request->query('job_title_id') : null;
+        $city = $request->filled('city') ? trim((string) $request->query('city')) : null;
+        $isRemote = $request->boolean('is_remote', false);
 
         $query = JobNews::query()
+            ->with('jobTitle')
             ->where('language', $language)
             ->active()
             ->orderBy('sort_order')
             ->latest('published_at')
             ->latest();
+
+        if ($jobTitleId !== null) {
+            $query->where('job_title_id', $jobTitleId);
+        }
+
+        if ($city !== null && $city !== 'all') {
+            $query->where('city', $city);
+        }
+
+        if ($request->has('is_remote') && $isRemote) {
+            $query->where('is_remote', true);
+        }
 
         if ($search !== '') {
             $query->where(function ($q) use ($search): void {
@@ -282,10 +298,10 @@ class MobileContentController extends Controller
         }
 
         $items = $query
-            ->limit($category === null ? 20 : 80)
+            ->limit($category === null ? 30 : 80)
             ->get()
             ->filter(fn (JobNews $item): bool => $category === null || $this->inferJobCategory($item) === $category)
-            ->take(20)
+            ->take(30)
             ->map(fn (JobNews $item): array => $this->jobNewsPayload($item, $language));
 
         return [

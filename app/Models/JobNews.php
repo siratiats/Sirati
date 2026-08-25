@@ -12,7 +12,11 @@ class JobNews extends Model
         'title',
         'company',
         'location',
+        'city',
+        'is_remote',
         'body',
+        'category',
+        'job_title_id',
         'url',
         'apply_url',
         'published_at',
@@ -22,6 +26,8 @@ class JobNews extends Model
         'is_published',
         'source',
         'source_row_key',
+        'external_source',
+        'external_id',
     ];
 
     protected function casts(): array
@@ -31,7 +37,14 @@ class JobNews extends Model
             'valid_from' => 'date',
             'valid_until' => 'date',
             'is_published' => 'boolean',
+            'is_remote' => 'boolean',
+            'job_title_id' => 'integer',
         ];
+    }
+
+    public function jobTitle()
+    {
+        return $this->belongsTo(JobTitle::class, 'job_title_id');
     }
 
     public function scopeActive(Builder $query): Builder
