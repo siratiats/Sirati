@@ -198,6 +198,32 @@ class CvPdfRenderingTest extends TestCase
         $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
         $this->assertStringStartsWith('%PDF-', (string) $response->getContent());
     }
+
+    public function test_each_of_the_six_seeded_templates_renders_distinct_html_views(): void
+    {
+        $this->seed(\Database\Seeders\CvTemplateSeeder::class);
+        $renderer = app(CvTemplateRenderer::class);
+        $cv = $this->cv('ar');
+
+        $slugs = [
+            'ats-classic-professional',
+            'graduate-launchpad',
+            'executive-leadership-brief',
+            'sales-impact-performer',
+            'bilingual-global-professional',
+        ];
+
+        $renderedOutputs = [];
+        foreach ($slugs as $slug) {
+            $html = $renderer->renderHtml($cv, $slug);
+            $this->assertNotEmpty($html);
+            $renderedOutputs[$slug] = $html;
+        }
+
+        // Assert all rendered HTMLs are unique from one another
+        $uniqueCount = count(array_unique($renderedOutputs));
+        $this->assertSame(count($slugs), $uniqueCount, 'Expected all template HTML views to be distinctly unique.');
+    }
     private function template(string $slug, string $rendererKey): CvTemplate
     {
         return CvTemplate::create([

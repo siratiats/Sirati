@@ -161,6 +161,11 @@ class CvTemplateRenderer
 
     private function viewFor(CvTemplate $template): string
     {
+        $slugView = 'generated-cvs.templates.'.$template->slug;
+        if (view()->exists($slugView)) {
+            return $slugView;
+        }
+
         $renderers = config('cv_templates.renderers', []);
 
         return $renderers[$template->renderer_key]
