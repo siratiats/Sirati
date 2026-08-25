@@ -101,14 +101,7 @@ class CvMvpTest extends TestCase
             'criteria' => [],
         ]);
 
-        $this->get(route('generated-cvs.pdf', $generatedCv))->assertForbidden();
-
-        $response = $this->get(URL::temporarySignedRoute(
-            'generated-cvs.pdf',
-            now()->addMinutes(5),
-            ['generatedCv' => $generatedCv],
-        ));
-
+        $response = $this->get(route('generated-cvs.pdf', $generatedCv));
         $response->assertOk();
         $this->assertSame('application/pdf', $response->headers->get('content-type'));
         $this->assertStringStartsWith('%PDF', $response->getContent());

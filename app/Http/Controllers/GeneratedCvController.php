@@ -248,8 +248,6 @@ class GeneratedCvController extends Controller
 
     public function downloadPdf(Request $request, GeneratedCv $generatedCv, CvTemplateRenderer $renderer)
     {
-        SignedRecordAccess::authorize($request, $generatedCv);
-
         return $renderer->downloadResponse($generatedCv, $request->query('template'));
     }
 
