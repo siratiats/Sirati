@@ -9,29 +9,39 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('job_news', function (Blueprint $table): void {
-            $table->string('category', 60)->nullable()->after('location');
-            $table->foreignId('job_title_id')->nullable()->after('category')->constrained('job_titles')->nullOnDelete();
-            $table->string('city', 60)->nullable()->after('location');
-            $table->boolean('is_remote')->default(false)->after('city');
-            $table->string('external_source', 60)->nullable()->after('source');
-            $table->string('external_id', 160)->nullable()->after('external_source');
-
-            $table->index(['job_title_id', 'is_published'], 'job_news_title_pub_idx');
-            $table->index(['city', 'is_published'], 'job_news_city_pub_idx');
-            $table->index(['is_remote', 'is_published'], 'job_news_remote_pub_idx');
-            $table->index(['category', 'is_published'], 'job_news_category_pub_idx');
+            if (! Schema::hasColumn('job_news', 'category')) {
+                $table->string('category', 60)->nullable()->after('location');
+            }
+            if (! Schema::hasColumn('job_news', 'job_title_id')) {
+                $table->foreignId('job_title_id')->nullable()->after('category')->constrained('job_titles')->nullOnDelete();
+            }
+            if (! Schema::hasColumn('job_news', 'city')) {
+                $table->string('city', 60)->nullable()->after('location');
+            }
+            if (! Schema::hasColumn('job_news', 'is_remote')) {
+                $table->boolean('is_remote')->default(false)->after('city');
+            }
+            if (! Schema::hasColumn('job_news', 'external_source')) {
+                $table->string('external_source', 60)->nullable()->after('source');
+            }
+            if (! Schema::hasColumn('job_news', 'external_id')) {
+                $table->string('external_id', 160)->nullable()->after('external_source');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('job_news', function (Blueprint $table): void {
-            $table->dropForeign(['job_title_id']);
-            $table->dropIndex('job_news_title_pub_idx');
-            $table->dropIndex('job_news_city_pub_idx');
-            $table->dropIndex('job_news_remote_pub_idx');
-            $table->dropIndex('job_news_category_pub_idx');
-            $table->dropColumn(['category', 'job_title_id', 'city', 'is_remote', 'external_source', 'external_id']);
+            $columnsToDrop = [];
+            foreach (['category', 'job_title_id', 'city', 'is_remote', 'external_source', 'external_id'] as $col) {
+                if (Schema::hasColumn('job_news', $col)) {
+                    $columnsToDrop[] = $col;
+                }
+            }
+            if (! empty($columnsToDrop)) {
+                $table->dropColumn($columnsToDrop);
+            }
         });
     }
 };

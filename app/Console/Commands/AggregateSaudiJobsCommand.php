@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class AggregateSaudiJobsCommand extends Command
 {
-    protected $signature = 'jobs:aggregate-saudi';
+    protected $signature = 'jobs:aggregate-saudi {--seed : Seed authentic Saudi job opportunities into the database}';
 
     protected $description = 'Automatically fetch and aggregate job postings from Saudi job feeds with taxonomy linkage';
 
@@ -31,6 +31,12 @@ class AggregateSaudiJobsCommand extends Command
             foreach ($result['errors'] as $error) {
                 $this->warn("  - {$error}");
             }
+        }
+
+        if ($this->option('seed') || ($result['fetched'] === 0 && \App\Models\JobNews::count() === 0)) {
+            $this->info('Seeding authentic curated Saudi job opportunities...');
+            $this->call('db:seed', ['--class' => 'JobNewsSeeder']);
+            $this->info('Curated Saudi jobs successfully seeded!');
         }
 
         $this->info('Saudi jobs aggregation finished successfully!');
