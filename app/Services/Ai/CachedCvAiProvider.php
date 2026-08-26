@@ -54,6 +54,7 @@ class CachedCvAiProvider implements CvAiProvider
     {
         return match (strtolower((string) config('services.cv_ai.provider', 'openai'))) {
             'claude', 'anthropic' => 'anthropic',
+            'deepinfra', 'qwen', 'kimi' => 'deepinfra',
             default => 'openai',
         };
     }
@@ -63,9 +64,11 @@ class CachedCvAiProvider implements CvAiProvider
      */
     public static function modelForProvider(string $provider): string
     {
-        return $provider === 'anthropic'
-            ? (string) config('services.anthropic.model')
-            : (string) config('services.openai.model');
+        return match ($provider) {
+            'anthropic' => (string) config('services.anthropic.model'),
+            'deepinfra' => (string) config('services.deepinfra.model', 'Qwen/Qwen2.5-72B-Instruct'),
+            default => (string) config('services.openai.model'),
+        };
     }
 
     public function isConfigured(): bool

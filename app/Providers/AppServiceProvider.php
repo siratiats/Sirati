@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Contracts\CvAiProvider;
 use App\Services\Ai\CachedCvAiProvider;
 use App\Services\ClaudeCvService;
+use App\Services\DeepInfraCvService;
 use App\Services\ErrorReporter;
 use App\Services\HealthMonitor;
 use App\Services\OpenAiCvService;
@@ -25,15 +26,17 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(OpenAiCvService::class);
         $this->app->singleton(ClaudeCvService::class);
+        $this->app->singleton(DeepInfraCvService::class);
 
         $this->app->singleton(CvAiProvider::class, function ($app): CvAiProvider {
             $driver = strtolower((string) config('services.cv_ai.provider', 'openai'));
 
             $concrete = match ($driver) {
                 'openai' => $app->make(OpenAiCvService::class),
+                'deepinfra', 'qwen', 'kimi' => $app->make(DeepInfraCvService::class),
                 'claude', 'anthropic' => $app->make(ClaudeCvService::class),
                 default => throw new InvalidArgumentException(
-                    "Unsupported CV_AI_PROVIDER [{$driver}]. Use openai or claude."
+                    "Unsupported CV_AI_PROVIDER [{$driver}]. Use openai, deepinfra, or claude."
                 ),
             };
 

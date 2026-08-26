@@ -42,6 +42,14 @@ return [
         'connect_timeout' => (int) env('ANTHROPIC_CONNECT_TIMEOUT', 5),
     ],
 
+    'deepinfra' => [
+        'api_key' => env('DEEPINFRA_API_KEY'),
+        'model' => env('DEEPINFRA_MODEL', 'Qwen/Qwen2.5-72B-Instruct'),
+        'base_url' => env('DEEPINFRA_BASE_URL', 'https://api.deepinfra.com/v1/openai'),
+        'timeout' => (int) env('DEEPINFRA_TIMEOUT', 45),
+        'connect_timeout' => (int) env('DEEPINFRA_CONNECT_TIMEOUT', 5),
+    ],
+
     'cv_ai' => [
         // Production default is openai. claude is for bake-off / explicit opt-in only.
         'provider' => env('CV_AI_PROVIDER', 'openai'),

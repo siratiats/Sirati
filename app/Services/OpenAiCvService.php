@@ -32,12 +32,21 @@ class OpenAiCvService implements CvAiProvider
      */
     public function analysisAdvice(array $score, string $resumeText, string $jobTitle): array
     {
-        // System prefix is static (cacheable); all per-request values stay in the user message.
-        return $this->requestJson(
-            'analysis_advice',
-            (new AnalysisAdviceSystemPrompt)->build(),
-            "Analyze this CV for the target job and produce actionable Arabic advice.\n\nTarget job: {$jobTitle}\n\nDeterministic ATS score JSON:\n".json_encode($score, JSON_UNESCAPED_UNICODE)."\n\nCV text:\n".mb_substr($resumeText, 0, 7000)."\n\nReturn JSON with keys: executive_summary string, top_priorities array of strings, rewritten_summary string|null, keyword_recommendations array of strings, bullet_improvements array of objects {before:string|null, after:string, reason:string}, warnings array of strings."
-        );
+        try {
+            // System prefix is static (cacheable); all per-request values stay in the user message.
+            return $this->requestJson(
+                'analysis_advice',
+                (new AnalysisAdviceSystemPrompt)->build(),
+                "Analyze this CV for the target job and produce actionable Arabic advice.\n\nTarget job: {$jobTitle}\n\nDeterministic ATS score JSON:\n".json_encode($score, JSON_UNESCAPED_UNICODE)."\n\nCV text:\n".mb_substr($resumeText, 0, 7000)."\n\nReturn JSON with keys: executive_summary string, top_priorities array of strings, rewritten_summary string|null, keyword_recommendations array of strings, bullet_improvements array of objects {before:string|null, after:string, reason:string}, warnings array of strings."
+            );
+        } catch (Throwable $e) {
+            $fallback = app(DeepInfraCvService::class);
+            if ($fallback->isConfigured()) {
+                Log::warning("OpenAI analysisAdvice failed ({$e->getMessage()}), automatically falling back to DeepInfra.");
+                return $fallback->analysisAdvice($score, $resumeText, $jobTitle);
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -48,11 +57,20 @@ class OpenAiCvService implements CvAiProvider
      */
     public function generateCv(array $data): array
     {
-        return $this->requestJson(
-            'generate_cv',
-            'You are an expert CV writer for Arabic and English ATS-friendly resumes. Return only valid JSON. Use only the user-provided facts. Do not invent employers, degrees, dates, metrics, or certifications. Make the CV concise, keyword-rich, and ATS readable.',
-            "Generate an ATS-friendly CV template from these form inputs.\n\nInput JSON:\n".json_encode($data, JSON_UNESCAPED_UNICODE)."\n\nReturn JSON with keys: cv_markdown string, headline string, professional_summary string, core_skills array of strings, improved_experience_bullets array of strings, ats_notes array of strings, missing_information array of strings."
-        );
+        try {
+            return $this->requestJson(
+                'generate_cv',
+                'You are an expert CV writer for Arabic and English ATS-friendly resumes. Return only valid JSON. Use only the user-provided facts. Do not invent employers, degrees, dates, metrics, or certifications. Make the CV concise, keyword-rich, and ATS readable.',
+                "Generate an ATS-friendly CV template from these form inputs.\n\nInput JSON:\n".json_encode($data, JSON_UNESCAPED_UNICODE)."\n\nReturn JSON with keys: cv_markdown string, headline string, professional_summary string, core_skills array of strings, improved_experience_bullets array of strings, ats_notes array of strings, missing_information array of strings."
+            );
+        } catch (Throwable $e) {
+            $fallback = app(DeepInfraCvService::class);
+            if ($fallback->isConfigured()) {
+                Log::warning("OpenAI generateCv failed ({$e->getMessage()}), automatically falling back to DeepInfra.");
+                return $fallback->generateCv($data);
+            }
+            throw $e;
+        }
     }
 
     /**
@@ -63,25 +81,43 @@ class OpenAiCvService implements CvAiProvider
      */
     public function enhanceCvField(string $field, string $draft, string $jobTitle, string $language): array
     {
-        $languageName = $language === 'en' ? 'English' : 'Arabic';
-        $result = $this->requestJson(
-            'enhance_cv_field',
-            EnhanceCvFieldSystemPrompt::for($field),
-            "Rewrite the {$field} CV field in {$languageName} for the target role. Keep every fact grounded in the draft.\n\nTarget job title: {$jobTitle}\n\nDraft:\n".mb_substr($draft, 0, 12000)."\n\nReturn enhanced_text, changes_made, missing_facts, ats_keywords_added, and unverified_claims. Return unverified_claims as an empty array; server-side validation populates it.",
-        );
+        try {
+            $languageName = $language === 'en' ? 'English' : 'Arabic';
+            $result = $this->requestJson(
+                'enhance_cv_field',
+                EnhanceCvFieldSystemPrompt::for($field),
+                "Rewrite the {$field} CV field in {$languageName} for the target role. Keep every fact grounded in the draft.\n\nTarget job title: {$jobTitle}\n\nDraft:\n".mb_substr($draft, 0, 12000)."\n\nReturn enhanced_text, changes_made, missing_facts, ats_keywords_added, and unverified_claims. Return unverified_claims as an empty array; server-side validation populates it.",
+            );
 
-        return (new EnhanceCvFieldResultGuard)->enforce($result, $draft, $language);
+            return (new EnhanceCvFieldResultGuard)->enforce($result, $draft, $language);
+        } catch (Throwable $e) {
+            $fallback = app(DeepInfraCvService::class);
+            if ($fallback->isConfigured()) {
+                Log::warning("OpenAI enhanceCvField failed ({$e->getMessage()}), automatically falling back to DeepInfra.");
+                return $fallback->enhanceCvField($field, $draft, $jobTitle, $language);
+            }
+            throw $e;
+        }
     }
 
     public function enhanceJobDescription(string $jobTitle, ?string $jobDescription, string $language): array
     {
-        $languageName = $language === 'en' ? 'English' : 'Arabic';
+        try {
+            $languageName = $language === 'en' ? 'English' : 'Arabic';
 
-        return $this->requestJson(
-            'enhance_job_description',
-            'You improve job descriptions for ATS-focused CV tailoring. Return only valid JSON. Do not invent a company, salary, dates, or location. Keep the description useful for matching a CV to the role.',
-            "Enhance or complete this job description in {$languageName}.\n\nTarget job title: {$jobTitle}\n\nCurrent job description:\n".mb_substr((string) $jobDescription, 0, 4000)."\n\nReturn JSON with keys: enhanced_description string, suggested_keywords array of strings, responsibilities array of strings, requirements array of strings."
-        );
+            return $this->requestJson(
+                'enhance_job_description',
+                'You improve job descriptions for ATS-focused CV tailoring. Return only valid JSON. Do not invent a company, salary, dates, or location. Keep the description useful for matching a CV to the role.',
+                "Enhance or complete this job description in {$languageName}.\n\nTarget job title: {$jobTitle}\n\nCurrent job description:\n".mb_substr((string) $jobDescription, 0, 4000)."\n\nReturn JSON with keys: enhanced_description string, suggested_keywords array of strings, responsibilities array of strings, requirements array of strings."
+            );
+        } catch (Throwable $e) {
+            $fallback = app(DeepInfraCvService::class);
+            if ($fallback->isConfigured()) {
+                Log::warning("OpenAI enhanceJobDescription failed ({$e->getMessage()}), automatically falling back to DeepInfra.");
+                return $fallback->enhanceJobDescription($jobTitle, $jobDescription, $language);
+            }
+            throw $e;
+        }
     }
 
     /**
