@@ -30,7 +30,7 @@ class GenerateCvAdviceJob implements ShouldQueue
 
     public function __construct(public readonly int $analysisId)
     {
-        $this->onQueue('ai');
+        $this->onQueue(config('services.cv_ai.queue', 'default'));
     }
 
     public function handle(CvAiProvider $provider, AtsScoringService $scorer): void

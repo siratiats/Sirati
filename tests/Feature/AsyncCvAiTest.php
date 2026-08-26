@@ -46,7 +46,7 @@ class AsyncCvAiTest extends TestCase
         Queue::assertPushed(
             GenerateCvAdviceJob::class,
             fn (GenerateCvAdviceJob $job): bool => $job->analysisId === $analysis->id
-                && $job->queue === 'ai',
+                && $job->queue === config('services.cv_ai.queue', 'default'),
         );
     }
 
@@ -71,7 +71,7 @@ class AsyncCvAiTest extends TestCase
         Queue::assertPushed(
             GenerateCvContentJob::class,
             fn (GenerateCvContentJob $job): bool => $job->generatedCvId === $generatedCv->id
-                && $job->queue === 'ai',
+                && $job->queue === config('services.cv_ai.queue', 'default'),
         );
     }
 
@@ -90,7 +90,7 @@ class AsyncCvAiTest extends TestCase
             ->assertCreated()
             ->assertJsonPath('data.ai_status', AiStatus::Queued->value);
 
-        Queue::assertPushedOn('ai', GenerateCvContentJob::class);
+        Queue::assertPushedOn(config('services.cv_ai.queue', 'default'), GenerateCvContentJob::class);
     }
 
     public function test_analysis_job_writes_completed_feedback(): void
@@ -232,7 +232,7 @@ class AsyncCvAiTest extends TestCase
         $content = new GenerateCvContentJob(20);
 
         foreach ([$advice, $content] as $job) {
-            $this->assertSame('ai', $job->queue);
+            $this->assertSame(config('services.cv_ai.queue', 'default'), $job->queue);
             $this->assertSame(3, $job->tries);
             $this->assertSame([10, 30], $job->backoff);
             $this->assertSame(120, $job->timeout);

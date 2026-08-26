@@ -53,6 +53,7 @@ return [
     'cv_ai' => [
         // Production default is openai. claude is for bake-off / explicit opt-in only.
         'provider' => env('CV_AI_PROVIDER', 'openai'),
+        'queue' => env('CV_AI_QUEUE', 'default'),
         'response_cache_enabled' => filter_var(
             env('CV_AI_RESPONSE_CACHE_ENABLED', true),
             FILTER_VALIDATE_BOOL,
