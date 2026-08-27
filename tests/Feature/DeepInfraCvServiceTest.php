@@ -116,26 +116,17 @@ class DeepInfraCvServiceTest extends TestCase
         $this->assertSame($body['headline'], $result['headline']);
     }
 
-    public function test_openai_falls_back_to_deepinfra_when_openai_fails(): void
+    public function test_deepinfra_enhancement_uses_fast_model(): void
     {
-        config([
-            'services.cv_ai.provider' => 'openai',
-            'services.openai.api_key' => 'broken-key',
-            'services.deepinfra.api_key' => 'valid-deepinfra-key',
-        ]);
-
         $body = [
-            'cv_markdown' => '## Fallback CV',
-            'headline' => 'Fallback Headline',
-            'professional_summary' => 'Summary',
-            'core_skills' => ['PHP'],
-            'improved_experience_bullets' => [],
-            'ats_notes' => [],
-            'missing_information' => [],
+            'enhanced_text' => 'مهارات برمجية احترافية: PHP, Laravel',
+            'changes_made' => ['تحسين الصياغة'],
+            'missing_facts' => [],
+            'ats_keywords_added' => ['Laravel'],
+            'unverified_claims' => [],
         ];
 
         Http::fake([
-            'https://api.openai.com/v1/chat/completions' => Http::response(['error' => 'Insufficient quota'], 429),
             'https://api.deepinfra.com/v1/openai/chat/completions' => Http::response([
                 'choices' => [
                     [
@@ -145,13 +136,55 @@ class DeepInfraCvServiceTest extends TestCase
                         'finish_reason' => 'stop',
                     ],
                 ],
-                'usage' => ['prompt_tokens' => 100, 'completion_tokens' => 50],
+                'usage' => ['prompt_tokens' => 80, 'completion_tokens' => 40],
             ]),
         ]);
 
-        $service = app(OpenAiCvService::class);
-        $result = $service->generateCv(['full_name' => 'سالم']);
+        $service = app(DeepInfraCvService::class);
+        $result = $service->enhanceCvField('skills', 'PHP, Laravel', 'مطور لارافل', 'ar');
 
-        $this->assertSame('## Fallback CV', $result['cv_markdown']);
+        $this->assertSame($body['enhanced_text'], $result['enhanced_text']);
+        $this->assertDatabaseHas(AiCallLog::class, [
+            'provider' => 'deepinfra',
+            'model' => 'mistralai/Mistral-Small-24B-Instruct-2501',
+            'operation' => 'enhance_cv_field',
+        ]);
+    }
+
+    public function test_deepinfra_english_cv_generation_uses_english_model(): void
+    {
+        $body = [
+            'cv_markdown' => '## John Doe Resume',
+            'headline' => 'Senior Software Engineer',
+            'professional_summary' => 'Experienced software engineer.',
+            'core_skills' => ['PHP', 'Laravel', 'AWS'],
+            'improved_experience_bullets' => ['Built high-scale APIs'],
+            'ats_notes' => ['ATS Friendly'],
+            'missing_information' => [],
+        ];
+
+        Http::fake([
+            'https://api.deepinfra.com/v1/openai/chat/completions' => Http::response([
+                'choices' => [
+                    [
+                        'message' => [
+                            'content' => json_encode($body, JSON_UNESCAPED_UNICODE),
+                        ],
+                        'finish_reason' => 'stop',
+                    ],
+                ],
+                'usage' => ['prompt_tokens' => 180, 'completion_tokens' => 120],
+            ]),
+        ]);
+
+        $service = app(DeepInfraCvService::class);
+        $result = $service->generateCv(['full_name' => 'John Doe', 'language' => 'en']);
+
+        $this->assertSame($body['headline'], $result['headline']);
+        $this->assertDatabaseHas(AiCallLog::class, [
+            'provider' => 'deepinfra',
+            'model' => 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',
+            'operation' => 'generate_cv',
+        ]);
     }
 }

@@ -45,6 +45,9 @@ return [
     'deepinfra' => [
         'api_key' => env('DEEPINFRA_API_KEY'),
         'model' => env('DEEPINFRA_MODEL', 'Qwen/Qwen2.5-72B-Instruct'),
+        'model_ar' => env('DEEPINFRA_MODEL_AR', 'Qwen/Qwen2.5-72B-Instruct'),
+        'model_en' => env('DEEPINFRA_MODEL_EN', 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo'),
+        'fast_model' => env('DEEPINFRA_FAST_MODEL', 'mistralai/Mistral-Small-24B-Instruct-2501'),
         'base_url' => env('DEEPINFRA_BASE_URL', 'https://api.deepinfra.com/v1/openai'),
         'timeout' => (int) env('DEEPINFRA_TIMEOUT', 45),
         'connect_timeout' => (int) env('DEEPINFRA_CONNECT_TIMEOUT', 5),
