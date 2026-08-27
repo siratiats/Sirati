@@ -76,7 +76,12 @@ class GeneratedCvController extends Controller
     {
         $this->authorizeApiAccess($request, $generatedCv);
 
-        $this->updateGeneratedCv($generatedCv, $this->validatedPayload($request), $openAi, $scorer);
+        $queueAi = $request->header('X-Sirati-Async') === '1';
+        $this->updateGeneratedCv($generatedCv, $this->validatedPayload($request), $openAi, $scorer, $queueAi);
+
+        if ($queueAi && $generatedCv->ai_status === AiStatus::Queued) {
+            GenerateCvContentJob::dispatch($generatedCv->id);
+        }
 
         return new GeneratedCvResource($generatedCv->refresh());
     }
@@ -311,9 +316,14 @@ class GeneratedCvController extends Controller
         return $generatedCv;
     }
 
-    private function updateGeneratedCv(GeneratedCv $generatedCv, array $validated, CvAiProvider $openAi, AtsScoringService $scorer): void
-    {
-        $generatedCv->update($this->generatedCvAttributes($validated, $openAi, $scorer));
+    private function updateGeneratedCv(
+        GeneratedCv $generatedCv,
+        array $validated,
+        CvAiProvider $openAi,
+        AtsScoringService $scorer,
+        bool $queueAi = false,
+    ): void {
+        $generatedCv->update($this->generatedCvAttributes($validated, $openAi, $scorer, $queueAi));
     }
 
     private function authorizeApiAccess(Request $request, GeneratedCv $generatedCv): void

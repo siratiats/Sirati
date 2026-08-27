@@ -93,6 +93,31 @@ class AsyncCvAiTest extends TestCase
         Queue::assertPushedOn(config('services.cv_ai.queue', 'default'), GenerateCvContentJob::class);
     }
 
+    public function test_update_generated_cv_async_header_returns_queued_and_dispatches(): void
+    {
+        Queue::fake();
+        $provider = $this->configuredProvider();
+        $provider->shouldNotReceive('generateCv');
+
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $generatedCv = $this->generatedCv($user);
+
+        $response = $this->withHeader('X-Sirati-Async', '1')
+            ->putJson("/api/generated-cvs/{$generatedCv->id}", $this->generationPayload());
+
+        $response->assertOk()
+            ->assertJsonPath('data.ai_status', AiStatus::Queued->value);
+
+        $generatedCv->refresh();
+        $this->assertSame(AiStatus::Queued, $generatedCv->ai_status);
+        Queue::assertPushed(
+            GenerateCvContentJob::class,
+            fn (GenerateCvContentJob $job): bool => $job->generatedCvId === $generatedCv->id
+                && $job->queue === config('services.cv_ai.queue', 'default'),
+        );
+    }
+
     public function test_analysis_job_writes_completed_feedback(): void
     {
         $user = User::factory()->create();
