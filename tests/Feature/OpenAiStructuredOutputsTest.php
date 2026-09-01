@@ -76,9 +76,6 @@ class OpenAiStructuredOutputsTest extends TestCase
         $body = [
             'cv_markdown' => '# Salem Sayer',
             'headline' => 'Laravel Developer',
-            'professional_summary' => 'Backend developer.',
-            'core_skills' => ['Laravel', 'PHP'],
-            'improved_experience_bullets' => ['Built APIs'],
             'ats_notes' => ['Keep keywords'],
             'missing_information' => [],
         ];
@@ -100,7 +97,13 @@ class OpenAiStructuredOutputsTest extends TestCase
             return ($data['response_format']['type'] ?? null) === 'json_schema'
                 && ($data['response_format']['json_schema']['name'] ?? null) === 'generate_cv'
                 && ($data['response_format']['json_schema']['strict'] ?? false) === true
-                && ($data['max_tokens'] ?? null) === GenerateCvSchema::MAX_TOKENS;
+                && ($data['max_tokens'] ?? null) === GenerateCvSchema::MAX_TOKENS
+                // The schema must not ask the model to restate cv_markdown's
+                // content in extra keys -- that doubles generation latency.
+                && ! array_key_exists(
+                    'professional_summary',
+                    $data['response_format']['json_schema']['schema']['properties'] ?? [],
+                );
         });
     }
 

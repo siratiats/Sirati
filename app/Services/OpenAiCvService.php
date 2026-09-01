@@ -61,7 +61,7 @@ class OpenAiCvService implements CvAiProvider
             return $this->requestJson(
                 'generate_cv',
                 'You are an expert CV writer for Arabic and English ATS-friendly resumes. Return only valid JSON. Use only the user-provided facts. Do not invent employers, degrees, dates, metrics, or certifications. Make the CV concise, keyword-rich, and ATS readable.',
-                "Generate an ATS-friendly CV template from these form inputs.\n\nInput JSON:\n".json_encode($data, JSON_UNESCAPED_UNICODE)."\n\nReturn JSON with keys: cv_markdown string, headline string, professional_summary string, core_skills array of strings, improved_experience_bullets array of strings, ats_notes array of strings, missing_information array of strings."
+                "Generate an ATS-friendly CV template from these form inputs.\n\nInput JSON:\n".json_encode($data, JSON_UNESCAPED_UNICODE)."\n\nReturn JSON with keys: cv_markdown string, headline string, ats_notes array of strings, missing_information array of strings. cv_markdown must be the complete CV; do not repeat its sections in other keys."
             );
         } catch (Throwable $e) {
             $fallback = app(DeepInfraCvService::class);
