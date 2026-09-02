@@ -18,8 +18,8 @@ class LandingLeadTest extends TestCase
             ->assertOk()
             ->assertSee('Sirati')
             ->assertSee('حمّل التطبيق الآن')
-            ->assertSee('درجة السيرة')
-            ->assertSee('CV Score')
+            ->assertSee('بناء السيرة الذاتية الاحترافية')
+            ->assertSee('تحليل السيرة الذاتية')
             ->assertDontSee('الوصول المبكر')
             ->assertDontSee('احجز وصولك المبكر');
     }
