@@ -76,8 +76,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/generated-cvs/enhance-field', [GeneratedCvController::class, 'enhanceField'])
             ->middleware('throttle:ai-light');
         Route::get('/generated-cvs/{generatedCv}/download', [GeneratedCvController::class, 'downloadPdfApi']);
+        Route::get('/generated-cvs/{generatedCv}/template-switch', [GeneratedCvController::class, 'previewTemplateSwitch']);
         Route::get('/generated-cvs/{generatedCv}', [GeneratedCvController::class, 'showApi']);
         Route::match(['put', 'patch'], '/generated-cvs/{generatedCv}', [GeneratedCvController::class, 'updateApi']);
         Route::delete('/generated-cvs/{generatedCv}', [GeneratedCvController::class, 'destroyApi']);
+        Route::post('/generated-cvs/{generatedCv}/duplicate', [GeneratedCvController::class, 'duplicateApi']);
     });
 });

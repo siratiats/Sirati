@@ -34,6 +34,8 @@ class GeneratedCvResource extends JsonResource
             'experience_input' => $this->experience_input,
             'education_input' => $this->education_input,
             'certifications_input' => $this->certifications_input,
+            'document' => $this->cvDocument()->toArray(),
+            'missing_translations' => $this->cvDocument()->missingTranslations(),
             'generated_markdown' => $this->generated_markdown,
             'ai_status' => $this->ai_status instanceof AiStatus
                 ? $this->ai_status->value

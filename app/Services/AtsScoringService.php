@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Cv\CvDocument;
+
 class AtsScoringService
 {
     /**
@@ -72,6 +74,14 @@ class AtsScoringService
      * @param  string|null  $categoryHint  Authoritative category (e.g. from users.job_title.category).
      *                                     When set and valid, skips free-text inference.
      */
+    public function scoreDocument(CvDocument $document, ?string $categoryHint = null): array
+    {
+        $resolved = $document->resolve();
+        $jobTitle = $resolved->headline !== '' ? $resolved->headline : $resolved->fullName;
+
+        return $this->score($resolved->plainText, $jobTitle, $categoryHint);
+    }
+
     public function score(string $resumeText, string $jobTitle, ?string $categoryHint = null): array
     {
         $text = mb_strtolower($resumeText);

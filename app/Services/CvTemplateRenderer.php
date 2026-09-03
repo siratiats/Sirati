@@ -6,9 +6,9 @@ use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Services\Cv\CvMarkdownRenderer;
 use App\Support\CvMarkdownIdentityBlock;
-use Dompdf\Dompdf;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Mpdf\Mpdf;
 
 class CvTemplateRenderer
 {
@@ -87,11 +87,6 @@ class CvTemplateRenderer
 
     public function downloadResponse(GeneratedCv $generatedCv, ?string $templateKey = null)
     {
-        $pdf = new Dompdf([
-            'defaultFont' => 'DejaVu Sans',
-            'isRemoteEnabled' => false,
-        ]);
-
         try {
             $html = $this->renderHtml($generatedCv, $templateKey);
         } catch (\Throwable $exception) {
@@ -104,13 +99,26 @@ class CvTemplateRenderer
             $html = $this->renderHtml($generatedCv);
         }
 
-        $pdf->loadHtml($html, 'UTF-8');
-        $pdf->setPaper('a4');
-        $pdf->render();
+        $language = $generatedCv->language === 'en' ? 'en' : 'ar';
+        $tempDir = storage_path('app/mpdf');
+        if (! is_dir($tempDir) && ! mkdir($tempDir, 0755, true) && ! is_dir($tempDir)) {
+            throw new \RuntimeException('Unable to create mPDF temp directory.');
+        }
+
+        $pdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'tempDir' => $tempDir,
+            'default_font' => 'dejavusans',
+        ]);
+        $pdf->autoScriptToLang = true;
+        $pdf->autoLangToFont = true;
+        $pdf->SetDirectionality($language === 'en' ? 'ltr' : 'rtl');
+        $pdf->WriteHTML($html);
 
         $filename = 'sirati-cv-'.Str::slug($generatedCv->full_name).'-'.$generatedCv->id.'.pdf';
 
-        return response($pdf->output(), 200, [
+        return response($pdf->Output('', 'S'), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
@@ -119,6 +127,7 @@ class CvTemplateRenderer
     public function viewModel(GeneratedCv $generatedCv, CvTemplate $template): array
     {
         $language = $generatedCv->language === 'en' ? 'en' : 'ar';
+        $resolved = $generatedCv->cvDocument()->resolve($language);
 
         return [
             'direction' => $language === 'en' ? 'ltr' : 'rtl',
@@ -130,19 +139,19 @@ class CvTemplateRenderer
                 ),
             ],
             'candidate' => [
-                'full_name' => $generatedCv->full_name,
-                'email' => $generatedCv->email,
-                'phone' => $generatedCv->phone,
-                'linkedin' => $generatedCv->linkedin,
-                'location' => $generatedCv->location,
-                'target_job_title' => $generatedCv->target_job_title,
+                'full_name' => $resolved->fullName !== '' ? $resolved->fullName : $generatedCv->full_name,
+                'email' => $resolved->email ?? $generatedCv->email,
+                'phone' => $resolved->phone ?? $generatedCv->phone,
+                'linkedin' => $resolved->linkedin ?? $generatedCv->linkedin,
+                'location' => $resolved->location !== '' ? $resolved->location : $generatedCv->location,
+                'target_job_title' => $resolved->headline !== '' ? $resolved->headline : $generatedCv->target_job_title,
             ],
-            'summary' => $generatedCv->summary_input,
+            'summary' => $resolved->summary !== '' ? $resolved->summary : $generatedCv->summary_input,
             'sections' => [
-                'skills' => $generatedCv->skills_input,
-                'experience' => $generatedCv->experience_input,
-                'education' => $generatedCv->education_input,
-                'certifications' => $generatedCv->certifications_input,
+                'skills' => $resolved->skills !== '' ? $resolved->skills : $generatedCv->skills_input,
+                'experience' => $resolved->experience !== '' ? $resolved->experience : $generatedCv->experience_input,
+                'education' => $resolved->education !== '' ? $resolved->education : $generatedCv->education_input,
+                'certifications' => $resolved->certifications !== '' ? $resolved->certifications : $generatedCv->certifications_input,
                 'generated_markdown' => $generatedCv->generated_markdown,
             ],
             'score' => [

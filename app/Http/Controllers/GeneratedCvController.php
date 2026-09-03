@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\CvAiProvider;
+use App\Cv\CvDocument;
+use App\Cv\TemplateSwitch;
 use App\Enums\AiStatus;
 use App\Http\Resources\GeneratedCvResource;
 use App\Jobs\GenerateCvContentJob;
@@ -93,6 +95,35 @@ class GeneratedCvController extends Controller
         $generatedCv->delete();
 
         return response()->json(['message' => 'Deleted']);
+    }
+
+    public function duplicateApi(GeneratedCv $generatedCv, Request $request)
+    {
+        $this->authorizeApiAccess($request, $generatedCv);
+
+        $copy = $generatedCv->duplicateForUser($request->user()->id);
+
+        return (new GeneratedCvResource($copy))
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    public function previewTemplateSwitch(
+        GeneratedCv $generatedCv,
+        Request $request,
+        CvTemplateRenderer $renderer,
+    ) {
+        $this->authorizeApiAccess($request, $generatedCv);
+
+        $validated = $request->validate([
+            'template' => ['required', 'string', 'max:120'],
+        ]);
+
+        $language = $generatedCv->language === 'en' ? 'en' : 'ar';
+        $template = $renderer->resolve($validated['template'], $language);
+        $result = (new TemplateSwitch)->evaluate($generatedCv->cvDocument(), $template);
+
+        return response()->json(['data' => $result->toArray($language)]);
     }
 
     public function storeFromAnalysisApi(CvAnalysis $analysis, Request $request, CvAiProvider $openAi, AtsScoringService $scorer)
@@ -287,6 +318,7 @@ class GeneratedCvController extends Controller
             'experience_input' => ['required', 'string', 'min:80', 'max:12000'],
             'education_input' => ['required', 'string', 'max:3000'],
             'certifications_input' => ['nullable', 'string', 'max:3000'],
+            'document' => ['nullable', 'array'],
         ]));
     }
 
@@ -337,6 +369,9 @@ class GeneratedCvController extends Controller
         AtsScoringService $scorer,
         bool $queueAi = false,
     ): array {
+        $documentInput = $validated['document'] ?? null;
+        unset($validated['document']);
+
         $aiStatus = AiStatus::NotConfigured;
         $aiOutput = null;
         $aiError = null;
@@ -373,10 +408,21 @@ class GeneratedCvController extends Controller
 
         $score = $scorer->score($markdown, $validated['target_job_title']);
 
+        $document = is_array($documentInput)
+            ? CvDocument::fromArray($documentInput)->withExportLanguage($validated['language'])
+            : CvDocument::fromLegacy($validated);
+
+        $snapshot = array_filter(
+            $document->legacySnapshot(),
+            fn (mixed $value): bool => $value !== null && $value !== '',
+        );
+
         return [
             ...$validated,
+            ...$snapshot,
             'generated_markdown' => $markdown,
             'form_payload' => $validated,
+            'document' => $document->toArray(),
             'ai_status' => $aiStatus,
             'ai_output' => $aiOutput,
             'ai_error' => $aiError,

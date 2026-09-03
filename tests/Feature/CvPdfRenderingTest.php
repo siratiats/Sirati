@@ -6,9 +6,13 @@ use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Services\Cv\CvMarkdownRenderer;
 use App\Services\CvTemplateRenderer;
+use App\Support\ArabicPdfText;
+use Database\Seeders\CvTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Smalot\PdfParser\Parser as PdfParser;
 use SplFileInfo;
 use Tests\TestCase;
 
@@ -101,6 +105,8 @@ class CvPdfRenderingTest extends TestCase
         $this->assertStringContainsString('https://linkedin.com/in/salem', $html);
         $this->assertStringNotContainsString('moc.elpmaxe@melas', $html);
         $this->assertStringNotContainsString('melas/ni/moc.nideknil', $html);
+        $this->assertStringContainsString('الرياض', $html);
+        $this->assertStringContainsString('Saudi Arabia', $html);
         $this->assertStringNotContainsString('الرياض, Saudi Arabia', $html);
         $this->assertNotSame('', trim((string) data_get(
             app(CvTemplateRenderer::class)->viewModel($cv, $template),
@@ -162,6 +168,54 @@ class CvPdfRenderingTest extends TestCase
         $this->assertStringStartsWith('%PDF-', (string) $response->getContent());
     }
 
+    public function test_arabic_pdf_extraction_is_logical_and_machine_readable(): void
+    {
+        $template = $this->template('classic', 'classic_rtl');
+        $markdown = file_get_contents(base_path('tests/Fixtures/arabic_cv_bidi.md'));
+        $this->assertIsString($markdown);
+
+        $response = app(CvTemplateRenderer::class)->downloadResponse(
+            $this->cv('ar', [
+                'generated_markdown' => $markdown."\n\n- طورت واجهات API",
+                'email' => 'salem@example.com',
+            ]),
+            $template->slug,
+        );
+
+        $binary = (string) $response->getContent();
+        $dumpDir = storage_path('app/testing');
+        if (! is_dir($dumpDir) && ! mkdir($dumpDir, 0755, true) && ! is_dir($dumpDir)) {
+            $this->fail('Unable to write Arabic PDF fixture for inspection.');
+        }
+        file_put_contents($dumpDir.'/arabic-cv-bidi.pdf', $binary);
+
+        $html = app(CvTemplateRenderer::class)->renderHtml(
+            $this->cv('ar', [
+                'generated_markdown' => $markdown."\n\n- طورت واجهات API",
+                'email' => 'salem@example.com',
+            ]),
+            $template->slug,
+        );
+        $this->assertStringContainsString('dir="rtl"', $html);
+        $this->assertStringContainsString('text-align: right', $html);
+
+        $extracted = (new PdfParser)->parseContent($binary)->getText();
+        $logical = ArabicPdfText::normalizeExtracted($extracted);
+
+        $this->assertMatchesRegularExpression('/\p{Arabic}/u', $extracted);
+        $this->assertStringContainsString('API', $extracted);
+        $this->assertStringContainsString('salem@example.com', $extracted);
+        $this->assertStringNotContainsString('moc.elpmaxe@melas', $extracted);
+        $this->assertStringNotContainsString('IPA', $extracted);
+
+        $this->assertStringContainsString('التعليم', $logical);
+        $this->assertStringContainsString('جامعة الملك سعود', $logical);
+        $this->assertStringContainsString('طورت', $logical);
+        $this->assertStringContainsString('واجهات', $logical);
+        $this->assertStringContainsString('API', $logical);
+        $this->assertStringContainsString('salem@example.com', $logical);
+    }
+
     public function test_download_response_is_non_empty_for_both_templates_and_languages(): void
     {
         $classic = $this->template('classic', 'classic_rtl');
@@ -184,7 +238,7 @@ class CvPdfRenderingTest extends TestCase
         $template = $this->template('modern', 'modern_rtl');
         $cv = $this->cv('en');
 
-        $signedUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        $signedUrl = URL::temporarySignedRoute(
             'api.generated-cvs.pdf',
             now()->addMinutes(30),
             ['generatedCv' => $cv->id]
@@ -201,7 +255,7 @@ class CvPdfRenderingTest extends TestCase
 
     public function test_each_of_the_six_seeded_templates_renders_distinct_html_views(): void
     {
-        $this->seed(\Database\Seeders\CvTemplateSeeder::class);
+        $this->seed(CvTemplateSeeder::class);
         $renderer = app(CvTemplateRenderer::class);
         $cv = $this->cv('ar');
 
@@ -224,6 +278,7 @@ class CvPdfRenderingTest extends TestCase
         $uniqueCount = count(array_unique($renderedOutputs));
         $this->assertSame(count($slugs), $uniqueCount, 'Expected all template HTML views to be distinctly unique.');
     }
+
     private function template(string $slug, string $rendererKey): CvTemplate
     {
         return CvTemplate::create([

@@ -2,7 +2,6 @@
 
 namespace App\Services\Cv;
 
-use ArPHP\I18N\Arabic;
 use DOMDocument;
 use DOMElement;
 use DOMNode;
@@ -18,9 +17,13 @@ final class CvMarkdownRenderer
         'table', 'thead', 'tbody', 'tr', 'th', 'td',
     ];
 
-    private readonly CommonMarkConverter $converter;
+    private const LRM = "\u{200E}";
 
-    private readonly Arabic $arabic;
+    private const LRE = "\u{202A}";
+
+    private const PDF = "\u{202C}";
+
+    private readonly CommonMarkConverter $converter;
 
     public function __construct()
     {
@@ -29,7 +32,6 @@ final class CvMarkdownRenderer
             'allow_unsafe_links' => false,
             'max_nesting_level' => 20,
         ]);
-        $this->arabic = new Arabic;
     }
 
     public function render(string $markdown, string $language, ?int $generatedCvId = null): string
@@ -55,9 +57,7 @@ final class CvMarkdownRenderer
             return $text;
         }
 
-        $text = $this->stabilizeTrailingLatinNumerals($text);
-
-        return $this->arabic->utf8Glyphs($text, 90, false, true);
+        return $this->protectLtrRuns($text);
     }
 
     private function containsArabic(string $text): bool
@@ -65,24 +65,39 @@ final class CvMarkdownRenderer
         return (bool) preg_match('/\p{Arabic}/u', $text);
     }
 
-    private function stabilizeTrailingLatinNumerals(string $text): string
+    /**
+     * Keep emails, URLs, phones, Latin tech terms, and numerals as LTR runs
+     * inside Arabic text. Uses embedding marks so escaped Blade fields stay
+     * stable without HTML, and PDF engines can still extract logical Unicode.
+     */
+    private function protectLtrRuns(string $text): string
     {
-        $stabilized = preg_replace_callback(
-            '/([ \t]+)(?:([\x{2014}\x{2013}-])[ \t]+)?([0-9][0-9 \t.,%\/\x{2014}\x{2013}-]*)$/mu',
-            static function (array $match): string {
-                $separator = $match[2] ?? '';
-                $suffix = "\u{200E}{$match[3]}";
+        $pattern = '/(?:[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})'
+            .'|(?:https?:\/\/[^\s<]+)'
+            .'|(?:\+\d[\d\s\-()]{6,}\d)'
+            .'|(?:[A-Za-z][A-Za-z0-9+.#\/]*(?:\s+[A-Za-z][A-Za-z0-9+.#\/]*)*)'
+            .'|(?:\d+(?:[.,]\d+)?%?)/u';
 
-                if ($separator !== '') {
-                    $suffix .= " {$separator}";
+        $protected = preg_replace_callback(
+            $pattern,
+            function (array $match): string {
+                $run = $match[0];
+
+                if (str_contains($run, self::LRM) || str_contains($run, self::LRE)) {
+                    return $run;
                 }
 
-                return $suffix.$match[1];
+                return $this->isolateLtr($run);
             },
             $text,
         );
 
-        return $stabilized ?? $text;
+        return $protected ?? $text;
+    }
+
+    private function isolateLtr(string $text): string
+    {
+        return self::LRM.self::LRE.$text.self::PDF;
     }
 
     private function loadFragment(string $html): DOMDocument

@@ -75,7 +75,7 @@ class CvMarkdownRendererTest extends TestCase
         $this->assertNotSame($location, $renderer->shapeText($location, 'ar'));
     }
 
-    public function test_arabic_bidi_fixture_stabilizes_trailing_latin_numerals_with_lrm(): void
+    public function test_arabic_bidi_fixture_isolates_latin_numerals_without_reordering(): void
     {
         $markdown = file_get_contents(base_path('tests/Fixtures/arabic_cv_bidi.md'));
 
@@ -83,11 +83,22 @@ class CvMarkdownRendererTest extends TestCase
 
         $html = (new CvMarkdownRenderer)->render($markdown, 'ar');
 
-        $this->assertStringContainsString("\u{200E}2020 — ", $html);
-        $this->assertStringContainsString("\u{200E}2020 — 2023 ", $html);
-        $this->assertStringContainsString("\u{200E}35% ", $html);
+        $this->assertStringContainsString("\u{200E}\u{202A}2020\u{202C}", $html);
+        $this->assertStringContainsString("\u{200E}\u{202A}2023\u{202C}", $html);
+        $this->assertStringContainsString("\u{200E}\u{202A}35%\u{202C}", $html);
+        $this->assertStringContainsString('بكالوريوس علوم الحاسب', $html);
         $this->assertStringNotContainsString("\u{2066}", $html);
         $this->assertStringNotContainsString("\u{2069}", $html);
+    }
+
+    public function test_mixed_arabic_keeps_latin_tech_terms_in_logical_order(): void
+    {
+        $html = (new CvMarkdownRenderer)->render("## الخبرة\n\n- طورت واجهات API وLaravel", 'ar');
+
+        $this->assertStringContainsString('طورت واجهات', $html);
+        $this->assertStringContainsString("\u{200E}\u{202A}API\u{202C}", $html);
+        $this->assertStringContainsString("\u{200E}\u{202A}Laravel\u{202C}", $html);
+        $this->assertStringNotContainsString('IPA', $html);
     }
 
     public function test_http_and_mailto_links_are_rewritten_as_visible_urls(): void
