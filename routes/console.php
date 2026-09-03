@@ -10,8 +10,8 @@ Artisan::command('inspire', function () {
 
 Schedule::command('fcm:clean-tokens')->weekly();
 
-// Aggregate Saudi jobs every 3 hours with automatic taxonomy matching & seeding
-Schedule::command('jobs:aggregate-saudi --seed')
+// Aggregate Saudi jobs every 3 hours with automatic taxonomy matching
+Schedule::command('jobs:aggregate-saudi')
     ->everyThreeHours()
     ->withoutOverlapping();
 

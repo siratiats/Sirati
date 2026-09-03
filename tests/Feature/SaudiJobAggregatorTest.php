@@ -57,7 +57,91 @@ class SaudiJobAggregatorTest extends TestCase
         $this->assertSame('data-analyst', $matchedTitle->slug);
     }
 
-    public function test_aggregator_parses_feed_and_links_taxonomy(): void
+    public function test_aggregator_parses_telegram_feed_and_links_taxonomy(): void
+    {
+        $fakeHtml = <<<'HTML'
+<!DOCTYPE html>
+<html>
+<body>
+<div class="tgme_widget_message_wrap js-widget_message_wrap">
+  <div class="tgme_widget_message js-widget_message" data-post="jobmag/5501">
+    <div class="tgme_widget_message_text js-message_text">
+      شركة تقنية رائدة تعلن عن شاغر بمسمى مطور برمجيات ولارفيل للعمل في مدينة الرياض.<br/>
+      المتطلبات: خبرة في تطوير واجهات البرمجة والأنظمة الخلفية.<br/>
+      رابط التقديم: <a href="https://example.com/careers/apply">https://example.com/careers/apply</a>
+    </div>
+    <time datetime="2026-09-03T12:00:00+03:00"></time>
+  </div>
+</div>
+</body>
+</html>
+HTML;
+
+        Http::fake([
+            'https://t.me/s/jobmag*' => Http::response($fakeHtml, 200),
+            'https://t.me/s/*' => Http::response('', 200),
+            'https://remotive.com/*' => Http::response(['jobs' => []], 200),
+            '*' => Http::response('', 200),
+        ]);
+
+        $aggregator = app(SaudiJobAggregatorService::class);
+        $result = $aggregator->aggregateFeed([
+            'source' => 'telegram_jobmag',
+            'name' => 'مجلة وظائف السعودية (@jobmag)',
+            'channel' => 'jobmag',
+            'type' => 'telegram',
+            'language' => 'ar',
+        ]);
+
+        $this->assertSame(1, $result['fetched']);
+        $this->assertSame(1, $result['created']);
+
+        $job = JobNews::where('external_id', '5501')->first();
+        $this->assertNotNull($job);
+        $this->assertSame('riyadh', $job->city);
+        $this->assertSame('https://example.com/careers/apply', $job->apply_url);
+        $this->assertNotNull($job->job_title_id);
+    }
+
+    public function test_aggregator_parses_remotive_api_and_sets_remote(): void
+    {
+        $fakeJson = [
+            'jobs' => [
+                [
+                    'id' => 9988,
+                    'title' => 'Senior Full Stack Software Engineer',
+                    'company_name' => 'Global Cloud Inc',
+                    'url' => 'https://remotive.com/job/9988',
+                    'description' => 'We are hiring a remote software engineer with Laravel and Flutter experience.',
+                    'publication_date' => '2026-09-02T10:00:00',
+                ],
+            ],
+        ];
+
+        Http::fake([
+            'https://remotive.com/*' => Http::response($fakeJson, 200),
+            '*' => Http::response('', 200),
+        ]);
+
+        $aggregator = app(SaudiJobAggregatorService::class);
+        $result = $aggregator->aggregateFeed([
+            'source' => 'remotive_remote',
+            'name' => 'Remotive Remote',
+            'url' => 'https://remotive.com/api/remote-jobs?limit=25',
+            'type' => 'remotive_api',
+            'language' => 'en',
+        ]);
+
+        $this->assertSame(1, $result['fetched']);
+        $this->assertSame(1, $result['created']);
+
+        $job = JobNews::where('external_id', '9988')->first();
+        $this->assertNotNull($job);
+        $this->assertTrue($job->is_remote);
+        $this->assertSame('Global Cloud Inc', $job->company);
+    }
+
+    public function test_aggregator_parses_rss_feed_and_links_taxonomy(): void
     {
         $fakeRss = <<<'XML'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -78,14 +162,20 @@ XML;
 
         Http::fake([
             '*wazaif.net*' => Http::response($fakeRss, 200),
-            '*tanqeeb.com*' => Http::response('<rss><channel></channel></rss>', 200),
             '*' => Http::response('<rss><channel></channel></rss>', 200),
         ]);
 
         $aggregator = app(SaudiJobAggregatorService::class);
-        $result = $aggregator->aggregateAll();
-        $this->assertEmpty($result['errors'], json_encode($result['errors']));
-        $this->assertGreaterThanOrEqual(1, $result['created']);
+        $result = $aggregator->aggregateRssFeed([
+            'source' => 'wazaif_sa',
+            'name' => 'Wazaif Saudi Arabia',
+            'url' => 'https://wazaif.net/rss.xml',
+            'type' => 'rss',
+            'language' => 'ar',
+        ]);
+
+        $this->assertSame(1, $result['fetched']);
+        $this->assertSame(1, $result['created']);
 
         $job = JobNews::where('external_id', 'job-101-laravel')->first();
         $this->assertNotNull($job);
