@@ -11,9 +11,11 @@ final readonly class Project implements JsonSerializable
      */
     public function __construct(
         public LocalizedText $name = new LocalizedText,
-        public LocalizedText $description = new LocalizedText,
+        public LocalizedText $role = new LocalizedText,
         public ?string $url = null,
+        public LocalizedText $description = new LocalizedText,
         public array $bullets = [],
+        public ?string $id = null,
     ) {}
 
     /**
@@ -32,10 +34,12 @@ final readonly class Project implements JsonSerializable
         $url = trim((string) ($value['url'] ?? ''));
 
         return new self(
-            name: LocalizedText::fromArray($value['name'] ?? null),
-            description: LocalizedText::fromArray($value['description'] ?? null),
+            name: LocalizedText::fromArray($value['title'] ?? $value['name'] ?? null),
+            role: LocalizedText::fromArray($value['role'] ?? null),
             url: $url === '' ? null : $url,
+            description: LocalizedText::fromArray($value['narrative'] ?? $value['description'] ?? null),
             bullets: $bullets,
+            id: isset($value['id']) ? (string) $value['id'] : null,
         );
     }
 
@@ -46,6 +50,7 @@ final readonly class Project implements JsonSerializable
     {
         $paths = array_values(array_filter([
             self::gap($prefix.'.name', $this->name),
+            self::gap($prefix.'.role', $this->role),
             self::gap($prefix.'.description', $this->description),
         ]));
 
@@ -63,6 +68,7 @@ final readonly class Project implements JsonSerializable
     {
         $parts = array_values(array_filter([
             $this->name->resolve($language),
+            $this->role->resolve($language),
             $this->description->resolve($language),
             ...array_map(fn (LocalizedText $bullet) => $bullet->resolve($language), $this->bullets),
         ], fn (string $part) => $part !== ''));
@@ -75,12 +81,24 @@ final readonly class Project implements JsonSerializable
      */
     public function toArray(): array
     {
-        return [
+        $data = [
+            'title' => $this->name->toArray(),
             'name' => $this->name->toArray(),
-            'description' => $this->description->toArray(),
+            'role' => $this->role->toArray(),
             'url' => $this->url,
-            'bullets' => array_map(fn (LocalizedText $bullet) => $bullet->toArray(), $this->bullets),
+            'narrative' => $this->description->toArray(),
+            'description' => $this->description->toArray(),
         ];
+
+        if (! empty($this->bullets)) {
+            $data['bullets'] = array_map(fn (LocalizedText $bullet) => $bullet->toArray(), $this->bullets);
+        }
+
+        if ($this->id !== null) {
+            $data['id'] = $this->id;
+        }
+
+        return $data;
     }
 
     public function jsonSerialize(): array

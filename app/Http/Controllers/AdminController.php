@@ -12,6 +12,7 @@ use App\Models\JobTitle;
 use App\Models\LandingLead;
 use App\Models\MobileNotification;
 use App\Models\NotificationCampaign;
+use App\Models\SubscriptionAuditLog;
 use App\Models\User;
 use App\Models\UserFcmToken;
 use App\Services\AtsScoringService;
@@ -19,6 +20,8 @@ use App\Services\JobsGoogleSheetSyncService;
 use App\Services\JobsImportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -745,6 +748,92 @@ class AdminController extends Controller
             'sort_order' => 0,
             'is_published' => false,
         ];
+    }
+
+    public function grantUserPremium(Request $request, User $user)
+    {
+        $this->authorizeAdmin($request);
+
+        $validated = $request->validate([
+            'days' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            'plan_id' => ['nullable', 'string', 'max:100'],
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $days = (int) ($validated['days'] ?? 30);
+        $previousUntil = $user->premium_until;
+        $until = Carbon::now()->addDays($days);
+        $planId = $validated['plan_id'] ?? 'admin_grant';
+        $reason = $validated['reason'] ?? 'Granted manually via Admin panel';
+
+        $user->grantSubscription(
+            expiresAt: $until,
+            planId: $planId,
+            provider: 'admin',
+            externalId: 'admin_'.($request->user()?->id ?? 'system').'_'.time(),
+        );
+
+        SubscriptionAuditLog::create([
+            'user_id' => $user->id,
+            'admin_id' => $request->user()?->id,
+            'action' => 'grant',
+            'reason' => $reason,
+            'previous_premium_until' => $previousUntil,
+            'new_premium_until' => $until,
+            'metadata' => ['days' => $days, 'plan_id' => $planId],
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "Premium granted for {$days} days.",
+                'user' => [
+                    'id' => $user->id,
+                    'is_premium' => $user->isPremium(),
+                    'premium_until' => $user->premium_until?->toIso8601String(),
+                ],
+            ]);
+        }
+
+        return back()->with('status', "Premium granted to user {$user->id} until {$until->toDateString()}.");
+    }
+
+    public function revokeUserPremium(Request $request, User $user)
+    {
+        $this->authorizeAdmin($request);
+
+        $validated = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $previousUntil = $user->premium_until;
+        $reason = $validated['reason'] ?? 'Revoked manually via Admin panel';
+
+        $user->revokeSubscription();
+
+        SubscriptionAuditLog::create([
+            'user_id' => $user->id,
+            'admin_id' => $request->user()?->id,
+            'action' => 'revoke',
+            'reason' => $reason,
+            'previous_premium_until' => $previousUntil,
+            'new_premium_until' => $user->premium_until,
+            'metadata' => [],
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Premium revoked.',
+                'user' => [
+                    'id' => $user->id,
+                    'is_premium' => $user->isPremium(),
+                    'premium_until' => null,
+                ],
+            ]);
+        }
+
+        return back()->with('status', "Premium revoked for user {$user->id}.");
     }
 
     private function authorizeAdmin(Request $request): void

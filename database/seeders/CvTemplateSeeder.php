@@ -88,6 +88,7 @@ class CvTemplateSeeder extends Seeder
                 ],
                 'is_active' => true,
                 'is_default' => false,
+                'is_premium' => true,
                 'sort_order' => 4,
             ],
             [
@@ -108,6 +109,7 @@ class CvTemplateSeeder extends Seeder
                 ],
                 'is_active' => true,
                 'is_default' => false,
+                'is_premium' => true,
                 'sort_order' => 5,
             ],
             [

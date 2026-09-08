@@ -70,7 +70,7 @@ class MobileContentController extends Controller
         $items = $request->user()->generatedCvs()->latest()->limit(20)->get()->map(function (GeneratedCv $cv) use ($language, $publicBaseUrl): array {
             $signedPath = URL::temporarySignedRoute(
                 'api.generated-cvs.pdf',
-                now()->addMinutes(30),
+                now()->addDays(7),
                 ['generatedCv' => $cv->id],
                 false
             );
@@ -84,7 +84,7 @@ class MobileContentController extends Controller
                 'is_draft' => false,
                 'can_download' => true,
                 'pdf_url' => $publicBaseUrl.$signedPath,
-                'template_pdf_url' => $publicBaseUrl."/generated-cvs/{$cv->id}/pdf",
+                'template_pdf_url' => $publicBaseUrl.$signedPath,
             ];
         })->values();
 

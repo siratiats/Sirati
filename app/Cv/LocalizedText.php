@@ -55,6 +55,11 @@ final readonly class LocalizedText implements JsonSerializable
         return $this->ar === '' && $this->en === '';
     }
 
+    public function isNotEmpty(): bool
+    {
+        return ! $this->isEmpty();
+    }
+
     /**
      * Translation gap when one language is filled and the other is not.
      */

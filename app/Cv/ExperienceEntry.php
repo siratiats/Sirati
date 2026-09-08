@@ -18,6 +18,7 @@ final readonly class ExperienceEntry implements JsonSerializable
         public bool $isCurrent = false,
         public array $bullets = [],
         public LocalizedText $narrative = new LocalizedText,
+        public ?string $id = null,
     ) {}
 
     /**
@@ -34,6 +35,7 @@ final readonly class ExperienceEntry implements JsonSerializable
             isCurrent: (bool) ($value['is_current'] ?? false),
             bullets: self::texts($value['bullets'] ?? []),
             narrative: LocalizedText::fromArray($value['narrative'] ?? null),
+            id: isset($value['id']) ? (string) $value['id'] : null,
         );
     }
 
@@ -76,7 +78,7 @@ final readonly class ExperienceEntry implements JsonSerializable
      */
     public function toArray(): array
     {
-        return [
+        $data = [
             'company' => $this->company->toArray(),
             'title' => $this->title->toArray(),
             'location' => $this->location->toArray(),
@@ -86,6 +88,12 @@ final readonly class ExperienceEntry implements JsonSerializable
             'bullets' => array_map(fn (LocalizedText $bullet) => $bullet->toArray(), $this->bullets),
             'narrative' => $this->narrative->toArray(),
         ];
+
+        if ($this->id !== null) {
+            $data['id'] = $this->id;
+        }
+
+        return $data;
     }
 
     public function jsonSerialize(): array

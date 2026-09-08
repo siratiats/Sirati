@@ -198,6 +198,195 @@ final readonly class CvDocument implements JsonSerializable
             $projects,
         ], fn (?string $block) => trim((string) $block) !== ''));
 
+        $isAr = $language === 'ar';
+        $sectionOrder = $this->populatedSectionKeys();
+        $structuredSections = [];
+
+        foreach ($sectionOrder as $key) {
+            if ($key === 'summary' && trim($summary) !== '') {
+                $structuredSections[] = [
+                    'id' => 'summary',
+                    'key' => 'summary',
+                    'type' => 'text',
+                    'title' => $isAr ? 'الملخص المهني' : 'Professional Summary',
+                    'content' => $summary,
+                ];
+            } elseif ($key === 'experience' && ! empty($this->experience)) {
+                $entries = [];
+                foreach ($this->experience as $entry) {
+                    $jobTitle = $entry->title->resolve($language);
+                    $company = $entry->company->resolve($language);
+                    $loc = $entry->location->resolve($language);
+                    $start = $entry->startDate;
+                    $end = $entry->isCurrent ? ($isAr ? 'حتى الآن' : 'Present') : $entry->endDate;
+                    $dateRange = trim(($start ?? '').($end ? ' - '.$end : ''));
+                    $bullets = array_values(array_filter(array_map(
+                        fn (LocalizedText $b) => $b->resolve($language),
+                        $entry->bullets
+                    ), fn ($b) => trim((string) $b) !== ''));
+                    $desc = $entry->narrative->resolve($language);
+
+                    if ($jobTitle !== '' || $company !== '' || $desc !== '' || $bullets !== []) {
+                        $entries[] = [
+                            'title' => $jobTitle,
+                            'subtitle' => $company,
+                            'location' => $loc,
+                            'date_range' => $dateRange,
+                            'bullets' => $bullets,
+                            'description' => $desc,
+                        ];
+                    }
+                }
+                if (! empty($entries)) {
+                    $structuredSections[] = [
+                        'id' => 'experience',
+                        'key' => 'experience',
+                        'type' => 'entries',
+                        'title' => $isAr ? 'الخبرة المهنية' : 'Experience',
+                        'entries' => $entries,
+                    ];
+                }
+            } elseif ($key === 'education' && ! empty($this->education)) {
+                $entries = [];
+                foreach ($this->education as $entry) {
+                    $deg = $entry->degree->resolve($language);
+                    $field = $entry->field->resolve($language);
+                    $inst = $entry->institution->resolve($language);
+                    $title = trim($deg.($field !== '' ? ' - '.$field : ''));
+                    if ($title === '') {
+                        $title = $deg;
+                    }
+                    $start = $entry->startDate;
+                    $end = $entry->endDate;
+                    $dateRange = trim(($start ?? '').($end ? ' - '.$end : ''));
+                    $desc = $entry->narrative->resolve($language);
+
+                    if ($title !== '' || $inst !== '' || $desc !== '') {
+                        $entries[] = [
+                            'title' => $title,
+                            'subtitle' => $inst,
+                            'date_range' => $dateRange,
+                            'description' => $desc,
+                        ];
+                    }
+                }
+                if (! empty($entries)) {
+                    $structuredSections[] = [
+                        'id' => 'education',
+                        'key' => 'education',
+                        'type' => 'entries',
+                        'title' => $isAr ? 'التعليم' : 'Education',
+                        'entries' => $entries,
+                    ];
+                }
+            } elseif ($key === 'skills' && trim($skills) !== '') {
+                $skillItems = [];
+                foreach ($this->skills ?? [] as $skill) {
+                    $name = trim($skill->name->resolve($language));
+                    if ($name !== '') {
+                        $skillItems[] = $name;
+                    }
+                }
+                $structuredSections[] = [
+                    'id' => 'skills',
+                    'key' => 'skills',
+                    'type' => 'tags',
+                    'title' => $isAr ? 'المهارات' : 'Skills',
+                    'items' => $skillItems,
+                    'text' => $skills,
+                ];
+            } elseif ($key === 'certifications' && ! empty($this->certifications)) {
+                $entries = [];
+                foreach ($this->certifications as $entry) {
+                    $name = $entry->name->resolve($language);
+                    $issuer = $entry->issuer->resolve($language);
+                    $date = $entry->date;
+                    $desc = $entry->narrative->resolve($language);
+
+                    if ($name !== '' || $issuer !== '' || $desc !== '') {
+                        $entries[] = [
+                            'title' => $name,
+                            'subtitle' => $issuer,
+                            'date_range' => $date,
+                            'description' => $desc,
+                        ];
+                    }
+                }
+                if (! empty($entries)) {
+                    $structuredSections[] = [
+                        'id' => 'certifications',
+                        'key' => 'certifications',
+                        'type' => 'entries',
+                        'title' => $isAr ? 'الشهادات' : 'Certifications',
+                        'entries' => $entries,
+                    ];
+                }
+            } elseif ($key === 'languages' && ! empty($this->languages)) {
+                $entries = [];
+                foreach ($this->languages as $entry) {
+                    $name = $entry->name->resolve($language);
+                    $level = $entry->level->resolve($language);
+                    if ($name !== '') {
+                        $entries[] = [
+                            'title' => $name,
+                            'subtitle' => $level,
+                        ];
+                    }
+                }
+                if (! empty($entries)) {
+                    $structuredSections[] = [
+                        'id' => 'languages',
+                        'key' => 'languages',
+                        'type' => 'entries',
+                        'title' => $isAr ? 'اللغات' : 'Languages',
+                        'entries' => $entries,
+                    ];
+                }
+            } elseif ($key === 'projects' && ! empty($this->projects)) {
+                $entries = [];
+                foreach ($this->projects as $entry) {
+                    $name = $entry->name->resolve($language);
+                    $desc = $entry->description->resolve($language);
+                    $bullets = array_values(array_filter(array_map(
+                        fn (LocalizedText $b) => $b->resolve($language),
+                        $entry->bullets
+                    ), fn ($b) => trim((string) $b) !== ''));
+
+                    if ($name !== '' || $desc !== '' || $bullets !== []) {
+                        $entries[] = [
+                            'title' => $name,
+                            'subtitle' => $entry->url,
+                            'bullets' => $bullets,
+                            'description' => $desc,
+                        ];
+                    }
+                }
+                if (! empty($entries)) {
+                    $structuredSections[] = [
+                        'id' => 'projects',
+                        'key' => 'projects',
+                        'type' => 'entries',
+                        'title' => $isAr ? 'المشاريع' : 'Projects',
+                        'entries' => $entries,
+                    ];
+                }
+            } elseif ($key === 'custom_sections' && ! empty($this->customSections)) {
+                foreach ($this->customSections as $idx => $entry) {
+                    $title = $entry->title->resolve($language);
+                    $body = $entry->body->resolve($language);
+                    if ($title !== '' || $body !== '') {
+                        $structuredSections[] = [
+                            'id' => 'custom_'.$entry->key.'_'.$idx,
+                            'key' => $entry->key,
+                            'type' => 'text',
+                            'title' => $title !== '' ? $title : ($isAr ? 'قسم إضافي' : 'Additional Section'),
+                            'content' => $body,
+                        ];
+                    }
+                }
+            }
+        }
+
         return new ResolvedCvDocument(
             language: $language,
             fullName: $fullName,
@@ -214,6 +403,8 @@ final readonly class CvDocument implements JsonSerializable
             languages: $languages,
             projects: $projects,
             plainText: implode("\n\n", $blocks),
+            sectionOrder: $sectionOrder,
+            structuredSections: $structuredSections,
         );
     }
 
@@ -229,25 +420,25 @@ final readonly class CvDocument implements JsonSerializable
         }
 
         foreach ($this->experience ?? [] as $index => $entry) {
-            $paths = [...$paths, ...$entry->missingTranslations('experience.'.$index)];
+            array_push($paths, ...$entry->missingTranslations('experience.'.$index));
         }
         foreach ($this->education ?? [] as $index => $entry) {
-            $paths = [...$paths, ...$entry->missingTranslations('education.'.$index)];
+            array_push($paths, ...$entry->missingTranslations('education.'.$index));
         }
         foreach ($this->skills ?? [] as $index => $entry) {
-            $paths = [...$paths, ...$entry->missingTranslations('skills.'.$index)];
+            array_push($paths, ...$entry->missingTranslations('skills.'.$index));
         }
         foreach ($this->languages ?? [] as $index => $entry) {
-            $paths = [...$paths, ...$entry->missingTranslations('languages.'.$index)];
+            array_push($paths, ...$entry->missingTranslations('languages.'.$index));
         }
         foreach ($this->certifications ?? [] as $index => $entry) {
-            $paths = [...$paths, ...$entry->missingTranslations('certifications.'.$index)];
+            array_push($paths, ...$entry->missingTranslations('certifications.'.$index));
         }
         foreach ($this->projects ?? [] as $index => $entry) {
-            $paths = [...$paths, ...$entry->missingTranslations('projects.'.$index)];
+            array_push($paths, ...$entry->missingTranslations('projects.'.$index));
         }
         foreach ($this->customSections ?? [] as $index => $entry) {
-            $paths = [...$paths, ...$entry->missingTranslations('custom_sections.'.$index)];
+            array_push($paths, ...$entry->missingTranslations('custom_sections.'.$index));
         }
 
         return array_values($paths);

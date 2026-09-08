@@ -47,13 +47,40 @@ class GeneratedCv extends Model
         ];
     }
 
+    private ?CvDocument $memoizedCvDocument = null;
+
+    public function setAttribute($key, $value)
+    {
+        $this->memoizedCvDocument = null;
+
+        return parent::setAttribute($key, $value);
+    }
+
+    public function setRawAttributes(array $attributes, $sync = false)
+    {
+        $this->memoizedCvDocument = null;
+
+        return parent::setRawAttributes($attributes, $sync);
+    }
+
+    public function refresh()
+    {
+        $this->memoizedCvDocument = null;
+
+        return parent::refresh();
+    }
+
     public function cvDocument(): CvDocument
     {
-        if (is_array($this->document) && $this->document !== []) {
-            return CvDocument::fromArray($this->document);
+        if ($this->memoizedCvDocument !== null) {
+            return $this->memoizedCvDocument;
         }
 
-        return CvDocument::fromLegacy($this->attributesToArray());
+        if (is_array($this->document) && $this->document !== []) {
+            return $this->memoizedCvDocument = CvDocument::fromArray($this->document);
+        }
+
+        return $this->memoizedCvDocument = CvDocument::fromLegacy($this->attributesToArray());
     }
 
     public function duplicateForUser(?int $userId = null): self

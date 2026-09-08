@@ -9,10 +9,12 @@ use App\Enums\AiStatus;
 use App\Http\Resources\GeneratedCvResource;
 use App\Jobs\GenerateCvContentJob;
 use App\Models\CvAnalysis;
+use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Services\Ai\CachedCvAiProvider;
 use App\Services\AtsScoringService;
 use App\Services\CvTemplateRenderer;
+use App\Services\EntitlementService;
 use App\Services\ErrorReporter;
 use App\Support\CvMarkdownIdentityBlock;
 use App\Support\Idempotency;
@@ -38,7 +40,21 @@ class GeneratedCvController extends Controller
 
     public function store(Request $request, CvAiProvider $openAi, AtsScoringService $scorer)
     {
-        $generatedCv = $this->createGeneratedCv($this->validatedPayload($request), $openAi, $scorer, $request->user()?->id, false, $request);
+        $isGuest = $request->user() === null;
+        $queueAi = ! $isGuest;
+        $generatedCv = $this->createGeneratedCv(
+            $this->validatedPayload($request),
+            $openAi,
+            $scorer,
+            $request->user()?->id,
+            $queueAi,
+            $request,
+            $isGuest,
+        );
+
+        if ($generatedCv->wasRecentlyCreated && $generatedCv->ai_status === AiStatus::Queued) {
+            GenerateCvContentJob::dispatch($generatedCv->id);
+        }
 
         return redirect()->to(SignedRecordAccess::temporaryUrl('generated-cvs.show', [
             'generatedCv' => $generatedCv,
@@ -284,14 +300,76 @@ class GeneratedCvController extends Controller
 
     public function downloadPdf(Request $request, GeneratedCv $generatedCv, CvTemplateRenderer $renderer)
     {
-        return $renderer->downloadResponse($generatedCv, $request->query('template'));
+        SignedRecordAccess::authorize($request, $generatedCv);
+
+        $user = $request->user() ?? $generatedCv->user;
+
+        return $renderer->downloadResponse(
+            $generatedCv,
+            $request->query('template'),
+            $user,
+            $request->query('language'),
+        );
     }
 
     public function downloadPdfApi(Request $request, GeneratedCv $generatedCv, CvTemplateRenderer $renderer)
     {
         $this->authorizeApiAccess($request, $generatedCv);
 
-        return $renderer->downloadResponse($generatedCv, $request->query('template'));
+        return $renderer->downloadResponse(
+            $generatedCv,
+            $request->query('template'),
+            $request->user(),
+            $request->query('language'),
+        );
+    }
+
+    public function previewHtmlApi(
+        Request $request,
+        GeneratedCv $generatedCv,
+        CvTemplateRenderer $renderer,
+        EntitlementService $entitlements,
+    ) {
+        $this->authorizeApiAccess($request, $generatedCv);
+
+        $templateKey = $request->query('template');
+        $language = $request->query('language', $generatedCv->language);
+        if ($language !== 'en' && $language !== 'ar') {
+            $language = $generatedCv->language === 'en' ? 'en' : 'ar';
+        }
+
+        if ($templateKey !== null && trim($templateKey) !== '') {
+            $requestedTemplate = CvTemplate::query()
+                ->where(function ($query) use ($templateKey): void {
+                    $query->where('slug', $templateKey);
+                    if (ctype_digit($templateKey)) {
+                        $query->orWhere('id', (int) $templateKey);
+                    }
+                })
+                ->first();
+
+            if ($requestedTemplate !== null && ! $entitlements->canPreviewTemplate($request->user(), $requestedTemplate)) {
+                abort(404, 'القالب غير متوفر حالياً.');
+            }
+        }
+
+        $template = $renderer->resolve($templateKey, $language);
+        $shouldWatermark = $entitlements->shouldWatermark($request->user(), $template);
+
+        $html = $renderer->renderHtml($generatedCv, $templateKey, $shouldWatermark, $language);
+
+        return response()->json([
+            'data' => [
+                'html' => $html,
+                'is_premium' => $template->isPremium(),
+                'is_watermarked' => $shouldWatermark,
+                'template' => [
+                    'id' => $template->id,
+                    'slug' => $template->slug,
+                    'name' => $template->displayName($language),
+                ],
+            ],
+        ]);
     }
 
     private function validatedPayload(Request $request): array
@@ -329,10 +407,11 @@ class GeneratedCvController extends Controller
         ?int $userId = null,
         bool $queueAi = false,
         ?Request $request = null,
+        bool $skipAi = false,
     ): GeneratedCv {
-        $create = function () use ($validated, $openAi, $scorer, $queueAi, $userId, $request) {
+        $create = function () use ($validated, $openAi, $scorer, $queueAi, $userId, $request, $skipAi) {
             return GeneratedCv::create([
-                ...$this->generatedCvAttributes($validated, $openAi, $scorer, $queueAi),
+                ...$this->generatedCvAttributes($validated, $openAi, $scorer, $queueAi, $skipAi),
                 'user_id' => $userId,
                 'idempotency_key' => $request ? Idempotency::key($request) : null,
             ]);
@@ -368,6 +447,7 @@ class GeneratedCvController extends Controller
         CvAiProvider $openAi,
         AtsScoringService $scorer,
         bool $queueAi = false,
+        bool $skipAi = false,
     ): array {
         $documentInput = $validated['document'] ?? null;
         unset($validated['document']);
@@ -377,7 +457,7 @@ class GeneratedCvController extends Controller
         $aiError = null;
         $markdown = $this->localTemplate($validated);
 
-        if ($openAi->isConfigured()) {
+        if (! $skipAi && $openAi->isConfigured()) {
             if ($queueAi) {
                 $aiStatus = AiStatus::Queued;
             } else {

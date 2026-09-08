@@ -52,7 +52,43 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_premium' => 'boolean',
+            'premium_until' => 'datetime',
         ];
+    }
+
+    public function isPremium(): bool
+    {
+        if ($this->premium_until !== null) {
+            return $this->premium_until->isFuture();
+        }
+
+        return (bool) $this->is_premium;
+    }
+
+    public function grantSubscription(
+        \DateTimeInterface|string $expiresAt,
+        string $planId = 'pro',
+        string $provider = 'revenuecat',
+        ?string $externalId = null,
+    ): void {
+        $expires = is_string($expiresAt) ? \Illuminate\Support\Carbon::parse($expiresAt) : $expiresAt;
+
+        $this->forceFill([
+            'is_premium' => true,
+            'premium_until' => $expires,
+            'subscription_plan_id' => $planId,
+            'subscription_provider' => $provider,
+            'subscription_external_id' => $externalId,
+        ])->save();
+    }
+
+    public function revokeSubscription(): void
+    {
+        $this->forceFill([
+            'is_premium' => false,
+            'premium_until' => \Illuminate\Support\Carbon::now()->subMinute(),
+        ])->save();
     }
 
     public function jobTitle(): BelongsTo

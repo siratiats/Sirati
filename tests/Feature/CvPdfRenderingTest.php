@@ -279,6 +279,128 @@ class CvPdfRenderingTest extends TestCase
         $this->assertSame(count($slugs), $uniqueCount, 'Expected all template HTML views to be distinctly unique.');
     }
 
+    public function test_english_render_has_no_arabic_outside_candidate_typed_fields(): void
+    {
+        $template = $this->template('classic-en-export', 'classic_rtl');
+
+        $languageLevels = [
+            'اللغة الأم (Native)' => 'Native',
+            'طليق (C2 / Fluent)' => 'Fluent',
+            'مهني متقدم (C1)' => 'Advanced professional (C1)',
+            'متوسط (B2)' => 'Intermediate (B2)',
+            'أساسي (A2)' => 'Elementary (A2)',
+        ];
+        $skillNameAr = 'إدارة المشاريع';
+        $candidateArabic = [
+            'سارة القحطاني',
+            'مطورة برمجيات',
+            'ملخص مهني مكتوب بالعربية',
+            $skillNameAr,
+        ];
+
+        $languages = [];
+        $i = 0;
+        foreach ($languageLevels as $ar => $en) {
+            $languages[] = [
+                'name' => ['ar' => '', 'en' => 'Spoken-'.$i],
+                // Empty `en` — hydrate must backfill from the known key.
+                'level' => ['ar' => $ar, 'en' => ''],
+            ];
+            $i++;
+        }
+
+        $cv = $this->cv('en', [
+            'full_name' => 'Sara Al-Qahtani',
+            'target_job_title' => 'Software Developer',
+            'generated_markdown' => '',
+            'skills_input' => '',
+            'experience_input' => '',
+            'education_input' => '',
+            'document' => [
+                'schema_version' => 1,
+                'export_language' => 'en',
+                'personal' => [
+                    'full_name' => ['ar' => 'سارة القحطاني', 'en' => 'Sara Al-Qahtani'],
+                    'headline' => ['ar' => 'مطورة برمجيات', 'en' => 'Software Developer'],
+                    'email' => 'sara@example.com',
+                    'phone' => '+966500000000',
+                    'linkedin' => 'linkedin.com/in/sara',
+                    'location' => ['ar' => 'الرياض', 'en' => 'Riyadh'],
+                ],
+                'summary' => [
+                    'ar' => 'ملخص مهني مكتوب بالعربية',
+                    'en' => 'A professional summary written in English.',
+                ],
+                'skills' => [
+                    ['name' => ['ar' => $skillNameAr, 'en' => '']],
+                    ['name' => ['ar' => '', 'en' => 'Flutter']],
+                ],
+                'languages' => $languages,
+            ],
+        ]);
+
+        $html = app(CvTemplateRenderer::class)->renderHtml($cv, $template->slug);
+
+        foreach ($languageLevels as $ar => $en) {
+            $this->assertStringContainsString($en, $html);
+            $this->assertStringNotContainsString($ar, $html);
+        }
+
+        $remainder = $html;
+        foreach ($candidateArabic as $typed) {
+            $remainder = str_replace($typed, '', $remainder);
+        }
+
+        $this->assertDoesNotMatchRegularExpression(
+            '/\p{Arabic}/u',
+            $remainder,
+            'English HTML leaked Arabic outside candidate-typed fields: '.$remainder,
+        );
+    }
+
+    public function test_template_renders_directly_from_cv_document_payload(): void
+    {
+        $template = $this->template('classic-doc', 'classic_rtl');
+        $cv = $this->cv('en', [
+            'full_name' => 'Legacy Name',
+            'target_job_title' => 'Legacy Title',
+            'email' => 'legacy@example.com',
+            'document' => [
+                'schema_version' => 1,
+                'export_language' => 'en',
+                'personal' => [
+                    'full_name' => ['ar' => 'اسم وثيقة', 'en' => 'Document Typed Name'],
+                    'headline' => ['ar' => 'عنوان وثيقة', 'en' => 'Document Typed Headline'],
+                    'email' => 'typed@example.com',
+                    'phone' => '+966511111111',
+                    'linkedin' => 'linkedin.com/in/typed',
+                    'location' => ['ar' => 'جدة', 'en' => 'Jeddah'],
+                ],
+                'summary' => ['ar' => 'ملخص', 'en' => 'Typed document summary content.'],
+                'experience' => [
+                    [
+                        'company' => ['ar' => 'شركة', 'en' => 'Acme Corp'],
+                        'title' => ['ar' => 'مهندس', 'en' => 'Principal Architect'],
+                        'narrative' => ['ar' => 'تفاصيل', 'en' => 'Spearheaded cloud migration.'],
+                    ],
+                ],
+            ],
+            'generated_markdown' => '',
+        ]);
+
+        $html = app(CvTemplateRenderer::class)->renderHtml($cv, $template->slug);
+
+        $this->assertStringContainsString('Document Typed Name', $html);
+        $this->assertStringContainsString('Document Typed Headline', $html);
+        $this->assertStringContainsString('typed@example.com', $html);
+        $this->assertStringContainsString('+966511111111', $html);
+        $this->assertStringContainsString('Jeddah', $html);
+        $this->assertStringContainsString('Typed document summary content.', $html);
+        $this->assertStringContainsString('Principal Architect', $html);
+        $this->assertStringNotContainsString('Legacy Name', $html);
+        $this->assertStringNotContainsString('legacy@example.com', $html);
+    }
+
     private function template(string $slug, string $rendererKey): CvTemplate
     {
         return CvTemplate::create([
@@ -291,6 +413,58 @@ class CvPdfRenderingTest extends TestCase
             'is_active' => true,
             'is_default' => $slug === 'classic',
         ]);
+    }
+
+    public function test_arabic_pdf_footer_isolates_grade_and_score_metrics_without_stranding_plus(): void
+    {
+        $this->seed(CvTemplateSeeder::class);
+        $renderer = app(CvTemplateRenderer::class);
+
+        $testCases = [
+            ['ats-classic-professional', '94', 'A+'],
+            ['executive-leadership-brief', '88', 'B+'],
+            ['sales-impact-performer', '76', 'C-'],
+        ];
+
+        $user = \App\Models\User::factory()->create(['is_premium' => true]);
+
+        foreach ($testCases as [$templateSlug, $score, $grade]) {
+            $cv = $this->cv('ar', [
+                'user_id' => $user->id,
+                'score_total' => (int) $score,
+                'grade' => $grade,
+            ]);
+
+            $response = $renderer->downloadResponse($cv, $templateSlug, $user);
+            $pdfContent = (string) $response->getContent();
+            $extracted = (new PdfParser)->parseContent($pdfContent)->getText();
+
+            // Scope assertion to the footer line containing the percentage metric
+            $footerLines = array_values(array_filter(
+                explode("\n", $extracted),
+                fn (string $line): bool => str_contains($line, "{$score}%")
+            ));
+
+            $this->assertNotEmpty($footerLines, "Expected a footer line containing {$score}% in template {$templateSlug}.");
+            $footerLine = trim($footerLines[0]);
+
+            // General invariant (AGENTS.md Rule 1):
+            // 1. Grade token with sign must exist intact in the footer line.
+            $this->assertStringContainsString($grade, $footerLine, "Grade {$grade} must remain intact in footer line for {$templateSlug}.");
+
+            // 2. Count invariant: the number of '+' and '-' in the footer line must exactly match
+            // the count in the grade token, proving zero modifiers were stranded elsewhere in the footer.
+            $this->assertSame(
+                substr_count($grade, '+'),
+                substr_count($footerLine, '+'),
+                "Extraneous or stranded '+' appeared outside {$grade} in footer line '{$footerLine}'."
+            );
+            $this->assertSame(
+                substr_count($grade, '-'),
+                substr_count($footerLine, '-'),
+                "Extraneous or stranded '-' appeared outside {$grade} in footer line '{$footerLine}'."
+            );
+        }
     }
 
     /** @param array<string, mixed> $overrides */

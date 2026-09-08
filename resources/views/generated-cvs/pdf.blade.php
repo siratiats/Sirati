@@ -73,25 +73,19 @@
 </head>
 <body>
     <div class="header">
-        <h1>{{ $pdfData['name'] }}</h1>
-        <div class="subtitle">{{ $pdfData['targetJobTitle'] }}</div>
-        @if ($pdfData['contacts'])
+        <h1>{{ $cv['candidate']['name'] }}</h1>
+        <div class="subtitle">{{ $cv['candidate']['target_job_title'] }}</div>
+        @if ($cv['candidate']['contacts'])
             <div class="contact">
-                @foreach ($pdfData['contacts'] as $contact)
+                @foreach ($cv['candidate']['contacts'] as $contact)
                     @if (! $loop->first)<span class="contact-separator"> · </span>@endif<span class="contact-item">{{ $contact }}</span>
                 @endforeach
             </div>
         @endif
     </div>
 
-    <div class="content">{!! $pdfData['contentHtml'] !!}</div>
+    <div class="content">{!! $cv['contentHtml'] !!}</div>
 
-    @if ($cv['score']['total'] !== null)
-        <div class="footer">
-            {{ $cv['labels']['ats_score'] }}:
-            {{ $cv['score']['total'] }}
-            @if (filled($cv['score']['grade'])) · {{ $cv['score']['grade'] }} @endif
-        </div>
-    @endif
+    @include('generated-cvs.templates._footer')
 </body>
 </html>

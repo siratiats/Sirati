@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Cv\ResolvedCvDocument;
 use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
+use App\Models\User;
 use App\Services\Cv\CvMarkdownRenderer;
 use App\Support\CvMarkdownIdentityBlock;
 use Illuminate\Support\Facades\Log;
@@ -14,7 +16,13 @@ class CvTemplateRenderer
 {
     public function __construct(
         private readonly CvMarkdownRenderer $markdownRenderer,
+        private readonly ?EntitlementService $entitlements = null,
     ) {}
+
+    private function entitlementService(): EntitlementService
+    {
+        return $this->entitlements ?? app(EntitlementService::class);
+    }
 
     public function resolve(?string $templateKey, string $language): CvTemplate
     {
@@ -56,78 +64,147 @@ class CvTemplateRenderer
         return $this->fallbackTemplate();
     }
 
-    public function renderHtml(GeneratedCv $generatedCv, ?string $templateKey = null): string
-    {
-        $language = $generatedCv->language === 'en' ? 'en' : 'ar';
+    public function renderHtml(
+        GeneratedCv $generatedCv,
+        ?string $templateKey = null,
+        bool $watermark = false,
+        ?string $languageOverride = null,
+    ): string {
+        $language = ($languageOverride ?? $generatedCv->language) === 'en' ? 'en' : 'ar';
         $template = $this->resolve($templateKey, $language);
         $view = $this->viewFor($template);
+        $cv = $this->viewModel($generatedCv, $template, $watermark, $language);
         $pdfData = [
-            'name' => $this->formatPdfText($generatedCv->full_name, $language),
-            'targetJobTitle' => $this->formatPdfText($generatedCv->target_job_title, $language),
-            'contacts' => array_values(array_filter([
-                $this->formatPdfText($generatedCv->email, $language),
-                $this->formatPdfText($generatedCv->phone, $language),
-                $this->formatPdfText($generatedCv->linkedin, $language),
-                $this->formatPdfText($generatedCv->location, $language),
-            ], fn (string $value): bool => trim($value) !== '')),
-            'contentHtml' => $this->markdownRenderer->render(
-                $this->bodyMarkdown($generatedCv),
-                $language,
-                $generatedCv->id,
-            ),
+            'name' => $cv['candidate']['name'],
+            'targetJobTitle' => $cv['candidate']['targetJobTitle'],
+            'contacts' => $cv['candidate']['contacts'],
+            'contentHtml' => $cv['contentHtml'],
         ];
 
         return view($view, [
             'generatedCv' => $generatedCv,
             'pdfData' => $pdfData,
-            'cv' => $this->viewModel($generatedCv, $template),
+            'cv' => $cv,
             'template' => $template,
         ])->render();
     }
 
-    public function downloadResponse(GeneratedCv $generatedCv, ?string $templateKey = null)
-    {
+    public function downloadResponse(
+        GeneratedCv $generatedCv,
+        ?string $templateKey = null,
+        ?User $user = null,
+        ?string $languageOverride = null,
+    ) {
+        $language = ($languageOverride ?? $generatedCv->language) === 'en' ? 'en' : 'ar';
+        $template = $this->resolve($templateKey, $language);
+
+        $effectiveUser = $user ?? $generatedCv->user;
+
+        // Enforce premium entitlement at export boundary (SIRATI-49)
+        if ($template->isPremium() && ! $this->entitlementService()->canExportTemplate($effectiveUser, $template)) {
+            if (request()?->wantsJson()) {
+                return response()->json([
+                    'message' => 'هذا القالب متاح للمشتركين فقط. يرجى الترقية لتحميل السيرة الذاتية بهذا القالب.',
+                    'error' => 'premium_template_locked',
+                    'template' => $template->slug,
+                ], 403);
+            }
+            abort(403, 'هذا القالب متاح للمشتركين فقط. يرجى الترقية لتحميل السيرة الذاتية بهذا القالب.');
+        }
+
+        // Entitled export downloads are never watermarked
+        $pdfContent = $this->renderPdfBlob($generatedCv, $template, $language);
+
+        $slug = Str::slug($generatedCv->full_name) ?: 'candidate';
+        $filename = 'sirati-cv-'.$slug.'-'.$generatedCv->id.'.pdf';
+
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+        ]);
+    }
+
+    public function renderPdfBlob(
+        GeneratedCv $generatedCv,
+        CvTemplate $template,
+        string $language,
+    ): string {
         try {
-            $html = $this->renderHtml($generatedCv, $templateKey);
+            $html = $this->renderHtml($generatedCv, $template->slug, false, $language);
         } catch (\Throwable $exception) {
             Log::warning('CV template render fallback used', [
                 'generated_cv_id' => $generatedCv->id,
-                'template' => $templateKey,
+                'template' => $template->slug,
                 'error' => $exception->getMessage(),
             ]);
 
-            $html = $this->renderHtml($generatedCv);
+            $html = $this->renderHtml($generatedCv, null, false, $language);
         }
 
-        $language = $generatedCv->language === 'en' ? 'en' : 'ar';
         $tempDir = storage_path('app/mpdf');
         if (! is_dir($tempDir) && ! mkdir($tempDir, 0755, true) && ! is_dir($tempDir)) {
             throw new \RuntimeException('Unable to create mPDF temp directory.');
         }
+
+        $cv = $this->viewModel($generatedCv, $template, false, $language);
 
         $pdf = new Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
             'tempDir' => $tempDir,
             'default_font' => 'dejavusans',
+            'margin_top' => 15,
+            'margin_bottom' => 15,
+            'margin_left' => 15,
+            'margin_right' => 15,
         ]);
-        $pdf->autoScriptToLang = true;
-        $pdf->autoLangToFont = true;
+        $pdf->autoScriptToLang = false;
+        $pdf->autoLangToFont = false;
         $pdf->SetDirectionality($language === 'en' ? 'ltr' : 'rtl');
+
+        // Document Metadata (SIRATI-45 AC 47)
+        $docTitle = trim($cv['candidate']['name'].' - '.$cv['candidate']['target_job_title']);
+        $pdf->SetTitle($docTitle !== '' ? $docTitle : 'Curriculum Vitae');
+        $pdf->SetAuthor($cv['candidate']['name'] ?: 'Sirati User');
+        $pdf->SetSubject('Curriculum Vitae');
+        $pdf->SetCreator('Sirati CV Platform');
+
         $pdf->WriteHTML($html);
 
-        $filename = 'sirati-cv-'.Str::slug($generatedCv->full_name).'-'.$generatedCv->id.'.pdf';
-
-        return response($pdf->Output('', 'S'), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
-        ]);
+        return $pdf->Output('', 'S');
     }
 
-    public function viewModel(GeneratedCv $generatedCv, CvTemplate $template): array
-    {
-        $language = $generatedCv->language === 'en' ? 'en' : 'ar';
+    public function viewModel(
+        GeneratedCv $generatedCv,
+        CvTemplate $template,
+        bool $watermark = false,
+        ?string $languageOverride = null,
+    ): array {
+        $language = ($languageOverride ?? $generatedCv->language) === 'en' ? 'en' : 'ar';
         $resolved = $generatedCv->cvDocument()->resolve($language);
+
+        $fullName = $resolved->fullName !== '' ? $resolved->fullName : (string) $generatedCv->full_name;
+        $headline = $resolved->headline !== '' ? $resolved->headline : (string) $generatedCv->target_job_title;
+        $email = $resolved->email ?? $generatedCv->email;
+        $phone = $resolved->phone ?? $generatedCv->phone;
+        $linkedin = $resolved->linkedin ?? $generatedCv->linkedin;
+        $location = $resolved->location !== '' ? $resolved->location : (string) $generatedCv->location;
+
+        $contacts = array_values(array_filter([
+            $this->formatPdfText($email, $language),
+            $this->formatPdfText($phone, $language),
+            $this->formatPdfText($linkedin, $language),
+            $this->formatPdfText($location, $language),
+        ], fn (string $value): bool => trim($value) !== ''));
+
+        $bodyMarkdown = $this->bodyMarkdown($generatedCv, $resolved, $language);
+        $contentHtml = $this->markdownRenderer->render(
+            $bodyMarkdown,
+            $language,
+            $generatedCv->id,
+        );
+
+        $structuredSections = $resolved->toStructuredSections();
 
         return [
             'direction' => $language === 'en' ? 'ltr' : 'rtl',
@@ -139,19 +216,30 @@ class CvTemplateRenderer
                 ),
             ],
             'candidate' => [
-                'full_name' => $resolved->fullName !== '' ? $resolved->fullName : $generatedCv->full_name,
-                'email' => $resolved->email ?? $generatedCv->email,
-                'phone' => $resolved->phone ?? $generatedCv->phone,
-                'linkedin' => $resolved->linkedin ?? $generatedCv->linkedin,
-                'location' => $resolved->location !== '' ? $resolved->location : $generatedCv->location,
-                'target_job_title' => $resolved->headline !== '' ? $resolved->headline : $generatedCv->target_job_title,
+                'name' => $this->formatPdfText($fullName, $language),
+                'full_name' => $this->formatPdfText($fullName, $language),
+                'targetJobTitle' => $this->formatPdfText($headline, $language),
+                'target_job_title' => $this->formatPdfText($headline, $language),
+                'email' => $this->formatPdfText($email, $language),
+                'phone' => $this->formatPdfText($phone, $language),
+                'linkedin' => $this->formatPdfText($linkedin, $language),
+                'location' => $this->formatPdfText($location, $language),
+                'contacts' => $contacts,
             ],
+            'contentHtml' => $contentHtml,
+            'structured_sections' => $structuredSections,
+            'sections_data' => $structuredSections,
+            'section_order' => $resolved->sectionOrder,
+            'is_watermarked' => $watermark,
+            'watermark_text' => $language === 'en' ? 'SIRATI PREVIEW · FOR EVALUATION ONLY' : 'معاينة سيرتي · للاطلاع فقط',
             'summary' => $resolved->summary !== '' ? $resolved->summary : $generatedCv->summary_input,
             'sections' => [
                 'skills' => $resolved->skills !== '' ? $resolved->skills : $generatedCv->skills_input,
                 'experience' => $resolved->experience !== '' ? $resolved->experience : $generatedCv->experience_input,
                 'education' => $resolved->education !== '' ? $resolved->education : $generatedCv->education_input,
                 'certifications' => $resolved->certifications !== '' ? $resolved->certifications : $generatedCv->certifications_input,
+                'languages' => $resolved->languages,
+                'projects' => $resolved->projects,
                 'generated_markdown' => $generatedCv->generated_markdown,
             ],
             'score' => [
@@ -162,6 +250,7 @@ class CvTemplateRenderer
                 'id' => $template->getKey(),
                 'name' => $template->displayName($language),
                 'slug' => $template->slug,
+                'is_premium' => $template->isPremium(),
                 'colors' => $template->color_tokens ?: [],
                 'config' => $template->config_json ?: [],
             ],
@@ -197,17 +286,26 @@ class CvTemplateRenderer
         return $this->markdownRenderer->shapeText($text, $language);
     }
 
-    private function bodyMarkdown(GeneratedCv $generatedCv): string
+    private function bodyMarkdown(GeneratedCv $generatedCv, ?ResolvedCvDocument $resolved = null, ?string $language = null): string
     {
+        $markdown = (string) $generatedCv->generated_markdown;
+        if (trim($markdown) === '' && $resolved !== null) {
+            $markdown = $resolved->toMarkdown();
+        }
+
+        $fullName = $resolved?->fullName ?: (string) $generatedCv->full_name;
+        $headline = $resolved?->headline ?: (string) $generatedCv->target_job_title;
+        $contacts = array_filter([
+            $resolved?->email ?? (string) $generatedCv->email,
+            $resolved?->phone ?? (string) $generatedCv->phone,
+            $resolved?->linkedin ?? (string) $generatedCv->linkedin,
+        ]);
+
         return CvMarkdownIdentityBlock::strip(
-            (string) $generatedCv->generated_markdown,
-            (string) $generatedCv->full_name,
-            (string) $generatedCv->target_job_title,
-            [
-                (string) $generatedCv->email,
-                (string) $generatedCv->phone,
-                (string) $generatedCv->linkedin,
-            ],
+            $markdown,
+            $fullName,
+            $headline,
+            array_values($contacts),
         );
     }
 }

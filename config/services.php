@@ -92,4 +92,9 @@ return [
         ],
     ],
 
+    'revenuecat' => [
+        'webhook_secret' => env('REVENUECAT_WEBHOOK_SECRET'),
+        'api_key' => env('REVENUECAT_API_KEY'),
+    ],
+
 ];

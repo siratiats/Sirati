@@ -76,11 +76,11 @@
 <body>
     <div class="shell">
         <div class="header">
-            <h1>{{ $pdfData['name'] }}</h1>
-            <div class="role">{{ $pdfData['targetJobTitle'] }}</div>
-            @if ($pdfData['contacts'])
+            <h1>{{ $cv['candidate']['name'] }}</h1>
+            <div class="role">{{ $cv['candidate']['target_job_title'] }}</div>
+            @if ($cv['candidate']['contacts'])
                 <div class="meta">
-                    @foreach ($pdfData['contacts'] as $contact)
+                    @foreach ($cv['candidate']['contacts'] as $contact)
                         @if (! $loop->first)<span class="meta-separator"> · </span>@endif<span class="meta-item">{{ $contact }}</span>
                     @endforeach
                 </div>
@@ -88,16 +88,17 @@
         </div>
 
         <div class="section">
-            <div class="content">{!! $pdfData['contentHtml'] !!}</div>
+            <div class="content">
+                @if (! empty($cv['structured_sections']))
+                    @include('generated-cvs.templates._sections')
+                @else
+                    {!! $cv['contentHtml'] !!}
+                @endif
+            </div>
         </div>
 
-        @if ($cv['score']['total'] !== null)
-            <div class="footer">
-                {{ $cv['labels']['ats_score'] }}:
-                {{ $cv['score']['total'] }}
-                @if (filled($cv['score']['grade'])) · {{ $cv['score']['grade'] }} @endif
-            </div>
-        @endif
+        @include('generated-cvs.templates._watermark')
+        @include('generated-cvs.templates._footer')
     </div>
 </body>
 </html>

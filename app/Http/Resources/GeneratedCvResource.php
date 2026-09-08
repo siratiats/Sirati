@@ -14,7 +14,7 @@ class GeneratedCvResource extends JsonResource
         $publicBaseUrl = rtrim((string) config('app.public_url', 'https://siratie.com'), '/');
         $signedPath = URL::temporarySignedRoute(
             'api.generated-cvs.pdf',
-            now()->addMinutes(30),
+            now()->addDays(7),
             ['generatedCv' => $this->id],
             false
         );
@@ -46,7 +46,7 @@ class GeneratedCvResource extends JsonResource
             'grade' => $this->grade,
             'criteria' => $this->mobileList($this->criteria),
             'pdf_url' => $publicBaseUrl.$signedPath,
-            'template_pdf_url' => $publicBaseUrl."/generated-cvs/{$this->id}/pdf",
+            'template_pdf_url' => $publicBaseUrl.$signedPath,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

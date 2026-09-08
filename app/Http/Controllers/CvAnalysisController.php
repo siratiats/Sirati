@@ -37,7 +37,20 @@ class CvAnalysisController extends Controller
 
     public function store(Request $request, CvTextExtractor $extractor, AtsScoringService $scorer, CvAiProvider $openAi)
     {
-        $analysis = $this->createAnalysis($request, $extractor, $scorer, $openAi);
+        $isGuest = $request->user() === null;
+        $queueAi = ! $isGuest;
+        $analysis = $this->createAnalysis(
+            request: $request,
+            extractor: $extractor,
+            scorer: $scorer,
+            openAi: $openAi,
+            queueAi: $queueAi,
+            skipAi: $isGuest,
+        );
+
+        if ($analysis->wasRecentlyCreated && $analysis->ai_status === AiStatus::Queued) {
+            GenerateCvAdviceJob::dispatch($analysis->id);
+        }
 
         return redirect()->to(SignedRecordAccess::temporaryUrl('analyses.show', [
             'analysis' => $analysis,
@@ -86,6 +99,7 @@ class CvAnalysisController extends Controller
         AtsScoringService $scorer,
         CvAiProvider $openAi,
         bool $queueAi = false,
+        bool $skipAi = false,
     ): CvAnalysis {
         $validated = $request->validate([
             'target_job_title' => ['required', 'string', 'max:160'],
@@ -105,7 +119,7 @@ class CvAnalysisController extends Controller
         $aiFeedback = null;
         $aiError = null;
 
-        if ($openAi->isConfigured()) {
+        if (! $skipAi && $openAi->isConfigured()) {
             if ($queueAi) {
                 $aiStatus = AiStatus::Queued;
             } else {

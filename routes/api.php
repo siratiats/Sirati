@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\SubscriptionWebhookController;
 use App\Http\Controllers\CvAnalysisController;
 use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\GeneratedCvController;
@@ -9,6 +10,9 @@ use App\Http\Controllers\NotificationEngagementController;
 use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use Illuminate\Support\Facades\Route;
+
+Route::post('/webhooks/revenuecat', [SubscriptionWebhookController::class, 'handleRevenueCat'])
+    ->middleware('throttle:60,1');
 
 Route::post('/auth/register', [MobileAuthController::class, 'register'])
     ->middleware('throttle:5,1');
@@ -31,6 +35,7 @@ Route::get('/generated-cvs/{generatedCv}/pdf', [GeneratedCvController::class, 'd
 Route::middleware('auth:sanctum')->group(function () {
     // Available before email verification (verify flow + session basics).
     Route::get('/auth/me', [MobileAuthController::class, 'me']);
+    Route::post('/subscriptions/restore', [SubscriptionWebhookController::class, 'restore']);
     Route::post('/auth/logout', [MobileAuthController::class, 'logout']);
     Route::post('/auth/email/verify', [MobileAuthController::class, 'verifyEmail'])
         ->middleware('throttle:10,1');
@@ -76,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/generated-cvs/enhance-field', [GeneratedCvController::class, 'enhanceField'])
             ->middleware('throttle:ai-light');
         Route::get('/generated-cvs/{generatedCv}/download', [GeneratedCvController::class, 'downloadPdfApi']);
+        Route::get('/generated-cvs/{generatedCv}/preview', [GeneratedCvController::class, 'previewHtmlApi']);
         Route::get('/generated-cvs/{generatedCv}/template-switch', [GeneratedCvController::class, 'previewTemplateSwitch']);
         Route::get('/generated-cvs/{generatedCv}', [GeneratedCvController::class, 'showApi']);
         Route::match(['put', 'patch'], '/generated-cvs/{generatedCv}', [GeneratedCvController::class, 'updateApi']);

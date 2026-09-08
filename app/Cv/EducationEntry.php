@@ -13,6 +13,7 @@ final readonly class EducationEntry implements JsonSerializable
         public ?string $startDate = null,
         public ?string $endDate = null,
         public LocalizedText $narrative = new LocalizedText,
+        public ?string $id = null,
     ) {}
 
     /**
@@ -23,10 +24,11 @@ final readonly class EducationEntry implements JsonSerializable
         return new self(
             institution: LocalizedText::fromArray($value['institution'] ?? null),
             degree: LocalizedText::fromArray($value['degree'] ?? null),
-            field: LocalizedText::fromArray($value['field'] ?? null),
+            field: LocalizedText::fromArray($value['field_of_study'] ?? $value['field'] ?? null),
             startDate: self::nullableString($value['start_date'] ?? null),
-            endDate: self::nullableString($value['end_date'] ?? null),
+            endDate: self::nullableString($value['graduation_date'] ?? $value['end_date'] ?? null),
             narrative: LocalizedText::fromArray($value['narrative'] ?? null),
+            id: isset($value['id']) ? (string) $value['id'] : null,
         );
     }
 
@@ -60,14 +62,22 @@ final readonly class EducationEntry implements JsonSerializable
      */
     public function toArray(): array
     {
-        return [
+        $data = [
             'institution' => $this->institution->toArray(),
             'degree' => $this->degree->toArray(),
             'field' => $this->field->toArray(),
+            'field_of_study' => $this->field->toArray(),
             'start_date' => $this->startDate,
             'end_date' => $this->endDate,
+            'graduation_date' => $this->endDate,
             'narrative' => $this->narrative->toArray(),
         ];
+
+        if ($this->id !== null) {
+            $data['id'] = $this->id;
+        }
+
+        return $data;
     }
 
     public function jsonSerialize(): array

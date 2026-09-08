@@ -10,6 +10,7 @@ use App\Models\JobNews;
 use App\Models\LandingLead;
 use App\Models\MobileNotification;
 use App\Models\User;
+use App\Support\SignedRecordAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Laravel\Sanctum\Sanctum;
@@ -101,7 +102,11 @@ class CvMvpTest extends TestCase
             'criteria' => [],
         ]);
 
-        $response = $this->get(route('generated-cvs.pdf', $generatedCv));
+        $url = SignedRecordAccess::temporaryUrl('generated-cvs.pdf', [
+            'generatedCv' => $generatedCv,
+        ]);
+
+        $response = $this->get($url);
         $response->assertOk();
         $this->assertSame('application/pdf', $response->headers->get('content-type'));
         $this->assertStringStartsWith('%PDF', $response->getContent());

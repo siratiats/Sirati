@@ -15,6 +15,7 @@
 /.claude
 /.impeccable
 /.opencode
+/.github
 /-d
 /auth.json
 /node_modules
@@ -27,4 +28,5 @@
 /flutter_app
 Homestead.json
 Homestead.yaml
+/tmp
 Thumbs.db

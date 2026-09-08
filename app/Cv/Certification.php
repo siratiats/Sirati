@@ -10,7 +10,9 @@ final readonly class Certification implements JsonSerializable
         public LocalizedText $name = new LocalizedText,
         public LocalizedText $issuer = new LocalizedText,
         public ?string $date = null,
+        public ?string $expiryDate = null,
         public LocalizedText $narrative = new LocalizedText,
+        public ?string $id = null,
     ) {}
 
     /**
@@ -20,9 +22,11 @@ final readonly class Certification implements JsonSerializable
     {
         return new self(
             name: LocalizedText::fromArray($value['name'] ?? null),
-            issuer: LocalizedText::fromArray($value['issuer'] ?? null),
-            date: self::nullableString($value['date'] ?? null),
+            issuer: LocalizedText::fromArray($value['authority'] ?? $value['issuer'] ?? null),
+            date: self::nullableString($value['issue_date'] ?? $value['date'] ?? null),
+            expiryDate: self::nullableString($value['expiry_date'] ?? null),
             narrative: LocalizedText::fromArray($value['narrative'] ?? null),
+            id: isset($value['id']) ? (string) $value['id'] : null,
         );
     }
 
@@ -54,12 +58,24 @@ final readonly class Certification implements JsonSerializable
      */
     public function toArray(): array
     {
-        return [
+        $data = [
             'name' => $this->name->toArray(),
+            'authority' => $this->issuer->toArray(),
             'issuer' => $this->issuer->toArray(),
+            'issue_date' => $this->date,
             'date' => $this->date,
             'narrative' => $this->narrative->toArray(),
         ];
+
+        if ($this->expiryDate !== null) {
+            $data['expiry_date'] = $this->expiryDate;
+        }
+
+        if ($this->id !== null) {
+            $data['id'] = $this->id;
+        }
+
+        return $data;
     }
 
     public function jsonSerialize(): array

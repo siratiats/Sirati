@@ -84,6 +84,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ->everyFifteenMinutes()
             ->withoutOverlapping()
             ->runInBackground();
+
+        $schedule->command('analyses:prune-guests')
+            ->daily()
+            ->withoutOverlapping()
+            ->runInBackground();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         //

@@ -23,6 +23,7 @@ class CvTemplate extends Model
         'config_json',
         'is_active',
         'is_default',
+        'is_premium',
         'sort_order',
     ];
 
@@ -35,6 +36,7 @@ class CvTemplate extends Model
             'config_json' => 'array',
             'is_active' => 'boolean',
             'is_default' => 'boolean',
+            'is_premium' => 'boolean',
             'sort_order' => 'integer',
         ];
     }
@@ -59,5 +61,10 @@ class CvTemplate extends Model
     public function displayName(string $language): string
     {
         return $language === 'en' ? $this->name_en : $this->name_ar;
+    }
+
+    public function isPremium(): bool
+    {
+        return (bool) ($this->is_premium ?? $this->config_json['is_premium'] ?? false);
     }
 }

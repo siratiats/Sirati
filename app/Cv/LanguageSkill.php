@@ -9,6 +9,7 @@ final readonly class LanguageSkill implements JsonSerializable
     public function __construct(
         public LocalizedText $name = new LocalizedText,
         public LocalizedText $level = new LocalizedText,
+        public ?string $id = null,
     ) {}
 
     /**
@@ -18,7 +19,11 @@ final readonly class LanguageSkill implements JsonSerializable
     {
         return new self(
             name: LocalizedText::fromArray($value['name'] ?? null),
-            level: LocalizedText::fromArray($value['level'] ?? null),
+            level: ProficiencyStorageKeys::fillEmptyEnglish(
+                LocalizedText::fromArray($value['level'] ?? null),
+                ProficiencyStorageKeys::LANGUAGE_LEVEL,
+            ),
+            id: isset($value['id']) ? (string) $value['id'] : null,
         );
     }
 
@@ -34,14 +39,20 @@ final readonly class LanguageSkill implements JsonSerializable
     }
 
     /**
-     * @return array{name: array{ar: string, en: string}, level: array{ar: string, en: string}}
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {
-        return [
+        $data = [
             'name' => $this->name->toArray(),
             'level' => $this->level->toArray(),
         ];
+
+        if ($this->id !== null) {
+            $data['id'] = $this->id;
+        }
+
+        return $data;
     }
 
     public function jsonSerialize(): array

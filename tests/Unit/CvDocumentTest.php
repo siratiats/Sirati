@@ -2,10 +2,17 @@
 
 namespace Tests\Unit;
 
+use App\Cv\Certification;
+use App\Cv\CustomSection;
 use App\Cv\CvDocument;
+use App\Cv\EducationEntry;
 use App\Cv\ExperienceEntry;
+use App\Cv\LanguageSkill;
 use App\Cv\LocalizedText;
 use App\Cv\PersonalDetails;
+use App\Cv\ProficiencyStorageKeys;
+use App\Cv\Project;
+use App\Cv\Skill;
 use App\Services\AtsScoringService;
 use PHPUnit\Framework\TestCase;
 
@@ -43,6 +50,94 @@ class CvDocumentTest extends TestCase
 
         $this->assertSame([], $document->toArray()['experience']);
         $this->assertSame([], CvDocument::fromArray($document->toArray())->experience);
+    }
+
+    public function test_proficiency_english_maps_contain_no_arabic(): void
+    {
+        $maps = [
+            ...ProficiencyStorageKeys::SKILL,
+            ...ProficiencyStorageKeys::LANGUAGE_LEVEL,
+        ];
+        $this->assertNotEmpty($maps);
+        foreach ($maps as $ar => $en) {
+            $this->assertNotSame('', $en);
+            $this->assertDoesNotMatchRegularExpression('/\p{Arabic}/u', $en);
+            $this->assertMatchesRegularExpression('/\p{Arabic}/u', $ar);
+        }
+    }
+
+    public function test_english_resolve_of_bilingual_proficiency_has_no_arabic(): void
+    {
+        $languageLevels = [
+            'اللغة الأم (Native)' => 'Native',
+            'طليق (C2 / Fluent)' => 'Fluent',
+            'مهني متقدم (C1)' => 'Advanced professional (C1)',
+            'متوسط (B2)' => 'Intermediate (B2)',
+            'أساسي (A2)' => 'Elementary (A2)',
+        ];
+        $languages = [];
+        $index = 0;
+        foreach ($languageLevels as $ar => $en) {
+            $languages[] = new LanguageSkill(
+                name: LocalizedText::make(en: 'Language-'.$index),
+                level: LocalizedText::make(ar: $ar, en: $en),
+            );
+            $index++;
+        }
+
+        $document = new CvDocument(
+            exportLanguage: 'en',
+            personal: new PersonalDetails(
+                fullName: LocalizedText::make(ar: 'سارة القحطاني', en: 'Sara Al-Qahtani'),
+            ),
+            languages: $languages,
+        );
+
+        $resolved = $document->resolve('en');
+
+        $this->assertDoesNotMatchRegularExpression('/\p{Arabic}/u', $resolved->languages);
+        $this->assertSame('Sara Al-Qahtani', $resolved->fullName);
+
+        foreach ($languageLevels as $ar => $en) {
+            $this->assertStringContainsString($en, $resolved->languages);
+            $this->assertStringNotContainsString($ar, $resolved->languages);
+        }
+    }
+
+    public function test_known_language_levels_backfill_english_when_en_is_empty(): void
+    {
+        $languageLevels = ProficiencyStorageKeys::LANGUAGE_LEVEL;
+        $languages = [];
+        $index = 0;
+        foreach ($languageLevels as $ar => $en) {
+            $languages[] = LanguageSkill::fromArray([
+                'name' => ['ar' => '', 'en' => 'Language-'.$index],
+                'level' => ['ar' => $ar, 'en' => ''],
+            ]);
+            $index++;
+        }
+        $languages[] = LanguageSkill::fromArray([
+            'name' => ['ar' => '', 'en' => 'Other'],
+            'level' => ['ar' => 'مستوى غير معروف', 'en' => ''],
+        ]);
+        $languages[] = LanguageSkill::fromArray([
+            'name' => ['ar' => '', 'en' => 'Kept'],
+            'level' => ['ar' => 'مهني متقدم (C1)', 'en' => 'Already English'],
+        ]);
+
+        $document = new CvDocument(
+            exportLanguage: 'en',
+            languages: $languages,
+        );
+        $resolved = $document->resolve('en');
+
+        foreach ($languageLevels as $ar => $en) {
+            $this->assertStringContainsString($en, $resolved->languages);
+            $this->assertStringNotContainsString($ar, $resolved->languages);
+        }
+        $this->assertStringContainsString('مستوى غير معروف', $resolved->languages);
+        $this->assertStringContainsString('Already English', $resolved->languages);
+        $this->assertStringContainsString('Kept (Already English)', $resolved->languages);
     }
 
     public function test_export_language_falls_back_when_variant_is_empty(): void
@@ -147,6 +242,142 @@ class CvDocumentTest extends TestCase
         $this->assertGreaterThanOrEqual(70, $score['total']);
         $this->assertSame('software', $score['category']);
         $this->assertContains('laravel', $score['keywords_found']);
+    }
+
+    public function test_fully_populated_document_round_trip_identity_is_lossless(): void
+    {
+        $document = new CvDocument(
+            schemaVersion: 1,
+            exportLanguage: 'en',
+            personal: new PersonalDetails(
+                fullName: LocalizedText::make('سارة أحمد', 'Sara Ahmed'),
+                headline: LocalizedText::make('مهندسة برمجيات', 'Software Engineer'),
+                email: 'sara.dev@example.com',
+                phone: '+966501234567',
+                linkedin: 'linkedin.com/in/saradev',
+                location: LocalizedText::make('الرياض، السعودية', 'Riyadh, Saudi Arabia'),
+            ),
+            summary: LocalizedText::make('مهندسة متمرسة في بناء المنصات السحابية', 'Seasoned engineer building scalable cloud systems'),
+            experience: [
+                new ExperienceEntry(
+                    company: LocalizedText::make('شركة التقنية المتقدمة', 'Advanced Tech Co'),
+                    title: LocalizedText::make('مهندسة نظم أولى', 'Senior Systems Engineer'),
+                    location: LocalizedText::make('الرياض', 'Riyadh'),
+                    startDate: '2021-01-01',
+                    endDate: '2024-08-31',
+                    isCurrent: false,
+                    bullets: [
+                        LocalizedText::make('تصميم واجهات برمجية عالية الأداء', 'Architected high-throughput API gateway'),
+                        LocalizedText::make('تحسين أداء قواعد البيانات بنسبة 40%', 'Optimized database queries reducing latency by 40%'),
+                    ],
+                    narrative: LocalizedText::make('قيادة الفريق التقني لمشاريع البنية التحتية', 'Led infrastructure backend initiatives'),
+                    id: 'exp-uuid-101',
+                ),
+            ],
+            education: [
+                new EducationEntry(
+                    institution: LocalizedText::make('جامعة الملك فهد للبترول والمعادن', 'KFUPM'),
+                    degree: LocalizedText::make('بكالوريوس', 'Bachelor of Science'),
+                    field: LocalizedText::make('هندسة البرمجيات', 'Software Engineering'),
+                    startDate: '2016-09-01',
+                    endDate: '2020-05-30',
+                    narrative: LocalizedText::make('مرتبة الشرف الأولى', 'First Class Honors'),
+                    id: 'edu-uuid-202',
+                ),
+            ],
+            skills: [
+                new Skill(
+                    name: LocalizedText::make('لارافيل', 'Laravel'),
+                    level: LocalizedText::make('خبير', 'Expert'),
+                    category: LocalizedText::make('مهارات تقنية', 'Technical skills'),
+                    id: 'skill-uuid-301',
+                ),
+                new Skill(
+                    name: LocalizedText::make('إدارة الفرق', 'Team Leadership'),
+                    level: LocalizedText::make('متقدم', 'Advanced'),
+                    category: LocalizedText::make('مهارات قيادية وشخصية', 'Interpersonal skills'),
+                    id: 'skill-uuid-302',
+                ),
+            ],
+            languages: [
+                new LanguageSkill(
+                    name: LocalizedText::make('العربية', 'Arabic'),
+                    level: LocalizedText::make('اللغة الأم (Native)', 'Native'),
+                    id: 'lang-uuid-401',
+                ),
+                new LanguageSkill(
+                    name: LocalizedText::make('الإنجليزية', 'English'),
+                    level: LocalizedText::make('طليق (C2 / Fluent)', 'Fluent'),
+                    id: 'lang-uuid-402',
+                ),
+            ],
+            certifications: [
+                new Certification(
+                    name: LocalizedText::make('شهادة مهندس حلول معتمد', 'AWS Certified Solutions Architect'),
+                    issuer: LocalizedText::make('أمازون لخدمات الويب', 'Amazon Web Services'),
+                    date: '2023-04-15',
+                    expiryDate: '2026-04-15',
+                    narrative: LocalizedText::make('تخصص في الحوسبة السحابية المؤسسية', 'Enterprise cloud computing specialty'),
+                    id: 'cert-uuid-501',
+                ),
+            ],
+            projects: [
+                new Project(
+                    name: LocalizedText::make('منصة التوظيف الذكي', 'Smart Hiring Platform'),
+                    role: LocalizedText::make('المطور الرئيسي', 'Lead Architect'),
+                    url: 'https://github.com/example/hiring',
+                    description: LocalizedText::make('نظام متكامل لمعالجة السير الذاتية بالذكاء الاصطناعي', 'End-to-end AI resume processing system'),
+                    bullets: [
+                        LocalizedText::make('معالجة أكثر من 100 ألف طلب توظيف', 'Processed 100k+ candidate profiles'),
+                    ],
+                    id: 'proj-uuid-601',
+                ),
+            ],
+            customSections: [
+                new CustomSection(
+                    key: 'volunteer',
+                    title: LocalizedText::make('العمل التطوعي', 'Volunteering'),
+                    body: LocalizedText::make('مرشد تقني في معسكرات البرمجة الوطنية', 'Technical mentor at national coding bootcamps'),
+                    items: [
+                        LocalizedText::make('تدريب 50 مطور ناشئ', 'Mentored 50 junior engineers'),
+                    ],
+                    id: 'custom-uuid-701',
+                ),
+            ],
+        );
+
+        $array = $document->toArray();
+        $rehydrated = CvDocument::fromArray($array);
+
+        $this->assertEquals($document, $rehydrated);
+        $this->assertSame($array, $rehydrated->toArray());
+
+        // Invariant: double round-trip is strictly involutive
+        $secondRoundTrip = CvDocument::fromArray($rehydrated->toArray());
+        $this->assertEquals($document, $secondRoundTrip);
+    }
+
+    public function test_known_skill_levels_and_categories_backfill_english_when_en_is_empty(): void
+    {
+        $skill = Skill::fromArray([
+            'name' => ['ar' => 'بي إتش بي', 'en' => 'PHP'],
+            'level' => ['ar' => 'خبير', 'en' => ''],
+            'category' => ['ar' => 'مهارات تقنية', 'en' => ''],
+            'id' => 'skill-auto-fill',
+        ]);
+
+        $this->assertSame('Expert', $skill->level->en);
+        $this->assertSame('Technical skills', $skill->category->en);
+        $this->assertSame('skill-auto-fill', $skill->id);
+
+        $beginnerSkill = Skill::fromArray([
+            'name' => 'Docker',
+            'level' => ['ar' => 'مبتدئ', 'en' => ''],
+            'category' => ['ar' => 'أدوات وبرمجيات', 'en' => ''],
+        ]);
+
+        $this->assertSame('Beginner', $beginnerSkill->level->en);
+        $this->assertSame('Tools and software', $beginnerSkill->category->en);
     }
 
     private function sampleDocument(): CvDocument

@@ -10,8 +10,11 @@ class SignedRecordAccess
 {
     public static function authorize(Request $request, Model $record, string $ownerColumn = 'user_id'): void
     {
-        if ($request->hasValidSignatureWhileIgnoring(['template']) ||
-            $request->hasValidSignatureWhileIgnoring(['template'], false) ||
+        // Support both relative mode (used by mobile API resources via URL::temporarySignedRoute(..., false)
+        // with prepended public app host) and absolute mode (used by web routes and SignedRecordAccess::temporaryUrl),
+        // while ignoring allowed client query filters ('template', 'language').
+        if ($request->hasValidSignatureWhileIgnoring(['template', 'language'], false) ||
+            $request->hasValidSignatureWhileIgnoring(['template', 'language']) ||
             $request->hasValidSignature(false) ||
             $request->hasValidSignature()) {
             return;
