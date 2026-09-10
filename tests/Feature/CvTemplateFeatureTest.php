@@ -106,7 +106,7 @@ class CvTemplateFeatureTest extends TestCase
             'education_input' => 'بكالوريوس نظم معلومات',
             'generated_markdown' => "# أحمد علي\n\n## الملخص\nمحلل بيانات.",
             'form_payload' => ['language' => 'ar'],
-            'ai_status' => 'not_configured',
+            'ai_status' => 'completed',
             'score_total' => 82,
             'grade' => 'B',
         ]);

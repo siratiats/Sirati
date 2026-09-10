@@ -5,6 +5,10 @@ namespace App\Services;
 use App\Contracts\CvAiProvider;
 use App\Exceptions\AiRefusalException;
 use App\Models\AiCallLog;
+use App\Services\Ai\AiCallContext;
+use App\Services\Ai\AiHttpRetry;
+use App\Services\Ai\AiOutputTruncation;
+use App\Services\Ai\AiTimeouts;
 use App\Services\Ai\EnhanceCvFieldResultGuard;
 use App\Services\Ai\Prompts\AnalysisAdviceSystemPrompt;
 use App\Services\Ai\Prompts\EnhanceCvFieldSystemPrompt;
@@ -55,7 +59,7 @@ class ClaudeCvService implements CvAiProvider
     {
         return $this->requestJson(
             'generate_cv',
-            'You are an expert CV writer for Arabic and English ATS-friendly resumes. Return only valid JSON. Use only the user-provided facts. Do not invent employers, degrees, dates, metrics, or certifications. Make the CV concise, keyword-rich, and ATS readable.',
+            'You are an expert CV writer for Arabic and English ATS-friendly resumes. Return only valid JSON. Use only the user-provided facts. Do not invent employers, degrees, dates, metrics, or certifications. Make the CV concise, keyword-rich, and ATS readable. When generating an English CV (language: en), all generated content must be strictly in English with no inline Arabic script or terms; express bilingual ability in English.',
             "Generate an ATS-friendly CV template from these form inputs.\n\nInput JSON:\n".json_encode($data, JSON_UNESCAPED_UNICODE)."\n\nReturn JSON with keys: cv_markdown string, headline string, ats_notes array of strings, missing_information array of strings. cv_markdown must be the complete CV; do not repeat its sections in other keys."
         );
     }
@@ -100,14 +104,19 @@ class ClaudeCvService implements CvAiProvider
         $model = (string) config('services.anthropic.model');
         $startedAt = hrtime(true);
 
-        $response = Http::withHeaders([
-            'x-api-key' => (string) config('services.anthropic.api_key'),
-            'anthropic-version' => (string) config('services.anthropic.version', '2023-06-01'),
-            'content-type' => 'application/json',
-        ])
-            ->acceptJson()
-            ->connectTimeout(config('services.anthropic.connect_timeout', 5))
-            ->timeout(config('services.anthropic.timeout', 30))
+        $attemptTimeout = (int) config('services.anthropic.timeout', 30);
+        $response = AiHttpRetry::configure(
+            Http::withHeaders([
+                'x-api-key' => (string) config('services.anthropic.api_key'),
+                'anthropic-version' => (string) config('services.anthropic.version', '2023-06-01'),
+                'content-type' => 'application/json',
+            ])
+                ->acceptJson()
+                ->connectTimeout(config('services.anthropic.connect_timeout', 5))
+                ->timeout($attemptTimeout),
+            AiTimeouts::HTTP_BUDGET_SECONDS,
+            $attemptTimeout,
+        )
             ->post(rtrim((string) config('services.anthropic.base_url'), '/').'/messages', [
                 'model' => $model,
                 'max_tokens' => OperationSchemas::maxTokens($operation),
@@ -138,17 +147,7 @@ class ClaudeCvService implements CvAiProvider
             throw new AiRefusalException($refusalText);
         }
 
-        if ($stopReason === 'max_tokens') {
-            // Privacy: keep this metadata-only. Prompts and AI responses contain
-            // candidate CV data and must never be added to logs or error reports.
-            Log::warning('Claude structured output truncated by max_tokens', [
-                'operation' => $operation,
-                'model' => $model,
-                'stop_reason' => 'max_tokens',
-            ]);
-
-            throw new UnexpectedValueException('Claude response was truncated (stop_reason=max_tokens).');
-        }
+        AiOutputTruncation::throwIfTruncated($operation, $model, $stopReason);
 
         $content = $this->extractText($response);
         $decoded = is_string($content) ? json_decode($content, true) : null;
@@ -198,6 +197,8 @@ class ClaudeCvService implements CvAiProvider
      */
     private function logAiCall(string $operation, string $model, array $response, int $durationMs): void
     {
+        AiCallContext::record('anthropic', $model);
+
         try {
             AiCallLog::create([
                 'provider' => 'anthropic',

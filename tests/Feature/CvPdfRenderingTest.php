@@ -415,7 +415,7 @@ class CvPdfRenderingTest extends TestCase
         ]);
     }
 
-    public function test_arabic_pdf_footer_isolates_grade_and_score_metrics_without_stranding_plus(): void
+    public function test_exported_pdf_omits_internal_ats_score_and_grade(): void
     {
         $this->seed(CvTemplateSeeder::class);
         $renderer = app(CvTemplateRenderer::class);
@@ -435,35 +435,16 @@ class CvPdfRenderingTest extends TestCase
                 'grade' => $grade,
             ]);
 
+            $previewHtml = $renderer->renderHtml($cv, $templateSlug);
+            $this->assertStringContainsString((string) $score, $previewHtml, "Preview may still show the internal score for {$templateSlug}.");
+
             $response = $renderer->downloadResponse($cv, $templateSlug, $user);
             $pdfContent = (string) $response->getContent();
             $extracted = (new PdfParser)->parseContent($pdfContent)->getText();
 
-            // Scope assertion to the footer line containing the percentage metric
-            $footerLines = array_values(array_filter(
-                explode("\n", $extracted),
-                fn (string $line): bool => str_contains($line, "{$score}%")
-            ));
-
-            $this->assertNotEmpty($footerLines, "Expected a footer line containing {$score}% in template {$templateSlug}.");
-            $footerLine = trim($footerLines[0]);
-
-            // General invariant (AGENTS.md Rule 1):
-            // 1. Grade token with sign must exist intact in the footer line.
-            $this->assertStringContainsString($grade, $footerLine, "Grade {$grade} must remain intact in footer line for {$templateSlug}.");
-
-            // 2. Count invariant: the number of '+' and '-' in the footer line must exactly match
-            // the count in the grade token, proving zero modifiers were stranded elsewhere in the footer.
-            $this->assertSame(
-                substr_count($grade, '+'),
-                substr_count($footerLine, '+'),
-                "Extraneous or stranded '+' appeared outside {$grade} in footer line '{$footerLine}'."
-            );
-            $this->assertSame(
-                substr_count($grade, '-'),
-                substr_count($footerLine, '-'),
-                "Extraneous or stranded '-' appeared outside {$grade} in footer line '{$footerLine}'."
-            );
+            $this->assertStringNotContainsString("{$score}%", $extracted, "Export must not print ATS score on {$templateSlug}.");
+            $this->assertStringNotContainsString('ATS score', $extracted);
+            $this->assertStringNotContainsString('نتيجة ATS', $extracted);
         }
     }
 

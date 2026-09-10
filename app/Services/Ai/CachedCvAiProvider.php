@@ -128,10 +128,11 @@ class CachedCvAiProvider implements CvAiProvider
     /**
      * Build a cache key for an operation and already-normalized input string.
      *
-     * The key includes BOTH the provider and the model. Without the provider,
-     * switching CV_AI_PROVIDER would reuse entries written by the other vendor —
-     * which would silently make a Claude-vs-OpenAI bake-off compare OpenAI
-     * against its own cached output.
+     * Lookup uses the wrapper's configured provider/model so a DeepInfra miss
+     * retries DeepInfra. A result served by a different vendor is stored under
+     * that vendor's identity ({@see AiCallContext}) so an OpenAI fallback is
+     * never filed under a DeepInfra key. Same-vendor language-specific models
+     * (EN Llama vs AR Qwen) still store under the configured key so repeats hit.
      *
      * @param  string|null  $model  Defaults to the wrapped driver's model
      * @param  string|null  $promptVersion  Defaults to PROMPT_VERSION
@@ -201,9 +202,26 @@ class CachedCvAiProvider implements CvAiProvider
             return $cached;
         }
 
-        $result = $callback();
+        AiCallContext::clear();
+        try {
+            $result = $callback();
+        } catch (Throwable $exception) {
+            AiCallContext::clear();
+            throw $exception;
+        }
 
-        Cache::put($key, $result, $ttl);
+        [$servedProvider, $servedModel] = AiCallContext::pull();
+        $storeKey = $key;
+        if (filled($servedProvider) && $servedProvider !== $this->provider) {
+            $storeKey = $this->cacheKey(
+                $operation,
+                $normalizedInput,
+                model: filled($servedModel) ? $servedModel : self::modelForProvider($servedProvider),
+                provider: $servedProvider,
+            );
+        }
+
+        Cache::put($storeKey, $result, $ttl);
 
         return $result;
     }

@@ -2,18 +2,29 @@
 
 namespace App\Services;
 
+use App\Cv\LegacySectionParser;
 use App\Cv\ResolvedCvDocument;
 use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Models\User;
 use App\Services\Cv\CvMarkdownRenderer;
 use App\Support\CvMarkdownIdentityBlock;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Mpdf\Config\ConfigVariables;
+use Mpdf\Config\FontVariables;
+use Mpdf\HTMLParserMode;
 use Mpdf\Mpdf;
 
 class CvTemplateRenderer
 {
+    /**
+     * Bump when template HTML, fonts, or renderer behaviour changes so a
+     * cached blob from a previous deploy cannot outlive the new code.
+     */
+    public const RENDER_VERSION = '2';
+
     public function __construct(
         private readonly CvMarkdownRenderer $markdownRenderer,
         private readonly ?EntitlementService $entitlements = null,
@@ -69,11 +80,12 @@ class CvTemplateRenderer
         ?string $templateKey = null,
         bool $watermark = false,
         ?string $languageOverride = null,
+        bool $forExport = false,
     ): string {
         $language = ($languageOverride ?? $generatedCv->language) === 'en' ? 'en' : 'ar';
         $template = $this->resolve($templateKey, $language);
         $view = $this->viewFor($template);
-        $cv = $this->viewModel($generatedCv, $template, $watermark, $language);
+        $cv = $this->viewModel($generatedCv, $template, $watermark, $language, $forExport);
         $pdfData = [
             'name' => $cv['candidate']['name'],
             'targetJobTitle' => $cv['candidate']['targetJobTitle'],
@@ -129,8 +141,32 @@ class CvTemplateRenderer
         CvTemplate $template,
         string $language,
     ): string {
+        $updatedAt = $generatedCv->updated_at;
+        $updatedKey = $updatedAt instanceof \DateTimeInterface
+            ? $updatedAt->format('U.u')
+            : (string) $updatedAt;
+
+        $cacheKey = 'cv-pdf-blob:'.hash('sha256', implode('|', [
+            self::RENDER_VERSION,
+            (string) $generatedCv->id,
+            $updatedKey,
+            $template->slug,
+            $language,
+            (string) ($generatedCv->ai_status?->value ?? ''),
+        ]));
+
+        return Cache::remember($cacheKey, 3600, function () use ($generatedCv, $template, $language): string {
+            return $this->renderPdfBlobUncached($generatedCv, $template, $language);
+        });
+    }
+
+    private function renderPdfBlobUncached(
+        GeneratedCv $generatedCv,
+        CvTemplate $template,
+        string $language,
+    ): string {
         try {
-            $html = $this->renderHtml($generatedCv, $template->slug, false, $language);
+            $html = $this->renderHtml($generatedCv, $template->slug, false, $language, true);
         } catch (\Throwable $exception) {
             Log::warning('CV template render fallback used', [
                 'generated_cv_id' => $generatedCv->id,
@@ -138,21 +174,39 @@ class CvTemplateRenderer
                 'error' => $exception->getMessage(),
             ]);
 
-            $html = $this->renderHtml($generatedCv, null, false, $language);
+            $html = $this->renderHtml($generatedCv, null, false, $language, true);
         }
 
         $tempDir = storage_path('app/mpdf');
         if (! is_dir($tempDir) && ! mkdir($tempDir, 0755, true) && ! is_dir($tempDir)) {
             throw new \RuntimeException('Unable to create mPDF temp directory.');
         }
+        $fontCacheDir = $tempDir.DIRECTORY_SEPARATOR.'ttfontdata';
+        if (! is_dir($fontCacheDir) && ! mkdir($fontCacheDir, 0755, true) && ! is_dir($fontCacheDir)) {
+            throw new \RuntimeException('Unable to create mPDF font cache directory.');
+        }
 
-        $cv = $this->viewModel($generatedCv, $template, false, $language);
+        $cv = $this->viewModel($generatedCv, $template, false, $language, true);
+        $defaultFont = $language === 'ar' ? 'ibmplexsansarabic' : 'dejavusans';
+
+        $fontDirs = (new ConfigVariables)->getDefaults()['fontDir'];
+        $fontDirs[] = resource_path('fonts/ibm-plex-sans-arabic');
+
+        $fontData = (new FontVariables)->getDefaults()['fontdata'];
+        $fontData['ibmplexsansarabic'] = [
+            'R' => 'IBMPlexSansArabic-Regular.ttf',
+            'B' => 'IBMPlexSansArabic-Bold.ttf',
+            'useOTL' => 0xFF,
+            'useKashida' => 75,
+        ];
 
         $pdf = new Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
             'tempDir' => $tempDir,
-            'default_font' => 'dejavusans',
+            'fontDir' => $fontDirs,
+            'fontdata' => $fontData,
+            'default_font' => $defaultFont,
             'margin_top' => 15,
             'margin_bottom' => 15,
             'margin_left' => 15,
@@ -169,7 +223,17 @@ class CvTemplateRenderer
         $pdf->SetSubject('Curriculum Vitae');
         $pdf->SetCreator('Sirati CV Platform');
 
-        $pdf->WriteHTML($html);
+        $css = '';
+        $body = $html;
+        if (preg_match_all('/<style\b[^>]*>(.*?)<\/style>/is', $html, $matches) > 0) {
+            $css = implode("\n", $matches[1]);
+            $body = (string) preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
+        }
+
+        if (trim($css) !== '') {
+            $pdf->WriteHTML($css, HTMLParserMode::HEADER_CSS);
+        }
+        $pdf->WriteHTML($body, HTMLParserMode::HTML_BODY);
 
         return $pdf->Output('', 'S');
     }
@@ -179,6 +243,7 @@ class CvTemplateRenderer
         CvTemplate $template,
         bool $watermark = false,
         ?string $languageOverride = null,
+        bool $forExport = false,
     ): array {
         $language = ($languageOverride ?? $generatedCv->language) === 'en' ? 'en' : 'ar';
         $resolved = $generatedCv->cvDocument()->resolve($language);
@@ -204,9 +269,10 @@ class CvTemplateRenderer
             $generatedCv->id,
         );
 
-        $structuredSections = $resolved->toStructuredSections();
+        $structuredSections = $this->stripEditorialFromSections($resolved->toStructuredSections());
 
         return [
+            'show_internal_score' => ! $forExport,
             'direction' => $language === 'en' ? 'ltr' : 'rtl',
             'language' => $language,
             'labels' => [
@@ -279,6 +345,39 @@ class CvTemplateRenderer
         $template->is_default = true;
 
         return $template;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $sections
+     * @return list<array<string, mixed>>
+     */
+    private function stripEditorialFromSections(array $sections): array
+    {
+        foreach ($sections as &$section) {
+            if (isset($section['content']) && is_string($section['content'])) {
+                $section['content'] = LegacySectionParser::stripEditorial($section['content']);
+            }
+            if (isset($section['entries']) && is_array($section['entries'])) {
+                foreach ($section['entries'] as &$entry) {
+                    if (isset($entry['description']) && is_string($entry['description'])) {
+                        $entry['description'] = LegacySectionParser::stripEditorial($entry['description']);
+                    }
+                    if (isset($entry['bullets']) && is_array($entry['bullets'])) {
+                        $entry['bullets'] = array_values(array_filter(
+                            array_map(
+                                fn (mixed $bullet): string => is_string($bullet) ? LegacySectionParser::stripEditorial($bullet) : '',
+                                $entry['bullets'],
+                            ),
+                            fn (string $bullet): bool => $bullet !== '',
+                        ));
+                    }
+                }
+                unset($entry);
+            }
+        }
+        unset($section);
+
+        return $sections;
     }
 
     private function formatPdfText(?string $text, string $language): string

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Exceptions\AiRefusalException;
+use App\Exceptions\AiTruncationException;
 use App\Services\Ai\Schemas\AnalysisAdviceSchema;
 use App\Services\Ai\Schemas\EnhanceJobDescriptionSchema;
 use App\Services\Ai\Schemas\GenerateCvSchema;
@@ -12,7 +13,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
-use UnexpectedValueException;
 
 class OpenAiStructuredOutputsTest extends TestCase
 {
@@ -164,13 +164,13 @@ class OpenAiStructuredOutputsTest extends TestCase
         app(OpenAiCvService::class)->enhanceJobDescription('Role', 'Desc', 'en');
     }
 
-    public function test_finish_reason_length_throws_unexpected_value_exception(): void
+    public function test_finish_reason_length_throws_truncation_exception(): void
     {
         Log::shouldReceive('warning')
             ->once()
             ->withArgs(function (string $message, array $context): bool {
                 return str_contains($message, 'truncated')
-                    && ($context['finish_reason'] ?? null) === 'length';
+                    && ($context['stop_reason'] ?? null) === 'length';
             });
 
         Http::fake([
@@ -190,8 +190,8 @@ class OpenAiStructuredOutputsTest extends TestCase
             ], 200),
         ]);
 
-        $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessage('truncated');
+        $this->expectException(AiTruncationException::class);
+        $this->expectExceptionMessage(AiTruncationException::CODE);
 
         app(OpenAiCvService::class)->enhanceJobDescription('Role', 'Desc', 'en');
     }

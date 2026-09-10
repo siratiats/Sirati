@@ -155,6 +155,7 @@ class CvAnalysisController extends Controller
                 'score_total' => $score['total'],
                 'grade' => $score['grade'],
                 'job_match' => $score['job_match'],
+                'category' => $score['category'] ?? 'general',
                 'criteria' => $score['criteria'],
                 'strengths' => $score['strengths'],
                 'weaknesses' => $score['weaknesses'],

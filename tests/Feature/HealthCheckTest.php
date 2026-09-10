@@ -41,6 +41,50 @@ class HealthCheckTest extends TestCase
         $this->get('/up')->assertOk();
     }
 
+    public function test_health_endpoint_fails_when_retry_after_is_not_above_job_timeout(): void
+    {
+        config([
+            'app.debug' => false,
+            'health.queue.enabled' => false,
+            'queue.connections.database.retry_after' => 30,
+        ]);
+
+        $this->get('/up')->assertServerError();
+    }
+
+    public function test_health_endpoint_fails_when_worker_timeout_is_below_job_timeout(): void
+    {
+        config([
+            'app.debug' => false,
+            'health.queue.enabled' => false,
+            'queue.worker_timeout' => 30,
+        ]);
+
+        $this->get('/up')->assertServerError();
+    }
+
+    public function test_health_endpoint_fails_when_deepinfra_generate_timeout_exceeds_fallback_budget(): void
+    {
+        config([
+            'app.debug' => false,
+            'health.queue.enabled' => false,
+            'services.deepinfra.generate_timeout' => 150,
+        ]);
+
+        $this->get('/up')->assertServerError();
+    }
+
+    public function test_health_endpoint_fails_when_openai_timeout_exceeds_http_budget(): void
+    {
+        config([
+            'app.debug' => false,
+            'health.queue.enabled' => false,
+            'services.openai.timeout' => 80,
+        ]);
+
+        $this->get('/up')->assertServerError();
+    }
+
     private function configurePersistentQueueHealth(): void
     {
         config([

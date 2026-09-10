@@ -18,6 +18,7 @@ class CvAnalysis extends Model
         'score_total',
         'grade',
         'job_match',
+        'category',
         'criteria',
         'strengths',
         'weaknesses',
@@ -46,5 +47,35 @@ class CvAnalysis extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getCategoryLabelAttribute(): string
+    {
+        return match ($this->category) {
+            'software' => 'تقنية وبرمجيات',
+            'data' => 'علم وتحليل البيانات',
+            'ecommerce' => 'التجارة الإلكترونية',
+            'marketing' => 'التسويق الرقمي',
+            'sales' => 'المبيعات وتطوير الأعمال',
+            'finance' => 'المالية والمحاسبة',
+            'hr' => 'الموارد البشرية',
+            'management' => 'الإدارة والعمليات',
+            default => 'تقييم عام (مهارات مهنية مشتركة)',
+        };
+    }
+
+    public function getCategoryLabelEnAttribute(): string
+    {
+        return match ($this->category) {
+            'software' => 'Software & Engineering',
+            'data' => 'Data Science & Analytics',
+            'ecommerce' => 'E-Commerce',
+            'marketing' => 'Marketing',
+            'sales' => 'Sales & Business Development',
+            'finance' => 'Finance & Accounting',
+            'hr' => 'Human Resources',
+            'management' => 'Management & Operations',
+            default => 'General Profile (Transferable Skills)',
+        };
     }
 }

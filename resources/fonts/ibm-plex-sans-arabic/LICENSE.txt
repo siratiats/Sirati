@@ -1,0 +1,9 @@
+IBM Plex Sans Arabic
+Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is available with a FAQ at: https://openfontlicense.org
+
+These files are vendored for PDF export (SIRATI-85). The same family already
+ships in flutter_app/assets/fonts for the mobile app. Do not subset or rename
+the Reserved Font Name without replacing this licence notice.

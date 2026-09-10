@@ -50,11 +50,15 @@ return [
         'fast_model' => env('DEEPINFRA_FAST_MODEL', 'mistralai/Mistral-Small-24B-Instruct-2501'),
         'base_url' => env('DEEPINFRA_BASE_URL', 'https://api.deepinfra.com/v1/openai'),
         'timeout' => (int) env('DEEPINFRA_TIMEOUT', 45),
+        // generate_cv / analysis_advice. Must stay <= AiTimeouts::FALLBACK_BUDGET_SECONDS.
+        'generate_timeout' => (int) env('DEEPINFRA_GENERATE_TIMEOUT', 90),
         'connect_timeout' => (int) env('DEEPINFRA_CONNECT_TIMEOUT', 5),
     ],
 
     'cv_ai' => [
-        // Production default is openai. claude is for bake-off / explicit opt-in only.
+        // Production is deepinfra (see .env.example). openai is the fallback;
+        // claude is bake-off / explicit opt-in only. The env() default stays
+        // openai so an unset CV_AI_PROVIDER (phpunit) does not hit DeepInfra.
         'provider' => env('CV_AI_PROVIDER', 'openai'),
         'queue' => env('CV_AI_QUEUE', 'default'),
         'response_cache_enabled' => filter_var(

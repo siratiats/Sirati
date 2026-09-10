@@ -5,7 +5,9 @@ namespace App\Jobs;
 use App\Contracts\CvAiProvider;
 use App\Enums\AiStatus;
 use App\Exceptions\AiRefusalException;
+use App\Exceptions\AiTruncationException;
 use App\Models\CvAnalysis;
+use App\Services\Ai\AiTimeouts;
 use App\Services\Ai\CachedCvAiProvider;
 use App\Services\AtsScoringService;
 use App\Services\ErrorReporter;
@@ -21,7 +23,7 @@ class GenerateCvAdviceJob implements ShouldQueue
 
     public int $tries = 3;
 
-    public int $timeout = 120;
+    public int $timeout = AiTimeouts::JOB_SECONDS;
 
     /**
      * @var list<int>
@@ -79,7 +81,7 @@ class GenerateCvAdviceJob implements ShouldQueue
                 'ai_feedback' => $feedback,
                 'ai_error' => null,
             ]);
-        } catch (AiRefusalException $exception) {
+        } catch (AiRefusalException|AiTruncationException $exception) {
             $analysis->update([
                 'ai_status' => AiStatus::Failed,
                 'ai_error' => $exception->getMessage(),

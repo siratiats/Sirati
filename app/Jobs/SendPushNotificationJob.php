@@ -18,16 +18,18 @@ class SendPushNotificationJob implements ShouldQueue
 
     public int $tries = 3;
 
+    public int $timeout = 60;
+
     public array $backoff = [10, 60, 300];
 
     public function __construct(
-        private readonly int $userId,
-        private readonly string $title,
-        private readonly string $body,
-        private readonly string $type = 'info',
-        private readonly ?string $actionType = null,
-        private readonly ?string $actionUrl = null,
-        private readonly array $data = [],
+        public readonly int $userId,
+        public readonly string $title,
+        public readonly string $body,
+        public readonly string $type = 'info',
+        public readonly ?string $actionType = null,
+        public readonly ?string $actionUrl = null,
+        public readonly array $data = [],
     ) {}
 
     public function handle(FirebaseNotificationService $service): void

@@ -4,10 +4,15 @@ namespace Tests\Feature;
 
 use App\Contracts\CvAiProvider;
 use App\Models\AiCallLog;
+use App\Services\Ai\AiHttpRetry;
+use App\Services\Ai\CachedCvAiProvider;
 use App\Services\DeepInfraCvService;
 use App\Services\OpenAiCvService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Sleep;
 use Tests\TestCase;
 
 class DeepInfraCvServiceTest extends TestCase
@@ -186,5 +191,122 @@ class DeepInfraCvServiceTest extends TestCase
             'model' => 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',
             'operation' => 'generate_cv',
         ]);
+    }
+
+    public function test_generate_cv_falls_back_to_openai_when_deepinfra_times_out(): void
+    {
+        Sleep::fake();
+        config([
+            'services.openai.api_key' => 'test-openai-key',
+            'services.openai.model' => 'gpt-4.1-mini',
+            'services.openai.base_url' => 'https://api.openai.com/v1',
+        ]);
+
+        $body = [
+            'cv_markdown' => '# Recovered User',
+            'headline' => 'Engineer',
+            'ats_notes' => [],
+            'missing_information' => [],
+        ];
+
+        Http::fake(function ($request) use ($body) {
+            if (str_contains($request->url(), 'deepinfra')) {
+                throw new ConnectionException('cURL error 28: Operation timed out after 45001 milliseconds with 0 bytes received');
+            }
+
+            return Http::response([
+                'choices' => [[
+                    'finish_reason' => 'stop',
+                    'message' => ['content' => json_encode($body, JSON_UNESCAPED_UNICODE)],
+                ]],
+                'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 10],
+            ], 200);
+        });
+
+        $result = app(DeepInfraCvService::class)->generateCv(['full_name' => 'Recovered User', 'language' => 'en']);
+
+        $this->assertSame('# Recovered User', $result['cv_markdown']);
+        $this->assertDatabaseHas(AiCallLog::class, [
+            'provider' => 'openai',
+            'operation' => 'generate_cv',
+        ]);
+    }
+
+    public function test_cached_generate_cv_does_not_file_openai_fallback_under_deepinfra(): void
+    {
+        Sleep::fake();
+        config([
+            'services.cv_ai.response_cache_enabled' => true,
+            'cache.default' => 'array',
+            'services.openai.api_key' => 'test-openai-key',
+            'services.openai.model' => 'gpt-4.1-mini',
+            'services.openai.base_url' => 'https://api.openai.com/v1',
+        ]);
+        Cache::flush();
+
+        $body = [
+            'cv_markdown' => '# Recovered User',
+            'headline' => 'Engineer',
+            'ats_notes' => [],
+            'missing_information' => [],
+        ];
+        $data = ['full_name' => 'Recovered User', 'language' => 'en'];
+
+        $deepinfraCalls = 0;
+        Http::fake(function ($request) use ($body, &$deepinfraCalls) {
+            if (str_contains($request->url(), 'deepinfra')) {
+                $deepinfraCalls++;
+                throw new ConnectionException('cURL error 28: Operation timed out after 45001 milliseconds with 0 bytes received');
+            }
+
+            return Http::response([
+                'choices' => [[
+                    'finish_reason' => 'stop',
+                    'message' => ['content' => json_encode($body, JSON_UNESCAPED_UNICODE)],
+                ]],
+                'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 10],
+            ], 200);
+        });
+
+        $cached = new CachedCvAiProvider(app(DeepInfraCvService::class));
+
+        $this->assertSame('# Recovered User', $cached->generateCv($data)['cv_markdown']);
+        $this->assertSame('# Recovered User', $cached->generateCv($data)['cv_markdown']);
+
+        $this->assertSame(
+            AiHttpRetry::TIMES * 2,
+            $deepinfraCalls,
+            'A DeepInfra-configured repeat must retry DeepInfra rather than serving the OpenAI fallback from cache.',
+        );
+
+        $configuredKey = $cached->cacheKey('generate_cv', $cached->normalizePayload($data));
+        $this->assertNull(Cache::get($configuredKey));
+    }
+
+    public function test_generate_cv_does_not_recurse_when_both_providers_time_out(): void
+    {
+        Sleep::fake();
+        config([
+            'services.openai.api_key' => 'test-openai-key',
+            'services.openai.model' => 'gpt-4.1-mini',
+            'services.openai.base_url' => 'https://api.openai.com/v1',
+        ]);
+
+        $calls = 0;
+        Http::fake(function () use (&$calls) {
+            $calls++;
+            throw new ConnectionException('cURL error 28: Operation timed out');
+        });
+
+        $this->expectException(ConnectionException::class);
+        try {
+            app(DeepInfraCvService::class)->generateCv(['full_name' => 'User', 'language' => 'en']);
+        } finally {
+            $this->assertSame(
+                AiHttpRetry::TIMES * 2,
+                $calls,
+                'Each provider may HTTP-retry, but fallback must not recurse back to DeepInfra.',
+            );
+        }
     }
 }

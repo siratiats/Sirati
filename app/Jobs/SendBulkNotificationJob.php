@@ -27,6 +27,8 @@ class SendBulkNotificationJob implements ShouldQueue
     // failures are recorded as failed on the campaign rather than retried.
     public int $tries = 1;
 
+    public int $timeout = 60;
+
     /**
      * @param  array<int>  $userIds
      */

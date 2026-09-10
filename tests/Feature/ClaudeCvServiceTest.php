@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Contracts\CvAiProvider;
 use App\Exceptions\AiRefusalException;
+use App\Exceptions\AiTruncationException;
 use App\Models\AiCallLog;
 use App\Services\Ai\BakeOff\ArabicCvCorpus;
 use App\Services\Ai\Schemas\OperationSchemas;
@@ -12,7 +13,6 @@ use App\Services\OpenAiCvService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
-use UnexpectedValueException;
 
 class ClaudeCvServiceTest extends TestCase
 {
@@ -134,8 +134,8 @@ class ClaudeCvServiceTest extends TestCase
             ], 200),
         ]);
 
-        $this->expectException(UnexpectedValueException::class);
-        $this->expectExceptionMessage('max_tokens');
+        $this->expectException(AiTruncationException::class);
+        $this->expectExceptionMessage(AiTruncationException::CODE);
 
         app(ClaudeCvService::class)->generateCv(['full_name' => 'Test']);
     }

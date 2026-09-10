@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Contracts\CvAiProvider;
 use App\Enums\AiStatus;
 use App\Exceptions\AiRefusalException;
+use App\Exceptions\AiTruncationException;
 use App\Jobs\GenerateCvAdviceJob;
 use App\Jobs\GenerateCvContentJob;
+use App\Jobs\SendPushNotificationJob;
 use App\Models\CvAnalysis;
 use App\Models\GeneratedCv;
 use App\Models\User;
@@ -196,9 +198,29 @@ class AsyncCvAiTest extends TestCase
         $this->assertSame('Model declined this CV.', $analysis->ai_error);
     }
 
-    public function test_permanent_job_failure_callback_marks_record_failed(): void
+    public function test_truncation_is_terminal_and_does_not_throw_for_retry(): void
     {
         $generatedCv = $this->generatedCv(User::factory()->create());
+        $provider = $this->configuredProvider();
+        $provider->shouldReceive('generateCv')
+            ->once()
+            ->andThrow(new AiTruncationException);
+
+        (new GenerateCvContentJob($generatedCv->id))
+            ->handle($provider, app(AtsScoringService::class));
+
+        $generatedCv->refresh();
+        $this->assertSame(AiStatus::Failed, $generatedCv->ai_status);
+        $this->assertStringStartsWith(AiTruncationException::CODE, (string) $generatedCv->ai_error);
+        $this->assertStringContainsString('too long', (string) $generatedCv->ai_error);
+    }
+
+    public function test_permanent_job_failure_callback_marks_record_failed(): void
+    {
+        Queue::fake([SendPushNotificationJob::class]);
+
+        $user = User::factory()->create();
+        $generatedCv = $this->generatedCv($user);
 
         (new GenerateCvContentJob($generatedCv->id))
             ->failed(new RuntimeException('Worker exhausted retries.'));
@@ -206,6 +228,67 @@ class AsyncCvAiTest extends TestCase
         $generatedCv->refresh();
         $this->assertSame(AiStatus::Failed, $generatedCv->ai_status);
         $this->assertSame('Worker exhausted retries.', $generatedCv->ai_error);
+
+        Queue::assertPushed(SendPushNotificationJob::class, function (SendPushNotificationJob $job) use ($user, $generatedCv) {
+            return $job->userId === $user->id
+                && $job->type === 'cv_failed'
+                && $job->actionType === 'open_cv'
+                && $job->actionUrl === '/cv/'.$generatedCv->id
+                && $job->title === 'CV generation did not finish';
+        });
+    }
+
+    public function test_arabic_cv_failure_dispatches_arabic_push_notification(): void
+    {
+        Queue::fake([SendPushNotificationJob::class]);
+
+        $user = User::factory()->create();
+        $generatedCv = $this->generatedCv($user);
+        $generatedCv->update(['language' => 'ar']);
+
+        (new GenerateCvContentJob($generatedCv->id))
+            ->failed(new RuntimeException('Worker exhausted retries across fallback providers.'));
+
+        Queue::assertPushed(SendPushNotificationJob::class, function (SendPushNotificationJob $job) use ($user, $generatedCv) {
+            return $job->userId === $user->id
+                && $job->type === 'cv_failed'
+                && $job->actionType === 'open_cv'
+                && $job->actionUrl === '/cv/'.$generatedCv->id
+                && $job->title === 'تعذر إكمال توليد السيرة'
+                && str_contains($job->body, 'افتح سيرتي لمعرفة السبب');
+        });
+    }
+
+    public function test_successful_cv_generation_dispatches_ready_push_notification(): void
+    {
+        Queue::fake([SendPushNotificationJob::class]);
+
+        $user = User::factory()->create();
+        $generatedCv = $this->generatedCv($user);
+        $generatedCv->update(['language' => 'ar']);
+
+        $output = [
+            'cv_markdown' => "# سيرة ذاتية\n\n## المهارات\nLaravel, PHP, SQL",
+        ];
+        $provider = $this->configuredProvider();
+        $provider->shouldReceive('generateCv')
+            ->once()
+            ->andReturn($output);
+
+        (new GenerateCvContentJob($generatedCv->id))
+            ->handle($provider, app(AtsScoringService::class));
+
+        $generatedCv->refresh();
+        $this->assertSame(AiStatus::Completed, $generatedCv->ai_status);
+
+        Queue::assertPushed(SendPushNotificationJob::class, function (SendPushNotificationJob $job) use ($user, $generatedCv) {
+            return $job->userId === $user->id
+                && $job->type === 'cv_ready'
+                && $job->actionType === 'open_cv'
+                && $job->actionUrl === '/cv/'.$generatedCv->id
+                && $job->title === 'سيرتك الذاتية جاهزة'
+                && str_contains($job->body, 'افتح سيرتي لمراجعة السيرة وتصديرها');
+        });
     }
 
     public function test_headerless_client_keeps_synchronous_behavior(): void
@@ -260,7 +343,7 @@ class AsyncCvAiTest extends TestCase
             $this->assertSame(config('services.cv_ai.queue', 'default'), $job->queue);
             $this->assertSame(3, $job->tries);
             $this->assertSame([10, 30], $job->backoff);
-            $this->assertSame(120, $job->timeout);
+            $this->assertSame(\App\Services\Ai\AiTimeouts::JOB_SECONDS, $job->timeout);
         }
     }
 

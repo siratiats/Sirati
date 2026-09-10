@@ -101,20 +101,102 @@ final readonly class CvDocument implements JsonSerializable
                 location: $text((string) ($cv['location'] ?? '')),
             ),
             summary: $text((string) ($cv['summary_input'] ?? '')),
-            experience: $experienceBlob === ''
-                ? []
-                : [new ExperienceEntry(narrative: $text($experienceBlob))],
-            education: $educationBlob === ''
-                ? []
-                : [new EducationEntry(narrative: $text($educationBlob))],
+            experience: LegacySectionParser::experience($experienceBlob, $language),
+            education: LegacySectionParser::education($educationBlob, $language),
             skills: self::skillsFromBlob((string) ($cv['skills_input'] ?? ''), $language),
             languages: null,
             certifications: $certificationsBlob === ''
                 ? null
-                : [new Certification(narrative: $text($certificationsBlob))],
+                : LegacySectionParser::certifications($certificationsBlob, $language),
             projects: null,
             customSections: null,
         );
+    }
+
+    /**
+     * Overlay AI-generated markdown onto a legacy/form document.
+     *
+     * Builder-authored entries that already have a title or employer are kept;
+     * generator blobs are replaced with parsed entries so the existing
+     * `_sections.blade.php` renderer receives real jobs, not one paragraph.
+     */
+    public function overlayGeneratedMarkdown(string $markdown, string $language, ?string $headline = null): self
+    {
+        $language = $language === 'en' ? 'en' : 'ar';
+        $sections = LegacySectionParser::markdownSections($markdown);
+
+        $personal = $this->personal;
+        if (filled($headline)) {
+            $personal = new PersonalDetails(
+                fullName: $personal->fullName,
+                headline: LocalizedText::forLanguage($language, $headline),
+                email: $personal->email,
+                phone: $personal->phone,
+                linkedin: $personal->linkedin,
+                location: $personal->location,
+            );
+        }
+
+        return new self(
+            schemaVersion: $this->schemaVersion,
+            exportLanguage: $language,
+            personal: $personal,
+            summary: isset($sections['summary'])
+                ? LocalizedText::forLanguage($language, LegacySectionParser::stripEditorial($sections['summary']))
+                : $this->summary,
+            experience: isset($sections['experience']) && ! $this->hasStructuredExperience()
+                ? LegacySectionParser::experience($sections['experience'], $language)
+                : $this->experience,
+            education: isset($sections['education']) && ! $this->hasStructuredEducation()
+                ? LegacySectionParser::education($sections['education'], $language)
+                : $this->education,
+            skills: isset($sections['skills'])
+                ? self::skillsFromBlob($sections['skills'], $language)
+                : $this->skills,
+            languages: $this->languages,
+            certifications: isset($sections['certifications']) && ! $this->hasStructuredCertifications()
+                ? LegacySectionParser::certifications($sections['certifications'], $language)
+                : $this->certifications,
+            projects: $this->projects,
+            customSections: $this->customSections,
+        );
+    }
+
+    public function hasStructuredExperience(): bool
+    {
+        foreach ($this->experience ?? [] as $entry) {
+            $hasRole = $entry->title->isNotEmpty();
+            $hasEmployer = $entry->company->isNotEmpty();
+            $hasDates = $entry->startDate !== null || $entry->endDate !== null || $entry->isCurrent;
+            $hasBullets = $entry->bullets !== [];
+            if ($hasBullets || ($hasRole && ($hasEmployer || $hasDates))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasStructuredEducation(): bool
+    {
+        foreach ($this->education ?? [] as $entry) {
+            if ($entry->degree->isNotEmpty() || $entry->institution->isNotEmpty()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function hasStructuredCertifications(): bool
+    {
+        foreach ($this->certifications ?? [] as $entry) {
+            if ($entry->name->isNotEmpty() || $entry->issuer->isNotEmpty()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function withExportLanguage(string $language): self

@@ -142,6 +142,8 @@ class CvOwnershipAndIdempotencyTest extends TestCase
     {
         return [
             'full_name' => 'Salem Sayer',
+            'email' => 'salem@example.com',
+            'phone' => '+966500000000',
             'target_job_title' => 'Laravel Developer',
             'language' => 'en',
             'skills_input' => 'Laravel, PHP, API, SQL, Git',

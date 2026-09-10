@@ -1,4 +1,4 @@
-@if ($cv['score']['total'] !== null)
+@if (! empty($cv['show_internal_score']) && $cv['score']['total'] !== null)
     <div class="footer">
         <span class="footer-label">{{ $cv['labels']['ats_score'] }}:</span>
         <span class="footer-metric" style="direction: ltr; unicode-bidi: embed; display: inline-block;">{{ $cv['score']['total'] }}%</span>

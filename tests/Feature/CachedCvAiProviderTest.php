@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Contracts\CvAiProvider;
 use App\Models\AiCallLog;
+use App\Services\Ai\AiCallContext;
 use App\Services\Ai\CachedCvAiProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -239,6 +240,132 @@ class CachedCvAiProviderTest extends TestCase
         $key = $cached->cacheKey('generate_cv', $cached->normalizePayload($data));
         $this->assertSame($payload, Cache::get($key));
         $this->assertSame(0, AiCallLog::query()->where('was_response_cache_hit', true)->count());
+    }
+
+    public function test_fallback_output_is_not_a_hit_for_the_configured_provider(): void
+    {
+        config([
+            'services.cv_ai.provider' => 'deepinfra',
+            'services.deepinfra.model' => 'Qwen/Qwen2.5-72B-Instruct',
+            'services.openai.model' => 'gpt-4.1-mini',
+        ]);
+
+        $openAiPayload = $this->sampleGenerateResult();
+        $openAiPayload['cv_markdown'] = '# OpenAI fallback CV';
+        $data = [
+            'full_name' => 'Salem Sayer',
+            'target_job_title' => 'Laravel Developer',
+        ];
+
+        /** @var CvAiProvider&MockInterface $inner */
+        $inner = Mockery::mock(CvAiProvider::class);
+        $inner->shouldReceive('generateCv')
+            ->twice()
+            ->andReturnUsing(function () use ($openAiPayload): array {
+                AiCallContext::record('openai', 'gpt-4.1-mini');
+
+                return $openAiPayload;
+            });
+
+        $cached = new CachedCvAiProvider($inner);
+
+        $this->assertSame($openAiPayload, $cached->generateCv($data));
+        $this->assertSame($openAiPayload, $cached->generateCv($data));
+
+        $configuredKey = $cached->cacheKey('generate_cv', $cached->normalizePayload($data));
+        $this->assertNull(Cache::get($configuredKey));
+
+        $servingKey = $cached->cacheKey(
+            'generate_cv',
+            $cached->normalizePayload($data),
+            model: 'gpt-4.1-mini',
+            provider: 'openai',
+        );
+        $this->assertSame($openAiPayload, Cache::get($servingKey));
+
+        config([
+            'services.cv_ai.provider' => 'openai',
+            'services.openai.model' => 'gpt-4.1-mini',
+        ]);
+
+        /** @var CvAiProvider&MockInterface $openAiInner */
+        $openAiInner = Mockery::mock(CvAiProvider::class);
+        $openAiInner->shouldNotReceive('generateCv');
+        $openAiCached = new CachedCvAiProvider($openAiInner);
+
+        $this->assertSame($openAiPayload, $openAiCached->generateCv($data));
+
+        $hit = AiCallLog::query()->where('was_response_cache_hit', true)->firstOrFail();
+        $this->assertSame('openai', $hit->provider);
+        $this->assertSame('gpt-4.1-mini', $hit->model);
+    }
+
+    public function test_serving_provider_matching_configured_provider_is_cached_as_usual(): void
+    {
+        config([
+            'services.cv_ai.provider' => 'deepinfra',
+            'services.deepinfra.model' => 'Qwen/Qwen2.5-72B-Instruct',
+        ]);
+
+        $payload = $this->sampleGenerateResult();
+
+        /** @var CvAiProvider&MockInterface $inner */
+        $inner = Mockery::mock(CvAiProvider::class);
+        $inner->shouldReceive('generateCv')
+            ->once()
+            ->andReturnUsing(function () use ($payload): array {
+                AiCallContext::record('deepinfra', 'Qwen/Qwen2.5-72B-Instruct');
+
+                return $payload;
+            });
+
+        $cached = new CachedCvAiProvider($inner);
+        $data = [
+            'full_name' => 'Salem Sayer',
+            'target_job_title' => 'Laravel Developer',
+        ];
+
+        $this->assertSame($payload, $cached->generateCv($data));
+        $this->assertSame($payload, $cached->generateCv($data));
+
+        $key = $cached->cacheKey('generate_cv', $cached->normalizePayload($data));
+        $this->assertSame($payload, Cache::get($key));
+        $this->assertSame(1, AiCallLog::query()->where('was_response_cache_hit', true)->count());
+        $this->assertSame('deepinfra', AiCallLog::query()->where('was_response_cache_hit', true)->value('provider'));
+    }
+
+    public function test_same_provider_language_specific_model_still_hits_configured_key(): void
+    {
+        config([
+            'services.cv_ai.provider' => 'deepinfra',
+            'services.deepinfra.model' => 'Qwen/Qwen2.5-72B-Instruct',
+        ]);
+
+        $payload = $this->sampleGenerateResult();
+
+        /** @var CvAiProvider&MockInterface $inner */
+        $inner = Mockery::mock(CvAiProvider::class);
+        $inner->shouldReceive('generateCv')
+            ->once()
+            ->andReturnUsing(function () use ($payload): array {
+                AiCallContext::record('deepinfra', 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo');
+
+                return $payload;
+            });
+
+        $cached = new CachedCvAiProvider($inner);
+        $data = [
+            'full_name' => 'Salem Sayer',
+            'target_job_title' => 'Laravel Developer',
+            'language' => 'en',
+        ];
+
+        $this->assertSame($payload, $cached->generateCv($data));
+        $this->assertSame($payload, $cached->generateCv($data));
+
+        $configuredKey = $cached->cacheKey('generate_cv', $cached->normalizePayload($data));
+        $this->assertSame($payload, Cache::get($configuredKey));
+        $this->assertSame(1, AiCallLog::query()->where('was_response_cache_hit', true)->count());
     }
 
     public function test_large_payload_round_trips_through_database_cache_intact(): void

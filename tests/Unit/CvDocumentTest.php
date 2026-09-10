@@ -205,7 +205,7 @@ class CvDocumentTest extends TestCase
             $document->skills ?? [],
         ));
         $this->assertNull($document->projects);
-        $this->assertSame(['personal.full_name.ar', 'personal.headline.ar', 'personal.location.ar', 'summary.ar', 'experience.0.narrative.ar', 'education.0.narrative.ar', 'skills.0.name.ar', 'skills.1.name.ar'], $document->missingTranslations());
+        $this->assertSame(['personal.full_name.ar', 'personal.headline.ar', 'personal.location.ar', 'summary.ar', 'experience.0.title.ar', 'education.0.degree.ar', 'skills.0.name.ar', 'skills.1.name.ar'], $document->missingTranslations());
     }
 
     public function test_json_schema_documents_bilingual_fields_for_ats_and_templates(): void

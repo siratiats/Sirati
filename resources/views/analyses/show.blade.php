@@ -8,6 +8,7 @@
             <div class="score">{{ $analysis->score_total }}<small>/100</small></div>
             <h1>نتيجة التوافق مع ATS: {{ $analysis->grade }}</h1>
             <p>نسبة التوافق مع وظيفة <strong>{{ $analysis->target_job_title }}</strong>: {{ $analysis->job_match }}%</p>
+            <p class="muted">معيار التقييم: <strong>{{ $analysis->category_label }}</strong></p>
             <p class="muted">طريقة الإدخال: {{ $analysis->input_method }} @if($analysis->original_filename) — {{ $analysis->original_filename }} @endif</p>
         </div>
 

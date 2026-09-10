@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\CvAiProvider;
 use App\Cv\CvDocument;
+use App\Cv\CvExportGuard;
 use App\Cv\TemplateSwitch;
 use App\Enums\AiStatus;
 use App\Http\Resources\GeneratedCvResource;
@@ -301,6 +302,7 @@ class GeneratedCvController extends Controller
     public function downloadPdf(Request $request, GeneratedCv $generatedCv, CvTemplateRenderer $renderer)
     {
         SignedRecordAccess::authorize($request, $generatedCv);
+        CvExportGuard::assertExportable($generatedCv);
 
         $user = $request->user() ?? $generatedCv->user;
 
@@ -315,6 +317,7 @@ class GeneratedCvController extends Controller
     public function downloadPdfApi(Request $request, GeneratedCv $generatedCv, CvTemplateRenderer $renderer)
     {
         $this->authorizeApiAccess($request, $generatedCv);
+        CvExportGuard::assertExportable($generatedCv);
 
         return $renderer->downloadResponse(
             $generatedCv,
@@ -384,8 +387,8 @@ class GeneratedCvController extends Controller
             'certifications_input' => null,
         ], $request->validate([
             'full_name' => ['required', 'string', 'max:160'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:40'],
+            'email' => ['required', 'email', 'max:255'],
+            'phone' => ['required', 'string', 'max:40'],
             'linkedin' => ['nullable', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:160'],
             'target_job_title' => ['required', 'string', 'max:160'],
