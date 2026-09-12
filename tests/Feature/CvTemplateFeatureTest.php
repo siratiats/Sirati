@@ -155,4 +155,57 @@ class CvTemplateFeatureTest extends TestCase
         $response->assertRedirect(route('admin.cv-templates.index'));
         $this->assertFalse($template->fresh()->trashed());
     }
+
+    public function test_pdf_blob_is_cached_as_base64_and_survives_cache_roundtrip(): void
+    {
+        $user = User::factory()->create();
+        $cv = GeneratedCv::create([
+            'user_id' => $user->id,
+            'full_name' => 'سالم محمد',
+            'email' => 'salem@example.com',
+            'phone' => '0500000000',
+            'target_job_title' => 'مطوّر فلاتر',
+            'language' => 'ar',
+            'skills_input' => 'Flutter, Dart',
+            'experience_input' => 'خبرة أكثر من سنتين في برمجة وتطوير التطبيقات المحمولة بدقة واحترافية.',
+            'education_input' => 'بكالوريوس علوم الحاسب',
+            'generated_markdown' => "# سالم محمد\n\n## المهارات\n- Flutter\n- Dart",
+            'form_payload' => ['language' => 'ar'],
+            'ai_status' => 'completed',
+            'score_total' => 85,
+            'grade' => 'A',
+        ]);
+        $template = CvTemplate::create([
+            'name_ar' => 'احترافي كلاسيكي',
+            'name_en' => 'Classic Professional',
+            'slug' => 'ats-classic-professional',
+            'renderer_key' => 'classic_rtl',
+            'language_direction' => 'rtl',
+            'supported_languages' => ['ar'],
+            'is_active' => true,
+            'is_default' => true,
+        ]);
+
+        $renderer = app(\App\Services\CvTemplateRenderer::class);
+        $pdf1 = $renderer->renderPdfBlob($cv, $template, 'ar');
+
+        $this->assertStringStartsWith('%PDF-', $pdf1);
+
+        $cacheKey = 'cv-pdf-blob:'.hash('sha256', implode('|', [
+            \App\Services\CvTemplateRenderer::RENDER_VERSION,
+            (string) $cv->id,
+            $cv->updated_at->format('U.u'),
+            $template->slug,
+            'ar',
+            'completed',
+        ]));
+
+        $rawCached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        $this->assertNotNull($rawCached);
+        $this->assertFalse(str_starts_with($rawCached, '%PDF-'));
+        $this->assertSame($pdf1, base64_decode($rawCached));
+
+        $pdf2 = $renderer->renderPdfBlob($cv, $template, 'ar');
+        $this->assertSame($pdf1, $pdf2);
+    }
 }

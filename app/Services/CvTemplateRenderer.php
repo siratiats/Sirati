@@ -23,7 +23,7 @@ class CvTemplateRenderer
      * Bump when template HTML, fonts, or renderer behaviour changes so a
      * cached blob from a previous deploy cannot outlive the new code.
      */
-    public const RENDER_VERSION = '2';
+    public const RENDER_VERSION = '3';
 
     public function __construct(
         private readonly CvMarkdownRenderer $markdownRenderer,
@@ -155,9 +155,17 @@ class CvTemplateRenderer
             (string) ($generatedCv->ai_status?->value ?? ''),
         ]));
 
-        return Cache::remember($cacheKey, 3600, function () use ($generatedCv, $template, $language): string {
-            return $this->renderPdfBlobUncached($generatedCv, $template, $language);
+        $cached = Cache::remember($cacheKey, 3600, function () use ($generatedCv, $template, $language): string {
+            return base64_encode($this->renderPdfBlobUncached($generatedCv, $template, $language));
         });
+
+        if (str_starts_with($cached, '%PDF-')) {
+            return $cached;
+        }
+
+        $decoded = base64_decode($cached, true);
+
+        return $decoded !== false ? $decoded : $cached;
     }
 
     private function renderPdfBlobUncached(
