@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CvAnalysis extends Model
 {
+    /**
+     * Transient (non-persisted) warning set when the document classification
+     * is uncertain. Only populated on the initial submission response.
+     */
+    public ?string $classification_warning = null;
+
     protected $fillable = [
         'user_id',
         'idempotency_key',

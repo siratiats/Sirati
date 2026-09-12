@@ -33,6 +33,7 @@ class CvAnalysisResource extends JsonResource
                 : $this->ai_status,
             'ai_feedback' => $this->ai_feedback,
             'ai_error' => $this->ai_error,
+            'classification_warning' => $this->classification_warning,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

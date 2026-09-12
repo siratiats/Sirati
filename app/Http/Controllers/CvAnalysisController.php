@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Contracts\CvAiProvider;
 use App\Enums\AiStatus;
+use App\Enums\ResumeClassification;
 use App\Http\Resources\CvAnalysisResource;
 use App\Jobs\GenerateCvAdviceJob;
 use App\Models\CvAnalysis;
@@ -11,6 +12,7 @@ use App\Services\Ai\CachedCvAiProvider;
 use App\Services\AtsScoringService;
 use App\Services\CvTextExtractor;
 use App\Services\ErrorReporter;
+use App\Services\ResumeClassifier;
 use App\Support\Idempotency;
 use App\Support\SignedRecordAccess;
 use Illuminate\Http\Request;
@@ -114,6 +116,19 @@ class CvAnalysisController extends Controller
         }
 
         $extracted = $extractor->extract($request);
+
+        $classification = (new ResumeClassifier)->classify($extracted['text']);
+
+        if ($classification === ResumeClassification::NotResume) {
+            throw ValidationException::withMessages([
+                'resume_text' => 'يبدو أن الملف المرفوع ليس سيرة ذاتية (مثلاً إيصال بنك أو فاتورة). يرجى رفع سيرتك الذاتية بصيغة PDF أو نص.',
+            ]);
+        }
+
+        $classificationWarning = $classification === ResumeClassification::Uncertain
+            ? 'يبدو أن هذا الملف قد لا يكون سيرة ذاتية. نتائج التحليل قد لا تكون دقيقة.'
+            : null;
+
         $score = $scorer->score($extracted['text'], $validated['target_job_title']);
         $aiStatus = AiStatus::NotConfigured;
         $aiFeedback = null;
@@ -169,6 +184,8 @@ class CvAnalysisController extends Controller
         });
 
         assert($analysis instanceof CvAnalysis);
+
+        $analysis->classification_warning = $classificationWarning;
 
         return $analysis;
     }
