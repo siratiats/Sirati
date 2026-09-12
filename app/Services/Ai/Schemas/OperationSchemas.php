@@ -19,6 +19,7 @@ final class OperationSchemas
             GenerateCvSchema::NAME => GenerateCvSchema::responseFormat(),
             EnhanceJobDescriptionSchema::NAME => EnhanceJobDescriptionSchema::responseFormat(),
             EnhanceCvFieldSchema::NAME => EnhanceCvFieldSchema::responseFormat(),
+            ClassifyDocumentSchema::NAME => ClassifyDocumentSchema::responseFormat(),
             default => throw new InvalidArgumentException("Unknown AI operation schema: {$operation}"),
         };
     }
@@ -30,6 +31,7 @@ final class OperationSchemas
             GenerateCvSchema::NAME => GenerateCvSchema::MAX_TOKENS,
             EnhanceJobDescriptionSchema::NAME => EnhanceJobDescriptionSchema::MAX_TOKENS,
             EnhanceCvFieldSchema::NAME => EnhanceCvFieldSchema::MAX_TOKENS,
+            ClassifyDocumentSchema::NAME => ClassifyDocumentSchema::MAX_TOKENS,
             default => throw new InvalidArgumentException("Unknown AI operation schema: {$operation}"),
         };
     }
@@ -46,6 +48,7 @@ final class OperationSchemas
             GenerateCvSchema::NAME => GenerateCvSchema::schema(),
             EnhanceJobDescriptionSchema::NAME => EnhanceJobDescriptionSchema::schema(),
             EnhanceCvFieldSchema::NAME => EnhanceCvFieldSchema::schema(),
+            ClassifyDocumentSchema::NAME => ClassifyDocumentSchema::schema(),
             default => throw new InvalidArgumentException("Unknown AI operation schema: {$operation}"),
         };
 
@@ -67,6 +70,7 @@ final class OperationSchemas
             GenerateCvSchema::class,
             EnhanceJobDescriptionSchema::class,
             EnhanceCvFieldSchema::class,
+            ClassifyDocumentSchema::class,
         ];
     }
 }

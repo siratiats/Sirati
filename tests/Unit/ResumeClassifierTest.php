@@ -341,5 +341,93 @@ class ResumeClassifierTest extends TestCase
         إجمالي الدائن: 18,000.00
         الرصيد الحالي: 29,800.00 ريال
         DOC];
+
+        yield 'Alinma quick transfer notification' => [<<<'DOC'
+        إشعار تحويل مصرف الإنماء
+        تمت عملية تحويل مالي بنجاح
+        المستفيد: شركة الخدمات الرقمية
+        المبلغ: 1,500 ريال
+        رقم المرجع: REF99881122
+        تاريخ التحويل: 2026-09-12
+        DOC];
+
+        yield 'Urpay wallet transfer' => [<<<'DOC'
+        Urpay إيصال سداد
+        رقم العملية: URP-88776655
+        تم خصم مبلغ 350.00 ريال
+        طريقة الدفع: محفظة إلكترونية
+        تاريخ العملية: 2026-09-12
+        الرصيد المتبقي: 1,200.00 ريال
+        DOC];
+    }
+
+    public function test_solitary_course_certificate_is_rejected(): void
+    {
+        $text = <<<'DOC'
+        شهادة إتمام دورة تدريبية
+        نشهد بأن المتدرب فهد بن سلطان قد اجتاز بنجاح
+        دورة أساسيات الحوسبة السحابية
+        المنعقدة في مدينة الرياض خلال الفترة من 1 إلى 5 سبتمبر 2026
+        بواقع 25 ساعة تدريبية معتمدة
+        DOC;
+
+        $this->assertSame(
+            ResumeClassification::NotResume,
+            $this->classifier->classify($text),
+            'A course completion certificate without career/employment sections must not pass as a CV',
+        );
+    }
+
+    public function test_ai_provider_classifies_borderline_document(): void
+    {
+        $borderlineText = <<<'DOC'
+        تقرير تقني عام حول أداء خوادم المؤسسة لشهر أغسطس 2026.
+        تم رصد استقرار في حركة المرور وانخفاض معدل زمن الاستجابة إلى 120 مللي ثانية.
+        تم تنفيذ التحديثات الأمنية المطلوبة بنجاح.
+        DOC;
+
+        $mockAi = $this->createMock(\App\Contracts\CvAiProvider::class);
+        $mockAi->method('isConfigured')->willReturn(true);
+        $mockAi->expects($this->once())
+            ->method('classifyDocument')
+            ->willReturn([
+                'is_resume' => false,
+                'document_type' => 'other_non_resume',
+                'confidence' => 0.98,
+                'reason_ar' => 'تقرير تقني لا يحتوي على سيرة ذاتية',
+                'reason_en' => 'Technical report, not a resume',
+            ]);
+
+        $this->assertSame(
+            ResumeClassification::NotResume,
+            $this->classifier->classify($borderlineText, $mockAi),
+        );
+    }
+
+    public function test_ai_provider_validates_unconventional_resume(): void
+    {
+        $unconventionalCv = <<<'DOC'
+        Reem Al-Qahtani
+        UX/UI Designer
+        reem.designer@example.com | 0501112233
+        Portfolio: dribbble.com/reem-design
+        Crafting intuitive mobile interfaces, user journey maps, and design systems.
+        Available for freelance and full-time remote opportunities.
+        DOC;
+
+        $mockAi = $this->createMock(\App\Contracts\CvAiProvider::class);
+        $mockAi->method('isConfigured')->willReturn(true);
+        $mockAi->method('classifyDocument')->willReturn([
+            'is_resume' => true,
+            'document_type' => 'resume',
+            'confidence' => 0.92,
+            'reason_ar' => 'ملف تعريفي لمصممة واجهات يحتوي على تواصل ومسمى ومهارات',
+            'reason_en' => 'Profile of a UX designer with contact and role focus',
+        ]);
+
+        $this->assertSame(
+            ResumeClassification::Resume,
+            $this->classifier->classify($unconventionalCv, $mockAi),
+        );
     }
 }

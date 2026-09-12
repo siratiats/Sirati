@@ -26,4 +26,12 @@ interface CvAiProvider
      */
     public function enhanceCvField(string $field, string $draft, string $jobTitle, string $language): array;
     public function enhanceJobDescription(string $jobTitle, ?string $jobDescription, string $language): array;
+
+    /**
+     * Classifies whether the provided document text is a genuine CV/resume or a non-resume
+     * (e.g. bank receipt, invoice, certificate, contract, ID document).
+     *
+     * @return array{is_resume: bool, document_type: string, confidence: float, reason_ar: string, reason_en: string}
+     */
+    public function classifyDocument(string $text): array;
 }

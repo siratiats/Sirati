@@ -138,6 +138,34 @@ class OpenAiStructuredOutputsTest extends TestCase
         });
     }
 
+    public function test_classify_document_uses_structured_outputs_and_returns_decoded_body(): void
+    {
+        $body = [
+            'is_resume' => false,
+            'document_type' => 'bank_receipt',
+            'confidence' => 0.99,
+            'reason_ar' => 'إيصال تحويل مصرفي يحتوي على تفاصيل حساب',
+            'reason_en' => 'Bank transfer receipt containing account details',
+        ];
+
+        Http::fake([
+            'https://api.openai.com/v1/chat/completions' => Http::response($this->completionResponse($body), 200),
+        ]);
+
+        $result = app(OpenAiCvService::class)->classifyDocument('إيصال تحويل بنكي');
+
+        $this->assertSame($body, $result);
+
+        Http::assertSent(function ($request) {
+            $data = $request->data();
+
+            return ($data['response_format']['type'] ?? null) === 'json_schema'
+                && ($data['response_format']['json_schema']['name'] ?? null) === 'classify_document'
+                && ($data['response_format']['json_schema']['strict'] ?? false) === true
+                && ($data['max_tokens'] ?? null) === \App\Services\Ai\Schemas\ClassifyDocumentSchema::MAX_TOKENS;
+        });
+    }
+
     public function test_refusal_response_throws_ai_refusal_exception(): void
     {
         Http::fake([

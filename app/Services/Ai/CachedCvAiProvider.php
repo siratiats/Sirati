@@ -125,6 +125,17 @@ class CachedCvAiProvider implements CvAiProvider
         );
     }
 
+    public function classifyDocument(string $text): array
+    {
+        return $this->remember(
+            operation: 'classify_document',
+            payload: [
+                'text' => mb_substr($text, 0, 1000),
+            ],
+            callback: fn (): array => $this->inner->classifyDocument($text),
+        );
+    }
+
     /**
      * Build a cache key for an operation and already-normalized input string.
      *

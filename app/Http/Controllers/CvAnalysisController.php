@@ -117,17 +117,15 @@ class CvAnalysisController extends Controller
 
         $extracted = $extractor->extract($request);
 
-        $classification = (new ResumeClassifier)->classify($extracted['text']);
+        $classification = (new ResumeClassifier)->classify($extracted['text'], $openAi);
 
-        if ($classification === ResumeClassification::NotResume) {
+        if ($classification === ResumeClassification::NotResume || $classification === ResumeClassification::Uncertain) {
             throw ValidationException::withMessages([
-                'resume_text' => 'يبدو أن الملف المرفوع ليس سيرة ذاتية (مثلاً إيصال بنك أو فاتورة). يرجى رفع سيرتك الذاتية بصيغة PDF أو نص.',
+                'resume_text' => 'يبدو أن الملف المرفوع ليس سيرة ذاتية (مثلاً إيصال بنك أو فاتورة أو مستند غير مهني). يرجى رفع سيرتك الذاتية بصيغة PDF أو نص.',
             ]);
         }
 
-        $classificationWarning = $classification === ResumeClassification::Uncertain
-            ? 'يبدو أن هذا الملف قد لا يكون سيرة ذاتية. نتائج التحليل قد لا تكون دقيقة.'
-            : null;
+        $classificationWarning = null;
 
         $score = $scorer->score($extracted['text'], $validated['target_job_title']);
         $aiStatus = AiStatus::NotConfigured;

@@ -132,6 +132,25 @@ class DeepInfraCvService implements CvAiProvider
         );
     }
 
+    public function classifyDocument(string $text): array
+    {
+        $model = (string) config('services.deepinfra.fast_model', 'mistralai/Mistral-Small-24B-Instruct-2501');
+        $fallback = app(OpenAiCvService::class);
+
+        return AiProviderFallback::attempt(
+            fn (): array => $this->requestJson(
+                'classify_document',
+                "You are a strict document auditor for an ATS CV analysis platform. Return only valid JSON. Determine whether the provided document is a genuine Curriculum Vitae (CV) / Resume or NOT a CV (e.g. bank transfer receipt, invoice, bill, payment slip, certificate of attendance, contract, academic transcript, ID card, random text, poetry, recipe, code snippet).\n\nYou MUST return a valid JSON object with keys: is_resume boolean, document_type string (one of: resume, bank_receipt, invoice, certificate, contract, id_document, academic_transcript, other_non_resume), confidence number, reason_ar string, reason_en string.",
+                "Determine if this document is a resume or not:\n\n".mb_substr($text, 0, 3000)."\n\nReturn JSON with keys: is_resume boolean, document_type string, confidence number, reason_ar string, reason_en string.",
+                $model
+            ),
+            $fallback->isConfigured()
+                ? fn (): array => $fallback->classifyDocument($text)
+                : null,
+            'DeepInfra classifyDocument failed, falling back to OpenAI',
+        );
+    }
+
     /**
      * @throws ConnectionException
      * @throws RequestException

@@ -93,6 +93,15 @@ class ClaudeCvService implements CvAiProvider
         );
     }
 
+    public function classifyDocument(string $text): array
+    {
+        return $this->requestJson(
+            'classify_document',
+            'You are a strict document auditor for an ATS CV analysis platform. Return only valid JSON. Determine whether the provided document is a genuine Curriculum Vitae (CV) / Resume or NOT a CV (e.g. bank transfer receipt, invoice, bill, payment slip, certificate of attendance, contract, academic transcript, ID card, random text, poetry, recipe, code snippet).',
+            "Determine if this document is a resume or not:\n\n".mb_substr($text, 0, 3000)."\n\nReturn JSON with keys: is_resume boolean, document_type string (one of: resume, bank_receipt, invoice, certificate, contract, id_document, academic_transcript, other_non_resume), confidence number, reason_ar string, reason_en string."
+        );
+    }
+
     /**
      * @throws ConnectionException
      * @throws RequestException
