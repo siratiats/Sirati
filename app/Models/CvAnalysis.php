@@ -44,6 +44,21 @@ class CvAnalysis extends Model
         ];
     }
 
+    public function setResumeTextAttribute(?string $value): void
+    {
+        $this->attributes['resume_text'] = $value !== null ? \App\Support\Utf8Sanitizer::sanitize($value) : null;
+    }
+
+    public function setOriginalFilenameAttribute(?string $value): void
+    {
+        $this->attributes['original_filename'] = $value !== null ? \App\Support\Utf8Sanitizer::sanitize($value) : null;
+    }
+
+    public function setTargetJobTitleAttribute(?string $value): void
+    {
+        $this->attributes['target_job_title'] = $value !== null ? \App\Support\Utf8Sanitizer::sanitize($value) : null;
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

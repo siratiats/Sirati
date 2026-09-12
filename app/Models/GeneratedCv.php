@@ -53,6 +53,10 @@ class GeneratedCv extends Model
     {
         $this->memoizedCvDocument = null;
 
+        if (is_string($value)) {
+            $value = \App\Support\Utf8Sanitizer::sanitize($value);
+        }
+
         return parent::setAttribute($key, $value);
     }
 

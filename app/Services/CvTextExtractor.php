@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Utf8Sanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Smalot\PdfParser\Parser;
@@ -20,20 +21,20 @@ class CvTextExtractor
 
         if ($request->hasFile('resume_file')) {
             $file = $request->file('resume_file');
-            $filename = $file->getClientOriginalName();
+            $filename = Utf8Sanitizer::sanitize($file->getClientOriginalName());
             $inputMethod = $request->filled('resume_text') ? 'mixed' : 'upload';
             $extension = mb_strtolower($file->getClientOriginalExtension());
 
             $textParts[] = match ($extension) {
                 'pdf' => $this->extractPdf($file->getRealPath()),
-                'txt' => (string) file_get_contents($file->getRealPath()),
+                'txt' => Utf8Sanitizer::sanitize((string) file_get_contents($file->getRealPath())),
                 default => throw ValidationException::withMessages([
                     'resume_file' => 'يدعم Sirati حالياً ملفات PDF و TXT فقط.',
                 ]),
             };
         }
 
-        $text = trim(implode("\n\n", array_filter($textParts)));
+        $text = Utf8Sanitizer::sanitize(trim(implode("\n\n", array_filter($textParts))));
 
         if (mb_strlen($text) < 80) {
             throw ValidationException::withMessages([
@@ -50,7 +51,8 @@ class CvTextExtractor
 
     private function extractPdf(string $path): string
     {
-        $text = trim((new Parser)->parseFile($path)->getText());
+        $raw = (new Parser)->parseFile($path)->getText();
+        $text = trim(Utf8Sanitizer::sanitize($raw));
 
         if ($text === '') {
             throw ValidationException::withMessages([

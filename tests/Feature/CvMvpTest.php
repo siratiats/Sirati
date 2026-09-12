@@ -618,6 +618,28 @@ class CvMvpTest extends TestCase
             ->assertSee('Laravel Backend Developer');
     }
 
+    public function test_cv_analysis_sanitizes_cesu8_surrogates_and_persists_safely_in_database(): void
+    {
+        config(['services.openai.api_key' => null]);
+
+        $cesu8Pushpin = hex2bin('EDA0BDEDB38C');
+        $loneSurrogate = hex2bin('EDA080');
+        $dirtyText = $this->sampleResume()."\n\nتنبيه مهم: {$cesu8Pushpin} تسوبلا يظفحا {$loneSurrogate} with\0 nulls";
+
+        $response = $this->post('/analyze', [
+            'target_job_title' => 'Flutter Developer',
+            'resume_text' => $dirtyText,
+        ]);
+
+        $response->assertRedirect();
+        $analysis = CvAnalysis::latest('id')->first();
+        $this->assertNotNull($analysis);
+        $this->assertTrue(mb_check_encoding($analysis->resume_text, 'UTF-8'));
+        $this->assertStringContainsString('📌 تسوبلا يظفحا', $analysis->resume_text);
+        $this->assertStringNotContainsString("\0", $analysis->resume_text);
+        $this->assertDoesNotMatchRegularExpression('/\xED[\xA0-\xBF][\x80-\xBF]/', $analysis->resume_text);
+    }
+
     private function sampleResume(): string
     {
         return <<<'CV'
