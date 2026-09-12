@@ -151,7 +151,42 @@ class DeepInfraCvServiceTest extends TestCase
         $this->assertSame($body['enhanced_text'], $result['enhanced_text']);
         $this->assertDatabaseHas(AiCallLog::class, [
             'provider' => 'deepinfra',
-            'model' => 'mistralai/Mistral-Small-24B-Instruct-2501',
+            'model' => 'Qwen/Qwen2.5-72B-Instruct',
+            'operation' => 'enhance_cv_field',
+        ]);
+    }
+
+    public function test_deepinfra_english_enhancement_uses_english_fast_model(): void
+    {
+        $body = [
+            'enhanced_text' => 'Professional skills: PHP, Laravel',
+            'changes_made' => ['Improved phrasing'],
+            'missing_facts' => [],
+            'ats_keywords_added' => ['Laravel'],
+            'unverified_claims' => [],
+        ];
+
+        Http::fake([
+            'https://api.deepinfra.com/v1/openai/chat/completions' => Http::response([
+                'choices' => [
+                    [
+                        'message' => [
+                            'content' => json_encode($body, JSON_UNESCAPED_UNICODE),
+                        ],
+                        'finish_reason' => 'stop',
+                    ],
+                ],
+                'usage' => ['prompt_tokens' => 80, 'completion_tokens' => 40],
+            ]),
+        ]);
+
+        $service = app(DeepInfraCvService::class);
+        $result = $service->enhanceCvField('skills', 'PHP, Laravel', 'Laravel Developer', 'en');
+
+        $this->assertSame($body['enhanced_text'], $result['enhanced_text']);
+        $this->assertDatabaseHas(AiCallLog::class, [
+            'provider' => 'deepinfra',
+            'model' => 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',
             'operation' => 'enhance_cv_field',
         ]);
     }

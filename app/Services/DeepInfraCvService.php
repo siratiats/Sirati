@@ -91,7 +91,7 @@ class DeepInfraCvService implements CvAiProvider
     public function enhanceCvField(string $field, string $draft, string $jobTitle, string $language): array
     {
         $languageName = $language === 'en' ? 'English' : 'Arabic';
-        $model = (string) config('services.deepinfra.fast_model', 'mistralai/Mistral-Small-24B-Instruct-2501');
+        $model = $this->resolveFastModel($language);
         $fallback = app(OpenAiCvService::class);
 
         return AiProviderFallback::attempt(
@@ -115,7 +115,7 @@ class DeepInfraCvService implements CvAiProvider
     public function enhanceJobDescription(string $jobTitle, ?string $jobDescription, string $language): array
     {
         $languageName = $language === 'en' ? 'English' : 'Arabic';
-        $model = (string) config('services.deepinfra.fast_model', 'mistralai/Mistral-Small-24B-Instruct-2501');
+        $model = $this->resolveFastModel($language);
         $fallback = app(OpenAiCvService::class);
 
         return AiProviderFallback::attempt(
@@ -134,7 +134,8 @@ class DeepInfraCvService implements CvAiProvider
 
     public function classifyDocument(string $text): array
     {
-        $model = (string) config('services.deepinfra.fast_model', 'mistralai/Mistral-Small-24B-Instruct-2501');
+        $hasArabic = (bool) preg_match('/[\x{0600}-\x{06FF}]/u', $text);
+        $model = $this->resolveFastModel($hasArabic ? 'ar' : 'en');
         $fallback = app(OpenAiCvService::class);
 
         return AiProviderFallback::attempt(
@@ -148,6 +149,24 @@ class DeepInfraCvService implements CvAiProvider
                 ? fn (): array => $fallback->classifyDocument($text)
                 : null,
             'DeepInfra classifyDocument failed, falling back to OpenAI',
+        );
+    }
+
+    private function resolveFastModel(string $language = 'ar'): string
+    {
+        $lang = strtolower($language);
+
+        if ($lang === 'en') {
+            return (string) config(
+                'services.deepinfra.fast_model_en',
+                config('services.deepinfra.model_en', 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo')
+            );
+        }
+
+        // For Arabic, Qwen 2.5 72B is essential: Mistral Small on DeepInfra stalls and times out (>45s) on Arabic text.
+        return (string) config(
+            'services.deepinfra.fast_model_ar',
+            config('services.deepinfra.model_ar', config('services.deepinfra.model', 'Qwen/Qwen2.5-72B-Instruct'))
         );
     }
 

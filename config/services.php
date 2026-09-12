@@ -47,7 +47,9 @@ return [
         'model' => env('DEEPINFRA_MODEL', 'Qwen/Qwen2.5-72B-Instruct'),
         'model_ar' => env('DEEPINFRA_MODEL_AR', 'Qwen/Qwen2.5-72B-Instruct'),
         'model_en' => env('DEEPINFRA_MODEL_EN', 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo'),
-        'fast_model' => env('DEEPINFRA_FAST_MODEL', 'mistralai/Mistral-Small-24B-Instruct-2501'),
+        'fast_model' => env('DEEPINFRA_FAST_MODEL', 'Qwen/Qwen2.5-72B-Instruct'),
+        'fast_model_ar' => env('DEEPINFRA_FAST_MODEL_AR', env('DEEPINFRA_MODEL_AR', 'Qwen/Qwen2.5-72B-Instruct')),
+        'fast_model_en' => env('DEEPINFRA_FAST_MODEL_EN', env('DEEPINFRA_MODEL_EN', 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo')),
         'base_url' => env('DEEPINFRA_BASE_URL', 'https://api.deepinfra.com/v1/openai'),
         'timeout' => (int) env('DEEPINFRA_TIMEOUT', 45),
         // generate_cv / analysis_advice. Must stay <= AiTimeouts::FALLBACK_BUDGET_SECONDS.
