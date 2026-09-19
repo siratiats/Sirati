@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Models\User;
-use App\Services\CvTemplateRenderer;
 use App\Services\EntitlementService;
 use Database\Seeders\CvTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,6 +19,19 @@ class PremiumTemplateGatingTest extends TestCase
     {
         parent::setUp();
         $this->seed(CvTemplateSeeder::class);
+
+        // Only the free ATS classic template is seeded now; admins can still mark a template premium.
+        CvTemplate::create([
+            'name_ar' => 'premium',
+            'name_en' => 'Executive Leadership Brief',
+            'slug' => 'executive-leadership-brief',
+            'renderer_key' => 'classic_rtl',
+            'language_direction' => 'both',
+            'supported_languages' => ['ar', 'en'],
+            'is_active' => true,
+            'is_default' => false,
+            'is_premium' => true,
+        ]);
     }
 
     public function test_free_user_can_export_free_template(): void

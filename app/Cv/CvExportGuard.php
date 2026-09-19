@@ -4,6 +4,8 @@ namespace App\Cv;
 
 use App\Enums\AiStatus;
 use App\Models\GeneratedCv;
+use App\Models\User;
+use App\Services\Subscriptions\SubscriptionGate;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -12,7 +14,11 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  */
 final class CvExportGuard
 {
-    public static function assertExportable(GeneratedCv $generatedCv): void
+    /**
+     * Quality gates run before the paywall on purpose: never ask someone to pay
+     * for a CV that is still generating or missing its contact details.
+     */
+    public static function assertExportable(GeneratedCv $generatedCv, ?User $user = null): void
     {
         $status = $generatedCv->ai_status instanceof AiStatus
             ? $generatedCv->ai_status
@@ -31,6 +37,8 @@ final class CvExportGuard
                 'This CV is not ready to send to an employer. Add email and phone, and finish generation so experience is structured.',
             );
         }
+
+        app(SubscriptionGate::class)->assertCanDownload($user ?? $generatedCv->user);
     }
 
     public static function isUsable(GeneratedCv $generatedCv): bool

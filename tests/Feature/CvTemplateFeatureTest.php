@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Models\User;
+use App\Services\CvTemplateRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -23,7 +25,7 @@ class CvTemplateFeatureTest extends TestCase
             'name_ar' => 'حديث',
             'name_en' => 'Modern',
             'slug' => 'modern-rtl',
-            'renderer_key' => 'modern_rtl',
+            'renderer_key' => 'classic_rtl',
             'preview_image' => UploadedFile::fake()->image('preview.png', 420, 594),
             'language_direction' => 'rtl',
             'supported_languages' => ['ar', 'en'],
@@ -186,13 +188,13 @@ class CvTemplateFeatureTest extends TestCase
             'is_default' => true,
         ]);
 
-        $renderer = app(\App\Services\CvTemplateRenderer::class);
+        $renderer = app(CvTemplateRenderer::class);
         $pdf1 = $renderer->renderPdfBlob($cv, $template, 'ar');
 
         $this->assertStringStartsWith('%PDF-', $pdf1);
 
         $cacheKey = 'cv-pdf-blob:'.hash('sha256', implode('|', [
-            \App\Services\CvTemplateRenderer::RENDER_VERSION,
+            CvTemplateRenderer::RENDER_VERSION,
             (string) $cv->id,
             $cv->updated_at->format('U.u'),
             $template->slug,
@@ -200,7 +202,7 @@ class CvTemplateFeatureTest extends TestCase
             'completed',
         ]));
 
-        $rawCached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        $rawCached = Cache::get($cacheKey);
         $this->assertNotNull($rawCached);
         $this->assertFalse(str_starts_with($rawCached, '%PDF-'));
         $this->assertSame($pdf1, base64_decode($rawCached));

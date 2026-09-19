@@ -28,6 +28,13 @@ class JobNews extends Model
         'source_row_key',
         'external_source',
         'external_id',
+        'is_verified',
+        'source_type',
+        'employment_type',
+        'experience_level',
+        'salary_min',
+        'salary_max',
+        'skills_required',
     ];
 
     protected function casts(): array
@@ -38,7 +45,11 @@ class JobNews extends Model
             'valid_until' => 'date',
             'is_published' => 'boolean',
             'is_remote' => 'boolean',
+            'is_verified' => 'boolean',
             'job_title_id' => 'integer',
+            'salary_min' => 'integer',
+            'salary_max' => 'integer',
+            'skills_required' => 'array',
         ];
     }
 
@@ -55,5 +66,15 @@ class JobNews extends Model
             ->where('is_published', true)
             ->where(fn (Builder $q) => $q->whereNull('valid_from')->orWhereDate('valid_from', '<=', $today))
             ->where(fn (Builder $q) => $q->whereNull('valid_until')->orWhereDate('valid_until', '>=', $today));
+    }
+
+    public function scopeVerified(Builder $query): Builder
+    {
+        return $query->where('is_verified', true);
+    }
+
+    public function scopeSourceType(Builder $query, string $type): Builder
+    {
+        return $query->where('source_type', $type);
     }
 }

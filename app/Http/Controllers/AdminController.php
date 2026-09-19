@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendBulkNotificationJob;
 use App\Models\CvAnalysis;
 use App\Models\CvTemplate;
 use App\Models\EducationContent;
-use App\Jobs\SendBulkNotificationJob;
 use App\Models\GeneratedCv;
 use App\Models\JobNews;
 use App\Models\JobTitle;
@@ -21,7 +21,6 @@ use App\Services\JobsImportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -303,7 +302,6 @@ class AdminController extends Controller
         ];
     }
 
-
     private function dashboardRecentActivity(): array
     {
         return [
@@ -335,11 +333,12 @@ class AdminController extends Controller
             ->when($request->filled('education_published'), fn ($query) => $query->where('is_published', $request->input('education_published') === '1'))
             ->when($request->filled('education_featured'), fn ($query) => $query->where('is_featured', $request->input('education_featured') === '1'));
     }
+
     private function jobNewsAdminQuery(Request $request)
     {
         return JobNews::query()
             ->when($request->filled('job_q'), function ($query) use ($request): void {
-                $term = '%' . str_replace(['%', '_'], ['\%', '\_'], (string) $request->input('job_q')) . '%';
+                $term = '%'.str_replace(['%', '_'], ['\%', '\_'], (string) $request->input('job_q')).'%';
 
                 $query->where(function ($query) use ($term): void {
                     $query->where('title', 'like', $term)
@@ -615,7 +614,7 @@ class AdminController extends Controller
             );
         } catch (\Throwable $e) {
             return redirect()->route('admin.jobs.index')
-                ->with('jobs_import_error', 'File import failed: ' . $e->getMessage());
+                ->with('jobs_import_error', 'File import failed: '.$e->getMessage());
         }
 
         return redirect()->route('admin.jobs.index')
@@ -631,7 +630,7 @@ class AdminController extends Controller
             $result = $sync->sync();
         } catch (\Throwable $e) {
             return redirect()->route('admin.jobs.index')
-                ->with('jobs_import_error', 'Google Sheets sync failed: ' . $e->getMessage());
+                ->with('jobs_import_error', 'Google Sheets sync failed: '.$e->getMessage());
         }
 
         return redirect()->route('admin.jobs.index')
@@ -697,6 +696,22 @@ class AdminController extends Controller
             'is_active' => ['nullable', 'boolean'],
             'is_default' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:10000'],
+            // Layout style (config_json.style / section settings)
+            'style' => ['nullable', 'array'],
+            'style.text_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'style.muted_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'style.divider_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'style.font_size' => ['nullable', 'numeric', 'min:7', 'max:14'],
+            'style.name_size' => ['nullable', 'numeric', 'min:12', 'max:36'],
+            'style.section_title_size' => ['nullable', 'numeric', 'min:8', 'max:18'],
+            'style.uppercase_name' => ['nullable', 'boolean'],
+            'style.uppercase_section_titles' => ['nullable', 'boolean'],
+            'section_order' => ['nullable', 'string', 'max:300'],
+            'hidden_sections' => ['nullable', 'array'],
+            'hidden_sections.*' => ['string', Rule::in(config('cv_templates.section_order', []))],
+            'section_titles' => ['nullable', 'array'],
+            'section_titles.*.ar' => ['nullable', 'string', 'max:80'],
+            'section_titles.*.en' => ['nullable', 'string', 'max:80'],
         ]);
 
         $validated['slug'] = $validated['slug'] ?: Str::slug($validated['name_en'] ?: $validated['name_ar']);
@@ -705,14 +720,70 @@ class AdminController extends Controller
             'primary' => $validated['primary_color'] ?? null,
             'accent' => $validated['accent_color'] ?? null,
         ]);
-        $validated['config_json'] = [];
+        $validated['config_json'] = $this->cvTemplateConfig($request, $validated, $template);
         $validated['is_active'] = (bool) ($validated['is_active'] ?? false);
         $validated['is_default'] = (bool) ($validated['is_default'] ?? false);
         $validated['sort_order'] = (int) ($validated['sort_order'] ?? 0);
 
-        unset($validated['preview_image'], $validated['primary_color'], $validated['accent_color']);
+        unset(
+            $validated['preview_image'], $validated['primary_color'], $validated['accent_color'],
+            $validated['style'], $validated['section_order'], $validated['hidden_sections'], $validated['section_titles'],
+        );
 
         return $validated;
+    }
+
+    /**
+     * Merge admin layout settings into config_json, keeping unrelated metadata.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function cvTemplateConfig(Request $request, array $validated, ?CvTemplate $template): array
+    {
+        $config = $template?->config_json ?: [];
+
+        // Older forms without layout fields must not wipe saved settings.
+        if (! $request->has('style_form')) {
+            return $config;
+        }
+
+        $style = array_filter(
+            (array) ($validated['style'] ?? []),
+            fn (mixed $value): bool => $value !== null && $value !== '',
+        );
+        foreach (['uppercase_name', 'uppercase_section_titles'] as $flag) {
+            $style[$flag] = (bool) ($validated['style'][$flag] ?? false);
+        }
+        foreach (['font_size', 'name_size', 'section_title_size'] as $size) {
+            if (isset($style[$size])) {
+                $style[$size] = (float) $style[$size];
+            }
+        }
+
+        $known = config('cv_templates.section_order', []);
+        $order = array_values(array_unique(array_filter(
+            array_map('trim', explode(',', (string) ($validated['section_order'] ?? ''))),
+            fn (string $key): bool => in_array($key, $known, true),
+        )));
+
+        $titles = [];
+        foreach ((array) ($validated['section_titles'] ?? []) as $key => $labels) {
+            if (! in_array($key, $known, true)) {
+                continue;
+            }
+            $labels = array_filter(array_map(fn ($v) => trim((string) $v), (array) $labels));
+            if ($labels !== []) {
+                $titles[$key] = $labels;
+            }
+        }
+
+        $config['style'] = $style;
+        $config['section_order'] = $order;
+        $config['hidden_sections'] = array_values($validated['hidden_sections'] ?? []);
+        $config['section_titles'] = $titles;
+
+        return $config;
     }
 
     private function storeCvTemplatePreview(Request $request, CvTemplate $template): void
@@ -849,8 +920,3 @@ class AdminController extends Controller
         }
     }
 }
-
-
-
-
-

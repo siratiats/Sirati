@@ -8,6 +8,9 @@ namespace App\Cv;
  */
 final class LegacySectionParser
 {
+    /** A year, optionally preceded by a month name ("Jan 2020", "يناير 2020") or number ("01/2020"). */
+    private const DATE_POINT = '(?:\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?\s+|(?<!\p{L})(?:يناير|فبراير|مارس|أبريل|ابريل|مايو|يونيو|يوليو|أغسطس|اغسطس|سبتمبر|أكتوبر|اكتوبر|نوفمبر|ديسمبر)\s+|(?:0?[1-9]|1[0-2])\/)?(?:19|20)\d{2}';
+
     /**
      * @return list<ExperienceEntry>
      */
@@ -66,13 +69,96 @@ final class LegacySectionParser
             if ($lines === []) {
                 continue;
             }
-            $header = self::splitHeader($lines[0]);
-            $rest = array_slice($lines, 1);
-            $entries[] = new Certification(
+            // A block of "- Name | Issuer | Year" lines holds one certification per line.
+            $rows = count(array_filter($lines, fn (string $line): bool => preg_match('/^[-*•]\s+|\s\|\s/u', $line) === 1)) === count($lines)
+                ? array_map(fn (string $line): array => [$line], $lines)
+                : [$lines];
+
+            foreach ($rows as $row) {
+                $headerLine = trim(preg_replace('/^[-*•]\s+/u', '', $row[0]) ?? $row[0]);
+                $header = self::splitHeader($headerLine);
+                $date = $header['end'] ?? $header['start'];
+                // "Name | Issuer | 2021": a lone year lands in the location slot.
+                if ($date === null && preg_match('/^'.self::DATE_POINT.'$/iu', $header['location']) === 1) {
+                    $date = $header['location'];
+                } elseif ($date === null && $header['location'] === '' && preg_match('/^'.self::DATE_POINT.'$/iu', $header['subtitle']) === 1) {
+                    $date = $header['subtitle'];
+                    $header['subtitle'] = '';
+                }
+                $entries[] = new Certification(
+                    name: LocalizedText::forLanguage($language, $header['title']),
+                    issuer: LocalizedText::forLanguage($language, $header['subtitle']),
+                    date: $date,
+                    narrative: LocalizedText::forLanguage($language, implode("\n", array_slice($row, 1))),
+                );
+            }
+        }
+
+        return $entries;
+    }
+
+    /**
+     * "Arabic: Native | English: Fluent" (or one language per line).
+     *
+     * @return list<LanguageSkill>
+     */
+    public static function languages(string $blob, string $language): array
+    {
+        $blob = self::stripEditorial($blob);
+        $items = preg_split('/\R|\s+\|\s+|\s*[;؛]\s*/u', $blob) ?: [];
+        $entries = [];
+
+        foreach ($items as $item) {
+            $item = trim(preg_replace('/^[-*•]\s+/u', '', trim($item)) ?? $item);
+            if ($item === '') {
+                continue;
+            }
+            $parts = preg_split('/\s*[:：]\s*|\s+[–—-]\s+|\s*\(\s*/u', $item, 2) ?: [$item];
+            $name = trim($parts[0]);
+            $level = trim(rtrim($parts[1] ?? '', ') '));
+            // "Language: Arabic native" — the label is generic, the language leads the value.
+            if (preg_match('/^(?:language|lang|اللغة|لغة)$/iu', $name) === 1) {
+                $words = preg_split('/\s+/u', $level, 2) ?: [$level];
+                $name = trim($words[0]);
+                $level = trim($words[1] ?? '', " \t-–—,،");
+            }
+            if ($name === '') {
+                continue;
+            }
+            $entries[] = new LanguageSkill(
+                name: LocalizedText::forLanguage($language, $name),
+                level: LocalizedText::forLanguage($language, $level),
+            );
+        }
+
+        return $entries;
+    }
+
+    /**
+     * @return list<Project>
+     */
+    public static function projects(string $blob, string $language): array
+    {
+        $blob = self::stripEditorial($blob);
+        if (trim($blob) === '') {
+            return [];
+        }
+
+        $entries = [];
+        foreach (self::blocks($blob) as $block) {
+            [$headerLine, $bullets, $narrative] = self::splitBody($block);
+            if ($headerLine === '' && $bullets === [] && $narrative === '') {
+                continue;
+            }
+            $header = self::splitHeader($headerLine);
+            $entries[] = new Project(
                 name: LocalizedText::forLanguage($language, $header['title']),
-                issuer: LocalizedText::forLanguage($language, $header['subtitle']),
-                date: $header['end'] ?? $header['start'],
-                narrative: LocalizedText::forLanguage($language, implode("\n", $rest)),
+                role: LocalizedText::forLanguage($language, $header['subtitle']),
+                description: LocalizedText::forLanguage($language, $narrative),
+                bullets: array_map(
+                    fn (string $bullet): LocalizedText => LocalizedText::forLanguage($language, $bullet),
+                    $bullets,
+                ),
             );
         }
 
@@ -82,8 +168,10 @@ final class LegacySectionParser
     /**
      * Pull named sections out of generated markdown so overlay can replace
      * the matching document fields without inventing a second renderer.
+     * Headings without a canonical field (Professional Development, Awards…)
+     * are kept under "custom" as title/body pairs instead of being dropped.
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
     public static function markdownSections(string $markdown): array
     {
@@ -95,19 +183,33 @@ final class LegacySectionParser
         $parts = preg_split('/^##\s+/um', $markdown) ?: [];
         $sections = [];
 
-        foreach ($parts as $part) {
+        foreach ($parts as $index => $part) {
+            // Text before the first "##" is the name/contact header, never a custom section.
+            $isPreamble = $index === 0 && preg_match('/^##\s+/u', $markdown) !== 1;
             $part = trim($part);
             if ($part === '') {
                 continue;
             }
             $newline = strpos($part, "\n");
-            $heading = $newline === false ? $part : substr($part, 0, $newline);
+            $heading = trim($newline === false ? $part : substr($part, 0, $newline));
             $body = $newline === false ? '' : trim(substr($part, $newline + 1));
             $key = self::sectionKey($heading);
+            if ($key === 'custom') {
+                if ($isPreamble) {
+                    continue;
+                }
+                $body = self::stripEditorial($body);
+                if ($body !== '' && ! self::isEditorialLine($heading)) {
+                    $sections['custom'][] = ['title' => trim($heading, " \t:#*"), 'body' => $body];
+                }
+
+                continue;
+            }
             if ($key === null) {
                 continue;
             }
-            $sections[$key] = $body;
+            // e.g. "Professional Experience" + "Volunteer Experience" both feed experience.
+            $sections[$key] = isset($sections[$key]) && $body !== '' ? $sections[$key]."\n\n".$body : $body;
         }
 
         return $sections;
@@ -161,6 +263,7 @@ final class LegacySectionParser
             if ($buffer !== '' && $looksLikeHeader) {
                 $blocks[] = $buffer;
                 $buffer = $chunk;
+
                 continue;
             }
 
@@ -234,10 +337,12 @@ final class LegacySectionParser
             }
             if ($header === '') {
                 $header = preg_replace('/^#+\s*/u', '', $trimmed) ?? $trimmed;
+
                 continue;
             }
             if (preg_match('/^[-*•–—]\s+/u', $trimmed) === 1) {
                 $bullets[] = trim(preg_replace('/^[-*•–—]\s+/u', '', $trimmed) ?? $trimmed);
+
                 continue;
             }
             $narrative[] = $trimmed;
@@ -287,8 +392,8 @@ final class LegacySectionParser
     private static function extractDates(string $line): array
     {
         $current = '(?:Present|Current|Now|حتى الآن|حالياً?)';
-        $year = '(?:19|20)\d{2}';
-        $pattern = '/('.$year.')\s*[-–—إلىto]+\s*('.$year.'|'.$current.')/iu';
+        $year = self::DATE_POINT;
+        $pattern = '/('.$year.')\s*(?:[-–—]|to|إلى)\s*('.$year.'|'.$current.')/iu';
 
         if (preg_match($pattern, $line, $match) !== 1) {
             return ['start' => null, 'end' => null, 'is_current' => false, 'remainder' => $line];
@@ -327,13 +432,29 @@ final class LegacySectionParser
         $normalized = mb_strtolower(trim($heading));
         $normalized = trim($normalized, " \t:#");
 
+        $has = static function (string ...$needles) use ($normalized): bool {
+            foreach ($needles as $needle) {
+                if (str_contains($normalized, $needle)) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
         return match (true) {
-            str_contains($normalized, 'experience') || str_contains($normalized, 'خبر') => 'experience',
-            str_contains($normalized, 'education') || str_contains($normalized, 'تعليم') => 'education',
-            str_contains($normalized, 'summary') || str_contains($normalized, 'ملخص') => 'summary',
-            str_contains($normalized, 'skill') || str_contains($normalized, 'مهارات') => 'skills',
-            str_contains($normalized, 'certif') || str_contains($normalized, 'شهاد') => 'certifications',
-            default => null,
+            // Languages first so "Language Skills" / "المهارات اللغوية" are not read as skills.
+            $has('language', 'لغات', 'لغوي') => 'languages',
+            $has('experience', 'employment', 'work history', 'خبر') => 'experience',
+            $has('education', 'academic', 'تعليم', 'مؤهلات') => 'education',
+            $has('summary', 'profile', 'objective', 'ملخص', 'نبذة') => 'summary',
+            $has('skill', 'competenc', 'expertise', 'مهارات', 'كفاءات', 'جدارات') => 'skills',
+            $has('certif', 'licens', 'شهاد', 'رخص') => 'certifications',
+            $has('project', 'مشاريع', 'مشروعات') => 'projects',
+            // The header already carries contact details.
+            $has('contact', 'personal information', 'personal details', 'تواصل', 'بيانات شخصية', 'معلومات شخصية') => null,
+            $normalized === '' => null,
+            default => 'custom',
         };
     }
 }

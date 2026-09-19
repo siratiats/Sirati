@@ -17,6 +17,7 @@ use App\Services\AtsScoringService;
 use App\Services\CvTemplateRenderer;
 use App\Services\EntitlementService;
 use App\Services\ErrorReporter;
+use App\Services\Subscriptions\SubscriptionGate;
 use App\Support\CvMarkdownIdentityBlock;
 use App\Support\Idempotency;
 use App\Support\SignedRecordAccess;
@@ -25,6 +26,11 @@ use Throwable;
 
 class GeneratedCvController extends Controller
 {
+    private function subscriptionGate(): SubscriptionGate
+    {
+        return app(SubscriptionGate::class);
+    }
+
     public function indexApi(Request $request)
     {
         $perPage = min(50, max(1, (int) $request->integer('per_page', 20)));
@@ -68,6 +74,9 @@ class GeneratedCvController extends Controller
         if ($existing instanceof GeneratedCv) {
             return new GeneratedCvResource($existing);
         }
+
+        // Checked after idempotency so a retried request never burns the quota.
+        $this->subscriptionGate()->assertCanGenerateCv($request->user());
 
         $queueAi = $request->header('X-Sirati-Async') === '1';
         $generatedCv = $this->createGeneratedCv(
@@ -117,6 +126,7 @@ class GeneratedCvController extends Controller
     public function duplicateApi(GeneratedCv $generatedCv, Request $request)
     {
         $this->authorizeApiAccess($request, $generatedCv);
+        $this->subscriptionGate()->assertCanGenerateCv($request->user());
 
         $copy = $generatedCv->duplicateForUser($request->user()->id);
 
@@ -161,6 +171,8 @@ class GeneratedCvController extends Controller
             return new GeneratedCvResource($existing);
         }
 
+        $this->subscriptionGate()->assertCanGenerateCv($request->user());
+
         $queueAi = $request->header('X-Sirati-Async') === '1';
         $generatedCv = $this->createGeneratedCv(
             $this->payloadFromAnalysis($analysis, $overrides),
@@ -182,6 +194,8 @@ class GeneratedCvController extends Controller
 
     public function enhanceJobDescription(Request $request, CvAiProvider $openAi)
     {
+        $this->subscriptionGate()->assertCanEnhance($request->user());
+
         $validated = $request->validate([
             'target_job_title' => ['required', 'string', 'max:160'],
             'job_description' => ['nullable', 'string', 'max:4000'],
@@ -228,6 +242,8 @@ class GeneratedCvController extends Controller
 
     public function enhanceField(Request $request, CvAiProvider $openAi)
     {
+        $this->subscriptionGate()->assertCanEnhance($request->user());
+
         $validated = $request->validate([
             'field' => ['required', 'in:summary,skills,experience,education,certifications'],
             'draft' => ['required', 'string', 'min:10', 'max:12000'],
@@ -302,9 +318,10 @@ class GeneratedCvController extends Controller
     public function downloadPdf(Request $request, GeneratedCv $generatedCv, CvTemplateRenderer $renderer)
     {
         SignedRecordAccess::authorize($request, $generatedCv);
-        CvExportGuard::assertExportable($generatedCv);
 
         $user = $request->user() ?? $generatedCv->user;
+
+        CvExportGuard::assertExportable($generatedCv, $user);
 
         return $renderer->downloadResponse(
             $generatedCv,
@@ -317,7 +334,7 @@ class GeneratedCvController extends Controller
     public function downloadPdfApi(Request $request, GeneratedCv $generatedCv, CvTemplateRenderer $renderer)
     {
         $this->authorizeApiAccess($request, $generatedCv);
-        CvExportGuard::assertExportable($generatedCv);
+        CvExportGuard::assertExportable($generatedCv, $request->user());
 
         return $renderer->downloadResponse(
             $generatedCv,
@@ -361,11 +378,15 @@ class GeneratedCvController extends Controller
 
         $html = $renderer->renderHtml($generatedCv, $templateKey, $shouldWatermark, $language);
 
+        $gate = $this->subscriptionGate();
+
         return response()->json([
             'data' => [
                 'html' => $html,
                 'is_premium' => $template->isPremium(),
                 'is_watermarked' => $shouldWatermark,
+                'can_download' => $gate->allowsDownload($request->user()),
+                'access' => $gate->stateFor($request->user()),
                 'template' => [
                     'id' => $template->id,
                     'slug' => $template->slug,

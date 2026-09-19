@@ -12,6 +12,7 @@ use App\Jobs\SendPushNotificationJob;
 use App\Models\CvAnalysis;
 use App\Models\GeneratedCv;
 use App\Models\User;
+use App\Services\Ai\AiTimeouts;
 use App\Services\AtsScoringService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
@@ -215,6 +216,24 @@ class AsyncCvAiTest extends TestCase
         $this->assertStringContainsString('too long', (string) $generatedCv->ai_error);
     }
 
+    public function test_generated_cv_job_does_not_complete_without_cv_markdown(): void
+    {
+        $generatedCv = $this->generatedCv(User::factory()->create());
+        $provider = $this->configuredProvider();
+        $provider->shouldReceive('generateCv')
+            ->once()
+            ->andReturn([['full_name' => 'Queue User']]);
+
+        try {
+            (new GenerateCvContentJob($generatedCv->id))
+                ->handle($provider, app(AtsScoringService::class));
+            $this->fail('A reply without cv_markdown should be rethrown for the queue retry.');
+        } catch (\UnexpectedValueException) {
+            $generatedCv->refresh();
+            $this->assertNotSame(AiStatus::Completed, $generatedCv->ai_status);
+        }
+    }
+
     public function test_permanent_job_failure_callback_marks_record_failed(): void
     {
         Queue::fake([SendPushNotificationJob::class]);
@@ -343,7 +362,7 @@ class AsyncCvAiTest extends TestCase
             $this->assertSame(config('services.cv_ai.queue', 'default'), $job->queue);
             $this->assertSame(3, $job->tries);
             $this->assertSame([10, 30], $job->backoff);
-            $this->assertSame(\App\Services\Ai\AiTimeouts::JOB_SECONDS, $job->timeout);
+            $this->assertSame(AiTimeouts::JOB_SECONDS, $job->timeout);
         }
     }
 

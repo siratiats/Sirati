@@ -23,7 +23,7 @@ class CvTemplateRenderer
      * Bump when template HTML, fonts, or renderer behaviour changes so a
      * cached blob from a previous deploy cannot outlive the new code.
      */
-    public const RENDER_VERSION = '3';
+    public const RENDER_VERSION = '4';
 
     public function __construct(
         private readonly CvMarkdownRenderer $markdownRenderer,
@@ -195,7 +195,7 @@ class CvTemplateRenderer
         }
 
         $cv = $this->viewModel($generatedCv, $template, false, $language, true);
-        $defaultFont = $language === 'ar' ? 'ibmplexsansarabic' : 'dejavusans';
+        $defaultFont = $language === 'ar' ? 'ibmplexsansarabic' : 'freesans';
 
         $fontDirs = (new ConfigVariables)->getDefaults()['fontDir'];
         $fontDirs[] = resource_path('fonts/ibm-plex-sans-arabic');
@@ -222,6 +222,8 @@ class CvTemplateRenderer
         ]);
         $pdf->autoScriptToLang = false;
         $pdf->autoLangToFont = false;
+        // FreeSans has no Arabic glyphs; let candidate-typed Arabic in an English CV fall back to DejaVu.
+        $pdf->useSubstitutions = $language === 'en';
         $pdf->SetDirectionality($language === 'en' ? 'ltr' : 'rtl');
 
         // Document Metadata (SIRATI-45 AC 47)
@@ -264,8 +266,8 @@ class CvTemplateRenderer
         $location = $resolved->location !== '' ? $resolved->location : (string) $generatedCv->location;
 
         $contacts = array_values(array_filter([
-            $this->formatPdfText($email, $language),
             $this->formatPdfText($phone, $language),
+            $this->formatPdfText($email, $language),
             $this->formatPdfText($linkedin, $language),
             $this->formatPdfText($location, $language),
         ], fn (string $value): bool => trim($value) !== ''));
@@ -277,9 +279,14 @@ class CvTemplateRenderer
             $generatedCv->id,
         );
 
-        $structuredSections = $this->stripEditorialFromSections($resolved->toStructuredSections());
+        $structuredSections = $this->arrangeSections(
+            $this->stripEditorialFromSections($resolved->toStructuredSections()),
+            $template,
+            $language,
+        );
 
         return [
+            'style' => $this->styleFor($template),
             'show_internal_score' => ! $forExport,
             'direction' => $language === 'en' ? 'ltr' : 'rtl',
             'language' => $language,
@@ -353,6 +360,82 @@ class CvTemplateRenderer
         $template->is_default = true;
 
         return $template;
+    }
+
+    /**
+     * Admin-controlled look: config defaults < color tokens < config_json.style.
+     *
+     * @return array<string, mixed>
+     */
+    public function styleFor(CvTemplate $template): array
+    {
+        $style = config('cv_templates.style_defaults', []);
+        $colors = $template->color_tokens ?: [];
+        if (! empty($colors['primary'])) {
+            $style['name_color'] = $style['heading_color'] = $style['rule_color'] = $colors['primary'];
+        }
+        if (! empty($colors['accent'])) {
+            $style['accent_color'] = $colors['accent'];
+        }
+
+        $overrides = $template->config_json['style'] ?? [];
+        foreach (is_array($overrides) ? $overrides : [] as $key => $value) {
+            if (array_key_exists($key, $style) && $value !== null && $value !== '') {
+                $style[$key] = $value;
+            }
+        }
+
+        foreach ($style as $key => $value) {
+            if (str_ends_with($key, '_color') && ! preg_match('/^#[0-9a-fA-F]{6}$/', (string) $value)) {
+                $style[$key] = config('cv_templates.style_defaults.'.$key);
+            } elseif (str_ends_with($key, '_size')) {
+                $style[$key] = max(6, min(40, (float) $value));
+            } elseif (str_starts_with($key, 'uppercase_') || str_starts_with($key, 'show_')) {
+                $style[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+            }
+        }
+
+        return $style;
+    }
+
+    /**
+     * Apply the template's section order, hidden sections, and title overrides.
+     *
+     * @param  list<array<string, mixed>>  $sections
+     * @return list<array<string, mixed>>
+     */
+    private function arrangeSections(array $sections, CvTemplate $template, string $language): array
+    {
+        $config = $template->config_json ?: [];
+        $order = array_values(array_filter((array) ($config['section_order'] ?? []), 'is_string'))
+            ?: config('cv_templates.section_order', []);
+        $hidden = (array) ($config['hidden_sections'] ?? []);
+        $titles = (array) ($config['section_titles'] ?? []);
+        $defaultTitles = $language === 'en' ? config('cv_templates.section_titles_en', []) : [];
+
+        $arranged = [];
+        foreach ($sections as $index => $section) {
+            $group = str_starts_with((string) ($section['id'] ?? ''), 'custom_')
+                ? 'custom_sections'
+                : (string) ($section['key'] ?? '');
+            if (in_array($group, $hidden, true)) {
+                continue;
+            }
+
+            $override = trim((string) ($titles[$group][$language] ?? ''));
+            if ($override !== '') {
+                $section['title'] = $override;
+            } elseif (isset($defaultTitles[$group])) {
+                $section['title'] = $defaultTitles[$group];
+            }
+
+            $position = array_search($group, $order, true);
+            $arranged[] = [$position === false ? PHP_INT_MAX : $position, $index, $section];
+        }
+
+        usort($arranged, fn (array $a, array $b): int => [$a[0], $a[1]] <=> [$b[0], $b[1]]);
+
+        return array_map(fn (array $item): array => $item[2], $arranged);
     }
 
     /**

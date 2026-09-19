@@ -13,6 +13,7 @@ use App\Services\AtsScoringService;
 use App\Services\CvTextExtractor;
 use App\Services\ErrorReporter;
 use App\Services\ResumeClassifier;
+use App\Services\Subscriptions\SubscriptionGate;
 use App\Support\Idempotency;
 use App\Support\SignedRecordAccess;
 use Illuminate\Http\Request;
@@ -66,6 +67,9 @@ class CvAnalysisController extends Controller
             return new CvAnalysisResource($existing);
         }
 
+        // Checked after idempotency so a retried request never burns the quota.
+        app(SubscriptionGate::class)->assertCanAnalyze($request->user());
+
         $queueAi = $request->header('X-Sirati-Async') === '1';
         $analysis = $this->createAnalysis($request, $extractor, $scorer, $openAi, $queueAi);
 
@@ -105,6 +109,7 @@ class CvAnalysisController extends Controller
     ): CvAnalysis {
         $validated = $request->validate([
             'target_job_title' => ['required', 'string', 'max:160'],
+            'job_description' => ['nullable', 'string', 'max:4000'],
             'resume_text' => ['nullable', 'string'],
             'resume_file' => ['nullable', 'file', 'max:5120', 'mimes:pdf,txt'],
         ]);
@@ -127,7 +132,8 @@ class CvAnalysisController extends Controller
 
         $classificationWarning = null;
 
-        $score = $scorer->score($extracted['text'], $validated['target_job_title']);
+        $jobDescription = $validated['job_description'] ?? null;
+        $score = $scorer->score($extracted['text'], $validated['target_job_title'], null, $jobDescription);
         $aiStatus = AiStatus::NotConfigured;
         $aiFeedback = null;
         $aiError = null;
@@ -157,11 +163,12 @@ class CvAnalysisController extends Controller
             }
         }
 
-        $analysis = Idempotency::firstOrCreate($request, CvAnalysis::query(), function () use ($request, $validated, $extracted, $score, $aiStatus, $aiFeedback, $aiError) {
+        $analysis = Idempotency::firstOrCreate($request, CvAnalysis::query(), function () use ($request, $validated, $extracted, $score, $aiStatus, $aiFeedback, $aiError, $jobDescription) {
             return CvAnalysis::create([
                 'user_id' => $request->user()?->id,
                 'idempotency_key' => Idempotency::key($request),
                 'target_job_title' => $validated['target_job_title'],
+                'job_description_input' => $jobDescription,
                 'original_filename' => $extracted['filename'],
                 'input_method' => $extracted['input_method'],
                 'resume_text' => $extracted['text'],

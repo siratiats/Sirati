@@ -54,7 +54,7 @@ class CvExportSafetyTest extends TestCase
 
         $html = app(CvTemplateRenderer::class)->renderHtml($cv, 'ats-classic-professional', forExport: true);
 
-        $this->assertGreaterThanOrEqual(2, substr_count($html, 'class="entry-item"'));
+        $this->assertGreaterThanOrEqual(2, substr_count($html, 'class="entry"'));
         $this->assertStringContainsString('Engineer', $html);
         $this->assertStringContainsString('Lead Engineer', $html);
         $this->assertStringContainsString('page-break-inside: avoid', $html);

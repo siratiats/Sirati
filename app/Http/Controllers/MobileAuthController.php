@@ -6,6 +6,8 @@ use App\Models\JobTitle;
 use App\Models\User;
 use App\Services\EmailVerificationService;
 use App\Services\PasswordResetService;
+use App\Services\Subscriptions\SubscriptionGate;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -277,7 +279,7 @@ class MobileAuthController extends Controller
     }
 
     /**
-     * @return array<string, list<\Illuminate\Contracts\Validation\ValidationRule|string>>
+     * @return array<string, list<ValidationRule|string>>
      */
     private function jobTitleRules(Request $request): array
     {
@@ -375,6 +377,8 @@ class MobileAuthController extends Controller
             ] : null,
             'email_verified' => $user->hasVerifiedEmail(),
             'email_verified_at' => $user->email_verified_at?->toISOString(),
+            // Lets the app draw locked/unlocked buttons without first hitting a 402.
+            'subscription' => app(SubscriptionGate::class)->stateFor($user),
             'created_at' => $user->created_at?->toISOString(),
         ];
     }

@@ -31,6 +31,7 @@
                 <label style="display:flex; grid-template-columns:none; gap:8px; align-items:center;"><input class="table-check" type="checkbox" name="is_active" value="1" @checked($template->is_active)> Active in app</label>
                 <label style="display:flex; grid-template-columns:none; gap:8px; align-items:center;"><input class="table-check" type="checkbox" name="is_default" value="1" @checked($template->is_default)> Default template</label>
             </div>
+            @include('admin.partials.cv-template-style-fields', ['template' => $template])
             <div class="filter-actions"><button class="button" type="submit">Save changes</button><button class="button button-secondary" type="button" onclick="document.getElementById('cv-template-edit-{{ $template->id }}').close()">Cancel</button></div>
         </form>
     </div>

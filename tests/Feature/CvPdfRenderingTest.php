@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
+use App\Models\User;
 use App\Services\Cv\CvMarkdownRenderer;
 use App\Services\CvTemplateRenderer;
 use App\Support\ArabicPdfText;
@@ -51,8 +52,8 @@ class CvPdfRenderingTest extends TestCase
         $this->assertStringContainsString('+966500000000', $html);
         $this->assertStringContainsString('linkedin.com/in/candidate', $html);
         $this->assertStringContainsString('Riyadh', $html);
-        $this->assertStringContainsString('<h2>Experience</h2>', $html);
-        $this->assertStringContainsString('<li>Built APIs</li>', $html);
+        $this->assertStringContainsString('<h2 class="section-title">Professional Experience</h2>', $html);
+        $this->assertStringContainsString('Built APIs', $html);
     }
 
     public function test_renderer_strips_duplicate_identity_block_from_body_markdown(): void
@@ -64,28 +65,14 @@ class CvPdfRenderingTest extends TestCase
                 ."## Experience\n\n- Built APIs",
         ]);
 
-        $html = app(CvTemplateRenderer::class)->renderHtml($cv, $template->slug);
+        $renderer = app(CvTemplateRenderer::class);
+        $html = $renderer->renderHtml($cv, $template->slug);
+        $contentHtml = (string) data_get($renderer->viewModel($cv, $template), 'contentHtml');
 
-        $this->assertSame(1, substr_count($html, '<h1>Ahmed Ali</h1>'));
+        $this->assertSame(1, substr_count($html, '<h1 class="name">Ahmed Ali</h1>'));
         $this->assertSame(1, substr_count($html, 'candidate@example.com'));
-        $this->assertStringContainsString('<div class="content"><h2>Experience</h2>', $html);
-        $this->assertStringNotContainsString('<div class="content"><h1>Ahmed Ali</h1>', $html);
-    }
-
-    public function test_modern_template_renders_contacts_as_wrappable_items(): void
-    {
-        $template = $this->template('modern', 'modern_rtl');
-        $cv = $this->cv('en', [
-            'linkedin' => 'https://linkedin.com/in/candidate-with-a-very-long-profile-slug-for-wrapping',
-        ]);
-
-        $html = app(CvTemplateRenderer::class)->renderHtml($cv, $template->slug);
-
-        $this->assertStringContainsString('@page { margin: 26px; }', $html);
-        $this->assertStringNotContainsString('margin: -22px -22px 18px;', $html);
-        $this->assertSame(4, substr_count($html, 'class="meta-item"'));
-        $this->assertSame(3, substr_count($html, 'class="meta-separator"'));
-        $this->assertStringContainsString('word-wrap: break-word;', $html);
+        $this->assertStringStartsWith('<h2>Experience</h2>', trim($contentHtml));
+        $this->assertStringNotContainsString('<h1>Ahmed Ali</h1>', $contentHtml);
     }
 
     public function test_arabic_template_preserves_latin_contacts_and_shapes_mixed_location(): void
@@ -174,13 +161,16 @@ class CvPdfRenderingTest extends TestCase
         $markdown = file_get_contents(base_path('tests/Fixtures/arabic_cv_bidi.md'));
         $this->assertIsString($markdown);
 
-        $response = app(CvTemplateRenderer::class)->downloadResponse(
-            $this->cv('ar', [
-                'generated_markdown' => $markdown."\n\n- طورت واجهات API",
-                'email' => 'salem@example.com',
-            ]),
-            $template->slug,
-        );
+        // Mirror GenerateCvContentJob: the AI markdown is overlaid onto the stored document.
+        $cv = $this->cv('ar', [
+            'generated_markdown' => $markdown."\n\n- طورت واجهات API",
+            'email' => 'salem@example.com',
+            'education_input' => '',
+        ]);
+        $cv->update(['document' => $cv->cvDocument()->overlayGeneratedMarkdown($cv->generated_markdown, 'ar')->toArray()]);
+        $cv = $cv->fresh();
+
+        $response = app(CvTemplateRenderer::class)->downloadResponse($cv, $template->slug);
 
         $binary = (string) $response->getContent();
         $dumpDir = storage_path('app/testing');
@@ -189,13 +179,7 @@ class CvPdfRenderingTest extends TestCase
         }
         file_put_contents($dumpDir.'/arabic-cv-bidi.pdf', $binary);
 
-        $html = app(CvTemplateRenderer::class)->renderHtml(
-            $this->cv('ar', [
-                'generated_markdown' => $markdown."\n\n- طورت واجهات API",
-                'email' => 'salem@example.com',
-            ]),
-            $template->slug,
-        );
+        $html = app(CvTemplateRenderer::class)->renderHtml($cv, $template->slug);
         $this->assertStringContainsString('dir="rtl"', $html);
         $this->assertStringContainsString('text-align: right', $html);
 
@@ -219,10 +203,9 @@ class CvPdfRenderingTest extends TestCase
     public function test_download_response_is_non_empty_for_both_templates_and_languages(): void
     {
         $classic = $this->template('classic', 'classic_rtl');
-        $modern = $this->template('modern', 'modern_rtl');
         $renderer = app(CvTemplateRenderer::class);
 
-        foreach ([$classic, $modern] as $template) {
+        foreach ([$classic] as $template) {
             foreach (['ar', 'en'] as $language) {
                 $response = $renderer->downloadResponse($this->cv($language), $template->slug);
 
@@ -235,7 +218,7 @@ class CvPdfRenderingTest extends TestCase
 
     public function test_signed_pdf_download_route_accepts_valid_signature_with_template_parameter(): void
     {
-        $template = $this->template('modern', 'modern_rtl');
+        $template = $this->template('classic', 'classic_rtl');
         $cv = $this->cv('en');
 
         $signedUrl = URL::temporarySignedRoute(
@@ -253,30 +236,20 @@ class CvPdfRenderingTest extends TestCase
         $this->assertStringStartsWith('%PDF-', (string) $response->getContent());
     }
 
-    public function test_each_of_the_six_seeded_templates_renders_distinct_html_views(): void
+    public function test_seeded_templates_render_the_single_ats_classic_layout(): void
     {
         $this->seed(CvTemplateSeeder::class);
         $renderer = app(CvTemplateRenderer::class);
-        $cv = $this->cv('ar');
+        $cv = $this->cv('en');
 
-        $slugs = [
-            'ats-classic-professional',
-            'graduate-launchpad',
-            'executive-leadership-brief',
-            'sales-impact-performer',
-            'bilingual-global-professional',
-        ];
+        $this->assertSame(['ats-classic-professional'], CvTemplate::query()->pluck('slug')->all());
 
-        $renderedOutputs = [];
-        foreach ($slugs as $slug) {
-            $html = $renderer->renderHtml($cv, $slug);
-            $this->assertNotEmpty($html);
-            $renderedOutputs[$slug] = $html;
-        }
+        $html = $renderer->renderHtml($cv, 'ats-classic-professional');
+        $this->assertStringContainsString('<h1 class="name">Ahmed Ali</h1>', $html);
+        $this->assertStringContainsString('<h2 class="section-title">Core Competencies</h2>', $html);
 
-        // Assert all rendered HTMLs are unique from one another
-        $uniqueCount = count(array_unique($renderedOutputs));
-        $this->assertSame(count($slugs), $uniqueCount, 'Expected all template HTML views to be distinctly unique.');
+        // Retired template slugs stored on older CVs fall back to the same layout.
+        $this->assertSame($html, $renderer->renderHtml($cv, 'executive-leadership-brief'));
     }
 
     public function test_english_render_has_no_arabic_outside_candidate_typed_fields(): void
@@ -422,11 +395,11 @@ class CvPdfRenderingTest extends TestCase
 
         $testCases = [
             ['ats-classic-professional', '94', 'A+'],
-            ['executive-leadership-brief', '88', 'B+'],
-            ['sales-impact-performer', '76', 'C-'],
+            ['ats-classic-professional', '88', 'B+'],
+            ['ats-classic-professional', '76', 'C-'],
         ];
 
-        $user = \App\Models\User::factory()->create(['is_premium' => true]);
+        $user = User::factory()->create(['is_premium' => true]);
 
         foreach ($testCases as [$templateSlug, $score, $grade]) {
             $cv = $this->cv('ar', [

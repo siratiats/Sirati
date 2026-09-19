@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Contracts\CvAiProvider;
 use App\Exceptions\AiRefusalException;
-use App\Exceptions\AiTruncationException;
 use App\Models\AiCallLog;
 use App\Services\Ai\AiCallContext;
 use App\Services\Ai\AiHttpRetry;
@@ -12,7 +11,9 @@ use App\Services\Ai\AiOutputTruncation;
 use App\Services\Ai\AiProviderFallback;
 use App\Services\Ai\AiTimeouts;
 use App\Services\Ai\EnhanceCvFieldResultGuard;
+use App\Services\Ai\GenerateCvResultGuard;
 use App\Services\Ai\Prompts\AnalysisAdviceSystemPrompt;
+use App\Services\Ai\Prompts\CvMarkdownFormat;
 use App\Services\Ai\Prompts\EnhanceCvFieldSystemPrompt;
 use App\Services\Ai\Schemas\OperationSchemas;
 use Illuminate\Http\Client\ConnectionException;
@@ -65,11 +66,11 @@ class OpenAiCvService implements CvAiProvider
         $fallback = app(DeepInfraCvService::class);
 
         return AiProviderFallback::attempt(
-            fn (): array => $this->requestJson(
+            fn (): array => (new GenerateCvResultGuard)->enforce($this->requestJson(
                 'generate_cv',
                 'You are an expert CV writer for Arabic and English ATS-friendly resumes. Return only valid JSON. Use only the user-provided facts. Do not invent employers, degrees, dates, metrics, or certifications. Make the CV concise, keyword-rich, and ATS readable. When generating an English CV (language: en), all generated content must be strictly in English with no inline Arabic script or terms; express bilingual ability in English.',
-                "Generate an ATS-friendly CV template from these form inputs.\n\nInput JSON:\n".json_encode($data, JSON_UNESCAPED_UNICODE)."\n\nReturn JSON with keys: cv_markdown string, headline string, ats_notes array of strings, missing_information array of strings. cv_markdown must be the complete CV; do not repeat its sections in other keys."
-            ),
+                "Generate an ATS-friendly CV template from these form inputs.\n\nInput JSON:\n".json_encode($data, JSON_UNESCAPED_UNICODE)."\n\nReturn JSON with keys: cv_markdown string, headline string, ats_notes array of strings, missing_information array of strings. cv_markdown must be the complete CV; do not repeat its sections in other keys.\n\n".CvMarkdownFormat::instructions()
+            ), 'OpenAI'),
             $fallback->isConfigured()
                 ? fn (): array => $fallback->generateCv($data)
                 : null,

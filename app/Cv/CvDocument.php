@@ -118,12 +118,19 @@ final readonly class CvDocument implements JsonSerializable
      *
      * Builder-authored entries that already have a title or employer are kept;
      * generator blobs are replaced with parsed entries so the existing
-     * `_sections.blade.php` renderer receives real jobs, not one paragraph.
+     * CV layout receives real jobs, not one paragraph. When $formPayload is
+     * given, entries that are merely the parse of its free-text inputs count
+     * as blobs too, so the AI's structured rewrite wins over them.
+     *
+     * @param  array<string, mixed>|null  $formPayload
      */
-    public function overlayGeneratedMarkdown(string $markdown, string $language, ?string $headline = null): self
+    public function overlayGeneratedMarkdown(string $markdown, string $language, ?string $headline = null, ?array $formPayload = null): self
     {
         $language = $language === 'en' ? 'en' : 'ar';
         $sections = LegacySectionParser::markdownSections($markdown);
+        $formDocument = is_array($formPayload) && $formPayload !== [] ? self::fromLegacy($formPayload) : null;
+        $fromForm = fn (string $field): bool => $formDocument !== null
+            && self::sameEntries($this->{$field}, $formDocument->{$field});
 
         $personal = $this->personal;
         if (filled($headline)) {
@@ -144,22 +151,72 @@ final readonly class CvDocument implements JsonSerializable
             summary: isset($sections['summary'])
                 ? LocalizedText::forLanguage($language, LegacySectionParser::stripEditorial($sections['summary']))
                 : $this->summary,
-            experience: isset($sections['experience']) && ! $this->hasStructuredExperience()
+            experience: isset($sections['experience']) && (! $this->hasStructuredExperience() || $fromForm('experience'))
                 ? LegacySectionParser::experience($sections['experience'], $language)
                 : $this->experience,
-            education: isset($sections['education']) && ! $this->hasStructuredEducation()
+            education: isset($sections['education']) && (! $this->hasStructuredEducation() || $fromForm('education'))
                 ? LegacySectionParser::education($sections['education'], $language)
                 : $this->education,
             skills: isset($sections['skills'])
                 ? self::skillsFromBlob($sections['skills'], $language)
                 : $this->skills,
-            languages: $this->languages,
-            certifications: isset($sections['certifications']) && ! $this->hasStructuredCertifications()
+            languages: isset($sections['languages']) && empty($this->languages)
+                ? LegacySectionParser::languages($sections['languages'], $language)
+                : $this->languages,
+            certifications: isset($sections['certifications']) && (! $this->hasStructuredCertifications() || $fromForm('certifications'))
                 ? LegacySectionParser::certifications($sections['certifications'], $language)
                 : $this->certifications,
-            projects: $this->projects,
-            customSections: $this->customSections,
+            projects: isset($sections['projects']) && empty($this->projects)
+                ? LegacySectionParser::projects($sections['projects'], $language)
+                : $this->projects,
+            customSections: $this->overlayCustomSections($sections['custom'] ?? [], $language),
         );
+    }
+
+    /**
+     * @param  list<JsonSerializable>|null  $a
+     * @param  list<JsonSerializable>|null  $b
+     */
+    private static function sameEntries(?array $a, ?array $b): bool
+    {
+        $encode = static fn (?array $items): string => json_encode(
+            array_map(static fn ($item): mixed => $item->toArray(), $items ?? []),
+            JSON_UNESCAPED_UNICODE,
+        );
+
+        return $encode($a) === $encode($b);
+    }
+
+    /**
+     * Keep builder-authored custom sections and add generated ones whose title is new.
+     *
+     * @param  list<array{title: string, body: string}>  $generated
+     * @return list<CustomSection>|null
+     */
+    private function overlayCustomSections(array $generated, string $language): ?array
+    {
+        if ($generated === []) {
+            return $this->customSections;
+        }
+
+        $sections = $this->customSections ?? [];
+        $existingTitles = array_map(
+            fn (CustomSection $section): string => mb_strtolower(trim($section->title->resolve($language))),
+            $sections,
+        );
+
+        foreach ($generated as $section) {
+            if (in_array(mb_strtolower($section['title']), $existingTitles, true)) {
+                continue;
+            }
+            $sections[] = new CustomSection(
+                key: 'custom',
+                title: LocalizedText::forLanguage($language, $section['title']),
+                body: LocalizedText::forLanguage($language, $section['body']),
+            );
+        }
+
+        return $sections;
     }
 
     public function hasStructuredExperience(): bool
@@ -301,7 +358,7 @@ final readonly class CvDocument implements JsonSerializable
                     $loc = $entry->location->resolve($language);
                     $start = $entry->startDate;
                     $end = $entry->isCurrent ? ($isAr ? 'حتى الآن' : 'Present') : $entry->endDate;
-                    $dateRange = trim(($start ?? '').($end ? ' - '.$end : ''));
+                    $dateRange = trim(($start ?? '').($end ? ' – '.$end : ''));
                     $bullets = array_values(array_filter(array_map(
                         fn (LocalizedText $b) => $b->resolve($language),
                         $entry->bullets
@@ -340,7 +397,7 @@ final readonly class CvDocument implements JsonSerializable
                     }
                     $start = $entry->startDate;
                     $end = $entry->endDate;
-                    $dateRange = trim(($start ?? '').($end ? ' - '.$end : ''));
+                    $dateRange = trim(($start ?? '').($end ? ' – '.$end : ''));
                     $desc = $entry->narrative->resolve($language);
 
                     if ($title !== '' || $inst !== '' || $desc !== '') {
@@ -363,10 +420,13 @@ final readonly class CvDocument implements JsonSerializable
                 }
             } elseif ($key === 'skills' && trim($skills) !== '') {
                 $skillItems = [];
+                $groups = [];
                 foreach ($this->skills ?? [] as $skill) {
                     $name = trim($skill->name->resolve($language));
                     if ($name !== '') {
                         $skillItems[] = $name;
+                        $category = trim($skill->category->resolve($language));
+                        $groups[$category][] = $name;
                     }
                 }
                 $structuredSections[] = [
@@ -375,6 +435,14 @@ final readonly class CvDocument implements JsonSerializable
                     'type' => 'tags',
                     'title' => $isAr ? 'المهارات' : 'Skills',
                     'items' => $skillItems,
+                    // Only grouped when at least one skill carries a category.
+                    'groups' => count($groups) > 1 || ! isset($groups[''])
+                        ? array_map(
+                            fn (string $category, array $items): array => ['category' => $category, 'items' => $items],
+                            array_map('strval', array_keys($groups)),
+                            array_values($groups),
+                        )
+                        : [],
                     'text' => $skills,
                 ];
             } elseif ($key === 'certifications' && ! empty($this->certifications)) {
@@ -760,13 +828,29 @@ final readonly class CvDocument implements JsonSerializable
      */
     private static function skillsFromBlob(string $blob, string $language): array
     {
-        $parts = preg_split('/[,;\n]+/u', $blob) ?: [];
         $skills = [];
 
-        foreach ($parts as $part) {
-            $part = trim($part);
-            if ($part !== '') {
-                $skills[] = new Skill(name: LocalizedText::forLanguage($language, $part));
+        foreach (preg_split('/\R/u', $blob) ?: [] as $line) {
+            // "Category | a, b" or "Category: a, b" (optionally bulleted/bold) keeps its group.
+            $line = trim((string) preg_replace('/^[-*•]\s+/u', '', trim($line)));
+            $category = '';
+            // A single "Category | item" pipe also counts, so one-skill groups keep their label.
+            if (preg_match('/^\**([^|:,;()،]{2,60}?)\**\s*([|:])\s*\**\s*(.+)$/u', $line, $match) === 1
+                && (preg_match('/[,;،]/u', $match[3]) === 1 || ($match[2] === '|' && ! str_contains($match[3], '|')))) {
+                $category = trim($match[1]);
+                $line = $match[3];
+            }
+
+            // Uncategorised lines may also use "a | b | c" or the Arabic comma.
+            $separators = $category === '' ? '/[,;،]+(?![^()]*\))|\s+\|\s+/u' : '/[,;]+(?![^()]*\))/u';
+            foreach (preg_split($separators, $line) ?: [] as $part) {
+                $part = trim($part, " \t*");
+                if ($part !== '') {
+                    $skills[] = new Skill(
+                        name: LocalizedText::forLanguage($language, $part),
+                        category: LocalizedText::forLanguage($language, $category),
+                    );
+                }
             }
         }
 

@@ -18,6 +18,7 @@ class CvAnalysis extends Model
         'user_id',
         'idempotency_key',
         'target_job_title',
+        'job_description_input',
         'original_filename',
         'input_method',
         'resume_text',

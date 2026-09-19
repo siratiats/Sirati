@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\SubscriptionPlanController;
 use App\Http\Controllers\Api\SubscriptionWebhookController;
 use App\Http\Controllers\CvAnalysisController;
 use App\Http\Controllers\FcmTokenController;
@@ -23,6 +24,7 @@ Route::post('/auth/forgot-password', [MobileAuthController::class, 'forgotPasswo
 Route::post('/auth/reset-password', [MobileAuthController::class, 'resetPassword'])
     ->middleware('throttle:5,1');
 
+Route::get('/mobile/subscription-plans', [SubscriptionPlanController::class, 'index']);
 Route::get('/mobile/education', [MobileContentController::class, 'education']);
 Route::get('/mobile/education/{educationContent}', [MobileContentController::class, 'educationShow']);
 Route::get('/mobile/cv-templates', [MobileContentController::class, 'cvTemplates']);

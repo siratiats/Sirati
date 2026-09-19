@@ -161,8 +161,11 @@ class AtsScoringService
     /**
      * @param  string|null  $categoryHint  Authoritative category (e.g. from users.job_title.category).
      *                                     When set and valid, skips free-text inference.
+     * @param  string|null  $jobDescription  Optional job posting text. When provided, keyword
+     *                                       coverage is scored against terms extracted from it
+     *                                       instead of the hardcoded category list (SIRATI-90).
      */
-    public function scoreDocument(CvDocument $document, ?string $categoryHint = null): array
+    public function scoreDocument(CvDocument $document, ?string $categoryHint = null, ?string $jobDescription = null): array
     {
         $resolved = $document->resolve();
         $jobTitle = $resolved->headline !== '' ? $resolved->headline : $resolved->fullName;
@@ -173,15 +176,18 @@ class AtsScoringService
         ]);
         $text = implode("\n\n", array_merge($header, [$resolved->toMarkdown()]));
 
-        return $this->score($text, $jobTitle, $categoryHint);
+        return $this->score($text, $jobTitle, $categoryHint, $jobDescription);
     }
 
-    public function score(string $resumeText, string $jobTitle, ?string $categoryHint = null): array
+    public function score(string $resumeText, string $jobTitle, ?string $categoryHint = null, ?string $jobDescription = null): array
     {
         $text = mb_strtolower($resumeText);
         $lines = array_values(array_filter(preg_split('/\R/u', $resumeText) ?: [], fn ($line) => trim($line) !== ''));
         $category = $this->jobCategory($jobTitle, $categoryHint);
-        $keywords = self::JOB_KEYWORDS[$category];
+
+        $jobTerms = $this->extractJobTerms((string) $jobDescription);
+        $keywordSource = $jobTerms !== [] ? 'job_description' : 'category';
+        $keywords = $keywordSource === 'job_description' ? $jobTerms : self::JOB_KEYWORDS[$category];
 
         $extractedSections = $this->extractSections($resumeText);
 
@@ -192,7 +198,7 @@ class AtsScoringService
         $summaryScore = $this->summaryScore($resumeText, $extractedSections);
         $contactScore = $this->contactScore($resumeText);
 
-        [$keywordScore, $foundKeywords, $missingKeywords] = $this->keywordScore(
+        [$keywordScore, $foundKeywords, $missingKeywords, $rawCoverage] = $this->keywordScore(
             $resumeText,
             $text,
             $jobTitle,
@@ -224,14 +230,20 @@ class AtsScoringService
 
         $total = array_sum(array_column($criteria, 'score'));
         $grade = $this->grade($total);
-        $keywordsMax = self::CRITERIA_META['keywords']['max'];
+
+        // job_match is pure coverage against the target term set (JD if given, category otherwise)
+        // — stripped of title-match / early-mention bonuses that are still counted in `total`
+        // (SIRATI-90, SIRATI-91). Reporting it as coverage lets the user act on a real number:
+        // "you matched 6 of 12 JD terms" rather than an inflated composite.
+        $jobMatch = (int) round($rawCoverage * 100);
 
         return [
             'total' => $total,
             'grade' => $grade,
-            'job_match' => (int) round(($keywordScore / $keywordsMax) * 100),
+            'job_match' => $jobMatch,
             'category' => $category,
             'category_label' => self::categoryLabel($category),
+            'keyword_source' => $keywordSource,
             'criteria' => $criteria,
             'strengths' => $this->strengths($foundKeywords, $sections, $verbCount, $quantifiedCount, $educationScore, $summaryScore, $resumeText),
             'weaknesses' => $this->weaknesses($keywordScore, $sections, $verbCount, $quantifiedCount, $resumeText),
@@ -360,6 +372,9 @@ class AtsScoringService
         $missing = array_values(array_diff($effectiveKeywords, $found));
 
         $ratio = count($effectiveKeywords) > 0 ? (count($found) / count($effectiveKeywords)) : 0;
+        // Preserve the raw coverage BEFORE any bonuses are added, so the caller can report
+        // a clean "you matched X% of terms" number as job_match (SIRATI-91).
+        $rawCoverage = $ratio;
         $score = (int) round($ratio * 18);
 
         $titleWords = preg_split('/\s+/u', mb_strtolower($jobTitle)) ?: [];
@@ -395,7 +410,150 @@ class AtsScoringService
             }
         }
 
-        return [min(30, max(0, $score)), $found, $missing];
+        return [min(30, max(0, $score)), $found, $missing, $rawCoverage];
+    }
+
+    /**
+     * Extract informative terms from a job description for keyword scoring (SIRATI-90).
+     *
+     * Returns an ordered list of unigrams and bigrams from the JD text, lower-cased,
+     * stopword-filtered, deduplicated, and capped at 25 terms. Bigrams win over their
+     * component unigrams when both are present (a bigram is a stronger, more specific signal).
+     *
+     * The extractor is deliberately dumb — no stemming, no TF-IDF. The point is to score
+     * the CV against terms the poster actually wrote, not against a static category list.
+     * If more sophistication is needed later (n-gram frequency, phrase mining, embedding
+     * similarity), the return type is stable: swap the internals without touching callers.
+     *
+     * @return list<string>
+     */
+    public function extractJobTerms(string $jobDescription): array
+    {
+        $trimmed = trim($jobDescription);
+        if ($trimmed === '') {
+            return [];
+        }
+
+        // English + Arabic stopwords. Kept short on purpose — over-filtering drops signal.
+        static $stopwords = [
+            // English
+            'the', 'and', 'for', 'with', 'you', 'your', 'our', 'are', 'will', 'has', 'have',
+            'this', 'that', 'from', 'into', 'over', 'under', 'about', 'per', 'via', 'been',
+            'were', 'was', 'when', 'while', 'they', 'them', 'their', 'his', 'her', 'him',
+            'she', 'who', 'whom', 'which', 'what', 'why', 'how', 'not', 'nor', 'but', 'yet',
+            'any', 'all', 'each', 'every', 'some', 'such', 'more', 'most', 'less', 'least',
+            'other', 'others', 'than', 'then', 'too', 'very', 'also', 'here', 'there',
+            'must', 'should', 'shall', 'may', 'might', 'can', 'could', 'would', 'do', 'does',
+            'did', 'done', 'being', 'able', 'like', 'just', 'only', 'own', 'same', 'both',
+            'able to', 'looking for', 'responsible for', 'work with', 'ability to',
+            // Common JD boilerplate
+            'job', 'role', 'position', 'candidate', 'applicant', 'company', 'team', 'work',
+            'working', 'day', 'days', 'year', 'years', 'month', 'months', 'week', 'time',
+            'good', 'great', 'strong', 'excellent', 'ideal', 'preferred', 'required',
+            'requirements', 'responsibilities', 'qualifications', 'benefits', 'plus',
+            'preferred qualifications', 'nice to have',
+            // Arabic
+            'في', 'من', 'الى', 'إلى', 'على', 'عن', 'هذا', 'هذه', 'ذلك', 'تلك', 'هو', 'هي',
+            'هم', 'انت', 'أنت', 'انا', 'أنا', 'نحن', 'لك', 'له', 'لها', 'لهم', 'ما', 'ماذا',
+            'من', 'اين', 'كيف', 'متى', 'لماذا', 'او', 'أو', 'ثم', 'ايضا', 'أيضا', 'كل',
+            'بعض', 'جميع', 'اكثر', 'أكثر', 'اقل', 'أقل', 'مع', 'او', 'الذي', 'التي',
+            'اللذين', 'اللواتي', 'يجب', 'ينبغي', 'يمكن', 'قد', 'كان', 'كانت', 'يكون',
+            'مهام', 'مسؤوليات', 'متطلبات', 'وظيفة', 'فرصة', 'شركة', 'فريق', 'عمل',
+        ];
+        $stopSet = array_flip($stopwords);
+
+        // Normalise: lowercase, drop URLs / emails / phones, strip bullet markers,
+        // and normalise Arabic (tatweel, diacritics, alef/teh) so terms match the CV
+        // scoring path.
+        $text = mb_strtolower($jobDescription);
+        $text = preg_replace('/https?:\/\/\S+/u', ' ', $text) ?? $text;
+        $text = preg_replace('/[\w.+-]+@[\w-]+\.\w+/u', ' ', $text) ?? $text;
+        $text = preg_replace('/[•●▪◦◊★☆♦·]/u', ' ', $text) ?? $text;
+        $text = self::normalizeArabic($text);
+
+        // Tokenise on non-letter runs. Keep letters + digits inside a token
+        // (so "aws", "s3", "c++" survive; punctuation between tokens is a split).
+        // Word-chars per Unicode, plus + and # for tech names.
+        $tokens = preg_split('/[^\p{L}\p{N}+#]+/u', $text) ?: [];
+        $tokens = array_values(array_filter($tokens, static function ($t): bool {
+            $t = trim((string) $t);
+            if ($t === '') {
+                return false;
+            }
+            // Drop pure numbers, single letters, and 2-char tokens (mostly noise).
+            if (preg_match('/^\d+$/u', $t)) {
+                return false;
+            }
+            return mb_strlen($t) >= 3;
+        }));
+
+        // Build unigrams and bigrams with frequency.
+        $unigramFreq = [];
+        $bigramFreq = [];
+        $unigramFirstSeen = [];
+        $bigramFirstSeen = [];
+        $order = 0;
+        $prev = null;
+
+        foreach ($tokens as $t) {
+            if (! isset($stopSet[$t])) {
+                $unigramFreq[$t] = ($unigramFreq[$t] ?? 0) + 1;
+                $unigramFirstSeen[$t] ??= $order;
+            }
+            if ($prev !== null) {
+                // Only keep bigrams where BOTH tokens are content words. "laravel and"
+                // and "and kubernetes" are noise; "distributed systems" and "rest apis"
+                // are the phrases worth matching against as a unit.
+                if (! isset($stopSet[$prev]) && ! isset($stopSet[$t])) {
+                    $bg = $prev.' '.$t;
+                    $bigramFreq[$bg] = ($bigramFreq[$bg] ?? 0) + 1;
+                    $bigramFirstSeen[$bg] ??= $order;
+                }
+            }
+            $prev = $t;
+            $order++;
+        }
+
+        // Only keep bigrams that appear MORE THAN ONCE. A single-occurrence bigram is
+        // noise from the JD's word order ("apis laravel" from a sentence), whereas a
+        // repeated bigram is a genuine phrase the poster used more than once
+        // ("distributed systems" mentioned in both responsibilities and requirements).
+        $keptBigrams = array_filter($bigramFreq, static fn (int $f): bool => $f >= 2);
+
+        // Bigrams win over their constituent unigrams — but only KEPT bigrams. If
+        // "cloud platform" is a repeated phrase, drop bare "cloud" and "platform" so
+        // the CV isn't double-credited; if it appeared once, keep the unigrams.
+        $covered = [];
+        foreach (array_keys($keptBigrams) as $bg) {
+            foreach (explode(' ', $bg) as $part) {
+                $covered[$part] = true;
+            }
+        }
+
+        $terms = [];
+        foreach ($keptBigrams as $bg => $freq) {
+            $terms[] = ['term' => $bg, 'freq' => $freq, 'order' => $bigramFirstSeen[$bg], 'len' => 2];
+        }
+        foreach ($unigramFreq as $ug => $freq) {
+            if (isset($covered[$ug])) {
+                continue;
+            }
+            $terms[] = ['term' => $ug, 'freq' => $freq, 'order' => $unigramFirstSeen[$ug], 'len' => 1];
+        }
+
+        // Rank: higher frequency first; ties broken by longer term (bigram > unigram),
+        // then by earlier appearance (JDs usually front-load the important stuff).
+        usort($terms, static function (array $a, array $b): int {
+            if ($a['freq'] !== $b['freq']) {
+                return $b['freq'] <=> $a['freq'];
+            }
+            if ($a['len'] !== $b['len']) {
+                return $b['len'] <=> $a['len'];
+            }
+            return $a['order'] <=> $b['order'];
+        });
+
+        return array_slice(array_map(static fn (array $t): string => $t['term'], $terms), 0, 25);
     }
 
     private function matchKeyword(string $rawText, string $lowerText, string $normalizedText, string $keyword): bool

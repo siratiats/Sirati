@@ -11,7 +11,9 @@ use App\Services\Ai\AiOutputTruncation;
 use App\Services\Ai\AiProviderFallback;
 use App\Services\Ai\AiTimeouts;
 use App\Services\Ai\EnhanceCvFieldResultGuard;
+use App\Services\Ai\GenerateCvResultGuard;
 use App\Services\Ai\Prompts\AnalysisAdviceSystemPrompt;
+use App\Services\Ai\Prompts\CvMarkdownFormat;
 use App\Services\Ai\Prompts\EnhanceCvFieldSystemPrompt;
 use App\Services\Ai\Schemas\OperationSchemas;
 use Illuminate\Http\Client\ConnectionException;
@@ -64,17 +66,17 @@ class DeepInfraCvService implements CvAiProvider
     {
         $language = strtolower((string) ($data['language'] ?? 'ar'));
         $model = $language === 'en'
-            ? (string) config('services.deepinfra.model_en', 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo')
+            ? (string) config('services.deepinfra.model_en', 'meta-llama/Llama-3.3-70B-Instruct-Turbo')
             : (string) config('services.deepinfra.model_ar', config('services.deepinfra.model', 'Qwen/Qwen2.5-72B-Instruct'));
         $fallback = app(OpenAiCvService::class);
 
         return AiProviderFallback::attempt(
-            fn (): array => $this->requestJson(
+            fn (): array => (new GenerateCvResultGuard)->enforce($this->requestJson(
                 'generate_cv',
                 "You are an expert CV writer for Arabic and English ATS-friendly resumes. Return only valid JSON. Use only the user-provided facts. Do not invent employers, degrees, dates, metrics, or certifications. Make the CV concise, keyword-rich, and ATS readable. When generating an English CV (language: en), all generated content must be strictly in English with no inline Arabic script or terms; express bilingual ability in English.\n\nYou MUST return a valid JSON object with keys: cv_markdown string, headline string, ats_notes array of strings, missing_information array of strings.",
-                "Generate an ATS-friendly CV template from these form inputs.\n\nInput JSON:\n".json_encode($data, JSON_UNESCAPED_UNICODE)."\n\nReturn JSON with keys: cv_markdown string, headline string, ats_notes array of strings, missing_information array of strings. cv_markdown must be the complete CV; do not repeat its sections in other keys.",
+                "Generate an ATS-friendly CV template from these form inputs.\n\nInput JSON:\n".json_encode($data, JSON_UNESCAPED_UNICODE)."\n\nReturn JSON with keys: cv_markdown string, headline string, ats_notes array of strings, missing_information array of strings. cv_markdown must be the complete CV; do not repeat its sections in other keys.\n\n".CvMarkdownFormat::instructions(),
                 $model
-            ),
+            ), 'DeepInfra'),
             $fallback->isConfigured()
                 ? fn (): array => $fallback->generateCv($data)
                 : null,
@@ -159,7 +161,7 @@ class DeepInfraCvService implements CvAiProvider
         if ($lang === 'en') {
             return (string) config(
                 'services.deepinfra.fast_model_en',
-                config('services.deepinfra.model_en', 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo')
+                config('services.deepinfra.model_en', 'meta-llama/Llama-3.3-70B-Instruct-Turbo')
             );
         }
 

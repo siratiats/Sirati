@@ -7,7 +7,6 @@ use App\Models\AiCallLog;
 use App\Services\Ai\AiHttpRetry;
 use App\Services\Ai\CachedCvAiProvider;
 use App\Services\DeepInfraCvService;
-use App\Services\OpenAiCvService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
@@ -186,7 +185,7 @@ class DeepInfraCvServiceTest extends TestCase
         $this->assertSame($body['enhanced_text'], $result['enhanced_text']);
         $this->assertDatabaseHas(AiCallLog::class, [
             'provider' => 'deepinfra',
-            'model' => 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',
+            'model' => 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
             'operation' => 'enhance_cv_field',
         ]);
     }
@@ -223,7 +222,7 @@ class DeepInfraCvServiceTest extends TestCase
         $this->assertSame($body['headline'], $result['headline']);
         $this->assertDatabaseHas(AiCallLog::class, [
             'provider' => 'deepinfra',
-            'model' => 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',
+            'model' => 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
             'operation' => 'generate_cv',
         ]);
     }

@@ -3,15 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\JobTitleResource;
-use App\Models\CvAnalysis;
 use App\Models\CvTemplate;
 use App\Models\EducationContent;
 use App\Models\GeneratedCv;
 use App\Models\JobNews;
 use App\Models\JobTitle;
 use App\Models\MobileNotification;
+use App\Models\User;
+use App\Services\Jobs\JobProfileMatcherService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\URL;
 
@@ -262,11 +264,17 @@ class MobileContentController extends Controller
     public function jobNews(Request $request): array
     {
         $language = $this->language($request);
+        $user = $request->user('sanctum') ?? $request->user();
         $category = $this->jobNewsCategory($request->query('category'));
+        $preset = trim((string) $request->query('preset', 'all'));
         $search = trim((string) ($request->query('q') ?? $request->query('query', '')));
         $jobTitleId = $request->filled('job_title_id') ? (int) $request->query('job_title_id') : null;
         $city = $request->filled('city') ? trim((string) $request->query('city')) : null;
         $isRemote = $request->boolean('is_remote', false);
+        $isVerified = $request->has('is_verified') ? $request->boolean('is_verified') : null;
+        $sourceType = $request->filled('source_type') ? trim((string) $request->query('source_type')) : null;
+        $employmentType = $request->filled('employment_type') ? trim((string) $request->query('employment_type')) : null;
+        $experienceLevel = $request->filled('experience_level') ? trim((string) $request->query('experience_level')) : null;
 
         $query = JobNews::query()
             ->with('jobTitle')
@@ -275,6 +283,42 @@ class MobileContentController extends Controller
             ->orderBy('sort_order')
             ->latest('published_at')
             ->latest();
+
+        // Preset handling
+        if ($preset === 'gov') {
+            $query->where('source_type', 'gov');
+        } elseif ($preset === 'enterprise') {
+            $query->where('source_type', 'enterprise');
+        } elseif ($preset === 'tamheer') {
+            $query->where(function ($q): void {
+                $q->where('source_type', 'tamheer')
+                    ->orWhere('employment_type', 'tamheer');
+            });
+        } elseif ($preset === 'remote') {
+            $query->where('is_remote', true);
+        } elseif ($preset === 'matched' && $user !== null) {
+            app(JobProfileMatcherService::class)->applyMatchedFilter($query, $user);
+        }
+
+        // Direct filters
+        if ($isVerified === true) {
+            $query->where(function ($q): void {
+                $q->where('is_verified', true)
+                    ->orWhereIn('source_type', ['gov', 'enterprise', 'tamheer']);
+            });
+        }
+
+        if ($sourceType !== null && $sourceType !== 'all') {
+            $query->where('source_type', $sourceType);
+        }
+
+        if ($employmentType !== null && $employmentType !== 'all') {
+            $query->where('employment_type', $employmentType);
+        }
+
+        if ($experienceLevel !== null && $experienceLevel !== 'all') {
+            $query->where('experience_level', $experienceLevel);
+        }
 
         if ($jobTitleId !== null) {
             $query->where('job_title_id', $jobTitleId);
@@ -297,20 +341,39 @@ class MobileContentController extends Controller
             });
         }
 
+        // Shared matcher instance so its per-request caches (user skills,
+        // latest CV title) are hit once, not once per rendered job (SIRATI-97).
+        $matcher = app(JobProfileMatcherService::class);
+        if ($user !== null) {
+            $user->loadMissing('jobTitle');
+        }
+
         $items = $query
             ->limit($category === null ? 30 : 80)
             ->get()
             ->filter(fn (JobNews $item): bool => $category === null || $this->inferJobCategory($item) === $category)
             ->take(30)
-            ->map(fn (JobNews $item): array => $this->jobNewsPayload($item, $language));
+            ->map(fn (JobNews $item): array => $this->jobNewsPayload($item, $language, $user, $matcher));
+
+        // If user is matched or has profile, sort by match_score descending if preset is matched or requested
+        if ($preset === 'matched' || $request->boolean('sort_matched')) {
+            $items = $items->sortByDesc('match_score')->values();
+        }
 
         return [
             'data' => [
                 'title' => $language === 'en' ? 'Job News' : 'أخبار الوظائف',
                 'subtitle' => $language === 'en'
-                    ? 'Fresh opportunities and hiring updates for your next step.'
-                    : 'فرص وتحديثات توظيف تساعدك في خطوتك القادمة.',
+                    ? 'Fresh verified opportunities tailored to your profile.'
+                    : 'فرص وتحديثات توظيف موثقة ومخصصة لملفك المهني.',
                 'selected_category' => $category ?? 'all',
+                'selected_preset' => $preset,
+                'profile_context' => [
+                    'has_profile' => $user !== null && ($user->job_title_id !== null || ! empty($user->location)),
+                    'job_title_id' => $user?->job_title_id,
+                    'job_title_name' => $language === 'en' ? $user?->jobTitle?->name_en : $user?->jobTitle?->name_ar,
+                    'location' => $user?->location,
+                ],
                 'items' => $items,
             ],
         ];
@@ -319,6 +382,7 @@ class MobileContentController extends Controller
     public function jobNewsShow(Request $request, JobNews $jobNews): array
     {
         $language = $this->language($request);
+        $user = $request->user('sanctum') ?? $request->user();
         $today = today();
 
         abort_unless(
@@ -328,7 +392,7 @@ class MobileContentController extends Controller
             404
         );
 
-        return ['data' => $this->jobNewsPayload($jobNews, $language)];
+        return ['data' => $this->jobNewsPayload($jobNews, $language, $user)];
     }
 
     public function notifications(Request $request): array
@@ -367,7 +431,7 @@ class MobileContentController extends Controller
         return ['message' => 'تم تعليم كل الإشعارات كمقروءة.'];
     }
 
-    private function jobNewsPayload(JobNews $item, string $language = 'ar'): array
+    private function jobNewsPayload(JobNews $item, string $language = 'ar', ?User $user = null, ?JobProfileMatcherService $matcher = null): array
     {
         $validUntilLabel = null;
         if ($item->valid_until !== null) {
@@ -376,14 +440,27 @@ class MobileContentController extends Controller
                 : 'التقديم حتى '.$item->valid_until->translatedFormat('d F Y');
         }
 
+        $matcher ??= app(JobProfileMatcherService::class);
+        $matchInfo = $matcher->calculateMatch($item, $user, $language);
+        $sourceInfo = $matcher->formatSourceType($item->source_type ?? 'general', $language);
+        $salaryRange = $matcher->formatSalary($item->salary_min, $item->salary_max, $language);
+
+        $isVerified = (bool) (
+            $item->is_verified
+            || in_array($item->source_type, ['gov', 'enterprise', 'tamheer'], true)
+        );
+
         return [
             'id' => $item->id,
             'language' => $item->language,
             'title' => $item->title,
             'company' => $item->company,
             'location' => $item->location,
+            'city' => $item->city,
+            'is_remote' => (bool) $item->is_remote,
             'body' => $item->body,
             'category' => $this->inferJobCategory($item),
+            'job_title_id' => $item->job_title_id,
             'url' => $item->url,
             'apply_url' => $item->apply_url,
             'valid_from' => $item->valid_from?->toDateString(),
@@ -391,6 +468,18 @@ class MobileContentController extends Controller
             'valid_until_label' => $validUntilLabel,
             'published_label' => $item->published_at?->diffForHumans(),
             'published_at' => $item->published_at?->toISOString(),
+            'is_verified' => $isVerified,
+            'source_type' => $item->source_type ?? 'general',
+            'source_type_label' => $sourceInfo['label'],
+            'source_badge' => $sourceInfo['badge'],
+            'employment_type' => $item->employment_type ?? 'full_time',
+            'experience_level' => $item->experience_level,
+            'salary_range' => $salaryRange,
+            'skills_required' => $item->skills_required ?? [],
+            'match_score' => $matchInfo['score'],
+            'match_reasons' => $matchInfo['reasons'],
+            'matched_skills' => $matchInfo['matched_skills'],
+            'missing_skills' => $matchInfo['missing_skills'],
         ];
     }
 
@@ -448,7 +537,7 @@ class MobileContentController extends Controller
         return $request->query('lang') === 'en' ? 'en' : 'ar';
     }
 
-    private function updatedLabel(?\Illuminate\Support\Carbon $date, string $language): string
+    private function updatedLabel(?Carbon $date, string $language): string
     {
         if (! $date) {
             return $language === 'en' ? 'Last updated: unknown' : 'آخر تعديل: غير محدد';

@@ -226,4 +226,185 @@ XML;
         $this->assertCount(1, $cityItems);
         $this->assertSame('محاسب مالي في جدة', $cityItems[0]['title']);
     }
+
+    public function test_matched_preset_returns_tiered_results_exact_first_then_category(): void
+    {
+        $devTitle = JobTitle::where('slug', 'software-engineer')->firstOrFail();
+        $devTitle->update(['category' => 'tech']);
+
+        $otherTechTitle = JobTitle::where('slug', 'devops-engineer')->first();
+        if (! $otherTechTitle) {
+            $otherTechTitle = JobTitle::create([
+                'slug' => 'devops-engineer',
+                'name_ar' => 'مهندس ديف أوبس',
+                'name_en' => 'DevOps Engineer',
+                'category' => 'tech',
+                'is_active' => true,
+            ]);
+        } else {
+            $otherTechTitle->update(['category' => 'tech']);
+        }
+
+        $accTitle = JobTitle::where('slug', 'accountant')->firstOrFail();
+        $accTitle->update(['category' => 'finance']);
+
+        $user = User::factory()->create([
+            'job_title_id' => $devTitle->id,
+            'location' => 'riyadh',
+        ]);
+
+        // Exact match
+        $exactJob = JobNews::create([
+            'language' => 'ar',
+            'title' => 'مطور برمجيات متقدم',
+            'company' => 'شركة تقنية كبرى',
+            'location' => 'الرياض',
+            'city' => 'riyadh',
+            'job_title_id' => $devTitle->id,
+            'category' => 'tech',
+            'body' => 'تفاصيل الوظيفة',
+            'is_published' => true,
+            'published_at' => now(),
+        ]);
+
+        // Category match (tech)
+        $categoryJob = JobNews::create([
+            'language' => 'ar',
+            'title' => 'مهندس ديف أوبس وسحاب',
+            'company' => 'شركة حلول سحابية',
+            'location' => 'الرياض',
+            'city' => 'riyadh',
+            'job_title_id' => $otherTechTitle->id,
+            'category' => 'tech',
+            'body' => 'إدارة البنية السحابية',
+            'is_published' => true,
+            'published_at' => now(),
+        ]);
+
+        // Remote match (tech)
+        $remoteJob = JobNews::create([
+            'language' => 'ar',
+            'title' => 'وظيفة عن بعد للمطورين',
+            'company' => 'شركة عالمية',
+            'location' => 'عن بعد',
+            'city' => null,
+            'is_remote' => true,
+            'category' => 'tech',
+            'body' => 'عمل عن بعد',
+            'is_published' => true,
+            'published_at' => now(),
+        ]);
+
+        // Unrelated job (finance)
+        $financeJob = JobNews::create([
+            'language' => 'ar',
+            'title' => 'محاسب عام وتدقيق',
+            'company' => 'بنك تجاري',
+            'location' => 'جدة',
+            'city' => 'jeddah',
+            'job_title_id' => $accTitle->id,
+            'category' => 'finance',
+            'body' => 'تفاصيل المحاسبة',
+            'is_published' => true,
+            'published_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')->getJson('/api/mobile/job-news?preset=matched');
+        $response->assertOk();
+
+        $items = $response->json('data.items');
+
+        // All 3 matching/fallback jobs returned
+        $returnedIds = collect($items)->pluck('id')->all();
+        $this->assertContains($exactJob->id, $returnedIds);
+        $this->assertContains($categoryJob->id, $returnedIds);
+        $this->assertContains($remoteJob->id, $returnedIds);
+        $this->assertNotContains($financeJob->id, $returnedIds);
+
+        // Exact match should be ranked first with highest match score
+        $this->assertSame($exactJob->id, $items[0]['id']);
+        $this->assertGreaterThanOrEqual($items[1]['match_score'], $items[0]['match_score']);
+    }
+
+    public function test_feed_health_tracking_records_success_and_warnings(): void
+    {
+        $aggregator = app(SaudiJobAggregatorService::class);
+
+        $aggregator->recordFeedSuccess('telegram_jobmag', 12);
+        $aggregator->recordFeedWarning('telegram_ewdifh', '0 posts parsed');
+
+        $health = collect($aggregator->getFeedsHealth())->keyBy('source');
+
+        $this->assertTrue($health['telegram_jobmag']['healthy']);
+        $this->assertSame(12, $health['telegram_jobmag']['last_fetched_count']);
+        $this->assertNotNull($health['telegram_jobmag']['last_success_at']);
+
+        $this->assertSame('0 posts parsed', $health['telegram_ewdifh']['last_issue']);
+        $this->assertSame(1, $health['telegram_ewdifh']['consecutive_zero_fetches']);
+    }
+
+    public function test_notification_respects_global_toggle_and_anti_spam(): void
+    {
+        \Illuminate\Support\Facades\Queue::fake();
+
+        $devTitle = JobTitle::where('slug', 'software-engineer')->firstOrFail();
+
+        $user = User::factory()->create([
+            'job_title_id' => $devTitle->id,
+            'email_verified_at' => now(),
+        ]);
+
+        $user->fcmTokens()->create([
+            'token' => 'mock_fcm_token_123',
+            'device_type' => 'ios',
+            'is_active' => true,
+        ]);
+
+        $job1 = JobNews::create([
+            'language' => 'ar',
+            'title' => 'مطور برمجيات 1',
+            'company' => 'شركة أ',
+            'body' => 'تفاصيل الوظيفة الأولى',
+            'job_title_id' => $devTitle->id,
+            'is_published' => true,
+            'published_at' => now(),
+        ]);
+
+        $job2 = JobNews::create([
+            'language' => 'ar',
+            'title' => 'مطور برمجيات 2',
+            'company' => 'شركة ب',
+            'body' => 'تفاصيل الوظيفة الثانية',
+            'job_title_id' => $devTitle->id,
+            'is_published' => true,
+            'published_at' => now(),
+        ]);
+
+        $aggregator = app(SaudiJobAggregatorService::class);
+
+        // Case 1: When smart notifications is disabled, nothing should be dispatched
+        config(['smart_notifications.enabled' => false]);
+        $aggregator->notifyInterestedCandidates($job1);
+        \Illuminate\Support\Facades\Queue::assertNothingPushed();
+
+        // Case 2: When enabled, user receives first job alert
+        config(['smart_notifications.enabled' => true]);
+
+        // Ensure user preference allows notifications and timezone is not in quiet hours
+        $pref = app(\App\Services\Notifications\NotificationPreferenceService::class)->forUser($user);
+        $pref->update([
+            'enabled' => true,
+            'quiet_hours_start' => '01:00',
+            'quiet_hours_end' => '02:00', // outside current test time
+            'timezone_offset_minutes' => 0,
+        ]);
+
+        $aggregator->notifyInterestedCandidates($job1);
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\SendPushNotificationJob::class, 1);
+
+        // Case 3: Same aggregation batch - second job does NOT spam the user again!
+        $aggregator->notifyInterestedCandidates($job2);
+        // Count should still be 1!
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\SendPushNotificationJob::class, 1);
+    }
 }

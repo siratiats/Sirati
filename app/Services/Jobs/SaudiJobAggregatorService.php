@@ -5,14 +5,25 @@ namespace App\Services\Jobs;
 use App\Jobs\SendPushNotificationJob;
 use App\Models\JobNews;
 use App\Models\JobTitle;
+use App\Models\NotificationDecision;
 use App\Models\User;
+use App\Services\Notifications\NotificationPolicyService;
+use App\Services\Notifications\NotificationPreferenceService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class SaudiJobAggregatorService
 {
+    /**
+     * Set of user IDs already notified during the current aggregation run to prevent spam.
+     *
+     * @var array<int, bool>
+     */
+    private array $notifiedUsersInBatch = [];
+
     public function __construct(
         private readonly JobTaxonomyMatcher $matcher,
     ) {}
@@ -65,6 +76,9 @@ class SaudiJobAggregatorService
         $totalUpdated = 0;
         $errors = [];
 
+        // Reset batch notifications tracking so users only receive max 1 notification per aggregate run
+        $this->notifiedUsersInBatch = [];
+
         foreach ($feeds as $feed) {
             try {
                 $result = $this->aggregateFeed($feed);
@@ -76,6 +90,7 @@ class SaudiJobAggregatorService
                     'source' => $feed['source'] ?? 'unknown',
                     'error' => $e->getMessage(),
                 ]);
+                $this->recordFeedFailure($feed['source'] ?? 'unknown', $e->getMessage());
                 $errors[] = "Feed " . ($feed['name'] ?? 'Unknown') . ": {$e->getMessage()}";
             }
         }
@@ -116,11 +131,14 @@ class SaudiJobAggregatorService
             ->get($url);
 
         if (! $response->successful()) {
+            // Failure recording is centralised in aggregateAll()'s catch to
+            // avoid double-incrementing consecutive_failures (SIRATI-96).
             throw new \RuntimeException("HTTP {$response->status()} while fetching Telegram channel {$url}");
         }
 
         $html = $response->body();
         if (trim($html) === '') {
+            $this->recordFeedWarning($feed['source'], "Empty HTML body received from Telegram channel {$channel}");
             return ['fetched' => 0, 'created' => 0, 'updated' => 0];
         }
 
@@ -173,7 +191,7 @@ class SaudiJobAggregatorService
             // Clean title
             $lines = array_values(array_filter(explode("\n", $cleanText), fn ($l) => trim($l) !== ''));
             $firstLine = $lines[0] ?? '';
-            $title = preg_replace('/^[\s\x{200e}\x{200f}\x{202a}-\x{202e}\(\)\[\]\{\}🔴⚡️•\-\*🔻💠🌀👻✅📌📢]+\s*/u', '', $firstLine);
+            $title = preg_replace('/^[\s\x{200e}\x{200f}\x{202a}-\x{202e}\(\)\[\]\{\}\-\*\#\:\!\.\،\?\|\/\\\@]+\s*/u', '', $firstLine);
             $title = trim(preg_replace('/[\s\)\]\}\:\-]+$/u', '', (string) $title));
 
             if (mb_strlen($title) < 5 && isset($lines[1])) {
@@ -227,6 +245,12 @@ class SaudiJobAggregatorService
             }
         }
 
+        if ($fetched === 0) {
+            $this->recordFeedWarning($feed['source'], "Channel @{$channel} returned 0 parseable job posts");
+        } else {
+            $this->recordFeedSuccess($feed['source'], $fetched);
+        }
+
         return [
             'fetched' => $fetched,
             'created' => $created,
@@ -249,6 +273,7 @@ class SaudiJobAggregatorService
             ->get($url);
 
         if (! $response->successful()) {
+            // Failure recording is centralised in aggregateAll()'s catch (SIRATI-96).
             throw new \RuntimeException("HTTP {$response->status()} while fetching Remotive API {$url}");
         }
 
@@ -278,7 +303,7 @@ class SaudiJobAggregatorService
                 'language' => $feed['language'] ?? 'en',
                 'title' => Str::limit($title, 180, ''),
                 'company' => Str::limit($company, 160, ''),
-                'location' => 'عن بعد (Worldwide Remote)',
+                'location' => 'عن بُعد (Worldwide Remote)',
                 'body' => $description ?: $title,
                 'url' => $urlLink,
                 'apply_url' => $urlLink,
@@ -311,6 +336,12 @@ class SaudiJobAggregatorService
             }
         }
 
+        if ($fetched === 0) {
+            $this->recordFeedWarning($feed['source'], 'Remotive API returned 0 job posts');
+        } else {
+            $this->recordFeedSuccess($feed['source'], $fetched);
+        }
+
         return [
             'fetched' => $fetched,
             'created' => $created,
@@ -328,16 +359,19 @@ class SaudiJobAggregatorService
             ->get($feed['url']);
 
         if (! $response->successful()) {
+            // Failure recording is centralised in aggregateAll()'s catch (SIRATI-96).
             throw new \RuntimeException("HTTP {$response->status()} while fetching {$feed['url']}");
         }
 
         $xmlString = $response->body();
         if (trim($xmlString) === '') {
+            $this->recordFeedWarning($feed['source'], 'Empty XML body received');
             return ['fetched' => 0, 'created' => 0, 'updated' => 0];
         }
 
         $xml = @simplexml_load_string($xmlString, 'SimpleXMLElement', LIBXML_NOCDATA);
         if ($xml === false || ! isset($xml->channel->item)) {
+            $this->recordFeedWarning($feed['source'], 'Invalid RSS XML structure');
             return ['fetched' => 0, 'created' => 0, 'updated' => 0];
         }
 
@@ -355,17 +389,15 @@ class SaudiJobAggregatorService
 
             if ($title === '') continue;
 
-            // Extract company name if included in brackets or title format (e.g. "Title - Company")
             $company = $this->extractCompany($title);
             $location = $this->extractLocation($title.' '.$description);
 
-            // Match taxonomy & city
             $match = $this->matcher->match($title, $description, $location);
 
             $jobData = [
                 'language' => $feed['language'] ?? 'ar',
                 'title' => Str::limit($title, 180, ''),
-                'company' => Str::limit($company ?: 'شركة سعودية رائدة', 160, ''),
+                'company' => Str::limit($company ?: 'جهة سعودية رائدة', 160, ''),
                 'location' => Str::limit($location ?: 'المملكة العربية السعودية', 160, ''),
                 'body' => $description ?: $title,
                 'url' => $link,
@@ -399,6 +431,12 @@ class SaudiJobAggregatorService
             }
         }
 
+        if ($fetched === 0) {
+            $this->recordFeedWarning($feed['source'], 'RSS feed contained 0 items');
+        } else {
+            $this->recordFeedSuccess($feed['source'], $fetched);
+        }
+
         return [
             'fetched' => $fetched,
             'created' => $created,
@@ -407,23 +445,122 @@ class SaudiJobAggregatorService
     }
 
     /**
-     * Dispatch smart push notifications to candidates matching this job title.
+     * Dispatch push notifications safely to interested candidates, respecting:
+     * - Smart notifications global enable toggle
+     * - User notification preference (opt-in)
+     * - Quiet hours (e.g. 21:00 to 09:00)
+     * - Minimum 24-hour gap between notifications
+     * - Weekly notification cap
+     * - Anti-batch flooding (max 1 notification per user per aggregation run)
      */
     public function notifyInterestedCandidates(JobNews $job): void
     {
-        if (! $job->job_title_id) return;
+        if (! $job->job_title_id) {
+            return;
+        }
 
-        // Find users with this job title
+        // 1. Check global toggle
+        if (! config('smart_notifications.enabled')) {
+            return;
+        }
+
+        /** @var NotificationPolicyService $policy */
+        $policy = app(NotificationPolicyService::class);
+        /** @var NotificationPreferenceService $preferences */
+        $preferences = app(NotificationPreferenceService::class);
+
+        // Find candidate users whose registered job title matches this job
         $users = User::query()
             ->where('job_title_id', $job->job_title_id)
             ->whereNotNull('email_verified_at')
-            ->limit(200)
+            ->whereHas('fcmTokens', fn ($q) => $q->where('is_active', true))
+            ->limit(100)
             ->get();
 
+        $now = now();
+
         foreach ($users as $user) {
-            $locationNote = $job->city ? ' في '.($job->location ?: 'السعودية') : '';
-            $title = '🎯 فرصة وظيفية جديدة تناسبك';
-            $body = "تم نشر وظيفة جديدة: {$job->title}{$locationNote} لدى {$job->company}";
+            // 2. Prevent sending multiple alerts to the same user in a single aggregation run
+            if (isset($this->notifiedUsersInBatch[$user->id])) {
+                continue;
+            }
+
+            $preference = $preferences->forUser($user);
+
+            // 3. User opted in check
+            if (! $preference->enabled) {
+                continue;
+            }
+
+            // 4. Quiet hours check
+            $localNow = $policy->localNow($preference, $now);
+            if ($policy->inQuietHours($preference, $localNow)) {
+                continue;
+            }
+
+            // 5. Check recent decisions for minimum 24h gap
+            $recentDecisions = NotificationDecision::query()
+                ->where('user_id', $user->id)
+                ->where('created_at', '>=', $now->copy()->subDays(7))
+                ->get();
+
+            $lastActiveSend = $recentDecisions
+                ->filter(fn (NotificationDecision $d) => in_array($d->status, NotificationDecision::ACTIVE_STATUSES, true))
+                ->sortByDesc(fn (NotificationDecision $d) => $d->queued_at ?? $d->created_at)
+                ->first();
+
+            $minGapHours = (int) config('smart_notifications.minimum_gap_hours', 24);
+            if ($lastActiveSend !== null) {
+                $anchor = $lastActiveSend->queued_at ?? $lastActiveSend->created_at;
+                if ($anchor !== null && $anchor->greaterThan($now->copy()->subHours($minGapHours))) {
+                    continue;
+                }
+            }
+
+            // 6. Check weekly notification cap
+            $maxPerWeek = (int) ($preference->max_per_week ?: config('smart_notifications.default_max_per_week', 4));
+            $weekCount = $recentDecisions
+                ->filter(fn (NotificationDecision $d) => in_array($d->status, NotificationDecision::ACTIVE_STATUSES, true))
+                ->count();
+
+            if ($weekCount >= $maxPerWeek) {
+                continue;
+            }
+
+            // 7. Idempotency per user per job
+            $idempotencyKey = "realtime_job:{$user->id}:{$job->id}";
+            if (NotificationDecision::query()->where('idempotency_key', $idempotencyKey)->exists()) {
+                continue;
+            }
+
+            // Mark user notified in this batch
+            $this->notifiedUsersInBatch[$user->id] = true;
+
+            $isEnglish = ($preference->language ?? 'ar') === 'en';
+            $locationNote = $job->city ? ($isEnglish ? " in {$job->city}" : " في {$job->location}") : '';
+            $title = $isEnglish ? '🎯 New Matching Job Opening' : '🎯 فرصة وظيفية جديدة تناسبك';
+            $body = $isEnglish
+                ? "New role: {$job->title}{$locationNote} at {$job->company}"
+                : "تم نشر وظيفة جديدة: {$job->title}{$locationNote} لدى {$job->company}";
+
+            $decision = NotificationDecision::query()->create([
+                'user_id' => $user->id,
+                'rule_key' => 'matching_job',
+                'template_key' => 'matching_job',
+                'context' => [
+                    'type' => 'job_match',
+                    'job_id' => (string) $job->id,
+                    'job_title' => $job->title,
+                    'company' => $job->company,
+                    'action_type' => 'job_news',
+                    'action_url' => '/mobile/job-news/'.$job->id,
+                    'language' => $preference->language ?? 'ar',
+                ],
+                'idempotency_key' => $idempotencyKey,
+                'scheduled_for' => $now,
+                'status' => 'queued',
+                'queued_at' => $now,
+            ]);
 
             SendPushNotificationJob::dispatch(
                 userId: $user->id,
@@ -436,14 +573,87 @@ class SaudiJobAggregatorService
                     'type' => 'job_match',
                     'job_id' => (string) $job->id,
                     'action_url' => '/mobile/job-news/'.$job->id,
+                    'decision_id' => (string) $decision->id,
                 ],
             );
         }
     }
 
+    public function recordFeedSuccess(string $source, int $fetched): void
+    {
+        Cache::put("job_feed:{$source}:last_success_at", now()->toISOString(), now()->addDays(7));
+        Cache::put("job_feed:{$source}:last_fetched_count", $fetched, now()->addDays(7));
+        Cache::forget("job_feed:{$source}:consecutive_failures");
+        Cache::forget("job_feed:{$source}:consecutive_zero_fetches");
+    }
+
+    public function recordFeedWarning(string $source, string $reason): void
+    {
+        $zeroCount = (int) Cache::get("job_feed:{$source}:consecutive_zero_fetches", 0) + 1;
+        Cache::put("job_feed:{$source}:consecutive_zero_fetches", $zeroCount, now()->addDays(7));
+        Cache::put("job_feed:{$source}:last_warning", $reason, now()->addDays(7));
+        Cache::put("job_feed:{$source}:last_warning_at", now()->toISOString(), now()->addDays(7));
+
+        Log::warning("Job feed {$source} warning: {$reason} (count: {$zeroCount})");
+    }
+
+    public function recordFeedFailure(string $source, string $error): void
+    {
+        $failCount = (int) Cache::get("job_feed:{$source}:consecutive_failures", 0) + 1;
+        Cache::put("job_feed:{$source}:consecutive_failures", $failCount, now()->addDays(7));
+        Cache::put("job_feed:{$source}:last_error", $error, now()->addDays(7));
+        Cache::put("job_feed:{$source}:last_failure_at", now()->toISOString(), now()->addDays(7));
+
+        Log::error("Job feed {$source} failed: {$error} (consecutive: {$failCount})");
+    }
+
+    /**
+     * Get real-time health diagnostic for all configured feeds.
+     *
+     * @return list<array{
+     *     source: string,
+     *     name: string,
+     *     type: string,
+     *     healthy: bool,
+     *     last_success_at: ?string,
+     *     last_fetched_count: int,
+     *     consecutive_failures: int,
+     *     consecutive_zero_fetches: int,
+     *     last_issue: ?string
+     * }>
+     */
+    public function getFeedsHealth(): array
+    {
+        $health = [];
+        foreach (self::SAUDI_FEEDS as $feed) {
+            $source = $feed['source'];
+            $lastSuccess = Cache::get("job_feed:{$source}:last_success_at");
+            $lastCount = (int) Cache::get("job_feed:{$source}:last_fetched_count", 0);
+            $consecutiveFails = (int) Cache::get("job_feed:{$source}:consecutive_failures", 0);
+            $consecutiveZeroes = (int) Cache::get("job_feed:{$source}:consecutive_zero_fetches", 0);
+            $lastError = Cache::get("job_feed:{$source}:last_error");
+            $lastWarning = Cache::get("job_feed:{$source}:last_warning");
+
+            $isHealthy = $consecutiveFails < 3 && $consecutiveZeroes < 3;
+
+            $health[] = [
+                'source' => $source,
+                'name' => $feed['name'],
+                'type' => $feed['type'],
+                'healthy' => $isHealthy,
+                'last_success_at' => $lastSuccess,
+                'last_fetched_count' => $lastCount,
+                'consecutive_failures' => $consecutiveFails,
+                'consecutive_zero_fetches' => $consecutiveZeroes,
+                'last_issue' => $lastError ?: $lastWarning,
+            ];
+        }
+
+        return $health;
+    }
+
     private function extractCompany(string $text): ?string
     {
-        // Check for company prefixes, e.g. لدى (شركة أيوا) or شركة سيف للخدمات الأمنية
         if (preg_match('/(?:لدى|في|عن|بـ|بواسطة)?\s*[\(\[]?(?:شركة|مجموعة|مؤسسة|بنك|مصرف|هيئة|مستشفى)\s+([^\)\],،\.\-\n]+)[\)\]]?/u', $text, $matches)) {
             $extracted = trim(strip_tags($matches[1]));
             $extracted = preg_replace('/^(?:عالمية|سعودية|كبرى|رائدة)\s+/u', '', $extracted);
@@ -491,7 +701,7 @@ class SaudiJobAggregatorService
         }
 
         if ($cityMatch['is_remote']) {
-            return 'عن بعد (Remote)';
+            return 'عن بُعد (Remote)';
         }
 
         return 'المملكة العربية السعودية';

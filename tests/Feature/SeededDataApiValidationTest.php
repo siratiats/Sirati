@@ -2,9 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\CvTemplate;
 use App\Models\JobTitle;
-use App\Models\User;
 use Database\Seeders\CvTemplateSeeder;
 use Database\Seeders\JobTitleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -82,16 +80,11 @@ class SeededDataApiValidationTest extends TestCase
             ]);
 
         $itemsEn = $responseEn->json('data.items');
-        $this->assertCount(6, $itemsEn, 'Expected 6 seeded CV templates for English.');
+        $this->assertCount(1, $itemsEn, 'Expected the single seeded CV template for English.');
 
         $slugsEn = collect($itemsEn)->pluck('slug')->all();
         $expectedSlugs = [
             'ats-classic-professional',
-            'graduate-launchpad',
-            'technical-specialist-matrix',
-            'executive-leadership-brief',
-            'sales-impact-performer',
-            'bilingual-global-professional',
         ];
 
         foreach ($expectedSlugs as $expected) {
@@ -101,10 +94,10 @@ class SeededDataApiValidationTest extends TestCase
         $defaultCount = collect($itemsEn)->where('is_default', true)->count();
         $this->assertSame(1, $defaultCount, 'Expected exactly one default CV template.');
 
-        // Test Arabic filters correctly (5 templates support Arabic)
+        // The single template supports Arabic too
         $responseAr = $this->getJson('/api/mobile/cv-templates?lang=ar');
         $responseAr->assertOk();
-        $this->assertCount(5, $responseAr->json('data.items'));
+        $this->assertCount(1, $responseAr->json('data.items'));
     }
 
     public function test_education_api_returns_valid_structure(): void

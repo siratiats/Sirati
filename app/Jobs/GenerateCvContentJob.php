@@ -6,7 +6,6 @@ use App\Contracts\CvAiProvider;
 use App\Enums\AiStatus;
 use App\Exceptions\AiRefusalException;
 use App\Exceptions\AiTruncationException;
-use App\Jobs\SendPushNotificationJob;
 use App\Models\GeneratedCv;
 use App\Services\Ai\AiTimeouts;
 use App\Services\Ai\CachedCvAiProvider;
@@ -17,6 +16,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Auth;
 use RuntimeException;
 use Throwable;
+use UnexpectedValueException;
 
 class GenerateCvContentJob implements ShouldQueue
 {
@@ -67,13 +67,18 @@ class GenerateCvContentJob implements ShouldQueue
 
         try {
             $output = $provider->generateCv($generatedCv->form_payload ?? []);
-            $markdown = (string) ($output['cv_markdown'] ?? $generatedCv->generated_markdown);
+            $markdown = (string) ($output['cv_markdown'] ?? '');
+            if (trim($markdown) === '') {
+                // Never mark an empty/echoed reply as a completed CV; retry instead.
+                throw new UnexpectedValueException('AI provider returned no cv_markdown.');
+            }
             $score = $scorer->score($markdown, $generatedCv->target_job_title);
             $language = ($generatedCv->language ?? 'ar') === 'en' ? 'en' : 'ar';
             $document = $generatedCv->cvDocument()->overlayGeneratedMarkdown(
                 $markdown,
                 $language,
                 isset($output['headline']) ? (string) $output['headline'] : null,
+                $generatedCv->form_payload,
             );
 
             $generatedCv->update([

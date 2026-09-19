@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Sleep;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
+use UnexpectedValueException;
 
 class CvAiProviderResilienceTest extends TestCase
 {
@@ -163,6 +164,66 @@ class CvAiProviderResilienceTest extends TestCase
     }
 
     /**
+     * Live Llama replies sometimes echo the input payload as a JSON list.
+     *
+     * @param  class-string<CvAiProvider>  $class
+     */
+    #[DataProvider('providerDrivers')]
+    public function test_provider_rejects_reply_without_cv_markdown(string $class): void
+    {
+        $spec = $this->driverSpec($class);
+        $this->configureDriver($class);
+        $echo = json_encode([['full_name' => 'Echo User', 'language' => 'en']], JSON_THROW_ON_ERROR);
+
+        Http::fake([
+            $spec['url'] => Http::response($this->withContent($class, $spec['success'], $echo), 200),
+        ]);
+
+        $this->expectException(UnexpectedValueException::class);
+        $this->expectExceptionMessage('no cv_markdown');
+
+        app($class)->generateCv(['full_name' => 'Echo User', 'language' => 'en']);
+    }
+
+    public function test_deepinfra_reply_without_cv_markdown_falls_back_to_openai(): void
+    {
+        $this->configureDriver(DeepInfraCvService::class);
+        config([
+            'services.openai.api_key' => 'test-openai-key',
+            'services.openai.model' => 'gpt-4.1-mini',
+            'services.openai.base_url' => 'https://api.openai.com/v1',
+        ]);
+        $deepInfra = $this->driverSpec(DeepInfraCvService::class);
+        $openAi = $this->driverSpec(OpenAiCvService::class);
+
+        Http::fake([
+            $deepInfra['url'] => Http::response($this->withContent(DeepInfraCvService::class, $deepInfra['success'], '[{"full_name":"Echo User"}]'), 200),
+            $openAi['url'] => Http::response($openAi['success'], 200),
+        ]);
+
+        $output = app(DeepInfraCvService::class)->generateCv(['full_name' => 'Echo User', 'language' => 'en']);
+
+        $this->assertSame('# Retry User', $output['cv_markdown']);
+        Http::assertSentCount(2);
+    }
+
+    /**
+     * @param  class-string<CvAiProvider>  $class
+     * @param  array<string, mixed>  $response
+     * @return array<string, mixed>
+     */
+    private function withContent(string $class, array $response, string $content): array
+    {
+        if ($class === ClaudeCvService::class) {
+            $response['content'][0]['text'] = $content;
+        } else {
+            $response['choices'][0]['message']['content'] = $content;
+        }
+
+        return $response;
+    }
+
+    /**
      * @return list<class-string<CvAiProvider>>
      */
     private function concreteProviders(): array
@@ -227,7 +288,7 @@ class CvAiProviderResilienceTest extends TestCase
             DeepInfraCvService::class => config([
                 'services.deepinfra.api_key' => 'test-deepinfra-key',
                 'services.deepinfra.model' => 'Qwen/Qwen2.5-72B-Instruct',
-                'services.deepinfra.model_en' => 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo',
+                'services.deepinfra.model_en' => 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
                 'services.deepinfra.base_url' => 'https://api.deepinfra.com/v1/openai',
             ]),
             default => $this->fail("No configuration fixture for {$class}."),

@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Enums\AiStatus;
+use App\Services\Subscriptions\SubscriptionGate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\URL;
@@ -47,8 +48,32 @@ class GeneratedCvResource extends JsonResource
             'criteria' => $this->mobileList($this->criteria),
             'pdf_url' => $publicBaseUrl.$signedPath,
             'template_pdf_url' => $publicBaseUrl.$signedPath,
+            'access' => $this->accessBlock($request),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
+        ];
+    }
+
+    /**
+     * The download button should look locked before it is tapped, not after a
+     * 402 comes back. pdf_url stays in the payload because it is still the
+     * correct URL the moment the subscription starts.
+     *
+     * @return array<string, mixed>
+     */
+    private function accessBlock(Request $request): array
+    {
+        $gate = app(SubscriptionGate::class);
+        $user = $request->user() ?? $this->user;
+        $canDownload = $gate->allowsDownload($user);
+
+        return [
+            'can_preview' => true,
+            'can_download' => $canDownload,
+            'is_watermarked' => ! $canDownload,
+            'download_locked_reason' => $canDownload ? null : 'subscription_required',
+            'message_ar' => $canDownload ? null : 'المعاينة مجانية — اشترك لتحميل نسخة PDF بدون علامة مائية.',
+            'message_en' => $canDownload ? null : 'Preview is free — subscribe to download a watermark-free PDF.',
         ];
     }
 
