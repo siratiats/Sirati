@@ -798,6 +798,57 @@ def verify_rule_9_internal_links(parser, public_dir, current_rel_path, page_cach
     return True, f"All {len(parser.a_tags)} links resolve to valid targets without 404s"
 
 
+def verify_rule_10_apple_compliance(parser, public_dir, current_rel_path):
+    """Rule 10: Apple Developer & D-U-N-S Corporate Identity, Address, and Anti-Placeholder Invariant."""
+    file_path = os.path.join(public_dir, current_rel_path)
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except Exception as err:
+        return False, f"Could not read {current_rel_path}: {err}"
+
+    errors = []
+
+    # 1. Exact Establishment Name
+    if "Digital Pass Establishment" not in content:
+        errors.append("Missing exact entity name 'Digital Pass Establishment'")
+
+    # 2. Exact Commercial Registration (CR)
+    if "7051100811" not in content:
+        errors.append("Missing CR No. '7051100811'")
+
+    # 3. Ownership Statement
+    text_content = re.sub(r'<[^>]+>', ' ', content)
+    norm_text = ' '.join(text_content.split())
+    if "Siratie is owned and operated by Digital Pass Establishment" not in norm_text and "سيرتي مملوك ومُشغَّل من قِبل Digital Pass Establishment" not in norm_text:
+        errors.append("Missing explicit ownership statement binding Siratie to Digital Pass Establishment")
+
+    # 4. Active Contact Channels
+    if "info@siratie.com" not in content:
+        errors.append("Missing official contact email 'info@siratie.com'")
+
+    # 5. Full Address on standard landing pages
+    is_legal = any(k in current_rel_path for k in ["privacy", "terms"])
+    if not is_legal:
+        if "+966 59 189 0300" not in content and "+966591890300" not in content:
+            errors.append("Missing phone '+966 59 189 0300'")
+        if "32273" not in content or "7676" not in content:
+            errors.append("Missing national postal code 32273 or additional number 7676")
+
+    # 6. Anti-placeholder & Anti-coming-soon
+    if "[PLACEHOLDER" in content or "[placeholder" in content:
+        errors.append("Contains unconfigured [PLACEHOLDER] token")
+    if "قريباً" in content or "قريبا" in content:
+        errors.append("Contains 'قريباً' placeholder badge")
+    if "coming soon" in content.lower():
+        errors.append("Contains 'coming soon' placeholder badge")
+
+    if errors:
+        return False, "; ".join(errors)
+    return True, "Apple & D-U-N-S corporate identity, CR, address, and zero-placeholder invariants satisfied"
+
+
+
 # ==============================================================================
 # ROOT ASSETS VERIFICATION
 # ==============================================================================
@@ -981,8 +1032,8 @@ def run_seo_audit(public_dir, verbose=False, quiet=False):
             results["diagnostics"].append(f"Root Asset [{asset_name}]: {msg}")
             log(f"  {RED}[FAIL]{RESET} {asset_name:<14} : {msg}")
 
-    # 2. VERIFY ALL HTML PAGES (9 RULES EACH)
-    log(f"\n{BOLD}--- {len(PAGE_SPECS)} Static Landing Pages (9 Rules / {len(PAGE_SPECS) * 9} Assertions) ---{RESET}")
+    # 2. VERIFY ALL HTML PAGES (10 RULES EACH)
+    log(f"\n{BOLD}--- {len(PAGE_SPECS)} Static Landing Pages (10 Rules / {len(PAGE_SPECS) * 10} Assertions) ---{RESET}")
 
     rules_meta = [
         (1, "H1 Tag Count", verify_rule_1_h1),
@@ -994,6 +1045,7 @@ def run_seo_audit(public_dir, verbose=False, quiet=False):
         (7, "Social OG/Twitter", verify_rule_7_social_cards),
         (8, "JSON-LD & Forbidden", verify_rule_8_json_ld),
         (9, "Internal Links / 404", verify_rule_9_internal_links),
+        (10, "Apple & D&B Entity", verify_rule_10_apple_compliance),
     ]
 
     for spec in PAGE_SPECS:
@@ -1043,6 +1095,8 @@ def run_seo_audit(public_dir, verbose=False, quiet=False):
                 ok, msg = rule_fn(parser, spec)
             elif rule_num == 9:
                 ok, msg = rule_fn(parser, public_dir, rel_path, page_cache)
+            elif rule_num == 10:
+                ok, msg = rule_fn(parser, public_dir, rel_path)
 
             page_result["rules"][f"Rule {rule_num}"] = {
                 "passed": ok,
@@ -1062,14 +1116,14 @@ def run_seo_audit(public_dir, verbose=False, quiet=False):
                 log(f"    {RED}[FAIL]{RESET} Rule {rule_num} ({rule_title:<18}): {msg}")
 
         if page_result["all_rules_passed"]:
-            log(f"  {GREEN}[ALL 9 RULES PASSED]{RESET}")
+            log(f"  {GREEN}[ALL 10 RULES PASSED]{RESET}")
 
         results["pages"][page_id] = page_result
 
     # 3. AUDIT SUMMARY
     log(f"\n{BOLD}{CYAN}====================================================================={RESET}")
     log(f"{BOLD}AUDIT SUMMARY & QA GATE STATUS:{RESET}")
-    log(f"  Total Page Assertions : {results['total_page_assertions']} ({len(PAGE_SPECS)} pages x 9 rules)")
+    log(f"  Total Page Assertions : {results['total_page_assertions']} ({len(PAGE_SPECS)} pages x 10 rules)")
     log(f"  Passed Assertions     : {GREEN}{results['passed_page_assertions']}{RESET}")
     log(f"  Failed Assertions     : {RED if results['failed_page_assertions'] > 0 else GREEN}{results['failed_page_assertions']}{RESET}")
 

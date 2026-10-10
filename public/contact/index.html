@@ -95,7 +95,7 @@
       color: var(--color-text-primary);
       font-weight: 600;
     }
-    .contact-value a {
+    .contact-value a:not(.btn) {
       color: var(--color-primary-ink);
       text-decoration: underline;
       text-underline-offset: 3px;
@@ -153,7 +153,7 @@
           "email": "info@siratie.com",
           "address": {
             "@type": "PostalAddress",
-            "streetAddress": "4392 Sheikh Mohammed Bin Othaimeen St, Taibah District",
+            "streetAddress": "4392 Sheikh Mohammed Bin Othaimeen St, Taibah District, Additional No. 7676",
             "addressLocality": "Dammam",
             "postalCode": "32273",
             "addressCountry": "SA"
@@ -323,7 +323,7 @@
             <div style="margin-block-start: 4px; color: var(--color-text-muted);">سجل تجاري رقم: <strong>7051100811</strong></div>
             <div style="margin-block-start: 4px;">البريد: <a href="mailto:info@siratie.com" style="color: var(--color-primary-ink); font-weight: 600;">info@siratie.com</a></div>
             <div style="margin-block-start: 4px;">الهاتف: <a href="tel:+966591890300" style="color: var(--color-text-secondary); text-decoration: none;" dir="ltr">+966 59 189 0300</a></div>
-            <div style="margin-block-start: 4px; color: var(--color-text-muted);">الدمام 32273، المملكة العربية السعودية</div>
+            <div style="margin-block-start: 4px; color: var(--color-text-muted); line-height: 1.5;">4392 شارع الشيخ محمد بن عثيمين، حي طيبة، الدمام 32273، الرقم الإضافي 7676، المملكة العربية السعودية</div>
           </div>
           <div class="social-links" style="margin-block-start: var(--space-md);">
             <a href="https://www.linkedin.com/company/sirati.sa/" class="social-icon-btn" aria-label="صفحة سيرتي على لينكدإن" target="_blank" rel="noopener noreferrer">
@@ -372,6 +372,7 @@
       <div class="footer-bottom">
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <p style="margin: 0;">سيرتي مملوك ومُشغَّل من قِبل <strong>Digital Pass Establishment</strong> — سجل تجاري رقم: <strong>7051100811</strong></p>
+          <p style="margin: 0; font-size: 0.8125rem; color: var(--color-text-secondary); dir: ltr;">Siratie is owned and operated by Digital Pass Establishment (CR: 7051100811)</p>
           <p style="margin: 0; font-size: 0.8125rem; color: var(--color-text-muted);">© 2026 سيرتي Siratie. جميع الحقوق محفوظة.</p>
         </div>
         <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">
