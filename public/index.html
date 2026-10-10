@@ -35,6 +35,10 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
   <!-- Production Stylesheet -->
+  <!-- Preconnect & Typography Fonts (IBM Plex Sans Arabic & Plus Jakarta Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/assets/css/site.css">
   <!-- Site Telemetry & Performance API -->
   <script>
@@ -163,11 +167,11 @@
           <div class="trust-metrics" style="display: flex; flex-wrap: wrap; gap: var(--space-md); margin-block-start: var(--space-xl);">
             <div class="metric-pill" style="display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--color-text-secondary);">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-              <span>+100,000 سيرة مفحوصة</span>
+              <span><bdi dir="ltr">+100,000</bdi> سيرة مفحوصة</span>
             </div>
             <div class="metric-pill" style="display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--color-text-secondary);">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-              <span>توافق <bdi>ATS</bdi> بنسبة 99.8%</span>
+              <span>توافق <bdi>ATS</bdi> بنسبة <bdi dir="ltr">99.8%</bdi></span>
             </div>
             <div class="metric-pill" style="display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--color-text-secondary);">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
@@ -187,7 +191,7 @@
       <div class="container">
         <div class="section-header">
           <span class="badge badge-primary">فحص فوري ودقيق</span>
-          <h2>فحص توافق السيرة الذاتية مع أنظمة الفرز الآلي (<bdi>ATS</bdi>)</h2>
+          <h2>فحص توافق السيرة الذاتية مع أنظمة الفرز الآلي <bdi dir="ltr">(ATS)</bdi></h2>
           <p>
             تستبعد خوارزميات التوظيف الآلية أكثر من 70% من السير الذاتية بسبب أخطاء التنسيق وفقدان الكلمات المفتاحية. يتيح لك تطبيق <strong>سيرتي</strong> فحص ملفك قبل التقديم ومعرفة نسبة التوافق الفورية.
           </p>
@@ -235,7 +239,7 @@
           <span class="badge badge-primary">محرر ذكي ثنائي اللغة</span>
           <h2>صانع السيرة الذاتية الذكي باللغتين العربية والإنجليزية</h2>
           <p>
-            أنشئ سيرتك الذاتية بسهولة تامة عبر محرر تفاعلي يدعم اتجاه النصوص المزدوج (<bdi>BiDi</bdi>) دون تداخل بين المصطلحات الإنجليزية والنصوص العربية، مع تصدير فوري لملف <bdi>PDF/A-3</bdi> عالي الدقة.
+            أنشئ سيرتك الذاتية بسهولة تامة عبر محرر تفاعلي يدعم اتجاه النصوص المزدوج <bdi dir="ltr">(BiDi)</bdi> دون تداخل بين المصطلحات الإنجليزية والنصوص العربية، مع تصدير فوري لملف <bdi>PDF/A-3</bdi> عالي الدقة.
           </p>
         </div>
 
@@ -471,7 +475,7 @@
           <span class="badge-tag">حمّل التطبيق الآن</span>
           <h2 class="download-heading">حمّل تطبيق سيرتي اليوم وابدأ مسيرتك المهنية بثقة</h2>
           <p class="download-description">
-            تطبيق سيرتي متاح لنظامي iOS وAndroid. أنشئ سيرتك الذاتية المتوافقة مع <bdi>ATS</bdi> واكتشف آلاف الوظائف مباشرة من هاتفك المحمول.
+            تطبيق سيرتي متاح لنظامي <bdi>iOS</bdi> و <bdi>Android</bdi>. أنشئ سيرتك الذاتية المتوافقة مع <bdi>ATS</bdi> واكتشف آلاف الوظائف مباشرة من هاتفك المحمول.
           </p>
 
           <div class="download-actions" id="downloadActions">
@@ -537,10 +541,10 @@
             منصة المسار المهني الرائدة لبناء وفحص السير الذاتية المتوافقة مع خوارزميات <bdi>ATS</bdi> ومطابقة الوظائف في السعودية والخليج.
           </p>
           <div style="margin-block-start: var(--space-md); font-size: 0.875rem;">
-            <div><strong>الجهة المالكة والمشغلة:</strong> Digital Pass Establishment</div>
-            <div style="margin-block-start: 4px; color: var(--color-text-muted);">سجل تجاري رقم: <strong>7051100811</strong></div>
-            <div style="margin-block-start: 4px;">البريد: <a href="mailto:info@siratie.com" style="color: var(--color-primary-ink); font-weight: 600;">info@siratie.com</a></div>
-            <div style="margin-block-start: 4px;">الهاتف: <a href="tel:+966591890300" style="color: var(--color-text-secondary); text-decoration: none;" dir="ltr">+966 59 189 0300</a></div>
+            <div><strong>الجهة المالكة والمشغلة:</strong> <bdi dir="ltr">Digital Pass Establishment</bdi></div>
+            <div style="margin-block-start: 4px; color: var(--color-text-muted);">سجل تجاري رقم: <strong dir="ltr"><bdi>7051100811</bdi></strong></div>
+            <div style="margin-block-start: 4px;">البريد: <a href="mailto:info@siratie.com" style="color: var(--color-primary-ink); font-weight: 600;" dir="ltr"><bdi>info@siratie.com</bdi></a></div>
+            <div style="margin-block-start: 4px;">الهاتف: <a href="tel:+966591890300" style="color: var(--color-text-secondary); text-decoration: none;" dir="ltr"><bdi>&#x200E;+966 59 189 0300</bdi></a></div>
             <div style="margin-block-start: 4px; color: var(--color-text-muted); line-height: 1.5;">4392 شارع الشيخ محمد بن عثيمين، حي طيبة، الدمام 32273، الرقم الإضافي 7676، المملكة العربية السعودية</div>
           </div>
           <div class="social-links" style="margin-block-start: var(--space-md);">
@@ -570,7 +574,7 @@
             <li><a href="/contact/" class="footer-nav-link">تواصل معنا</a></li>
             <li><a href="/privacy/" class="footer-nav-link">سياسة الخصوصية وحماية البيانات</a></li>
             <li><a href="/terms/" class="footer-nav-link">الشروط والأحكام واتفاقية الاستخدام</a></li>
-            <li><span style="font-size: 0.8125rem; color: var(--color-text-muted);">نظام حماية البيانات الشخصية (PDPL)</span></li>
+            <li><span style="font-size: 0.8125rem; color: var(--color-text-muted);">نظام حماية البيانات الشخصية <bdi dir="ltr">(PDPL)</bdi></span></li>
           </ul>
         </div>
 
@@ -578,10 +582,10 @@
         <div>
           <h4 class="footer-col-title">تحميل التطبيق</h4>
           <ul class="footer-nav-list">
-            <li><a href="/download/" class="footer-nav-link">تحميل تطبيق سيرتي (iOS & Android)</a></li>
-            <li><span style="font-size: 0.8125rem; color: var(--color-text-muted);">يدعم iOS 15.0 أو أحدث</span></li>
-            <li><span style="font-size: 0.8125rem; color: var(--color-text-muted);">يدعم Android 8.0 أو أحدث</span></li>
-            <li><span class="badge-status" style="margin: 0; display: inline-block;">متوفر على App Store و Google Play</span></li>
+            <li><a href="/download/" class="footer-nav-link">تحميل تطبيق سيرتي <bdi dir="ltr">(iOS & Android)</bdi></a></li>
+            <li><span style="font-size: 0.8125rem; color: var(--color-text-muted);">يدعم <bdi dir="ltr">iOS 15.0</bdi> أو أحدث</span></li>
+            <li><span style="font-size: 0.8125rem; color: var(--color-text-muted);">يدعم <bdi dir="ltr">Android 8.0</bdi> أو أحدث</span></li>
+            <li><span class="badge-status" style="margin: 0; display: inline-block;">متوفر على <bdi dir="ltr">App Store</bdi> و <bdi dir="ltr">Google Play</bdi></span></li>
           </ul>
         </div>
       </div>
@@ -589,8 +593,8 @@
       <!-- Footer Bottom -->
       <div class="footer-bottom">
         <div style="display: flex; flex-direction: column; gap: 4px;">
-          <p style="margin: 0;">سيرتي مملوك ومُشغَّل من قِبل <strong>Digital Pass Establishment</strong> — سجل تجاري رقم: <strong>7051100811</strong></p>
-          <p style="margin: 0; font-size: 0.8125rem; color: var(--color-text-secondary); dir: ltr;">Siratie is owned and operated by Digital Pass Establishment (CR: 7051100811)</p>
+          <p style="margin: 0;">سيرتي مملوك ومُشغَّل من قِبل <strong>Digital Pass Establishment</strong> — سجل تجاري رقم: <strong dir="ltr"><bdi>7051100811</bdi></strong></p>
+          <p style="margin: 0; font-size: 0.8125rem; color: var(--color-text-secondary); direction: ltr;">Siratie is owned and operated by Digital Pass Establishment (CR: 7051100811)</p>
           <p style="margin: 0; font-size: 0.8125rem; color: var(--color-text-muted);">© 2026 سيرتي Siratie. جميع الحقوق محفوظة.</p>
         </div>
         <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">

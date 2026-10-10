@@ -8,6 +8,8 @@ Generate production assets for Milestone M1 of Siratie static site:
 import os
 import math
 from PIL import Image, ImageDraw, ImageFont
+import arabic_reshaper
+from bidi.algorithm import get_display
 
 ROOT_DIR = r"d:\Sirati"
 PUBLIC_DIR = os.path.join(ROOT_DIR, "public")
@@ -35,6 +37,14 @@ def get_font(size, weight="regular"):
     except Exception:
         pass
     return ImageFont.load_default()
+
+def ar(text):
+    if not text:
+        return text
+    # Reshape Arabic characters to proper cursive connected forms
+    reshaped = arabic_reshaper.reshape(text)
+    # Apply bidirectional algorithm
+    return get_display(reshaped, base_dir='R')
 
 def save_dual(img, filename):
     p1 = os.path.join(ASSETS_IMG_DIR, filename)
@@ -145,28 +155,28 @@ def create_hero_mockup():
     
     # Screen UI Header
     draw.rounded_rectangle([sx + 80, sy + 8, sx + sw - 80, sy + 22], radius=7, fill=(18, 22, 20)) # Dynamic island
-    draw.text((sx + 20, sy + 38), "Siratie · سيرتي", fill=(230, 234, 231), font=get_font(13, "bold"))
+    draw.text((sx + sw // 2, sy + 38), ar("سيرتي · Siratie"), fill=(230, 234, 231), font=get_font(13, "bold"), anchor="mm")
     
     # ATS Score Widget on phone
     draw.rounded_rectangle([sx + 15, sy + 65, sx + sw - 15, sy + 185], radius=16, fill=(15, 92, 84))
     draw.text((sx + sw // 2, sy + 85), "ATS Compatibility", fill=(221, 246, 243), font=get_font(11, "regular"), anchor="mm")
     draw.text((sx + sw // 2, sy + 120), "94%", fill=(255, 255, 255), font=get_font(28, "bold"), anchor="mm")
-    draw.text((sx + sw // 2, sy + 155), "توافق ممتاز مع أنظمة الفرز", fill=(89, 218, 201), font=get_font(11, "semi"), anchor="mm")
+    draw.text((sx + sw // 2, sy + 155), ar("توافق ممتاز مع أنظمة الفرز"), fill=(89, 218, 201), font=get_font(11, "semi"), anchor="mm")
     
     # CV Items on phone screen
     draw.rounded_rectangle([sx + 15, sy + 195, sx + sw - 15, sy + 265], radius=12, fill=(37, 44, 40))
-    draw.text((sx + 28, sy + 210), "قالب كلاسيكي معتمد", fill=(230, 234, 231), font=get_font(11, "bold"))
-    draw.text((sx + 28, sy + 232), "مهندس برمجيات · جاهز للتصدير", fill=(174, 184, 180), font=get_font(10, "regular"))
+    draw.text((sx + sw // 2, sy + 215), ar("قالب كلاسيكي معتمد"), fill=(230, 234, 231), font=get_font(11, "bold"), anchor="mm")
+    draw.text((sx + sw // 2, sy + 238), ar("مهندس برمجيات · جاهز للتصدير"), fill=(174, 184, 180), font=get_font(10, "regular"), anchor="mm")
     
     # Floating Pill 1 (Left): ATS Score Passed
     draw.rounded_rectangle([45, 140, 165, 210], radius=14, fill=(255, 255, 255), outline=(0, 127, 115), width=2)
     draw.text((105, 162), "ATS 94%", fill=(0, 106, 96), font=get_font(15, "bold"), anchor="mm")
-    draw.text((105, 188), "اجتياز الفرز الآلي", fill=(60, 73, 71), font=get_font(11, "semi"), anchor="mm")
+    draw.text((105, 188), ar("اجتياز الفرز الآلي"), fill=(60, 73, 71), font=get_font(11, "semi"), anchor="mm")
     
     # Floating Pill 2 (Right): Saudi Jobs Matching
     draw.rounded_rectangle([475, 280, 605, 350], radius=14, fill=(255, 255, 255), outline=(201, 127, 27), width=2)
-    draw.text((540, 302), "+120 وظيفة", fill=(201, 127, 27), font=get_font(15, "bold"), anchor="mm")
-    draw.text((540, 328), "مطابقة ذكية للرياض", fill=(60, 73, 71), font=get_font(11, "semi"), anchor="mm")
+    draw.text((540, 302), ar("+120 وظيفة"), fill=(201, 127, 27), font=get_font(15, "bold"), anchor="mm")
+    draw.text((540, 328), ar("مطابقة ذكية للرياض"), fill=(60, 73, 71), font=get_font(11, "semi"), anchor="mm")
     
     save_dual(img, "hero-app-mockup.webp")
 
@@ -182,13 +192,13 @@ def create_ats_scanner_mockup():
     draw.rounded_rectangle([20, 20, 580, 420], radius=16, fill=(255, 255, 255), outline=(211, 227, 223), width=2)
     
     # Header
-    draw.text((300, 50), "تقرير فحص السيرة الذاتية (ATS Scan Report)", fill=(23, 29, 27), font=get_font(17, "bold"), anchor="mm")
+    draw.text((300, 50), ar("تقرير فحص السيرة الذاتية (ATS Scan Report)"), fill=(23, 29, 27), font=get_font(17, "bold"), anchor="mm")
     
     # Circular Gauge Simulator (Left/Center)
     cx, cy, r = 130, 175, 65
     draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(221, 246, 243), outline=(0, 106, 96), width=8)
     draw.text((cx, cy - 8), "94%", fill=(0, 106, 96), font=get_font(26, "bold"), anchor="mm")
-    draw.text((cx, cy + 20), "توافق ممتاز", fill=(46, 125, 91), font=get_font(12, "bold"), anchor="mm")
+    draw.text((cx, cy + 20), ar("توافق ممتاز"), fill=(46, 125, 91), font=get_font(12, "bold"), anchor="mm")
     
     # Metrics breakdown bars
     metrics = [
@@ -201,7 +211,7 @@ def create_ats_scanner_mockup():
     bx = 225
     by = 100
     for title, score, color in metrics:
-        draw.text((bx, by), title, fill=(60, 73, 71), font=get_font(12, "semi"))
+        draw.text((bx, by), ar(title), fill=(60, 73, 71), font=get_font(12, "semi"))
         draw.text((545, by), f"{score}%", fill=color, font=get_font(12, "bold"), anchor="ra")
         # Bar background
         draw.rounded_rectangle([bx, by + 18, 545, by + 26], radius=4, fill=(237, 236, 230))
@@ -212,17 +222,17 @@ def create_ats_scanner_mockup():
         
     # Recommendations & Keywords bottom section
     draw.line([40, 280, 560, 280], fill=(237, 236, 230), width=1)
-    draw.text((40, 295), "الكلمات المفتاحية الموصى بإضافتها لزيادة التوافق:", fill=(23, 29, 27), font=get_font(13, "bold"))
+    draw.text((560, 295), ar("الكلمات المفتاحية الموصى بإضافتها لزيادة التوافق:"), fill=(23, 29, 27), font=get_font(13, "bold"), anchor="ra")
     
     chips = ["+ إدارة المشاريع", "+ تحليل البيانات", "+ Agile / Scrum", "+ قيادة فرق العمل"]
     chip_x = 40
     for chip in chips:
-        w = len(chip) * 9 + 20
+        w = len(chip) * 10 + 20
         draw.rounded_rectangle([chip_x, 325, chip_x + w, 355], radius=15, fill=(215, 240, 229), outline=(46, 125, 91), width=1)
-        draw.text((chip_x + w // 2, 340), chip, fill=(37, 106, 77), font=get_font(11, "bold"), anchor="mm")
+        draw.text((chip_x + w // 2, 340), ar(chip), fill=(37, 106, 77), font=get_font(11, "bold"), anchor="mm")
         chip_x += w + 12
         
-    draw.text((300, 392), "✓ جاهز للتقديم في كبرى الشركات وجهات التوظيف في السعودية", fill=(0, 106, 96), font=get_font(12, "semi"), anchor="mm")
+    draw.text((300, 392), ar("✓ جاهز للتقديم في كبرى الشركات وجهات التوظيف في السعودية"), fill=(0, 106, 96), font=get_font(12, "semi"), anchor="mm")
     
     save_dual(img, "ats-scanner-mockup.webp")
 
@@ -238,7 +248,7 @@ def create_cv_builder_mockup():
     draw.rounded_rectangle([20, 20, 580, 420], radius=16, fill=(255, 255, 255), outline=(211, 227, 223), width=2)
     
     # Stepper Header
-    draw.text((300, 45), "منشئ السيرة الذاتية الذكي · الخطوات المعتمدة", fill=(23, 29, 27), font=get_font(16, "bold"), anchor="mm")
+    draw.text((300, 45), ar("منشئ السيرة الذاتية الذكي · الخطوات المعتمدة"), fill=(23, 29, 27), font=get_font(16, "bold"), anchor="mm")
     steps = ["1. البيانات", "2. الخبرات (الحالية)", "3. التعليم", "4. المهارات"]
     for i, s in enumerate(steps):
         sx = 60 + i * 135
@@ -246,48 +256,48 @@ def create_cv_builder_mockup():
         bg = (0, 106, 96) if active else (237, 236, 230)
         fg = (255, 255, 255) if active else (84, 97, 94)
         draw.rounded_rectangle([sx, 70, sx + 115, 96], radius=13, fill=bg)
-        draw.text((sx + 57, 83), s, fill=fg, font=get_font(11, "bold"), anchor="mm")
+        draw.text((sx + 57, 83), ar(s), fill=fg, font=get_font(11, "bold"), anchor="mm")
         
     # Form Mockup on Left
     draw.rounded_rectangle([40, 115, 310, 395], radius=12, fill=(242, 241, 236), outline=(211, 227, 223))
-    draw.text((55, 130), "إضافة خبرة مهنية جديدة", fill=(23, 29, 27), font=get_font(13, "bold"))
+    draw.text((300, 130), ar("إضافة خبرة مهنية جديدة"), fill=(23, 29, 27), font=get_font(13, "bold"), anchor="ra")
     
     # Input 1: Job Title
-    draw.text((55, 158), "المسمى الوظيفي:", fill=(60, 73, 71), font=get_font(11, "semi"))
+    draw.text((300, 158), ar("المسمى الوظيفي:"), fill=(60, 73, 71), font=get_font(11, "semi"), anchor="ra")
     draw.rounded_rectangle([55, 178, 295, 208], radius=8, fill=(255, 255, 255), outline=(187, 201, 198))
-    draw.text((68, 193), "مهندس برمجيات أول (Senior Software Engineer)", fill=(23, 29, 27), font=get_font(10, "regular"), anchor="lm")
+    draw.text((285, 193), ar("مهندس برمجيات أول (Senior Software Engineer)"), fill=(23, 29, 27), font=get_font(10, "regular"), anchor="rm")
     
     # Input 2: Company
-    draw.text((55, 218), "اسم الشركة والمدينة:", fill=(60, 73, 71), font=get_font(11, "semi"))
+    draw.text((300, 218), ar("اسم الشركة والمدينة:"), fill=(60, 73, 71), font=get_font(11, "semi"), anchor="ra")
     draw.rounded_rectangle([55, 238, 295, 268], radius=8, fill=(255, 255, 255), outline=(187, 201, 198))
-    draw.text((68, 253), "شركة تقنية متقدمة · الرياض", fill=(23, 29, 27), font=get_font(10, "regular"), anchor="lm")
+    draw.text((285, 253), ar("شركة تقنية متقدمة · الرياض"), fill=(23, 29, 27), font=get_font(10, "regular"), anchor="rm")
     
     # Input 3: BiDi Bullet points
-    draw.text((55, 278), "أبرز الإنجازات والمسؤوليات (BiDi):", fill=(60, 73, 71), font=get_font(11, "semi"))
+    draw.text((300, 278), ar("أبرز الإنجازات والمسؤوليات (BiDi):"), fill=(60, 73, 71), font=get_font(11, "semi"), anchor="ra")
     draw.rounded_rectangle([55, 298, 295, 355], radius=8, fill=(255, 255, 255), outline=(187, 201, 198))
-    draw.text((65, 315), "• تطوير خدمات REST APIs باستخدام Laravel", fill=(23, 29, 27), font=get_font(9, "regular"), anchor="lm")
-    draw.text((65, 335), "• بناء واجهات Flutter تدعم BiDi والعربية", fill=(23, 29, 27), font=get_font(9, "regular"), anchor="lm")
+    draw.text((285, 315), ar("• تطوير خدمات REST APIs باستخدام Laravel"), fill=(23, 29, 27), font=get_font(9, "regular"), anchor="rm")
+    draw.text((285, 335), ar("• بناء واجهات Flutter تدعم BiDi والعربية"), fill=(23, 29, 27), font=get_font(9, "regular"), anchor="rm")
     
     # Form Action Button
     draw.rounded_rectangle([55, 365, 295, 390], radius=8, fill=(0, 127, 115))
-    draw.text((175, 377), "حفظ ومتابعة للخطوة التالية", fill=(255, 255, 255), font=get_font(10, "bold"), anchor="mm")
+    draw.text((175, 377), ar("حفظ ومتابعة للخطوة التالية"), fill=(255, 255, 255), font=get_font(10, "bold"), anchor="mm")
     
     # Live Document Preview on Right
     draw.rounded_rectangle([330, 115, 560, 395], radius=12, fill=(255, 255, 255), outline=(0, 106, 96), width=2)
-    draw.text((445, 135), "معاينة السيرة الذاتية (Live)", fill=(0, 106, 96), font=get_font(12, "bold"), anchor="mm")
+    draw.text((445, 135), ar("معاينة السيرة الذاتية (Live)"), fill=(0, 106, 96), font=get_font(12, "bold"), anchor="mm")
     draw.line([350, 155, 540, 155], fill=(237, 236, 230))
     
     # Document lines mock
-    draw.text((350, 165), "أحمد محمد المهندس", fill=(23, 29, 27), font=get_font(14, "bold"))
-    draw.text((350, 185), "ahmed@example.com · الرياض · +966500000000", fill=(84, 97, 94), font=get_font(9, "regular"))
+    draw.text((540, 165), ar("أحمد محمد المهندس"), fill=(23, 29, 27), font=get_font(14, "bold"), anchor="ra")
+    draw.text((540, 185), ar("ahmed@example.com · الرياض · +966500000000"), fill=(84, 97, 94), font=get_font(9, "regular"), anchor="ra")
     draw.line([350, 205, 540, 205], fill=(0, 106, 96), width=1)
     
-    draw.text((350, 215), "الخبرات المهنية (Experience)", fill=(0, 106, 96), font=get_font(10, "bold"))
-    draw.text((350, 235), "Senior Software Engineer · 2022 - الآن", fill=(23, 29, 27), font=get_font(9, "semi"))
-    draw.text((350, 252), "قيادة الفريق وبناء حلول سحابية عالية الأداء", fill=(60, 73, 71), font=get_font(9, "regular"))
+    draw.text((540, 215), ar("الخبرات المهنية (Experience)"), fill=(0, 106, 96), font=get_font(10, "bold"), anchor="ra")
+    draw.text((540, 235), ar("Senior Software Engineer · 2022 - الآن"), fill=(23, 29, 27), font=get_font(9, "semi"), anchor="ra")
+    draw.text((540, 252), ar("قيادة الفريق وبناء حلول سحابية عالية الأداء"), fill=(60, 73, 71), font=get_font(9, "regular"), anchor="ra")
     
     draw.rounded_rectangle([370, 345, 520, 380], radius=8, fill=(221, 246, 243), outline=(0, 106, 96))
-    draw.text((445, 362), "تصدير فوري PDF/A-3", fill=(0, 106, 96), font=get_font(11, "bold"), anchor="mm")
+    draw.text((445, 362), ar("تصدير فوري PDF/A-3"), fill=(0, 106, 96), font=get_font(11, "bold"), anchor="mm")
     
     save_dual(img, "cv-builder-mockup.webp")
 
@@ -302,19 +312,20 @@ def create_jobs_preview():
     draw.rounded_rectangle([20, 20, 580, 420], radius=16, fill=(255, 255, 255), outline=(211, 227, 223), width=2)
     
     # Header
-    draw.text((40, 45), "وظائف السعودية والخليج · المطابقة الذكية", fill=(23, 29, 27), font=get_font(16, "bold"))
+    draw.text((560, 45), ar("وظائف السعودية والخليج · المطابقة الذكية"), fill=(23, 29, 27), font=get_font(16, "bold"), anchor="ra")
     
-    # City Filter Tabs
+    # City Filter Tabs (drawn from right to left)
     tabs = ["الكل", "الرياض", "جدة", "الشرقية", "عن بُعد"]
-    tx = 40
+    tx = 560
     for i, t in enumerate(tabs):
         active = (i == 0)
         bg = (0, 106, 96) if active else (242, 241, 236)
         fg = (255, 255, 255) if active else (60, 73, 71)
         w = len(t) * 12 + 20
+        tx -= w
         draw.rounded_rectangle([tx, 75, tx + w, 102], radius=13, fill=bg)
-        draw.text((tx + w // 2, 88), t, fill=fg, font=get_font(11, "semi"), anchor="mm")
-        tx += w + 8
+        draw.text((tx + w // 2, 88), ar(t), fill=fg, font=get_font(11, "semi"), anchor="mm")
+        tx -= 8
         
     # Job Cards
     jobs = [
@@ -326,16 +337,16 @@ def create_jobs_preview():
     jy = 125
     for title, company, match, color, tags in jobs:
         draw.rounded_rectangle([40, jy, 560, jy + 82], radius=12, fill=(255, 255, 255), outline=(211, 227, 223))
-        # Match Badge
-        draw.rounded_rectangle([485, jy + 12, 545, jy + 38], radius=6, fill=(221, 246, 243))
-        draw.text((515, jy + 25), f"مطابقة {match}", fill=color, font=get_font(10, "bold"), anchor="mm")
+        # Match Badge on left
+        draw.rounded_rectangle([55, jy + 12, 130, jy + 38], radius=6, fill=(221, 246, 243))
+        draw.text((92, jy + 25), ar(f"مطابقة {match}"), fill=color, font=get_font(10, "bold"), anchor="mm")
         
-        draw.text((55, jy + 18), title, fill=(23, 29, 27), font=get_font(13, "bold"))
-        draw.text((55, jy + 38), company, fill=(84, 97, 94), font=get_font(11, "regular"))
-        draw.text((55, jy + 58), tags, fill=(0, 106, 96), font=get_font(10, "semi"))
+        draw.text((545, jy + 18), ar(title), fill=(23, 29, 27), font=get_font(13, "bold"), anchor="ra")
+        draw.text((545, jy + 38), ar(company), fill=(84, 97, 94), font=get_font(11, "regular"), anchor="ra")
+        draw.text((545, jy + 58), ar(tags), fill=(0, 106, 96), font=get_font(10, "semi"), anchor="ra")
         jy += 94
         
-    draw.text((300, 405), "احصل على تنبيهات فورية بالوظائف المتطابقة مع سيرتك عبر تطبيق سيرتي", fill=(84, 97, 94), font=get_font(11, "regular"), anchor="mm")
+    draw.text((300, 405), ar("احصل على تنبيهات فورية بالوظائف المتطابقة مع سيرتك عبر تطبيق سيرتي"), fill=(84, 97, 94), font=get_font(11, "regular"), anchor="mm")
     
     save_dual(img, "jobs-preview.webp")
 
@@ -353,19 +364,19 @@ def create_og_ar():
     draw.rounded_rectangle([30, 30, 1170, 600], radius=24, fill=(18, 22, 20), outline=(0, 106, 96), width=3)
     
     # Logo mark
-    draw.text((600, 140), "سيرتي · Siratie", fill=(89, 218, 201), font=get_font(38, "bold"), anchor="mm")
-    draw.text((600, 230), "تطبيق سيرة ذاتية متوافقة مع أنظمة ATS", fill=(255, 255, 255), font=get_font(44, "bold"), anchor="mm")
-    draw.text((600, 310), "افحص توافق سيرتك الذاتية · أنشئ سيرة احترافية · استكشف وظائف السعودية والخليج", fill=(174, 184, 180), font=get_font(20, "regular"), anchor="mm")
+    draw.text((600, 140), ar("سيرتي · Siratie"), fill=(89, 218, 201), font=get_font(38, "bold"), anchor="mm")
+    draw.text((600, 230), ar("تطبيق سيرة ذاتية متوافقة مع أنظمة ATS"), fill=(255, 255, 255), font=get_font(44, "bold"), anchor="mm")
+    draw.text((600, 310), ar("افحص توافق سيرتك الذاتية · أنشئ سيرة احترافية · استكشف وظائف السعودية والخليج"), fill=(174, 184, 180), font=get_font(20, "regular"), anchor="mm")
     
     # Feature Pill Badges
     badges = ["فحص توافق ATS فوري", "قوالب معتمدة باللغتين", "مطابقة ذكية للوظائف", "تصدير معتمد PDF/A-3"]
     bx = 180
     for b in badges:
         draw.rounded_rectangle([bx, 400, bx + 190, 450], radius=25, fill=(15, 92, 84))
-        draw.text((bx + 95, 425), b, fill=(255, 255, 255), font=get_font(14, "bold"), anchor="mm")
+        draw.text((bx + 95, 425), ar(b), fill=(255, 255, 255), font=get_font(14, "bold"), anchor="mm")
         bx += 215
         
-    draw.text((600, 530), "حمّل التطبيق الآن على iOS وأندرويد | siratie.com", fill=(89, 218, 201), font=get_font(18, "semi"), anchor="mm")
+    draw.text((600, 530), ar("حمّل التطبيق الآن على iOS وأندرويد | siratie.com"), fill=(89, 218, 201), font=get_font(18, "semi"), anchor="mm")
     
     save_dual(img, "og-siratie-ar.webp")
 
@@ -395,4 +406,4 @@ def create_og_en():
 create_og_ar()
 create_og_en()
 
-print("All Milestone M1 assets successfully generated!")
+print("All Milestone M1 assets successfully regenerated with Arabic Reshaper & BiDi!")
