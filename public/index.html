@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="light">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
   <meta name="description" content="أنشئ سيرة ذاتية احترافية متوافقة مع أنظمة الفرز الآلي ATS واكتشف أحدث الوظائف السعودية مع تطبيق سيرتي باللغتين العربية والإنجليزية.">
   <meta name="keywords" content="تطبيق سيرة ذاتية, تطبيق سي في, سيرتي, فحص ATS, وظائف السعودية, نماذج سيرة ذاتية">
   <meta name="author" content="Siratie">
-  <meta name="theme-color" content="#007F73">
+  <meta name="theme-color" content="#0D1B2A">
 
   <!-- Self-referencing Canonical & Symmetrical Hreflang Triplet -->
   <link rel="canonical" href="https://siratie.com/">
@@ -34,18 +34,11 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-  <!-- Production Stylesheet -->
-  <!-- Preconnect & Typography Fonts (IBM Plex Sans Arabic & Plus Jakarta Sans) -->
+  <!-- Typography & Stylesheets -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/assets/css/site.css">
-  <!-- Site Telemetry & Performance API -->
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-  </script>
 
   <!-- Schema.org Structured Data (JSON-LD Graph) -->
   <script type="application/ld+json">
@@ -118,502 +111,216 @@
 </head>
 <body>
 
-  <!-- Sticky Header -->
-  <header class="site-header">
-    <div class="header-inner container">
-      <a href="/" class="brand-logo" aria-label="سيرتي - الصفحة الرئيسية">
-        <svg class="brand-logo-svg" width="36" height="36" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-          <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" stroke="var(--color-primary)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="78" cy="23" r="6" fill="var(--color-primary)"/>
-        </svg>
-        <span class="brand-name">سيرتي <span class="brand-name-en">Siratie</span></span>
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="nav-logo" aria-label="سيرتي - الصفحة الرئيسية">
+      <img id="nav-logo-img" src="/images/logo.png" alt="شعار تطبيق سيرتي">
+      <span>سيرتي <span style="font-family:var(--font-en);font-weight:400;opacity:0.85;font-size:1.05rem;">Siratie</span></span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="/ats-cv-checker/">فاحص <bdi>ATS</bdi></a></li>
+      <li><a href="/cv-builder/">صانع السيرة</a></li>
+      <li><a href="/cv-templates/">قوالب السيرة</a></li>
+      <li><a href="/jobs/">الوظائف</a></li>
+      <li><a href="/download/">تحميل التطبيق</a></li>
+    </ul>
+
+    <div class="nav-right">
+      <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" aria-label="تبديل المظهر">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+      <a href="/en/" class="lang-toggle" id="langBtn" hreflang="en" aria-label="Switch to English">EN</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <img id="hero-logo" src="/images/logo.png" alt="أيقونة تطبيق سيرتي" class="hero-logo">
+    <p class="hero-tagline">منصة المسار المهني</p>
+    <h1 class="hero-headline">عندما تسعى لتطوير مسارك المهني،<br>لا بد أن تمر على <span class="accent">محطتنا.</span></h1>
+    <p class="hero-sub">سيرتي، منصتك المتكاملة لبناء سيرتك الذاتية، وتحليلها وفق معايير أنظمة الفرز الآلي (<bdi>ATS</bdi>)، واستكشاف أحدث فرص العمل في المملكة والخليج.</p>
+
+    <div class="hero-cta">
+      <a href="https://apps.apple.com/" class="btn-store" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        <div>
+          <div style="font-size:0.7rem;opacity:0.7;font-weight:400">Download on the</div>
+          <div style="font-size:1rem;font-weight:700">App Store</div>
+        </div>
+      </a>
+      <a href="https://play.google.com/store/apps" class="btn-store android" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg>
+        <div>
+          <div style="font-size:0.7rem;opacity:0.85;font-weight:400">Get it on</div>
+          <div style="font-size:1rem;font-weight:700">Google Play</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="scroll-hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5"/></svg>
+      <span style="font-size:0.75rem">اكتشف أكثر</span>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="section fade-in">
+    <span class="section-label">من نحن:</span>
+    <div class="divider"></div>
+    <h2 class="section-title">منصة إلكترونية متخصصة في تطوير مسارك المهني</h2>
+    <p class="section-body">سيرتي، منصة إلكترونية متخصصة في تطوير المسار المهني، نقدم مجموعة متكاملة من الخدمات التي تجمع بين الذكاء التقني وفهم متطلبات سوق العمل في المملكة العربية السعودية والخليج. نؤمن بأن كل محترف يستحق أدوات احترافية تفتح له الأبواب.</p>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="services-wrap">
+    <div class="services-inner">
+      <div class="fade-in">
+        <span class="section-label">خدماتنا:</span>
+        <div class="divider"></div>
+        <h2 class="section-title">كل ما تحتاجه لمسارك المهني في مكان واحد</h2>
+      </div>
+
+      <div class="services-grid">
+        <a href="/cv-builder/" class="service-card fade-in" style="transition-delay:0.1s">
+          <span class="service-icon">📂</span>
+          <h3 class="service-title">بناء السيرة الذاتية الاحترافية</h3>
+          <p class="service-desc">نساعدك في إنشاء سيرة ذاتية وفق المعايير الدولية، مُهيَّأة للنجاح في الأنظمة الآلية لفرز السير الذاتية (<bdi>ATS</bdi>)، مع إمكانية التعديل عليها لاحقاً وتصديرها بصيغة PDF معتمدة.</p>
+        </a>
+
+        <a href="/ats-cv-checker/" class="service-card fade-in" style="transition-delay:0.2s">
+          <span class="service-icon">📈</span>
+          <h3 class="service-title">تحليل السيرة الذاتية</h3>
+          <p class="service-desc">نحلّل سيرتك الذاتية ونكشف نقاط ضعفها أمام الأنظمة الآلية لفرز السير الذاتية (<bdi>ATS</bdi>)، ونقدم توصيات عملية لاجتياز الفرز الآلي الذي تعتمده الشركات الكبرى.</p>
+        </a>
+
+        <a href="/jobs/" class="service-card fade-in" style="transition-delay:0.3s">
+          <span class="service-icon">💼</span>
+          <h3 class="service-title">فرص العمل</h3>
+          <p class="service-desc">نوفر قاعدة محدّثة من الوظائف في المملكة العربية السعودية، تشمل الجهات الحكومية والقطاع الخاص مع مطابقة فورية لمهاراتك وتخصصك.</p>
+        </a>
+
+        <a href="/cv-templates/" class="service-card fade-in" style="transition-delay:0.4s">
+          <span class="service-icon">📚</span>
+          <h3 class="service-title">التعليم والتوجيه المهني</h3>
+          <p class="service-desc">نقدم محتوى تعليمياً مستمراً وإرشاداً متخصصاً وقوالب سيرة ذاتية احترافية لمساعدتك في بناء مسارك المهني وتطويره نحو الأفضل.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOCIAL -->
+  <section class="social-wrap">
+    <div class="fade-in">
+      <span class="section-label">تابعنا:</span>
+      <div class="divider"></div>
+      <h2 class="section-title">نحن على منصاتك المفضلة</h2>
+      <p class="section-body" style="margin-bottom: 0;">تابع سيرتي وابقَ على اطلاع بأحدث فرص العمل والنصائح المهنية والمحتوى التعليمي والتطوير المستمر.</p>
+    </div>
+
+    <div class="social-grid fade-in" style="transition-delay:0.2s">
+      <a href="https://www.tiktok.com/@sirati.sa" class="social-card" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.91a8.16 8.16 0 004.77 1.52V7a4.85 4.85 0 01-1-.31z"/></svg>
+        <span>TikTok</span>
       </a>
 
-      <nav class="site-nav" aria-label="التنقل الرئيسي">
-        <ul class="nav-links">
-          <li><a href="/ats-cv-checker/" class="nav-link">فاحص <bdi>ATS</bdi></a></li>
-          <li><a href="/cv-builder/" class="nav-link">صانع السيرة</a></li>
-          <li><a href="/cv-templates/" class="nav-link">قوالب السيرة</a></li>
-          <li><a href="/jobs/" class="nav-link">الوظائف</a></li>
-          <li><a href="/download/" class="nav-link">تحميل التطبيق</a></li>
-        </ul>
-      </nav>
+      <a href="https://www.instagram.com/sirati.sa" class="social-card" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        <span>Instagram</span>
+      </a>
 
-      <div class="header-controls">
-        <button type="button" class="theme-toggle-btn" data-action="toggle-theme" aria-label="تبديل المظهر">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1z"/></svg>
-        </button>
-        <a href="https://siratie.com/en/" class="lang-switch" hreflang="en" data-lang="en" aria-label="Switch to English">English</a>
+      <a href="https://www.linkedin.com/company/sirati.sa/" class="social-card" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        <span>LinkedIn</span>
+      </a>
+
+      <a href="mailto:info@siratie.com" class="social-card">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
+        <span>تواصل معنا عبر البريد الإلكتروني</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- DOWNLOAD CTA -->
+  <section class="download-wrap" id="download">
+    <div class="download-inner fade-in">
+      <h2>حمّل التطبيق الآن</h2>
+      <p>جميع الخدمات متاحة داخل التطبيق. ابدأ مسيرتك المهنية بالطريقة الصحيحة اليوم مع سيرتي.</p>
+      <div class="download-btns">
+        <a href="https://apps.apple.com/" class="btn-dl ios" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          <div>
+            <div style="font-size:0.72rem;opacity:0.75;font-weight:400">Download on the</div>
+            <div>App Store</div>
+          </div>
+        </a>
+        <a href="https://play.google.com/store/apps" class="btn-dl android" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg>
+          <div>
+            <div style="font-size:0.72rem;opacity:0.75;font-weight:400">Get it on</div>
+            <div>Google Play</div>
+          </div>
+        </a>
       </div>
     </div>
-  </header>
+  </section>
 
-  <main>
-    <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="container hero-grid">
-        <div class="hero-content">
-          <div class="badge-tag badge-primary">المنصة المهنية الذكية الأولى في السعودية</div>
-          <h1 class="hero-title">سيرتك الذاتية جاهزة لأنظمة التوظيف مع تطبيق سيرتي</h1>
-          <p class="subtitle">
-            أنشئ سيرة ذاتية احترافية باللغتين العربية والإنجليزية وتأكد من اجتيازها أنظمة الفرز الآلي <bdi>ATS</bdi> بنجاح. يقدم لك <strong>تطبيق سيرة ذاتية</strong> متطور يجمع بين الفحص الذكي وتصميم <strong>تطبيق سي في</strong> عالي التوافق واكتشاف أحدث الوظائف المناسبة في السعودية والخليج.
-          </p>
-
-          <div class="hero-actions">
-            <a href="#download" class="btn btn-primary">حمّل تطبيق سيرتي الآن</a>
-            <a href="/download/" class="btn btn-secondary">صفحة التحميل والرمز QR</a>
-          </div>
-
-          <div class="trust-metrics" style="display: flex; flex-wrap: wrap; gap: var(--space-md); margin-block-start: var(--space-xl);">
-            <div class="metric-pill" style="display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--color-text-secondary);">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-              <span><bdi dir="ltr">+100,000</bdi> سيرة مفحوصة</span>
-            </div>
-            <div class="metric-pill" style="display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--color-text-secondary);">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-              <span>توافق <bdi>ATS</bdi> بنسبة <bdi dir="ltr">99.8%</bdi></span>
-            </div>
-            <div class="metric-pill" style="display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--color-text-secondary);">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-              <span>معتمد وفق نظام PDPL</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="hero-image-wrap">
-          <img src="/assets/images/hero-app-mockup.webp" alt="واجهة تطبيق سيرتي على الهاتف الذكي" width="640" height="540" class="hero-mockup-img" loading="eager">
-        </div>
-      </div>
-    </section>
-
-    <!-- H2 Section 1: ATS Compatibility Scanner -->
-    <section class="section section-recessed" id="ats-checker">
-      <div class="container">
-        <div class="section-header">
-          <span class="badge badge-primary">فحص فوري ودقيق</span>
-          <h2>فحص توافق السيرة الذاتية مع أنظمة الفرز الآلي <bdi dir="ltr">(ATS)</bdi></h2>
-          <p>
-            تستبعد خوارزميات التوظيف الآلية أكثر من 70% من السير الذاتية بسبب أخطاء التنسيق وفقدان الكلمات المفتاحية. يتيح لك تطبيق <strong>سيرتي</strong> فحص ملفك قبل التقديم ومعرفة نسبة التوافق الفورية.
-          </p>
-        </div>
-
-        <div class="grid-2" style="align-items: center;">
-          <div class="ats-score-box">
-            <div class="ats-gauge-circle">
-              <div class="ats-gauge-inner">
-                <span class="ats-gauge-value">94%</span>
-                <span class="ats-gauge-label">توافق ممتاز</span>
-              </div>
-            </div>
-
-            <div class="keyword-chips-wrap">
-              <span class="chip-tag chip-pass">بنية الملف 100%</span>
-              <span class="chip-tag chip-pass">الترويسات 96%</span>
-              <span class="chip-tag chip-pass">بيانات الاتصال 100%</span>
-              <span class="chip-tag">الكلمات المفتاحية 92%</span>
-            </div>
-
-            <div style="margin-block-start: var(--space-sm);">
-              <p style="font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: 6px;">مقترحات الكلمات المفتاحية الذكية:</p>
-              <div class="keyword-chips-wrap">
-                <span class="chip-tag badge-amber">+ إدارة المشاريع</span>
-                <span class="chip-tag badge-amber">+ مؤشرات الأداء KPIs</span>
-                <span class="chip-tag badge-amber">+ تحليل البيانات</span>
-              </div>
-            </div>
-
-            <a href="/ats-cv-checker/" class="btn btn-outline" style="margin-block-start: var(--space-md);">تعرف على فاحص <bdi>ATS</bdi> بالتفصيل</a>
-          </div>
-
-          <div style="display: flex; justify-content: center;">
-            <img src="/assets/images/ats-scanner-mockup.webp" alt="لوحة فحص السيرة الذاتية في تطبيق سيرتي" width="600" height="440" class="hero-mockup-img" loading="lazy">
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- H2 Section 2: Smart CV Builder -->
-    <section class="section" id="cv-builder">
-      <div class="container">
-        <div class="section-header">
-          <span class="badge badge-primary">محرر ذكي ثنائي اللغة</span>
-          <h2>صانع السيرة الذاتية الذكي باللغتين العربية والإنجليزية</h2>
-          <p>
-            أنشئ سيرتك الذاتية بسهولة تامة عبر محرر تفاعلي يدعم اتجاه النصوص المزدوج <bdi dir="ltr">(BiDi)</bdi> دون تداخل بين المصطلحات الإنجليزية والنصوص العربية، مع تصدير فوري لملف <bdi>PDF/A-3</bdi> عالي الدقة.
-          </p>
-        </div>
-
-        <div class="grid-2" style="align-items: center;">
-          <div style="display: flex; justify-content: center;">
-            <img src="/assets/images/cv-builder-mockup.webp" alt="صانع السيرة الذاتية الذكي في تطبيق سيرتي" width="600" height="440" class="hero-mockup-img" loading="lazy">
-          </div>
-
-          <div>
-            <div class="card" style="margin-block-end: var(--space-md);">
-              <h3 class="card-title">خطوات بناء السيرة الذاتية المتكاملة</h3>
-              <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; margin-block-start: 12px;">
-                <li style="display: flex; gap: 10px; align-items: flex-start;">
-                  <span class="badge-status" style="margin: 0; background-color: var(--color-primary); color: #fff;">1</span>
-                  <div>
-                    <strong>البيانات الشخصية ووسائل الاتصال:</strong>
-                    <p style="font-size: 0.875rem; margin: 0;">إدخال الاسم والمسمى الوظيفي ورقم الجوال والمدينة وروابط لينكدإن بدقة.</p>
-                  </div>
-                </li>
-                <li style="display: flex; gap: 10px; align-items: flex-start;">
-                  <span class="badge-status" style="margin: 0; background-color: var(--color-primary); color: #fff;">2</span>
-                  <div>
-                    <strong>الخبرات المهنية والإنجازات:</strong>
-                    <p style="font-size: 0.875rem; margin: 0;">صياغة نقاط قوية تعتمد على أفعال الحركة ومؤشرات الأداء الكمية.</p>
-                  </div>
-                </li>
-                <li style="display: flex; gap: 10px; align-items: flex-start;">
-                  <span class="badge-status" style="margin: 0; background-color: var(--color-primary); color: #fff;">3</span>
-                  <div>
-                    <strong>المؤهلات التعليمية والشهادات:</strong>
-                    <p style="font-size: 0.875rem; margin: 0;">توثيق الدرجات العلمية والشهادات المهنية المعتمدة في المملكة.</p>
-                  </div>
-                </li>
-                <li style="display: flex; gap: 10px; align-items: flex-start;">
-                  <span class="badge-status" style="margin: 0; background-color: var(--color-primary); color: #fff;">4</span>
-                  <div>
-                    <strong>المهارات التقنية واللغات:</strong>
-                    <p style="font-size: 0.875rem; margin: 0;">تصنيف المهارات الصلبة والناعمة لتلبية متطلبات مسؤولي التوظيف.</p>
-                  </div>
-                </li>
-              </ul>
-            </div>
-            <a href="/cv-builder/" class="btn btn-outline">استكشف صانع السيرة الذاتية</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- H2 Section 3: ATS-Friendly Templates -->
-    <section class="section section-recessed" id="cv-templates">
-      <div class="container">
-        <div class="section-header">
-          <span class="badge badge-primary">تصاميم معتمدة للفرز</span>
-          <h2>قوالب سيرة ذاتية معتمدة ومطابقة للمعايير السعودية</h2>
-          <p>
-            تعتمد قوالب سيرتي على نظام العمود الواحد الخالي من الجداول المعقدة والرسومات المربكة، مما يضمن قراءة كاملة لبياناتك بنسبة 100% في كافة أنظمة التوظيف الحكومية والخاصة.
-          </p>
-        </div>
-
-        <div class="grid-3">
-          <div class="template-card">
-            <div class="template-thumb-wrap">
-              <img src="/assets/images/cv-template-classic.webp" alt="قالب سيرة ذاتية كلاسيكي احترافي متوافق مع ATS" width="480" height="680" class="template-thumb-img" loading="lazy">
-            </div>
-            <div class="template-info">
-              <h3 class="card-title">الكلاسيكي الاحترافي</h3>
-              <p style="font-size: 0.875rem;">القالب الأكثر طلباً للشركات الكبرى والجهات الحكومية، مصمم لأعلى درجات الدقة والوضوح.</p>
-              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                <span class="chip-tag chip-pass">توافق 99.8%</span>
-                <span class="chip-tag">عمود واحد</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="template-card">
-            <div class="template-thumb-wrap">
-              <img src="/assets/images/cv-template-modern.webp" alt="قالب سيرة ذاتية تقني حديث للمطورين والمصممين" width="480" height="680" class="template-thumb-img" loading="lazy">
-            </div>
-            <div class="template-info">
-              <h3 class="card-title">التقني الحديث</h3>
-              <p style="font-size: 0.875rem;">مثالي لخبراء التقنية، المطورين، والمهندسين مع تركيز فوري على المهارات والمشاريع المنجزة.</p>
-              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                <span class="chip-tag chip-pass">توافق 99.5%</span>
-                <span class="chip-tag">تقني / هندسي</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="template-card">
-            <div class="template-thumb-wrap">
-              <img src="/assets/images/cv-template-executive.webp" alt="قالب سيرة ذاتية تنفيذي للمدراء والقيادات" width="480" height="680" class="template-thumb-img" loading="lazy">
-            </div>
-            <div class="template-info">
-              <h3 class="card-title">القيادي التنفيذي</h3>
-              <p style="font-size: 0.875rem;">مخصص للمناصب الإدارية العليا، يبرز الملخص القيادي وسجل الإنجازات الاستراتيجية باقتدار.</p>
-              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                <span class="chip-tag chip-pass">توافق 99.7%</span>
-                <span class="chip-tag">تنفيذي قيادي</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style="text-align: center; margin-block-start: var(--space-xxl);">
-          <a href="/cv-templates/" class="btn btn-primary">استعرض جميع قوالب السيرة الذاتية</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- H2 Section 4: Saudi Job Aggregator Engine -->
-    <section class="section" id="jobs">
-      <div class="container">
-        <div class="section-header">
-          <span class="badge badge-primary">فرص متجددة لحظياً</span>
-          <h2>محرك استكشاف ومطابقة الوظائف في المملكة والخليج</h2>
-          <p>
-            نجمع لك مئات الفرص الوظيفية اليومية من كبرى الشركات السعودية والهيئات الحكومية، ونربطها آلياً بمهارات سيرتك الذاتية لتعرف نسبة التوافق قبل تقديم الطلب.
-          </p>
-        </div>
-
-        <div class="grid-2" style="align-items: center;">
-          <div>
-            <div style="display: flex; flex-direction: column; gap: var(--space-md);">
-              <div class="job-card">
-                <div class="job-header">
-                  <div>
-                    <h3 class="card-title" style="margin-bottom: 4px;">مهندس برمجيات أول (<bdi>Senior Software Engineer</bdi>)</h3>
-                    <p style="margin: 0; font-size: 0.875rem; color: var(--color-text-secondary);">شركة تقنية كبرى · الرياض</p>
-                  </div>
-                  <span class="job-match-badge">مطابقة 96%</span>
-                </div>
-                <div class="job-meta-row">
-                  <span>دوام كامل</span>
-                  <span>هندسة البرمجيات</span>
-                  <span>الرياض، حي النرجس</span>
-                </div>
-              </div>
-
-              <div class="job-card">
-                <div class="job-header">
-                  <div>
-                    <h3 class="card-title" style="margin-bottom: 4px;">مدير مشاريع معتمد (<bdi>PMP Project Manager</bdi>)</h3>
-                    <p style="margin: 0; font-size: 0.875rem; color: var(--color-text-secondary);">مجموعة استشارية رائدة · جدة</p>
-                  </div>
-                  <span class="job-match-badge">مطابقة 92%</span>
-                </div>
-                <div class="job-meta-row">
-                  <span>دوام كامل</span>
-                  <span>إدارة مشاريع</span>
-                  <span>جدة</span>
-                </div>
-              </div>
-
-              <div class="job-card">
-                <div class="job-header">
-                  <div>
-                    <h3 class="card-title" style="margin-bottom: 4px;">أخصائي تسويق رقمي (<bdi>Digital Marketing</bdi>)</h3>
-                    <p style="margin: 0; font-size: 0.875rem; color: var(--color-text-secondary);">وكالة رقمية متسارعة · عن بُعد</p>
-                  </div>
-                  <span class="job-match-badge">مطابقة 88%</span>
-                </div>
-                <div class="job-meta-row">
-                  <span>عمل عن بُعد</span>
-                  <span>تسويق ونمو</span>
-                  <span>المملكة العربية السعودية</span>
-                </div>
-              </div>
-            </div>
-
-            <div style="margin-block-start: var(--space-xl);">
-              <a href="/jobs/" class="btn btn-outline">تصفح بوابة وظائف السعودية والخليج</a>
-            </div>
-          </div>
-
-          <div style="display: flex; justify-content: center;">
-            <img src="/assets/images/jobs-preview.webp" alt="استكشاف ومطابقة وظائف السعودية في تطبيق سيرتي" width="600" height="440" class="hero-mockup-img" loading="lazy">
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- H2 Section 5: Why Siratie -->
-    <section class="section section-recessed" id="why-siratie">
-      <div class="container">
-        <div class="section-header">
-          <span class="badge badge-primary">المعايير والتميز</span>
-          <h2>لماذا تختار تطبيق سيرتي لتطوير مسارك المهني؟</h2>
-          <p>
-            صُمم تطبيق سيرتي ليكون رفيقك المتكامل من مرحلة إعداد السيرة الذاتية حتى المقابلة الشخصية وتوقيع العرض الوظيفي.
-          </p>
-        </div>
-
-        <div class="grid-4">
-          <div class="card">
-            <div class="card-icon">
-              <svg viewBox="0 0 24 24"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4zm-2 16l-4-4 1.41-1.41L10 15.17l6.59-6.59L18 10l-8 8z"/></svg>
-            </div>
-            <h3 class="card-title">هندسة متوافقة مع <bdi>ATS</bdi></h3>
-            <p style="font-size: 0.875rem;">تخطيطات خوارزمية مفحوصة بدقة على أنظمة Taleo وWorkday لضمان أعلى نسب القراءة والتجاوز.</p>
-          </div>
-
-          <div class="card">
-            <div class="card-icon">
-              <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-            </div>
-            <h3 class="card-title">خصوصية وأمان PDPL</h3>
-            <p style="font-size: 0.875rem;">حماية تامة لبياناتك الشخصية بما يتوافق مع الأنظمة السعودية، دون مشاركة بياناتك أو بيعها لأطراف خارجية.</p>
-          </div>
-
-          <div class="card">
-            <div class="card-icon">
-              <svg viewBox="0 0 24 24"><path d="M9 4L7.5 7.5 4 9l3.5 1.5L9 14l1.5-3.5L14 9l-3.5-1.5L9 4zm9 4l-1 2.5L14.5 11.5l2.5 1L18 15l1-2.5 2.5-1-2.5-1L18 8z"/></svg>
-            </div>
-            <h3 class="card-title">ذكاء اصطناعي موجه</h3>
-            <p style="font-size: 0.875rem;">تحسين دقيق للكلمات المفتاحية وصياغة الإنجازات المهنية دون تخريف أو ابتداع مهارات غير حقيقية.</p>
-          </div>
-
-          <div class="card">
-            <div class="card-icon">
-              <svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
-            </div>
-            <h3 class="card-title">تركيز على سوق العمل السعودي</h3>
-            <p style="font-size: 0.875rem;">قوالب ومسميات مهنية متوافقة مع متطلبات التوطين والتصنيفات المهنية المعتمدة في المملكة.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- H2 Section 6: Smart Download Component -->
-    <section class="smart-download-section" id="download" data-component="smart-download">
-      <div class="smart-download-container">
-        <div class="smart-download-content">
-          <span class="badge-tag">حمّل التطبيق الآن</span>
-          <h2 class="download-heading">حمّل تطبيق سيرتي اليوم وابدأ مسيرتك المهنية بثقة</h2>
-          <p class="download-description">
-            تطبيق سيرتي متاح لنظامي <bdi>iOS</bdi> و <bdi>Android</bdi>. أنشئ سيرتك الذاتية المتوافقة مع <bdi>ATS</bdi> واكتشف آلاف الوظائف مباشرة من هاتفك المحمول.
-          </p>
-
-          <div class="download-actions" id="downloadActions">
-            <!-- iOS Store Badge -->
-            <a href="https://apps.apple.com/"
-               class="btn-store btn-apple"
-               id="btnAppStore"
-               target="_blank"
-               rel="noopener noreferrer"
-               aria-label="تحميل تطبيق سيرتي من Apple App Store">
-              <svg class="store-icon" viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-              </svg>
-              <div class="store-text">
-                <span class="store-subtitle">تحميل من</span>
-                <span class="store-title">App Store</span>
-              </div>
-            </a>
-
-            <!-- Android Store Badge -->
-            <a href="https://play.google.com/store/apps"
-               class="btn-store btn-google"
-               id="btnGooglePlay"
-               target="_blank"
-               rel="noopener noreferrer"
-               aria-label="تحميل تطبيق سيرتي من Google Play">
-              <svg class="store-icon" viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true">
-                <path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/>
-              </svg>
-              <div class="store-text">
-                <span class="store-subtitle">متوفر على</span>
-                <span class="store-title">Google Play</span>
-              </div>
-            </a>
-          </div>
-
-          <!-- Desktop QR Code Box -->
-          <div class="qr-code-box" id="desktopQrBox" style="display: none;">
-            <div class="qr-code-wrapper">
-              <img src="/assets/images/qr-download.webp" alt="رمز QR لتحميل تطبيق سيرتي على الهاتف" width="120" height="120" class="qr-code-svg" loading="lazy">
-            </div>
-            <p class="qr-caption">امسح الرمز بكاميرا الجوال للتحميل السريع أو زر <a href="/download/" style="color: #fff; text-decoration: underline;">صفحة التحميل</a></p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- 4-Column Footer -->
+  <!-- FOOTER -->
   <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <!-- Col 1: Brand & Identity -->
-        <div class="footer-brand">
-          <a href="/" class="brand-logo" aria-label="سيرتي - الرئيسية">
-            <svg class="brand-logo-svg" width="32" height="32" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-              <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" stroke="var(--color-primary)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="78" cy="23" r="6" fill="var(--color-primary)"/>
-            </svg>
-            <span class="brand-name">سيرتي <span class="brand-name-en">Siratie</span></span>
-          </a>
-          <p>
-            منصة المسار المهني الرائدة لبناء وفحص السير الذاتية المتوافقة مع خوارزميات <bdi>ATS</bdi> ومطابقة الوظائف في السعودية والخليج.
-          </p>
-          <div style="margin-block-start: var(--space-md); font-size: 0.875rem;">
-            <div><strong>الجهة المالكة والمشغلة:</strong> <bdi dir="ltr">Digital Pass Establishment</bdi></div>
-            <div style="margin-block-start: 4px; color: var(--color-text-muted);">سجل تجاري رقم: <strong dir="ltr"><bdi>7051100811</bdi></strong></div>
-            <div style="margin-block-start: 4px;">البريد: <a href="mailto:info@siratie.com" style="color: var(--color-primary-ink); font-weight: 600;" dir="ltr"><bdi>info@siratie.com</bdi></a></div>
-            <div style="margin-block-start: 4px;">الهاتف: <a href="tel:+966591890300" style="color: var(--color-text-secondary); text-decoration: none;" dir="ltr"><bdi>&#x200E;+966 59 189 0300</bdi></a></div>
-            <div style="margin-block-start: 4px; color: var(--color-text-muted); line-height: 1.5;">4392 شارع الشيخ محمد بن عثيمين، حي طيبة، الدمام 32273، الرقم الإضافي 7676، المملكة العربية السعودية</div>
-          </div>
-          <div class="social-links" style="margin-block-start: var(--space-md);">
-            <a href="https://www.linkedin.com/company/sirati.sa/" class="social-icon-btn" aria-label="صفحة سيرتي على لينكدإن" target="_blank" rel="noopener noreferrer">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
-            </a>
-          </div>
-        </div>
-
-        <!-- Col 2: Features & Tools -->
-        <div>
-          <h4 class="footer-col-title">الأدوات والخدمات</h4>
-          <ul class="footer-nav-list">
-            <li><a href="/" class="footer-nav-link">الرئيسية</a></li>
-            <li><a href="/ats-cv-checker/" class="footer-nav-link">فاحص السيرة الذاتية <bdi>ATS</bdi></a></li>
-            <li><a href="/cv-builder/" class="footer-nav-link">صانع السيرة الذاتية الذكي</a></li>
-            <li><a href="/cv-templates/" class="footer-nav-link">قوالب السيرة الذاتية المعتمدة</a></li>
-            <li><a href="/jobs/" class="footer-nav-link">بوابة وظائف السعودية والخليج</a></li>
-          </ul>
-        </div>
-
-        <!-- Col 3: Legal & Trust -->
-        <div>
-          <h4 class="footer-col-title">الشركة والسياسات</h4>
-          <ul class="footer-nav-list">
-            <li><a href="/about/" class="footer-nav-link">من نحن</a></li>
-            <li><a href="/contact/" class="footer-nav-link">تواصل معنا</a></li>
-            <li><a href="/privacy/" class="footer-nav-link">سياسة الخصوصية وحماية البيانات</a></li>
-            <li><a href="/terms/" class="footer-nav-link">الشروط والأحكام واتفاقية الاستخدام</a></li>
-            <li><span style="font-size: 0.8125rem; color: var(--color-text-muted);">نظام حماية البيانات الشخصية <bdi dir="ltr">(PDPL)</bdi></span></li>
-          </ul>
-        </div>
-
-        <!-- Col 4: Platform & Download -->
-        <div>
-          <h4 class="footer-col-title">تحميل التطبيق</h4>
-          <ul class="footer-nav-list">
-            <li><a href="/download/" class="footer-nav-link">تحميل تطبيق سيرتي <bdi dir="ltr">(iOS & Android)</bdi></a></li>
-            <li><span style="font-size: 0.8125rem; color: var(--color-text-muted);">يدعم <bdi dir="ltr">iOS 15.0</bdi> أو أحدث</span></li>
-            <li><span style="font-size: 0.8125rem; color: var(--color-text-muted);">يدعم <bdi dir="ltr">Android 8.0</bdi> أو أحدث</span></li>
-            <li><span class="badge-status" style="margin: 0; display: inline-block;">متوفر على <bdi dir="ltr">App Store</bdi> و <bdi dir="ltr">Google Play</bdi></span></li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Footer Bottom -->
-      <div class="footer-bottom">
-        <div style="display: flex; flex-direction: column; gap: 4px;">
-          <p style="margin: 0;">سيرتي مملوك ومُشغَّل من قِبل <strong>Digital Pass Establishment</strong> — سجل تجاري رقم: <strong dir="ltr"><bdi>7051100811</bdi></strong></p>
-          <p style="margin: 0; font-size: 0.8125rem; color: var(--color-text-secondary); direction: ltr;">Siratie is owned and operated by Digital Pass Establishment (CR: 7051100811)</p>
-          <p style="margin: 0; font-size: 0.8125rem; color: var(--color-text-muted);">© 2026 سيرتي Siratie. جميع الحقوق محفوظة.</p>
-        </div>
-        <div style="display: flex; gap: var(--space-md); align-items: center; flex-wrap: wrap;">
-          <a href="/about/" class="footer-nav-link">من نحن</a>
-          <span>·</span>
-          <a href="/contact/" class="footer-nav-link">تواصل معنا</a>
-          <span>·</span>
-          <a href="/privacy/" class="footer-nav-link">الخصوصية</a>
-          <span>·</span>
-          <a href="/terms/" class="footer-nav-link">الشروط</a>
-          <span>·</span>
-          <a href="https://siratie.com/en/" hreflang="en" class="footer-nav-link">English</a>
-        </div>
-      </div>
+    <p style="margin: 0; font-size: 0.95rem; font-weight: 500;">
+      سيرتي مملوك ومُشغَّل من قِبل <strong>Digital Pass Establishment</strong> — سجل تجاري رقم: <strong>7051100811</strong>
+    </p>
+    <p style="margin: 4px 0 0; font-size: 0.875rem; color: var(--text-muted);" dir="ltr">
+      Siratie is owned and operated by <strong>Digital Pass Establishment</strong> (CR: 7051100811)
+    </p>
+    <p style="margin: 6px 0 0; font-size: 0.8125rem; color: var(--text-muted);">
+      <span dir="ltr">4392 Sheikh Mohammed Bin Othaimeen St, Taibah District, Dammam 32273, Additional No. 7676, Saudi Arabia</span> | هاتف: <a href="tel:+966591890300" class="ltr-phone"><bdi>+966 59 189 0300</bdi></a> | بريد: <a href="mailto:info@siratie.com">info@siratie.com</a>
+    </p>
+    <div class="footer-nav">
+      <a href="/about/">من نحن</a>
+      <span>·</span>
+      <a href="/contact/">تواصل معنا</a>
+      <span>·</span>
+      <a href="/privacy/">الخصوصية</a>
+      <span>·</span>
+      <a href="/terms/">الشروط</a>
+      <span>·</span>
+      <a href="/en/">English</a>
     </div>
+    <p style="margin: 12px 0 0; font-size: 0.8125rem; color: var(--text-muted);">
+      © 2026 سيرتي Siratie. جميع الحقوق محفوظة.
+    </p>
   </footer>
 
-  <!-- Telemetry and Client Interactivity Script -->
-  <script src="/assets/js/download.js"></script>
+  <script>
+    // Theme toggle (dark default)
+    function applyTheme(theme) {
+      const isLight = (theme === 'light');
+      document.body.classList.toggle('light', isLight);
+      document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
+    }
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light');
+      document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
+      try { localStorage.setItem('sirati-theme', isLight ? 'light' : 'dark'); } catch (e) {}
+    }
+    (function initTheme() {
+      let saved = null;
+      try { saved = localStorage.getItem('sirati-theme'); } catch (e) {}
+      applyTheme(saved === 'light' ? 'light' : 'dark');
+    })();
 
+    // Scroll fade-in
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
 </body>
 </html>
