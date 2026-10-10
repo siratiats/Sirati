@@ -683,14 +683,14 @@
       <span class="en-text">All services are available inside the app. Start your professional journey the right way, today.</span>
     </p>
     <div class="download-btns">
-      <a href="#" class="btn-dl ios">
+      <a href="https://apps.apple.com/" class="btn-dl ios" target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
         <div>
           <div style="font-size:0.72rem;opacity:0.75;font-weight:400">Download on the</div>
           <div>App Store</div>
         </div>
       </a>
-      <a href="#" class="btn-dl android">
+      <a href="https://play.google.com/store/apps" class="btn-dl android" target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.66.2.99.06l12.46-7.2-2.63-2.63-10.82 9.77zm-1.12-20.9C2.03 3.1 2 3.34 2 3.58v16.84c0 .24.03.48.06.7l10.9-10.9-10.9-10.36zM20.43 10.5l-2.78-1.61-2.98 2.98 2.98 2.98 2.8-1.62c.8-.46.8-1.67-.02-2.13zM4.17.24C3.84.1 3.48.13 3.18.3L14.02 10.3 16.65 7.7 4.17.24z"/></svg>
         <div>
           <div style="font-size:0.72rem;opacity:0.75;font-weight:400">Get it on</div>
@@ -702,10 +702,29 @@
 </div>
 
 <!-- FOOTER -->
-<footer>
-  <p>
-    <span class="ar">© 2026 <span class="teal">سيرتي</span> — جميع الحقوق محفوظة.</span>
-    <span class="en-text">© 2026 <span class="teal">Siratie</span> — All rights reserved. Our services are available inside the app only.</span>
+<footer style="padding: 30px 20px; text-align: center; border-top: 1px solid var(--border-soft); line-height: 1.8;">
+  <p style="margin: 0; font-size: 0.95rem; font-weight: 500;">
+    <span class="ar">سيرتي مملوك ومُشغَّل من قِبل <strong>Digital Pass Establishment</strong> — سجل تجاري رقم: <strong>7051100811</strong></span>
+  </p>
+  <p style="margin: 4px 0 0; font-size: 0.875rem; color: var(--text-muted);" dir="ltr">
+    Siratie is owned and operated by <strong>Digital Pass Establishment</strong> (CR: 7051100811)
+  </p>
+  <p style="margin: 6px 0 0; font-size: 0.8125rem; color: var(--text-muted);">
+    4392 Sheikh Mohammed Bin Othaimeen St, Taibah District, Dammam 32273, Additional No. 7676, Saudi Arabia | Phone: <a href="tel:+966591890300" style="color: var(--teal); text-decoration: none;">+966 59 189 0300</a> | Email: <a href="mailto:info@siratie.com" style="color: var(--teal); font-weight: 600;">info@siratie.com</a>
+  </p>
+  <div style="display: flex; justify-content: center; gap: 15px; margin-top: 12px; font-size: 0.875rem; flex-wrap: wrap;">
+    <a href="/about/" style="color: var(--teal); text-decoration: none;">من نحن</a>
+    <span>·</span>
+    <a href="/contact/" style="color: var(--teal); text-decoration: none;">تواصل معنا</a>
+    <span>·</span>
+    <a href="/privacy/" style="color: var(--teal); text-decoration: none;">الخصوصية</a>
+    <span>·</span>
+    <a href="/terms/" style="color: var(--teal); text-decoration: none;">الشروط</a>
+    <span>·</span>
+    <a href="/en/" style="color: var(--teal); text-decoration: none;">English</a>
+  </div>
+  <p style="margin: 12px 0 0; font-size: 0.8125rem; color: var(--text-muted);">
+    © 2026 سيرتي Siratie. جميع الحقوق محفوظة.
   </p>
 </footer>
 

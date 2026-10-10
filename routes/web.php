@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('throttle:60,1')->group(function () {
     Route::get('/', function () {
+        $staticHome = public_path('index.html');
+        if (file_exists($staticHome)) {
+            return response()->file($staticHome, ['Content-Type' => 'text/html; charset=UTF-8']);
+        }
         return view('welcome', ['cms' => new LandingContent()]);
     })->name('landing');
 
