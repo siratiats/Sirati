@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, follow">
+  <title>404 - الصفحة غير موجودة | سيرتي Siratie</title>
+  <meta name="description" content="عذراً، الصفحة التي تبحث عنها غير موجودة في منصة سيرتي. يمكنك العودة إلى الصفحة الرئيسية أو تحميل التطبيق.">
+
+  <!-- Favicons -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <!-- Production Stylesheet -->
+  <link rel="stylesheet" href="/assets/css/site.css">
+
+  <style>
+    .error-page-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .error-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-block: var(--space-4xl);
+      padding-inline: var(--space-xl);
+    }
+    .error-card {
+      max-width: 640px;
+      width: 100%;
+      text-align: center;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      padding-block: var(--space-3xl);
+      padding-inline: var(--space-xxl);
+      box-shadow: var(--shadow-md);
+    }
+    .error-code {
+      font-size: clamp(4rem, 12vw, 6rem);
+      font-weight: 700;
+      color: var(--color-primary-ink);
+      line-height: 1;
+      margin-block-end: var(--space-sm);
+      letter-spacing: -0.02em;
+    }
+    .error-title {
+      font-size: clamp(1.5rem, 3.5vw, 2rem);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-block-end: var(--space-md);
+      text-wrap: balance;
+    }
+    .error-desc {
+      font-size: var(--font-size-body-lg);
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      max-width: 52ch;
+      margin-inline: auto;
+      margin-block-end: var(--space-xxl);
+    }
+    .error-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--space-md);
+      margin-block-end: var(--space-xl);
+    }
+    .en-bilingual-hint {
+      padding-block-start: var(--space-lg);
+      border-block-start: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      font-size: var(--font-size-body-sm);
+    }
+    .en-bilingual-hint a {
+      color: var(--color-primary-ink);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+  </style>
+</head>
+<body class="error-page-container">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner container">
+      <a href="/" class="brand-logo" aria-label="سيرتي - الصفحة الرئيسية">
+        <svg class="brand-logo-svg" width="36" height="36" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" stroke="var(--color-primary)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="78" cy="23" r="6" fill="var(--color-primary)"/>
+        </svg>
+        <span class="brand-name">سيرتي <span class="brand-name-en">Siratie</span></span>
+      </a>
+
+      <div class="header-controls">
+        <a href="/en/" class="lang-toggle" hreflang="en" aria-label="Switch to English">English</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Error Content -->
+  <main class="error-main">
+    <div class="error-card">
+      <div class="error-code">404</div>
+      <h1 class="error-title">الصفحة غير موجودة</h1>
+      <p class="error-desc">
+        عذراً، لم نتمكن من العثور على الصفحة التي تبحث عنها. ربما تم نقلها أو حذفها أو كتابة الرابط بشكل غير صحيح.
+      </p>
+
+      <div class="error-actions">
+        <a href="/" class="btn btn-primary">العودة للرئيسية</a>
+        <a href="/download/" class="btn btn-secondary">تحميل تطبيق سيرتي</a>
+      </div>
+
+      <div class="en-bilingual-hint" dir="ltr" lang="en">
+        <p>Looking for English? <a href="/en/">Go to Home</a> or <a href="/en/download/">Download App</a></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Minimal Footer -->
+  <footer class="site-footer-minimal">
+    <div class="container footer-minimal-inner">
+      <p>© 2026 سيرتي Siratie. جميع الحقوق محفوظة.</p>
+      <div class="footer-links">
+        <a href="/privacy/">سياسة الخصوصية</a>
+        <span class="divider">·</span>
+        <a href="/terms/">الشروط والأحكام</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

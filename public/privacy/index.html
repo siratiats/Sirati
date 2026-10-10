@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سياسة الخصوصية وحماية البيانات | سيرتي Siratie</title>
+  <meta name="description" content="تعرف على سياسة الخصوصية وحماية البيانات الشخصية في منصة سيرتي وفقاً لنظام حماية البيانات الشخصية السعودي (PDPL).">
+
+  <!-- Self-referencing Canonical -->
+  <link rel="canonical" href="https://siratie.com/privacy/">
+
+  <!-- Symmetrical Hreflang Alternates -->
+  <link rel="alternate" hreflang="ar" href="https://siratie.com/privacy/">
+  <link rel="alternate" hreflang="en" href="https://siratie.com/en/privacy/">
+  <link rel="alternate" hreflang="x-default" href="https://siratie.com/privacy/">
+
+  <!-- Open Graph Metadata -->
+  <meta property="og:title" content="سياسة الخصوصية وحماية البيانات | سيرتي Siratie">
+  <meta property="og:description" content="تعرف على سياسة الخصوصية وحماية البيانات الشخصية في منصة سيرتي وفقاً لنظام حماية البيانات الشخصية السعودي (PDPL).">
+  <meta property="og:image" content="https://siratie.com/assets/images/og-siratie-ar.webp">
+  <meta property="og:url" content="https://siratie.com/privacy/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ar_SA">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://siratie.com/assets/images/og-siratie-ar.webp">
+
+  <!-- Favicons -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <!-- Production Stylesheet -->
+  <link rel="stylesheet" href="/assets/css/site.css">
+
+  <style>
+    .legal-page-header {
+      padding-block: var(--space-3xl);
+      background: linear-gradient(180deg, var(--color-surface-low) 0%, var(--color-bg) 100%);
+      border-block-end: 1px solid var(--color-border);
+    }
+    .legal-header-inner {
+      max-width: 820px;
+    }
+    .legal-badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      align-items: center;
+      margin-block-end: var(--space-md);
+    }
+    .legal-meta-text {
+      font-size: var(--font-size-body-sm);
+      color: var(--color-text-muted);
+      margin-block-end: 0;
+    }
+    .legal-layout {
+      padding-block: var(--space-4xl);
+    }
+    .legal-content-container {
+      max-width: 840px;
+      margin-inline: auto;
+    }
+    .toc-card {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      margin-block-end: var(--space-3xl);
+      box-shadow: var(--shadow-sm);
+    }
+    .toc-title {
+      font-size: var(--font-size-card-h3);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-block-end: var(--space-md);
+    }
+    .toc-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-xs);
+    }
+    @media (min-width: 640px) {
+      .toc-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .toc-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: var(--font-size-body-sm);
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      padding-block: 4px;
+      padding-inline: 8px;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+    }
+    .toc-link:hover {
+      color: var(--color-primary-ink);
+      background-color: var(--color-primary-light);
+    }
+    .legal-section {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xxl);
+      margin-block-end: var(--space-xl);
+      box-shadow: var(--shadow-sm);
+    }
+    .legal-section h2 {
+      color: var(--color-text-primary);
+      margin-block-end: var(--space-lg);
+      padding-block-end: var(--space-sm);
+      border-block-end: 1px solid var(--color-border);
+      font-size: var(--font-size-section-h2);
+    }
+    .legal-section p {
+      color: var(--color-text-secondary);
+      line-height: 1.8;
+      margin-block-end: var(--space-md);
+    }
+    .legal-section ul {
+      margin-inline-start: var(--space-xl);
+      margin-block-end: var(--space-lg);
+      color: var(--color-text-secondary);
+      line-height: 1.8;
+    }
+    .legal-section li {
+      margin-block-end: var(--space-xs);
+    }
+    .subprocessor-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
+      margin-block: var(--space-lg);
+    }
+    @media (min-width: 600px) {
+      .subprocessor-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .subprocessor-card {
+      background-color: var(--color-surface-low);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+    }
+    .subprocessor-card h3 {
+      font-size: 1rem;
+      color: var(--color-text-primary);
+      margin-block-end: var(--space-xs);
+    }
+    .subprocessor-card p {
+      font-size: var(--font-size-body-sm);
+      color: var(--color-text-secondary);
+      margin-block-end: 0;
+    }
+    .highlight-notice {
+      background-color: var(--color-primary-light);
+      border: 1px solid var(--color-primary-dark);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      margin-block: var(--space-lg);
+    }
+    .highlight-notice p {
+      color: var(--color-primary-ink);
+      font-weight: 600;
+      margin-block-end: 0;
+    }
+    .contact-card {
+      background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-surface) 100%);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-md);
+      padding: var(--space-xl);
+      text-align: center;
+      margin-block-start: var(--space-lg);
+    }
+    .contact-card a {
+      color: var(--color-primary-ink);
+      font-weight: 700;
+      font-size: 1.125rem;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+  </style>
+
+  <!-- Structured Data (JSON-LD BreadcrumbList) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "الرئيسية",
+            "item": "https://siratie.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "سياسة الخصوصية",
+            "item": "https://siratie.com/privacy/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <div class="header-inner container">
+      <a href="/" class="brand-logo" aria-label="سيرتي - الصفحة الرئيسية">
+        <svg class="brand-logo-svg" width="36" height="36" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27" stroke="var(--color-primary)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="78" cy="23" r="6" fill="var(--color-primary)"/>
+        </svg>
+        <span class="brand-name">سيرتي <span class="brand-name-en">Siratie</span></span>
+      </a>
+
+      <div class="header-controls">
+        <a href="/en/privacy/" class="lang-switch" hreflang="en" aria-label="Switch to English">English</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Header & Breadcrumbs -->
+  <section class="legal-page-header">
+    <div class="container legal-header-inner">
+      <nav class="breadcrumbs" aria-label="مسار التنقل">
+        <a href="/">الرئيسية</a>
+        <span class="breadcrumb-separator" aria-hidden="true">/</span>
+        <span aria-current="page">سياسة الخصوصية</span>
+      </nav>
+
+      <div class="legal-badge-row">
+        <span class="badge badge-primary">نظام حماية البيانات الشخصية السعودي PDPL</span>
+        <span class="badge badge-success">محدّثة لشهر أكتوبر 2026</span>
+      </div>
+
+      <h1 class="page-title">سياسة الخصوصية وحماية البيانات الشخصية</h1>
+      <p class="subtitle">
+        توضح هذه الوثيقة التزام منصة وتطبيق سيرتي (Siratie) بحماية بياناتك الشخصية وحقوقك النظامية وفقاً لنظام حماية البيانات الشخصية (PDPL) في المملكة العربية السعودية.
+      </p>
+      <p class="legal-meta-text">آخر تحديث: 10 أكتوبر 2026 | تاريخ السريان: فوري</p>
+    </div>
+  </section>
+
+  <!-- Main Legal Content -->
+  <main class="legal-layout" id="main-content">
+    <div class="container legal-content-container">
+
+      <!-- Table of Contents -->
+      <nav class="toc-card" aria-label="فهرس سياسة الخصوصية">
+        <div class="toc-title">محتويات سياسة الخصوصية</div>
+        <ol class="toc-list">
+          <li><a href="#pdpl-commitment" class="toc-link">1. التزامنا بحماية البيانات ونظام PDPL</a></li>
+          <li><a href="#data-collection" class="toc-link">2. البيانات الشخصية التي نجمعها</a></li>
+          <li><a href="#processing-purposes" class="toc-link">3. أغراض الاستخدام والأساس النظامي</a></li>
+          <li><a href="#sub-processors" class="toc-link">4. معالجو البيانات من الأطراف الثالثة</a></li>
+          <li><a href="#retention-deletion" class="toc-link">5. فترات الاحتفاظ وآلية حذف الحساب</a></li>
+          <li><a href="#user-rights-contact" class="toc-link">6. حقوق أصحاب البيانات والتواصل</a></li>
+        </ol>
+      </nav>
+
+      <!-- Section 1 -->
+      <article class="legal-section" id="pdpl-commitment">
+        <h2>التزامنا بحماية البيانات ونظام حماية البيانات الشخصية السعودي (PDPL)</h2>
+        <p>
+          نلتزم في منصة وتطبيق <strong>سيرتي (Siratie)</strong> بأعلى معايير الأمان والشفافية لحماية بياناتك الشخصية وحقك في الخصوصية، وذلك انطلاقاً من الامتثال التام لأحكام <strong>نظام حماية البيانات الشخصية (PDPL)</strong> الصادر في المملكة العربية السعودية بموجب المرسوم الملكي رقم (م/19) وتعديلاته بالمرسوم الملكي رقم (م/148) ولوائحه التنفيذية.
+        </p>
+        <p>
+          تنطبق هذه السياسة على كافة الخدمات المقدمة عبر الموقع الإلكتروني (<a href="https://siratie.com/">siratie.com</a>) وتطبيقات الهواتف الذكية لنظامي iOS وأندرويد، وتشمل أدوات فحص السيرة الذاتية لأنظمة الفرز الآلي (<bdi>ATS</bdi>)، وصانع السير الذاتية الذكي، ومحرك مطابقة الوظائف السعودية.
+        </p>
+        <div class="highlight-notice">
+          <p>مبدأ التقليل من البيانات: نجمع فقط الحد الأدنى من البيانات الشخصية الضروري لتقديم الخدمات وتحقيق الأغراض المشروعة المعلن عنها، ولا نستخدم بياناتك لأي أغراض أخرى غير متوافقة.</p>
+        </div>
+      </article>
+
+      <!-- Section 2 -->
+      <article class="legal-section" id="data-collection">
+        <h2>البيانات الشخصية التي نجمعها في منصة وتطبيق سيرتي</h2>
+        <p>
+          تشمل البيانات التي قد نقوم بجمعها أثناء استخدامك لمنصة وتطبيق سيرتي الفئات الآتية:
+        </p>
+        <ul>
+          <li><strong>بيانات الهوية والتواصل:</strong> الاسم الكامل، عنوان البريد الإلكتروني، رقم الجوال (اختياري)، والمدينة أو المنطقة داخل المملكة العربية السعودية أو دول الخليج.</li>
+          <li><strong>محتوى السيرة الذاتية والملف المهني:</strong> المسمى المهني، المؤهلات العلمية، الجامعات وتواريخ التخرج، الخبرات العملية السابقة وتفاصيل المهام، المهارات التقنية والشخصية، اللغات، والشهادات والدورات التدريبية المرفوعة بصيغة نصوص أو ملفات (<bdi>PDF</bdi> / Word).</li>
+          <li><strong>بيانات التشغيل والتقنية:</strong> عنوان بروتوكول الإنترنت (IP)، نوع نظام التشغيل وإصداره (iOS / Android)، رمز الجهاز للإشعارات (FCM Token)، وسجلات الأعطال التقنية المشفرة لتحسين استقرار التطبيق.</li>
+          <li><strong>بيانات الاشتراكات وعمليات الشراء:</strong> معلومات التحقق الرقمي من صحة الاشتراكات المميزة (عبر منصة RevenueCat)، مع التأكيد على أننا <strong>لا نخزن ولا نطلع على أي أرقام لبطاقاتك الائتمانية أو بياناتك المصرفية</strong>، حيث تتم كافة المعاملات المالية حصرياً عبر متاجر التطبيقات الرسمية (Apple App Store و Google Play).</li>
+        </ul>
+      </article>
+
+      <!-- Section 3 -->
+      <article class="legal-section" id="processing-purposes">
+        <h2>أغراض جمع واستخدام البيانات والأساس النظامي للمعالجة</h2>
+        <p>
+          تتم معالجة بياناتك الشخصية حصرياً وفق الأسس النظامية المعتمدة في نظام حماية البيانات الشخصية (موافقتك الصريحة وتنفيذ التزامات تقديم الخدمة)، وذلك للأغراض الآتية:
+        </p>
+        <ul>
+          <li>فحص وتحليل توافق السيرة الذاتية مع أنظمة الفرز الآلي (<bdi>ATS</bdi> Compatibility Scoring) وتحديد الكلمات المفتاحية المفقودة.</li>
+          <li>إنشاء وتنسيق السير الذاتية باللغتين العربية والإنجليزية وتصديرها بصيغة <bdi>PDF</bdi> قياسية متوافقة مع أنظمة الموارد البشرية.</li>
+          <li>مطابقة مهاراتك مع أحدث إعلانات الوظائف السعودية المعروضة في القطاعين العام والخاص وإرسال تنبيهات بالفرص المتناسبة.</li>
+          <li>تقديم الدعم الفني والرد على الاستفسارات وتطوير تجربة الاستخدام.</li>
+        </ul>
+        <div class="highlight-notice">
+          <p>تعهد عدم البيع: نتعهد بشكل قاطع بعدم بيع أو تأجير أو المتاجرة ببياناتك الشخصية أو محتويات سيرتك الذاتية مع أي طرف ثالث لأغراض الإعلانات أو التسويق التجاري.</p>
+        </div>
+      </article>
+
+      <!-- Section 4 -->
+      <article class="legal-section" id="sub-processors">
+        <h2>معالجو البيانات من الأطراف الثالثة (Sub-Processors)</h2>
+        <p>
+          لتقديم خدماتنا التقنية بموثوقية وأمان عاليين، نتعامل مع عدد محدود من مزودي الخدمات المعتمدين الخاضعين لاتفاقيات ملزمة لحماية البيانات:
+        </p>
+        <div class="subprocessor-grid">
+          <div class="subprocessor-card">
+            <h3>OpenAI / DeepInfra (معالجة الذكاء الاصطناعي)</h3>
+            <p>يُستخدم لمعالجة صياغة المقترحات والكلمات المفتاحية للسيرة. تُرسل البيانات مشفرة دون تخزين، مع <strong>تطبيق سياسة صارمة تمنع استخدام بياناتك لتدريب نماذج الذكاء الاصطناعي</strong>.</p>
+          </div>
+          <div class="subprocessor-card">
+            <h3>RevenueCat (إدارة الاشتراكات)</h3>
+            <p>يُستخدم للتحقق من صلاحيات الاشتراكات الرقمية وتجديدها في متاجر التطبيقات (Apple App Store و Google Play) دون الوصول إلى تفاصيل الدفع البنكية.</p>
+          </div>
+          <div class="subprocessor-card">
+            <h3>Firebase / Google Cloud (الإشعارات والبنية)</h3>
+            <p>يُستخدم لتسليم إشعارات الدفع الفورية (Push Notifications) المتعلقة بالوظائف وحالة فحص السيرة واستضافة قواعد البيانات المشفرة.</p>
+          </div>
+          <div class="subprocessor-card">
+            <h3>Sentry (مراقبة الأعطال التقنية)</h3>
+            <p>يُستخدم لتتبع وتشخيص الأخطاء البرمجية والاستقرار مع حجب كافة البيانات الحساسة ومحتويات السير تلقائياً (PII Data Scrubbing).</p>
+          </div>
+        </div>
+      </article>
+
+      <!-- Section 5 -->
+      <article class="legal-section" id="retention-deletion">
+        <h2>فترات الاحتفاظ بالبيانات وآلية حذف الحساب والبيانات نهائياً</h2>
+        <p>
+          تخضع سياسة حفظ البيانات لضوابط زمنية محددة تضمن عدم الاحتفاظ بها لفترة أطول من اللازم:
+        </p>
+        <ul>
+          <li><strong>التحليلات المؤقتة لزوار الموقع (Guest Submissions):</strong> عند فحص السيرة دون تسجيل حساب، يُحفظ الملف مؤقتاً لمدة أقصاها <strong>24 ساعة</strong> لتمكينك من استعراض نتيجتك، ثم يُحذف نهائياً وتلقائياً من خوادمنا.</li>
+          <li><strong>المستخدمون المسجلون:</strong> نحتفظ ببيانات سيرتك الذاتية طوال فترة نشاط حسابك لتمكينك من تعديلها والرجوع إليها وتصديرها عند الحاجة.</li>
+          <li><strong>الحذف الفوري والنهائي للحساب:</strong> يحق لك في أي وقت حذف حسابك وكافة بياناتك نهائياً من داخل التطبيق (الإعدادات ← الحساب ← حذف الحساب). يؤدي هذا الإجراء فوراً إلى استدعاء نقطة النهاية البرمجية <code>DELETE /api/auth/account</code> ومحو كامل السير الذاتية والملفات وسجلات الهوية من قواعد بياناتنا بشكل دائم لا رجعة فيه.</li>
+        </ul>
+      </article>
+
+      <!-- Section 6 -->
+      <article class="legal-section" id="user-rights-contact">
+        <h2>حقوق أصحاب البيانات الشخصية ووسائل التواصل المعتمدة</h2>
+        <p>
+          بموجب نظام حماية البيانات الشخصية السعودي (PDPL)، يحق لك ممارسة حقوقك النظامية الآتية في أي وقت:
+        </p>
+        <ul>
+          <li><strong>حق العلم والاطلاع:</strong> معرفة الأساس النظامي والمسوغات لجمع بياناتك وطرق معالجتها.</li>
+          <li><strong>حق الوصول إلى البيانات:</strong> طلب نسخة إلكترونية من بياناتك الشخصية المخزنة لدينا.</li>
+          <li><strong>حق التصحيح والاستكمال:</strong> تصحيح أي بيانات غير دقيقة أو استكمال البيانات الناقصة مباشرة عبر التطبيق.</li>
+          <li><strong>حق الإتلاف والمحو:</strong> طلب إتلاف بياناتك الشخصية متى ما انتهى الغرض من جمعها.</li>
+          <li><strong>حق الرجوع عن الموافقة:</strong> سحب موافقتك على معالجة البيانات أو إيقاف الإشعارات التنبيهية في أي وقت.</li>
+        </ul>
+        <p>
+          لمزيد من التفاصيل حول شروط الخدمة والاتفاقيات المنظمة للاستخدام، يمكنك مراجعة صفحة <a href="/terms/">الشروط والأحكام</a> المعتمدة لدينا.
+        </p>
+        <div class="contact-card">
+          <p>لممارسة أي من حقوقك النظامية أو لأي استفسارات تتعلق بسياسة الخصوصية، يُرجى التواصل مباشرة مع مسؤول حماية البيانات لدينا:</p>
+          <p><a href="mailto:support@siratie.com">support@siratie.com</a></p>
+        </div>
+      </article>
+
+    </div>
+  </main>
+
+  <!-- Minimal Footer -->
+  <footer class="site-footer-minimal">
+    <div class="container footer-minimal-inner">
+      <p>© 2026 سيرتي Siratie. جميع الحقوق محفوظة.</p>
+      <div class="footer-links">
+        <a href="/privacy/">سياسة الخصوصية</a>
+        <span class="divider">·</span>
+        <a href="/terms/">الشروط والأحكام</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

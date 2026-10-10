@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- P1: Arabic Homepage -->
+  <url>
+    <loc>https://siratie.com/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- P2: English Homepage -->
+  <url>
+    <loc>https://siratie.com/en/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- P3: Arabic ATS CV Checker -->
+  <url>
+    <loc>https://siratie.com/ats-cv-checker/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/ats-cv-checker/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/ats-cv-checker/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/ats-cv-checker/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- P4: English ATS CV Checker -->
+  <url>
+    <loc>https://siratie.com/en/ats-cv-checker/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/ats-cv-checker/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/ats-cv-checker/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/ats-cv-checker/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- P5: Arabic CV Builder -->
+  <url>
+    <loc>https://siratie.com/cv-builder/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/cv-builder/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/cv-builder/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/cv-builder/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- P6: English CV Builder -->
+  <url>
+    <loc>https://siratie.com/en/cv-builder/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/cv-builder/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/cv-builder/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/cv-builder/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- P7: Arabic CV Templates -->
+  <url>
+    <loc>https://siratie.com/cv-templates/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/cv-templates/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/cv-templates/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/cv-templates/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- P8: English CV Templates -->
+  <url>
+    <loc>https://siratie.com/en/cv-templates/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/cv-templates/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/cv-templates/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/cv-templates/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- P9: Arabic Jobs -->
+  <url>
+    <loc>https://siratie.com/jobs/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/jobs/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/jobs/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/jobs/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- P10: English Jobs -->
+  <url>
+    <loc>https://siratie.com/en/jobs/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/jobs/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/jobs/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/jobs/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- P11: Arabic Download -->
+  <url>
+    <loc>https://siratie.com/download/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/download/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/download/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/download/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- P12: English Download -->
+  <url>
+    <loc>https://siratie.com/en/download/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/download/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/download/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/download/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- P13: Arabic Privacy Policy -->
+  <url>
+    <loc>https://siratie.com/privacy/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/privacy/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- P14: English Privacy Policy -->
+  <url>
+    <loc>https://siratie.com/en/privacy/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/privacy/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- P15: Arabic Terms of Service -->
+  <url>
+    <loc>https://siratie.com/terms/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/terms/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- P16: English Terms of Service -->
+  <url>
+    <loc>https://siratie.com/en/terms/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/terms/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/terms/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/terms/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+</urlset>
