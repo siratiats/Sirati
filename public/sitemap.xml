@@ -178,4 +178,48 @@
     <priority>0.3</priority>
   </url>
 
+  <!-- P17: Arabic About Us -->
+  <url>
+    <loc>https://siratie.com/about/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/about/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/about/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- P18: English About Us -->
+  <url>
+    <loc>https://siratie.com/en/about/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/about/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/about/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/about/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- P19: Arabic Contact Us -->
+  <url>
+    <loc>https://siratie.com/contact/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/contact/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/contact/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/contact/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- P20: English Contact Us -->
+  <url>
+    <loc>https://siratie.com/en/contact/</loc>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/contact/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/contact/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/contact/"/>
+    <lastmod>2026-10-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
 </urlset>

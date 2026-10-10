@@ -289,6 +289,66 @@ PAGE_SPECS = [
         "required_schemas": ["BreadcrumbList"],
         "forbidden_schemas": ["JobPosting", "HowTo", "aggregateRating"],
     },
+    {
+        "id": "P17",
+        "name": "Arabic About Us",
+        "rel_path": os.path.join("about", "index.html"),
+        "url_path": "/about/",
+        "canonical": "https://siratie.com/about/",
+        "lang": "ar",
+        "dir": "rtl",
+        "hreflang_ar": "https://siratie.com/about/",
+        "hreflang_en": "https://siratie.com/en/about/",
+        "hreflang_x_default": "https://siratie.com/about/",
+        "og_locale": "ar_SA",
+        "required_schemas": ["BreadcrumbList", "Organization"],
+        "forbidden_schemas": ["JobPosting", "HowTo", "aggregateRating"],
+    },
+    {
+        "id": "P18",
+        "name": "English About Us",
+        "rel_path": os.path.join("en", "about", "index.html"),
+        "url_path": "/en/about/",
+        "canonical": "https://siratie.com/en/about/",
+        "lang": "en",
+        "dir": "ltr",
+        "hreflang_ar": "https://siratie.com/about/",
+        "hreflang_en": "https://siratie.com/en/about/",
+        "hreflang_x_default": "https://siratie.com/about/",
+        "og_locale": "en_US",
+        "required_schemas": ["BreadcrumbList", "Organization"],
+        "forbidden_schemas": ["JobPosting", "HowTo", "aggregateRating"],
+    },
+    {
+        "id": "P19",
+        "name": "Arabic Contact Us",
+        "rel_path": os.path.join("contact", "index.html"),
+        "url_path": "/contact/",
+        "canonical": "https://siratie.com/contact/",
+        "lang": "ar",
+        "dir": "rtl",
+        "hreflang_ar": "https://siratie.com/contact/",
+        "hreflang_en": "https://siratie.com/en/contact/",
+        "hreflang_x_default": "https://siratie.com/contact/",
+        "og_locale": "ar_SA",
+        "required_schemas": ["BreadcrumbList", "ContactPage"],
+        "forbidden_schemas": ["JobPosting", "HowTo", "aggregateRating"],
+    },
+    {
+        "id": "P20",
+        "name": "English Contact Us",
+        "rel_path": os.path.join("en", "contact", "index.html"),
+        "url_path": "/en/contact/",
+        "canonical": "https://siratie.com/en/contact/",
+        "lang": "en",
+        "dir": "ltr",
+        "hreflang_ar": "https://siratie.com/contact/",
+        "hreflang_en": "https://siratie.com/en/contact/",
+        "hreflang_x_default": "https://siratie.com/contact/",
+        "og_locale": "en_US",
+        "required_schemas": ["BreadcrumbList", "ContactPage"],
+        "forbidden_schemas": ["JobPosting", "HowTo", "aggregateRating"],
+    },
 ]
 
 
@@ -791,8 +851,9 @@ def verify_sitemap_xml(public_dir, page_specs):
         return tag.split("}")[-1] if "}" in tag else tag
 
     url_elements = [elem for elem in root if strip_ns(elem.tag) == "url"]
-    if len(url_elements) != 16:
-        return False, f"sitemap.xml contains {len(url_elements)} <url> entries (expected exactly 16)"
+    expected_url_count = len(page_specs)
+    if len(url_elements) != expected_url_count:
+        return False, f"sitemap.xml contains {len(url_elements)} <url> entries (expected exactly {expected_url_count})"
 
     sitemap_locs = {}
     total_xhtml_links = 0
@@ -815,15 +876,16 @@ def verify_sitemap_xml(public_dir, page_specs):
         if loc:
             sitemap_locs[loc] = xhtml_links
 
-    # Check that all 16 canonical URLs are present
+    # Check that all canonical URLs are present
     expected_canonicals = {spec["canonical"] for spec in page_specs}
     missing_locs = expected_canonicals - set(sitemap_locs.keys())
     if missing_locs:
         return False, f"sitemap.xml missing canonical URL(s): {', '.join(missing_locs)}"
 
-    # Check 48 total alternate links (3 per URL: ar, en, x-default)
-    if total_xhtml_links != 48:
-        return False, f"sitemap.xml contains {total_xhtml_links} xhtml:link alternates (expected exactly 48: 3 per page)"
+    # Check total alternate links (3 per URL: ar, en, x-default)
+    expected_xhtml_links = len(page_specs) * 3
+    if total_xhtml_links != expected_xhtml_links:
+        return False, f"sitemap.xml contains {total_xhtml_links} xhtml:link alternates (expected exactly {expected_xhtml_links}: 3 per page)"
 
     for spec in page_specs:
         canon = spec["canonical"]
@@ -832,7 +894,7 @@ def verify_sitemap_xml(public_dir, page_specs):
             if req not in alternates:
                 return False, f"sitemap.xml URL '{canon}' missing xhtml:link hreflang='{req}'"
 
-    return True, f"sitemap.xml verified (16 URLs, 48 xhtml:link alternates, valid XML)"
+    return True, f"sitemap.xml verified ({expected_url_count} URLs, {expected_xhtml_links} xhtml:link alternates, valid XML)"
 
 
 def verify_404_page(public_dir):
@@ -919,8 +981,8 @@ def run_seo_audit(public_dir, verbose=False, quiet=False):
             results["diagnostics"].append(f"Root Asset [{asset_name}]: {msg}")
             log(f"  {RED}[FAIL]{RESET} {asset_name:<14} : {msg}")
 
-    # 2. VERIFY 16 HTML PAGES (9 RULES EACH = 144 ASSERTIONS)
-    log(f"\n{BOLD}--- 16 Static Landing Pages (9 Rules / 144 Assertions) ---{RESET}")
+    # 2. VERIFY ALL HTML PAGES (9 RULES EACH)
+    log(f"\n{BOLD}--- {len(PAGE_SPECS)} Static Landing Pages (9 Rules / {len(PAGE_SPECS) * 9} Assertions) ---{RESET}")
 
     rules_meta = [
         (1, "H1 Tag Count", verify_rule_1_h1),
@@ -1007,7 +1069,7 @@ def run_seo_audit(public_dir, verbose=False, quiet=False):
     # 3. AUDIT SUMMARY
     log(f"\n{BOLD}{CYAN}====================================================================={RESET}")
     log(f"{BOLD}AUDIT SUMMARY & QA GATE STATUS:{RESET}")
-    log(f"  Total Page Assertions : {results['total_page_assertions']} (16 pages x 9 rules)")
+    log(f"  Total Page Assertions : {results['total_page_assertions']} ({len(PAGE_SPECS)} pages x 9 rules)")
     log(f"  Passed Assertions     : {GREEN}{results['passed_page_assertions']}{RESET}")
     log(f"  Failed Assertions     : {RED if results['failed_page_assertions'] > 0 else GREEN}{results['failed_page_assertions']}{RESET}")
 

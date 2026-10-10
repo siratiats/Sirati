@@ -28,35 +28,6 @@
       const btnGoogle = section.querySelector('#btnGooglePlay, [data-store="android"], .btn-google');
       const qrBox = section.querySelector('#desktopQrBox, .qr-code-box, .desktop-qr-container');
 
-      // Helper to check for placeholder URL
-      function isPlaceholder(url) {
-        if (!url) return true;
-        return url.indexOf('[PLACEHOLDER') !== -1 || url === '#' || url.indexOf('example.com') !== -1;
-      }
-
-      // Check Pre-Launch Status for Store Badges
-      [
-        { btn: btnApple, store: 'App Store', storeId: 'ios' },
-        { btn: btnGoogle, store: 'Google Play', storeId: 'android' }
-      ].forEach(function (item) {
-        if (!item.btn) return;
-        const href = item.btn.getAttribute('href');
-        const pill = item.btn.querySelector('.status-pill, .badge-status');
-        const subtitle = item.btn.querySelector('.store-subtitle');
-
-        if (isPlaceholder(href)) {
-          if (pill) {
-            pill.textContent = isArabic ? 'قريباً' : 'Coming soon';
-            pill.style.display = 'inline-block';
-          }
-          if (subtitle) {
-            subtitle.textContent = isArabic
-              ? (item.storeId === 'ios' ? 'تحميل من (قريباً)' : 'متوفر على (قريباً)')
-              : (item.storeId === 'ios' ? 'Download on (Coming soon)' : 'Get it on (Coming soon)');
-          }
-        }
-      });
-
       // Platform Tailoring
       if (isAndroid) {
         if (btnApple) btnApple.style.display = 'none';
