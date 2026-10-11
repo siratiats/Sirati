@@ -112,28 +112,6 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- P11: Arabic Download -->
-  <url>
-    <loc>https://siratie.com/download/</loc>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/download/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/download/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/download/"/>
-    <lastmod>2026-10-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- P12: English Download -->
-  <url>
-    <loc>https://siratie.com/en/download/</loc>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/download/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/download/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/download/"/>
-    <lastmod>2026-10-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
   <!-- P13: Arabic Privacy Policy -->
   <url>
     <loc>https://siratie.com/privacy/</loc>
