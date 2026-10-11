@@ -1032,3 +1032,34 @@ body.en span.en-text { display: inline; }
     width: 100%;
   }
 }
+
+
+/* ── Explicit Clickable Email Link & Store Button Hiding ── */
+.footer-email-link,
+footer a[href^="mailto:"],
+.site-footer a[href^="mailto:"],
+.contact-card a[href^="mailto:"] {
+  color: var(--teal) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.footer-email-link:hover,
+footer a[href^="mailto:"]:hover,
+.site-footer a[href^="mailto:"]:hover {
+  color: #59DAC9 !important;
+  opacity: 0.9;
+}
+
+/* Hide store buttons that point to generic store homepages until app release */
+.btn-store[href*="apps.apple.com"],
+.btn-store[href*="play.google.com"],
+.btn-dl[href*="apps.apple.com"],
+.btn-dl[href*="play.google.com"],
+#btnAppStore,
+#btnGooglePlay {
+  display: none !important;
+}
