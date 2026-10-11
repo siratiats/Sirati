@@ -1063,3 +1063,17 @@ footer a[href^="mailto:"]:hover,
 #btnGooglePlay {
   display: none !important;
 }
+
+/* Nav Coming Soon Badge */
+.nav-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(0, 168, 152, 0.16);
+  color: #00A898;
+  margin-inline-start: 5px;
+  line-height: 1.4;
+  vertical-align: middle;
+}
