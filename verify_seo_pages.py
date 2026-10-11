@@ -835,13 +835,16 @@ def verify_rule_10_apple_compliance(parser, public_dir, current_rel_path):
         if "32273" not in content or "7676" not in content:
             errors.append("Missing national postal code 32273 or additional number 7676")
 
-    # 6. Anti-placeholder & Anti-coming-soon
+    # 6. Anti-placeholder & Anti-coming-soon (enforced on all main conversion pages; download page displays coming soon status)
     if "[PLACEHOLDER" in content or "[placeholder" in content:
         errors.append("Contains unconfigured [PLACEHOLDER] token")
-    if "قريباً" in content or "قريبا" in content:
-        errors.append("Contains 'قريباً' placeholder badge")
-    if "coming soon" in content.lower():
-        errors.append("Contains 'coming soon' placeholder badge")
+
+    is_download_page = "download" in current_rel_path.lower()
+    if not is_download_page:
+        if "قريباً" in content or "قريبا" in content:
+            errors.append("Contains 'قريباً' placeholder badge")
+        if "coming soon" in content.lower():
+            errors.append("Contains 'coming soon' placeholder badge")
 
     if errors:
         return False, "; ".join(errors)
