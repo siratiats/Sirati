@@ -214,6 +214,55 @@ class JobMatchControllerTest extends TestCase
         $this->assertDatabaseCount('job_matches', 1 + 3 + 7);
     }
 
+    public function test_exhausted_quota_only_blocks_new_attempts_at_every_existing_match_boundary(): void
+    {
+        $this->travelTo(now()->startOfDay()->addHours(12));
+        foreach ([1, random_int(2, 5)] as $limit) {
+            config(['monetization.job_match.daily_limit' => $limit]);
+            $user = $this->premiumUser();
+            Sanctum::actingAs($user);
+            $cv = $this->savedCv($user);
+            $input = ['generated_cv_id' => $cv->id, 'job_description_input' => fake()->paragraph()];
+            foreach (range(1, $limit) as $attempt) {
+                $headers = ['Idempotency-Key' => fake()->uuid()];
+                $id = $this->postJson('/api/job-matches', $input, $headers)->assertCreated()->json('data.id');
+            }
+            $match = JobMatch::findOrFail($id);
+            $key = fake()->uuid();
+            $match->update(['ai_feedback' => ['suggestions' => [[
+                'key' => $key,
+                'target' => ['section' => 'summary', 'field' => 'text'],
+                'before' => $cv->summary_input,
+                'after' => $cv->summary_input.' '.fake()->sentence(),
+                'needs_user_fact' => false,
+            ]]]]);
+            $url = '/api/job-matches/'.$id;
+            foreach (AiStatus::cases() as $state) {
+                $match->update(['ai_status' => $state]);
+                $stored = $this->getJson($url)->assertOk()->assertJsonPath('data.ai_status', $state->value)->json('data');
+                $this->postJson('/api/job-matches', $input, $headers)->assertOk()->assertExactJson(['data' => $stored]);
+                if ($state !== AiStatus::Completed) {
+                    $this->postJson($url.'/apply-suggestions', ['suggestion_keys' => [$key]])->assertStatus(409);
+                }
+            }
+            $match->update(['ai_status' => AiStatus::Completed]);
+            $copyId = $this->postJson($url.'/apply-suggestions', ['suggestion_keys' => [$key]])
+                ->assertOk()->json('data.generated_cv.id');
+            $this->assertNotSame($cv->id, $copyId);
+            $this->postJson($url.'/apply-suggestions', ['suggestion_keys' => [$key]])
+                ->assertOk()->assertJsonPath('data.generated_cv.id', $copyId);
+            $stored = $this->getJson($url)->assertOk()->json('data');
+            $this->postJson('/api/job-matches', $input, $headers)->assertOk()->assertExactJson(['data' => $stored]);
+            $this->postJson('/api/job-matches', $input)->assertStatus(429)->assertHeader('Retry-After');
+            $this->postJson('/api/job-matches', $input, ['Idempotency-Key' => fake()->uuid()])->assertStatus(429);
+            $this->assertSame($limit, app(SubscriptionGate::class)->jobMatchesUsedToday($user));
+            $user->revokeSubscription();
+            $this->getJson($url)->assertStatus(402);
+            $this->postJson($url.'/apply-suggestions', ['suggestion_keys' => [$key]])->assertStatus(402);
+            $this->postJson('/api/job-matches', $input, $headers)->assertStatus(402);
+        }
+    }
+
     public function test_character_limits_include_unicode_boundaries_and_invalid_keys(): void
     {
         $user = $this->premiumUser();

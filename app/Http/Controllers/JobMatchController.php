@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 class JobMatchController extends Controller
@@ -24,15 +23,7 @@ class JobMatchController extends Controller
     public function store(Request $request, SubscriptionGate $gate, AtsScoringService $scorer)
     {
         $key = $request->header('Idempotency-Key');
-        try {
-            $gate->assertCanJobMatch($request->user());
-        } catch (HttpException $exception) {
-            // The gate checks configuration and entitlement before quota. A keyed
-            // request may replay an existing attempt even when that quota is full.
-            if ($exception->getStatusCode() !== 429 || $key === null) {
-                throw $exception;
-            }
-        }
+        $gate->assertCanAccessJobMatch($request->user());
         $input = $request->validate([
             'generated_cv_id' => ['required', 'integer', 'min:1'],
             'job_description_input' => ['required', 'string', 'max:4000'],
@@ -97,7 +88,7 @@ class JobMatchController extends Controller
     public function show(Request $request, int $id, SubscriptionGate $gate): JobMatchResource
     {
         $match = JobMatch::where('user_id', $request->user()->id)->findOrFail($id);
-        $gate->assertCanJobMatch($request->user());
+        $gate->assertCanAccessJobMatch($request->user());
 
         return new JobMatchResource($match);
     }
@@ -105,7 +96,7 @@ class JobMatchController extends Controller
     public function applySuggestions(Request $request, int $id, SubscriptionGate $gate, JobMatchApplyService $service): array
     {
         $match = JobMatch::where('user_id', $request->user()->id)->findOrFail($id);
-        $gate->assertCanJobMatch($request->user());
+        $gate->assertCanAccessJobMatch($request->user());
         $input = $request->validate([
             'suggestion_keys' => ['required', 'array', 'min:1', 'max:50'],
             'suggestion_keys.*' => ['required', 'string', 'max:128', 'distinct'],
