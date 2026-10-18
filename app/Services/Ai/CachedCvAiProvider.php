@@ -26,7 +26,7 @@ class CachedCvAiProvider implements CvAiProvider
      * Bump by hand whenever prompt text or schema changes so stale cache
      * entries are not reused after a prompt edit.
      */
-    public const PROMPT_VERSION = '8';
+    public const PROMPT_VERSION = '9';
 
     /** Normalized provider name ('openai' | 'anthropic') the wrapped driver talks to. */
     private readonly string $provider;
@@ -133,6 +133,23 @@ class CachedCvAiProvider implements CvAiProvider
                 'text' => mb_substr($text, 0, 1000),
             ],
             callback: fn (): array => $this->inner->classifyDocument($text),
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $cvSnapshot
+     */
+    public function jobMatchAdvice(array $cvSnapshot, string $jobDescription, string $language): array
+    {
+        return $this->remember(
+            operation: 'job_match_advice',
+            payload: [
+                'operation' => 'job_match_advice',
+                'cv_snapshot_hash' => hash('sha256', $this->normalizePayload($cvSnapshot)),
+                'jd_hash' => hash('sha256', $this->normalizeText($jobDescription)),
+                'language' => $this->normalizeText($language),
+            ],
+            callback: fn (): array => $this->inner->jobMatchAdvice($cvSnapshot, $jobDescription, $language),
         );
     }
 

@@ -12,9 +12,12 @@ use App\Services\Ai\AiProviderFallback;
 use App\Services\Ai\AiTimeouts;
 use App\Services\Ai\EnhanceCvFieldResultGuard;
 use App\Services\Ai\GenerateCvResultGuard;
+use App\Services\Ai\JobMatchResultGuard;
 use App\Services\Ai\Prompts\AnalysisAdviceSystemPrompt;
 use App\Services\Ai\Prompts\CvMarkdownFormat;
 use App\Services\Ai\Prompts\EnhanceCvFieldSystemPrompt;
+use App\Services\Ai\Prompts\JobMatchSystemPrompt;
+use App\Services\Ai\Schemas\JobMatchAdviceSchema;
 use App\Services\Ai\Schemas\OperationSchemas;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
@@ -141,6 +144,35 @@ class OpenAiCvService implements CvAiProvider
                 ? fn (): array => $fallback->classifyDocument($text)
                 : null,
             'OpenAI classifyDocument failed, falling back to DeepInfra',
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $cvSnapshot
+     *
+     * @throws ConnectionException
+     * @throws RequestException
+     * @throws AiRefusalException
+     * @throws UnexpectedValueException
+     */
+    public function jobMatchAdvice(array $cvSnapshot, string $jobDescription, string $language): array
+    {
+        $fallback = app(DeepInfraCvService::class);
+
+        return AiProviderFallback::attempt(
+            function () use ($cvSnapshot, $jobDescription, $language): array {
+                $raw = $this->requestJson(
+                    JobMatchAdviceSchema::NAME,
+                    (new JobMatchSystemPrompt)->build($language),
+                    JobMatchSystemPrompt::buildUserPrompt($cvSnapshot, $jobDescription, $language),
+                );
+
+                return JobMatchResultGuard::enforceProviderOutput($raw, $cvSnapshot, $jobDescription, 'OpenAI');
+            },
+            $fallback->isConfigured()
+                ? fn (): array => $fallback->jobMatchAdvice($cvSnapshot, $jobDescription, $language)
+                : null,
+            'OpenAI jobMatchAdvice failed, falling back to DeepInfra',
         );
     }
 

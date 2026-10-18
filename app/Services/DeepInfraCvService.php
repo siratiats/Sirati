@@ -12,9 +12,12 @@ use App\Services\Ai\AiProviderFallback;
 use App\Services\Ai\AiTimeouts;
 use App\Services\Ai\EnhanceCvFieldResultGuard;
 use App\Services\Ai\GenerateCvResultGuard;
+use App\Services\Ai\JobMatchResultGuard;
 use App\Services\Ai\Prompts\AnalysisAdviceSystemPrompt;
 use App\Services\Ai\Prompts\CvMarkdownFormat;
 use App\Services\Ai\Prompts\EnhanceCvFieldSystemPrompt;
+use App\Services\Ai\Prompts\JobMatchSystemPrompt;
+use App\Services\Ai\Schemas\JobMatchAdviceSchema;
 use App\Services\Ai\Schemas\OperationSchemas;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
@@ -154,6 +157,40 @@ class DeepInfraCvService implements CvAiProvider
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $cvSnapshot
+     *
+     * @throws ConnectionException
+     * @throws RequestException
+     * @throws AiRefusalException
+     * @throws UnexpectedValueException
+     */
+    public function jobMatchAdvice(array $cvSnapshot, string $jobDescription, string $language): array
+    {
+        $normalizedLang = strtolower(trim($language)) === 'en' ? 'en' : 'ar';
+        $model = $normalizedLang === 'en'
+            ? (string) config('services.deepinfra.model_en', 'meta-llama/Llama-3.3-70B-Instruct-Turbo')
+            : (string) config('services.deepinfra.model_ar', config('services.deepinfra.model', 'Qwen/Qwen2.5-72B-Instruct'));
+        $fallback = app(OpenAiCvService::class);
+
+        return AiProviderFallback::attempt(
+            function () use ($cvSnapshot, $jobDescription, $normalizedLang, $model): array {
+                $raw = $this->requestJson(
+                    JobMatchAdviceSchema::NAME,
+                    (new JobMatchSystemPrompt)->build($normalizedLang)."\n\nYou MUST return a valid JSON object with keys: executive_summary string, strengths array of strings, gaps array of strings, suggestions array of objects {key, target: {section, entry_id, field, bullet_index}, before, after, rationale, jd_terms, needs_user_fact}.",
+                    JobMatchSystemPrompt::buildUserPrompt($cvSnapshot, $jobDescription, $normalizedLang),
+                    $model,
+                );
+
+                return JobMatchResultGuard::enforceProviderOutput($raw, $cvSnapshot, $jobDescription, 'DeepInfra');
+            },
+            $fallback->isConfigured()
+                ? fn (): array => $fallback->jobMatchAdvice($cvSnapshot, $jobDescription, $language)
+                : null,
+            'DeepInfra jobMatchAdvice failed, falling back to OpenAI',
+        );
+    }
+
     private function resolveFastModel(string $language = 'ar'): string
     {
         $lang = strtolower($language);
@@ -276,7 +313,7 @@ class DeepInfraCvService implements CvAiProvider
 
     private function timeoutFor(string $operation): int
     {
-        if (in_array($operation, ['generate_cv', 'analysis_advice'], true)) {
+        if (in_array($operation, ['generate_cv', 'analysis_advice', 'job_match_advice'], true)) {
             return (int) config('services.deepinfra.generate_timeout', AiTimeouts::DEEPINFRA_GENERATE_TIMEOUT);
         }
 
