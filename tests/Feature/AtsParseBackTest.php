@@ -207,34 +207,25 @@ class AtsParseBackTest extends TestCase
 
     public function test_generated_mixed_runs_round_trip_exactly_across_pdf_pages_without_mutating_source(): void
     {
-        $random = new Randomizer(new Mt19937(46098));
-        $letters = mb_str_split('ابتثجحخدذرزسشصضطظعغفقكلمنهوي');
-        $word = function () use ($random, $letters): string {
-            $result = '';
-            $length = $random->getInt(2, 5);
-            for ($i = 0; $i < $length; $i++) {
-                $result .= $letters[$random->getInt(0, count($letters) - 1)];
-            }
-
-            return $result;
-        };
+        $seed = 46098;
+        $random = new Randomizer(new Mt19937($seed));
+        // Standard Arabic letters, hamza/alef variants, final-only forms, and
+        // wasla. Shuffle an exhaustive prefix set so every joining/non-joining
+        // predecessor is covered reproducibly, rather than hoping sampling hits it.
+        $letters = mb_str_split('ءآأؤإئابتةثجحخدذرزسشصضطظعغفقكلمنهويىٱ');
+        $word = fn () => $this->generatedWord($random, $letters, 2, 5);
         $runs = [];
-        // All four alefs, each with isolated/final lam-alef context. Generated
-        // surrounding letters prevent calibration to a particular Arabic word.
-        foreach (['ا', 'أ', 'إ', 'آ'] as $alef) {
-            foreach (['', 'ب'] as $prefix) {
-                foreach (['++', '#', '.', '/', '-', '7'] as $symbol) {
-                    $arabic = $prefix.'ل'.$alef.$word();
-                    $other = $word();
-                    $root = 'T'.bin2hex($random->getBytes(2));
-                    $term = $root.$symbol.($random->getInt(0, 1) ? (string) $random->getInt(1, 99) : '');
-                    array_push($runs,
-                        $term.' '.$arabic.' '.$other,
-                        $arabic.' '.$term.' '.$other,
-                        $arabic.' '.$other.' '.$term,
-                        $arabic.' '.$term.' و '.$root.'/v2.4-rc#9+',
-                    );
-                }
+        foreach ($random->shuffleArray(['ا', 'أ', 'إ', 'آ']) as $alef) {
+            foreach ($random->shuffleArray(['', ...$letters]) as $prefix) {
+                $arabic = $prefix.'ل'.$alef.$word();
+                $other = $word();
+                $term = $this->generatedLatinTerm($random);
+                array_push($runs,
+                    $term.' '.$arabic.' '.$other,
+                    $arabic.' '.$term.' '.$other,
+                    $arabic.' '.$other.' '.$term,
+                    $arabic.' '.$term.' و '.$this->generatedLatinTerm($random),
+                );
             }
         }
         // Prefix symbols, multi-word Latin runs, font ligatures, and both digit
@@ -254,32 +245,71 @@ class AtsParseBackTest extends TestCase
         // not HTML or a normalizer-generated proxy of the document.
         $response = app(CvTemplateRenderer::class)->downloadResponse($cv, 'ats-classic-professional');
         $pdf = (new PdfParser)->parseContent($response->getContent());
-        $this->assertGreaterThan(1, count($pdf->getPages()));
+        $context = 'seed='.$seed;
+        $this->assertGreaterThan(1, count($pdf->getPages()), $context);
         $raw = $pdf->getText();
         $normalized = ArabicPdfText::normalizeExtracted($raw);
-        $this->assertSame($normalized, ArabicPdfText::normalizeExtracted($normalized));
+        $this->assertSame($normalized, ArabicPdfText::normalizeExtracted($normalized), $context);
         $lines = array_values(array_filter(array_map('trim', preg_split('/\R/u', $normalized))));
         $heading = array_search('الملخص المهني', $lines, true);
-        $this->assertNotFalse($heading);
+        $this->assertNotFalse($heading, $context);
         $actual = array_slice($lines, $heading + 1);
-        $this->assertCount(count($runs), $actual);
+        $this->assertCount(count($runs), $actual, $context);
         foreach ($runs as $index => $run) {
-            $this->assertSame($run, $actual[$index], 'Extract/export invariant at run '.$index);
+            $this->assertSame($run, $actual[$index], $context.', extract/export invariant at run '.$index);
         }
         $upload = UploadedFile::fake()->createWithContent('roundtrip.pdf', $response->getContent());
         $request = Request::create('/', 'POST', [], [], ['resume_file' => $upload]);
         $ingested = app(CvTextExtractor::class)->extract($request);
-        $this->assertSame(trim($normalized), $ingested['text']);
-        $this->assertSame($stored, $cv->fresh()->getAttributes());
+        $this->assertSame(trim($normalized), $ingested['text'], $context);
+        $this->assertSame($stored, $cv->fresh()->getAttributes(), $context);
+    }
+
+    public function test_english_only_exports_preserve_latin_letters_and_ligature_sequences_exactly(): void
+    {
+        $seed = 461019;
+        $random = new Randomizer(new Mt19937($seed));
+        $letters = str_split('abcdefghijklmnopqrstuvwxyz');
+        $runs = ['office affinity', 'fi ffi'];
+        // Generate arbitrary words around all common Latin ligature sequences;
+        // do not depend on a particular job title or dictionary example.
+        foreach (['ff', 'fi', 'fl', 'ffi', 'ffl', 'ft', 'st'] as $cluster) {
+            for ($sample = 0; $sample < 8; $sample++) {
+                $prefix = $suffix = '';
+                for ($i = 0, $length = $random->getInt(1, 6); $i < $length; $i++) {
+                    $prefix .= $letters[$random->getInt(0, count($letters) - 1)];
+                    $suffix .= $letters[$random->getInt(0, count($letters) - 1)];
+                }
+                $runs[] = $prefix.$cluster.$suffix.' '.$cluster.' '.$prefix.'-v'.$random->getInt(1, 99).'.';
+            }
+        }
+        $cv = $this->createStructuredCv('en', [
+            'fullName' => 'Latin Candidate', 'headline' => 'Software Engineer',
+            'email' => 'latin@example.com', 'phone' => '+966551234567', 'location' => 'London',
+            'summary' => implode("\n", array_map(fn ($run) => '- '.$run, $runs)),
+        ]);
+        $stored = $cv->fresh()->getAttributes();
+        $response = app(CvTemplateRenderer::class)->downloadResponse($cv, 'ats-classic-professional');
+        $raw = (new PdfParser)->parseContent($response->getContent())->getText();
+        $context = 'seed='.$seed;
+        $this->assertDoesNotMatchRegularExpression('/\p{Arabic}/u', $raw, $context);
+        $this->assertSame($raw, ArabicPdfText::normalizeExtracted($raw, 'ltr'), $context);
+        $lines = array_values(array_filter(array_map('trim', preg_split('/\R/u', $raw))));
+        $heading = array_search('PROFESSIONAL SUMMARY', $lines, true);
+        $this->assertNotFalse($heading, $context);
+        $actual = array_slice($lines, $heading + 1);
+        $this->assertSame($runs, $actual, $context);
+        $this->assertSame($stored, $cv->fresh()->getAttributes(), $context);
     }
 
     public function test_wrapped_mixed_paragraph_preserves_every_run_and_page_reading_order(): void
     {
-        $random = new Randomizer(new Mt19937(46100));
+        $seed = 46100;
+        $random = new Randomizer(new Mt19937($seed));
         $words = ['عمل', 'مدير', 'مهندس', 'لا', 'لأ', 'لإ', 'لآ', 'الأنظمة', 'الآلات', 'كُتِبَ'];
         $runs = [];
         for ($index = 0; $index < 640; $index++) {
-            $runs[] = $words[$random->getInt(0, count($words) - 1)].' T'.$index.'++/#.2-7';
+            $runs[] = $words[$random->getInt(0, count($words) - 1)].' '.$this->generatedLatinTerm($random);
         }
         $summary = implode(' ', $runs);
         $cv = $this->createStructuredCv('ar', [
@@ -289,13 +319,44 @@ class AtsParseBackTest extends TestCase
         ]);
         $response = app(CvTemplateRenderer::class)->downloadResponse($cv, 'ats-classic-professional');
         $pdf = (new PdfParser)->parseContent($response->getContent());
-        $this->assertGreaterThan(1, count($pdf->getPages()));
+        $context = 'seed='.$seed;
+        $this->assertGreaterThan(1, count($pdf->getPages()), $context);
         $text = ArabicPdfText::normalizeExtracted($pdf->getText());
-        $this->assertSame($text, ArabicPdfText::normalizeExtracted($text));
+        $this->assertSame($text, ArabicPdfText::normalizeExtracted($text), $context);
         $actual = trim(explode('الملخص المهني', $text, 2)[1]);
         // Line wrapping introduces layout whitespace only; all input runs and
         // their order must survive even when a paragraph spans PDF pages.
-        $this->assertSame($summary, preg_replace('/\s+/u', ' ', $actual));
+        $this->assertSame($summary, preg_replace('/\s+/u', ' ', $actual), $context);
+    }
+
+    /** @param list<string> $alphabet */
+    private function generatedWord(Randomizer $random, array $alphabet, int $minimum, int $maximum): string
+    {
+        $word = '';
+        for ($i = 0, $length = $random->getInt($minimum, $maximum); $i < $length; $i++) {
+            $word .= $alphabet[$random->getInt(0, count($alphabet) - 1)];
+        }
+
+        return $word;
+    }
+
+    private function generatedLatinTerm(Randomizer $random): string
+    {
+        $letters = str_split('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        $symbols = str_split('+#./-');
+        $term = $this->generatedWord($random, $letters, 2, 7);
+        for ($piece = 0, $pieces = $random->getInt(1, 3); $piece < $pieces; $piece++) {
+            $term .= $this->generatedWord($random, $symbols, 1, 3);
+            $term .= $random->getInt(0, 1)
+                ? $this->generatedWord($random, $letters, 1, 5)
+                : (string) $random->getInt(0, 999);
+        }
+        $term .= $this->generatedWord($random, ['+', '#'], 0, 3);
+        if ($random->getInt(0, 3) === 0) {
+            $term .= ' '.$this->generatedWord($random, $letters, 2, 7);
+        }
+
+        return $term;
     }
 
     /**

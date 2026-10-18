@@ -23,7 +23,7 @@ class CvTemplateRenderer
      * Bump when template HTML, fonts, or renderer behaviour changes so a
      * cached blob from a previous deploy cannot outlive the new code.
      */
-    public const RENDER_VERSION = '5';
+    public const RENDER_VERSION = '6';
 
     public function __construct(
         private readonly CvMarkdownRenderer $markdownRenderer,

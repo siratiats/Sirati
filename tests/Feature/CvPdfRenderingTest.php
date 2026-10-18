@@ -11,6 +11,8 @@ use App\Support\ArabicPdfText;
 use Database\Seeders\CvTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
+use Random\Engine\Mt19937;
+use Random\Randomizer;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Smalot\PdfParser\Parser as PdfParser;
@@ -226,6 +228,62 @@ class CvPdfRenderingTest extends TestCase
             mkdir($directory, 0755, true);
         }
         file_put_contents($directory.'/arabic-pdf-logical.pdf', $binary);
+    }
+
+    public function test_sentence_punctuation_is_painted_at_the_rtl_line_end_after_latin_terms(): void
+    {
+        $seed = 461018;
+        $random = new Randomizer(new Mt19937($seed));
+        $letters = str_split('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        $sentences = [];
+        $cases = [];
+        foreach (['.', '-', '/', '!', '?', ',', ';', ':', '،', '؟', '؛'] as $terminal) {
+            foreach (['', 'https://'] as $scheme) {
+                foreach (['', '++', '#'] as $suffix) {
+                    $root = '';
+                    for ($i = 0, $length = $random->getInt(3, 9); $i < $length; $i++) {
+                        $root .= $letters[$random->getInt(0, count($letters) - 1)];
+                    }
+                    $term = $scheme.$root.($scheme === '' ? '' : '.test/path').'.v'.$random->getInt(1, 99).'/rc-2'.$suffix;
+                    $sentence = 'خبرة في تطوير الأنظمة باستخدام '.$term.$terminal;
+                    $sentences[] = '- '.$sentence;
+                    $cases[] = [$term, $terminal, $sentence];
+                }
+            }
+        }
+        $template = $this->template('classic', 'classic_rtl');
+        $cv = $this->cv('ar', [
+            'generated_markdown' => '', 'summary_input' => implode("\n", $sentences),
+            'experience_input' => '', 'education_input' => '', 'skills_input' => '',
+        ]);
+        $response = app(CvTemplateRenderer::class)->downloadResponse($cv, $template->slug);
+        $pdf = (new PdfParser)->parseContent($response->getContent());
+        $logical = ArabicPdfText::normalizeExtracted($pdf->getText());
+        $painted = [];
+        // Read the actual glyph-showing commands, independently of ActualText:
+        // correct logical replacement text cannot mask incorrect visual bidi.
+        foreach ($pdf->getPages() as $page) {
+            foreach ($page->extractDecodedRawData() as $command) {
+                if ($command['o'] === 'Tj') {
+                    $painted[] = $command['c'];
+                } elseif ($command['o'] === 'TJ') {
+                    $painted[] = implode('', array_map(
+                        fn ($part) => in_array($part['t'], ['(', '<'], true) ? $part['c'] : '',
+                        $command['c'],
+                    ));
+                }
+            }
+        }
+        foreach ($cases as [$term, $terminal, $sentence]) {
+            $context = 'seed='.$seed.', term='.$term.', punctuation='.$terminal;
+            $this->assertStringContainsString($sentence, $logical, $context);
+            $matches = array_values(array_filter($painted, fn ($glyphs) => str_contains($glyphs, $term)));
+            $this->assertCount(1, $matches, $context);
+            $glyphs = str_replace(["\u{200E}", "\u{200F}"], '', $matches[0]);
+            // PDF glyphs advance left to right. An RTL sentence's final mark
+            // must occupy the left end, followed by the intact Latin term.
+            $this->assertStringStartsWith($terminal.$term, trim($glyphs), $context);
+        }
     }
 
     public function test_download_response_is_non_empty_for_both_templates_and_languages(): void

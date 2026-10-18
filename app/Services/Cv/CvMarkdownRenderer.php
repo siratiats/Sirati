@@ -98,10 +98,14 @@ final class CvMarkdownRenderer
         // Rebuild our display embeddings so fields already prepared for the
         // preview do not acquire nested embeddings at the final HTML boundary.
         $text = str_replace([self::LRM, self::LRE, self::PDF], '', $text);
+        // Dots, slashes and hyphens belong inside a technical identifier only
+        // when followed by letters/digits. Sentence punctuation stays in the
+        // RTL paragraph; +/# remain valid identifier suffixes (C++, F#, etc.).
+        $latinWord = '[.+#\/\-]*[A-Za-z0-9]*[A-Za-z][A-Za-z0-9]*(?:[+.#\/\-]+[A-Za-z0-9]+)*[+#]*';
         $pattern = '/(?:[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})'
             .'|(?:https?:\/\/[^\s<]+)'
             .'|(?:\+\d[\d\s\-()]{6,}\d)'
-            .'|(?:[A-Za-z0-9+.#\/\-]*[A-Za-z][A-Za-z0-9+.#\/\-]*(?:\s+[A-Za-z0-9+.#\/\-]*[A-Za-z][A-Za-z0-9+.#\/\-]*)*)'
+            .'|(?:'.$latinWord.'(?:\s+'.$latinWord.')*)'
             .'|(?:\d+(?:[.,]\d+)?%?)/u';
 
         $protected = preg_replace_callback(
@@ -123,7 +127,11 @@ final class CvMarkdownRenderer
 
     private function isolateLtr(string $text): string
     {
-        return self::LRM.self::LRE.$text.self::PDF;
+        // URL matches can also consume sentence marks. Apply the same boundary
+        // rule to every token recognizer, preserving the original text exactly.
+        $run = (string) preg_replace('/[.\/\-,:;!?،؛؟]+$/u', '', $text);
+
+        return self::LRM.self::LRE.$run.self::PDF.substr($text, strlen($run));
     }
 
     private function loadFragment(string $html): DOMDocument

@@ -3,9 +3,11 @@
 namespace App\Services\Cv;
 
 use App\Support\ArabicPdfText;
+use LogicException;
 use Mpdf\Mpdf;
 use Mpdf\Otl;
 use Mpdf\Writer\BaseWriter;
+use ReflectionClass;
 use ReflectionProperty;
 
 /**
@@ -21,14 +23,38 @@ final class LogicalTextMpdf extends Mpdf
 
     public function __construct(array $config = [])
     {
+        $services = self::requiredServiceProperties(new ReflectionClass(Mpdf::class));
         parent::__construct($config);
 
-        $writerProperty = new ReflectionProperty(Mpdf::class, 'writer');
+        $writerProperty = $services['writer'];
         $this->logicalWriter = new LogicalTextWriter($writerProperty->getValue($this));
         $writerProperty->setValue($this, $this->logicalWriter);
 
-        $fontCache = (new ReflectionProperty(Mpdf::class, 'fontCache'))->getValue($this);
-        (new ReflectionProperty(Mpdf::class, 'otl'))->setValue($this, new LogicalTextOtl($this, $fontCache));
+        $fontCache = $services['fontCache']->getValue($this);
+        $services['otl']->setValue($this, new LogicalTextOtl($this, $fontCache));
+    }
+
+    /** @return array<string, ReflectionProperty> */
+    private static function requiredServiceProperties(ReflectionClass $engine): array
+    {
+        $services = [];
+        foreach (['writer', 'fontCache', 'otl'] as $name) {
+            $problem = null;
+            if (! $engine->hasProperty($name)) {
+                $problem = 'is missing';
+            } else {
+                $property = $engine->getProperty($name);
+                if ($property->isStatic() || $property->hasType()) {
+                    $problem = 'must remain an untyped instance property';
+                }
+            }
+            if ($problem !== null) {
+                throw new LogicException('Unsupported mPDF '.Mpdf::VERSION.': service $'.$name.' '.$problem.'. Update Sirati PDF ActualText integration before exporting.');
+            }
+            $services[$name] = $property;
+        }
+
+        return $services;
     }
 
     public function Cell($w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = 0, $link = '', $currentx = 0, $lcpaddingL = 0, $lcpaddingR = 0, $valign = 'M', $spanfill = 0, $exactWidth = false, $OTLdata = false, $textvar = 0, $lineBox = false)
