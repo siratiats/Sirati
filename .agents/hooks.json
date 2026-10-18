@@ -1,0 +1,12 @@
+{
+  "project-guard": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "node guard.cjs", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

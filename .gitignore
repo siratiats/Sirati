@@ -11,7 +11,8 @@
 /.phpunit.cache
 /.vscode
 /.zed
-/.agents
+/.agents/skills
+/.agents/teamwork
 /.claude
 /.impeccable
 /.opencode
