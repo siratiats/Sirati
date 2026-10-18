@@ -2,13 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Models\User;
 use App\Services\CvTemplateRenderer;
+use App\Services\CvTextExtractor;
 use App\Support\ArabicPdfText;
 use Database\Seeders\CvTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Random\Engine\Mt19937;
+use Random\Randomizer;
 use Smalot\PdfParser\Parser as PdfParser;
 use Tests\TestCase;
 
@@ -133,7 +137,7 @@ class AtsParseBackTest extends TestCase
         $kcNormalized = class_exists(\Normalizer::class) ? \Normalizer::normalize($rawText, \Normalizer::FORM_KC) : $rawText;
         $this->assertDoesNotMatchRegularExpression('/[\x{FB50}-\x{FDFF}\x{FE70}-\x{FEFF}]/u', $kcNormalized);
 
-        // 2. Boundary contract: normalize extracted PDF text layer (reversing visual order for RTL lines)
+        // 2. ActualText supplies logical order; canonicalize once at extraction.
         $normalized = ArabicPdfText::normalizeExtracted($rawText, 'rtl');
 
         // Verify that candidate identity, contacts, and all core sections are recovered
@@ -201,8 +205,101 @@ class AtsParseBackTest extends TestCase
         $this->assertSame('Sirati CV Platform', (string) ($details['Creator'] ?? ''));
     }
 
+    public function test_generated_mixed_runs_round_trip_exactly_across_pdf_pages_without_mutating_source(): void
+    {
+        $random = new Randomizer(new Mt19937(46098));
+        $letters = mb_str_split('ابتثجحخدذرزسشصضطظعغفقكلمنهوي');
+        $word = function () use ($random, $letters): string {
+            $result = '';
+            $length = $random->getInt(2, 5);
+            for ($i = 0; $i < $length; $i++) {
+                $result .= $letters[$random->getInt(0, count($letters) - 1)];
+            }
+
+            return $result;
+        };
+        $runs = [];
+        // All four alefs, each with isolated/final lam-alef context. Generated
+        // surrounding letters prevent calibration to a particular Arabic word.
+        foreach (['ا', 'أ', 'إ', 'آ'] as $alef) {
+            foreach (['', 'ب'] as $prefix) {
+                foreach (['++', '#', '.', '/', '-', '7'] as $symbol) {
+                    $arabic = $prefix.'ل'.$alef.$word();
+                    $other = $word();
+                    $root = 'T'.bin2hex($random->getBytes(2));
+                    $term = $root.$symbol.($random->getInt(0, 1) ? (string) $random->getInt(1, 99) : '');
+                    array_push($runs,
+                        $term.' '.$arabic.' '.$other,
+                        $arabic.' '.$term.' '.$other,
+                        $arabic.' '.$other.' '.$term,
+                        $arabic.' '.$term.' و '.$root.'/v2.4-rc#9+',
+                    );
+                }
+            }
+        }
+        // Prefix symbols, multi-word Latin runs, font ligatures, and both digit
+        // sets exercise boundaries independently of the generated suffix cases.
+        foreach (['.NET', 'C++/CLI', 'F#', 'CI/CD', 'TLS-1.3', 'office affinity', 'Risk Management', '+12.5%', '٢٠٢٤'] as $term) {
+            $runs[] = $word().' '.$term.' '.$word().' لإدارة الآلات';
+        }
+
+        $cv = $this->createStructuredCv('ar', [
+            'fullName' => 'مرشح الاختبار', 'headline' => 'مهندس',
+            'email' => 'roundtrip@example.com', 'phone' => '+966551234567', 'location' => '',
+            'summary' => implode("\n", array_map(fn ($run) => '- '.$run, $runs)),
+        ]);
+        $stored = $cv->fresh()->getAttributes();
+
+        // Production download consumer: assert the PDF bytes users receive,
+        // not HTML or a normalizer-generated proxy of the document.
+        $response = app(CvTemplateRenderer::class)->downloadResponse($cv, 'ats-classic-professional');
+        $pdf = (new PdfParser)->parseContent($response->getContent());
+        $this->assertGreaterThan(1, count($pdf->getPages()));
+        $raw = $pdf->getText();
+        $normalized = ArabicPdfText::normalizeExtracted($raw);
+        $this->assertSame($normalized, ArabicPdfText::normalizeExtracted($normalized));
+        $lines = array_values(array_filter(array_map('trim', preg_split('/\R/u', $normalized))));
+        $heading = array_search('الملخص المهني', $lines, true);
+        $this->assertNotFalse($heading);
+        $actual = array_slice($lines, $heading + 1);
+        $this->assertCount(count($runs), $actual);
+        foreach ($runs as $index => $run) {
+            $this->assertSame($run, $actual[$index], 'Extract/export invariant at run '.$index);
+        }
+        $upload = UploadedFile::fake()->createWithContent('roundtrip.pdf', $response->getContent());
+        $request = Request::create('/', 'POST', [], [], ['resume_file' => $upload]);
+        $ingested = app(CvTextExtractor::class)->extract($request);
+        $this->assertSame(trim($normalized), $ingested['text']);
+        $this->assertSame($stored, $cv->fresh()->getAttributes());
+    }
+
+    public function test_wrapped_mixed_paragraph_preserves_every_run_and_page_reading_order(): void
+    {
+        $random = new Randomizer(new Mt19937(46100));
+        $words = ['عمل', 'مدير', 'مهندس', 'لا', 'لأ', 'لإ', 'لآ', 'الأنظمة', 'الآلات', 'كُتِبَ'];
+        $runs = [];
+        for ($index = 0; $index < 640; $index++) {
+            $runs[] = $words[$random->getInt(0, count($words) - 1)].' T'.$index.'++/#.2-7';
+        }
+        $summary = implode(' ', $runs);
+        $cv = $this->createStructuredCv('ar', [
+            'fullName' => 'مرشح الاختبار', 'headline' => 'مهندس',
+            'email' => 'wrap@example.com', 'phone' => '+966551234567', 'location' => '',
+            'summary' => $summary,
+        ]);
+        $response = app(CvTemplateRenderer::class)->downloadResponse($cv, 'ats-classic-professional');
+        $pdf = (new PdfParser)->parseContent($response->getContent());
+        $this->assertGreaterThan(1, count($pdf->getPages()));
+        $text = ArabicPdfText::normalizeExtracted($pdf->getText());
+        $this->assertSame($text, ArabicPdfText::normalizeExtracted($text));
+        $actual = trim(explode('الملخص المهني', $text, 2)[1]);
+        // Line wrapping introduces layout whitespace only; all input runs and
+        // their order must survive even when a paragraph spans PDF pages.
+        $this->assertSame($summary, preg_replace('/\s+/u', ' ', $actual));
+    }
+
     /**
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     private function createStructuredCv(string $language, array $attributes): GeneratedCv
     {

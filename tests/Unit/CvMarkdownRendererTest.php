@@ -113,6 +113,25 @@ class CvMarkdownRendererTest extends TestCase
         $this->assertStringNotContainsString('<a ', $html);
     }
 
+    public function test_export_html_protects_all_text_nodes_once_without_changing_markup(): void
+    {
+        $renderer = new CvMarkdownRenderer;
+        foreach (['++', '#', '.js', '/v2', '-1.3', '42'] as $suffix) {
+            $term = 'Tech'.$suffix;
+            $text = 'عمل '.$term.' و .NET لإدارة الآلات';
+            $html = '<html><head><meta charset="UTF-8"></head><body><h1>'.htmlspecialchars($text).'</h1><p><strong>'.htmlspecialchars($text).'</strong></p><table><tr><td>'.htmlspecialchars($text).'</td></tr></table></body></html>';
+            $prepared = $renderer->preparePdfHtml($html, 'ar');
+            $this->assertSame($prepared, $renderer->preparePdfHtml($prepared, 'ar'));
+            $document = new DOMDocument;
+            $document->loadHTML($prepared);
+            foreach (['h1', 'strong', 'td'] as $tag) {
+                $nodes = $document->getElementsByTagName($tag);
+                $this->assertSame(1, $nodes->length);
+                $this->assertSame($renderer->shapeText($text, 'ar'), $nodes->item(0)->textContent);
+            }
+        }
+    }
+
     public function test_unsafe_link_does_not_emit_scheme_or_url(): void
     {
         $html = (new CvMarkdownRenderer)->render('[profile](javascript:alert(1))', 'en');

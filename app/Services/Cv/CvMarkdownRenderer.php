@@ -60,6 +60,29 @@ final class CvMarkdownRenderer
         return $this->protectLtrRuns($text);
     }
 
+    /** Protect every rendered field, including structured sections, at export. */
+    public function preparePdfHtml(string $html, string $language): string
+    {
+        if ($language !== 'ar') {
+            return $html;
+        }
+
+        $document = new DOMDocument('1.0', 'UTF-8');
+        $previous = libxml_use_internal_errors(true);
+        try {
+            $document->loadHTML($html);
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previous);
+        }
+
+        foreach ($document->getElementsByTagName('body') as $body) {
+            $this->shapeTextNodes($body);
+        }
+
+        return $document->saveHTML();
+    }
+
     private function containsArabic(string $text): bool
     {
         return (bool) preg_match('/\p{Arabic}/u', $text);
@@ -72,10 +95,13 @@ final class CvMarkdownRenderer
      */
     private function protectLtrRuns(string $text): string
     {
+        // Rebuild our display embeddings so fields already prepared for the
+        // preview do not acquire nested embeddings at the final HTML boundary.
+        $text = str_replace([self::LRM, self::LRE, self::PDF], '', $text);
         $pattern = '/(?:[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})'
             .'|(?:https?:\/\/[^\s<]+)'
             .'|(?:\+\d[\d\s\-()]{6,}\d)'
-            .'|(?:[A-Za-z][A-Za-z0-9+.#\/]*(?:\s+[A-Za-z][A-Za-z0-9+.#\/]*)*)'
+            .'|(?:[A-Za-z0-9+.#\/\-]*[A-Za-z][A-Za-z0-9+.#\/\-]*(?:\s+[A-Za-z0-9+.#\/\-]*[A-Za-z][A-Za-z0-9+.#\/\-]*)*)'
             .'|(?:\d+(?:[.,]\d+)?%?)/u';
 
         $protected = preg_replace_callback(

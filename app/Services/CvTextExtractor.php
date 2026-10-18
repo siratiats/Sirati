@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\ArabicPdfText;
 use App\Support\Utf8Sanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -52,7 +53,7 @@ class CvTextExtractor
     private function extractPdf(string $path): string
     {
         $raw = (new Parser)->parseFile($path)->getText();
-        $text = trim(Utf8Sanitizer::sanitize($raw));
+        $text = trim(Utf8Sanitizer::sanitize(ArabicPdfText::normalizeExtracted($raw)));
 
         if ($text === '') {
             throw ValidationException::withMessages([

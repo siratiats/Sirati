@@ -3,6 +3,8 @@
 namespace Tests\Unit;
 
 use App\Support\ArabicPdfText;
+use Random\Engine\Mt19937;
+use Random\Randomizer;
 use Tests\TestCase;
 
 class ArabicPdfTextTest extends TestCase
@@ -18,54 +20,53 @@ class ArabicPdfTextTest extends TestCase
         $this->assertSame($text, ArabicPdfText::unshape($text));
     }
 
-    public function test_preserves_arabic_indic_and_western_digits(): void
+    public function test_all_lam_alef_presentation_forms_expand_in_logical_order(): void
     {
-        // Visually reversed word 'كتب' with Arabic-Indic digits '2024' (H3: بتك ٢٠٢٤ → ٢٠٢٤ كتب)
-        $visual = 'بتك ٢٠٢٤';
-        $normalized = ArabicPdfText::normalizeExtracted($visual, 'rtl');
-        $this->assertSame('٢٠٢٤ كتب', $normalized);
+        foreach (['آ', 'أ', 'إ', 'ا'] as $index => $alef) {
+            // Every isolated/final lam-alef pair in Unicode Forms-B.
+            foreach ([0, 1] as $final) {
+                $form = mb_chr(0xFEF5 + $index * 2 + $final);
+                $expected = 'بل'.$alef.'ت';
+                $normalized = ArabicPdfText::normalizeExtracted('ب'.$form.'ت');
 
-        // Western digits: numbers remain unreversed internally
-        $visualWestern = 'بتك 2024';
-        $normalizedWestern = ArabicPdfText::normalizeExtracted($visualWestern, 'rtl');
-        $this->assertSame('2024 كتب', $normalizedWestern);
+                $this->assertSame($expected, $normalized);
+                $this->assertSame($normalized, ArabicPdfText::normalizeExtracted($normalized));
+            }
+        }
     }
 
-    public function test_keeps_harakat_anchored_to_base_characters(): void
+    public function test_logical_runs_digits_and_combining_marks_are_preserved_idempotently(): void
     {
-        // In visual stream, grapheme clusters are painted right-to-left:
-        // [ب + َ] then [ت + ِ] then [ك + ُ]
-        $visual = "\u{0628}\u{064E}\u{062A}\u{0650}\u{0643}\u{064F}";
-        $normalized = ArabicPdfText::normalizeExtracted($visual, 'rtl');
-
-        // Extended grapheme clusters (\X) reverse cluster-by-cluster:
-        // restoring to [ك + ُ] [ت + ِ] [ب + َ] ('كُتِبَ')
-        $expected = "\u{0643}\u{064F}\u{062A}\u{0650}\u{0628}\u{064E}";
-        $this->assertSame($expected, $normalized);
+        $random = new Randomizer(new Mt19937(46));
+        $letters = mb_str_split('ابتثجحخدذرزسشصضطظعغفقكلمنهويأإآ');
+        foreach (['rtl', 'ltr'] as $direction) {
+            for ($sample = 0; $sample < 60; $sample++) {
+                $word = '';
+                $length = $random->getInt(2, 12);
+                for ($i = 0; $i < $length; $i++) {
+                    $word .= $letters[$random->getInt(0, count($letters) - 1)];
+                }
+                $logical = $word.' C++ C# .NET CI/CD TLS-1.3 ٢٠٢٤ 2024 كُتِبَ '.$word;
+                $this->assertSame($logical, ArabicPdfText::normalizeExtracted($logical, $direction));
+                $this->assertSame($logical, ArabicPdfText::normalizeExtracted(ArabicPdfText::normalizeExtracted($logical, $direction), $direction));
+            }
+        }
     }
 
-    public function test_restores_visual_arabic_job_titles_from_pdf_layer(): void
+    public function test_only_explicit_display_controls_are_removed_at_extraction(): void
     {
-        // Ordinary Arabic CV job titles extracted in visual order from PDF streams
-        $this->assertSame('مدير', ArabicPdfText::normalizeExtracted('ريدم', 'rtl'));
-        $this->assertSame('مهندس برمجيات', ArabicPdfText::normalizeExtracted('تايجمرب سدنهم', 'rtl'));
-        $this->assertSame('تطوير واجهات', ArabicPdfText::normalizeExtracted('تاهجاو ريوطت', 'rtl'));
+        $logical = 'عمل C++ و C# لإدارة الآلات';
+        $extracted = "\u{200F}عمل \u{200E}\u{202A}C++\u{202C} و \u{2066}C#\u{2069} لإدارة الآلات";
+        $this->assertSame($logical, ArabicPdfText::normalizeExtracted($extracted));
+        $this->assertSame($logical, ArabicPdfText::normalizeExtracted($logical));
     }
 
-    public function test_restores_latin_heavy_arabic_skills_line(): void
+    public function test_untagged_text_has_no_guessed_direction_or_word_order(): void
     {
-        $visual = 'Kubernetes Django Python ةربخ';
-        $normalized = ArabicPdfText::normalizeExtracted($visual, 'rtl');
-
-        $this->assertSame('خبرة Python Django Kubernetes', $normalized);
-    }
-
-    public function test_ltr_base_direction_keeps_segment_order(): void
-    {
-        $line = 'Software Engineer at ةكرش';
-        $normalized = ArabicPdfText::normalizeExtracted($line, 'ltr');
-
-        $this->assertSame('Software Engineer at شركة', $normalized);
+        // Both orders are valid user text; letter patterns cannot establish
+        // whether a third-party PDF painted either one in visual order.
+        foreach (['ريدم', 'مدير', 'Software Engineer at شركة', 'خبرة Python Django Kubernetes'] as $text) {
+            $this->assertSame($text, ArabicPdfText::normalizeExtracted($text));
+        }
     }
 }
-

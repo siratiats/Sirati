@@ -200,6 +200,34 @@ class CvPdfRenderingTest extends TestCase
         $this->assertStringContainsString('salem@example.com', $logical);
     }
 
+    public function test_mixed_arabic_fields_export_logically_with_symbols_and_lam_alef(): void
+    {
+        $template = $this->template('classic', 'classic_rtl');
+        $phrases = [
+            'full_name' => 'بلال آل سالم',
+            'target_job_title' => 'مهندس أنظمة C++ / C#',
+            'summary_input' => 'تطوير الأنظمة لإدارة الآلات باستخدام C++ و PostgreSQL و C#.',
+            'experience_input' => 'تطوير تطبيقات Node.js وإدارة CI/CD عبر TLS-1.3.',
+            'education_input' => 'بكالوريوس علوم الحاسب من جامعة الآفاق',
+            'skills_input' => 'C++, C#, Node.js, CI/CD, TLS-1.3',
+        ];
+        $cv = $this->cv('ar', [...$phrases, 'generated_markdown' => '']);
+        $response = app(CvTemplateRenderer::class)->downloadResponse($cv, $template->slug);
+        $binary = $response->getContent();
+        $raw = (new PdfParser)->parseContent($binary)->getText();
+        $text = ArabicPdfText::normalizeExtracted($raw);
+        foreach (['full_name', 'target_job_title', 'summary_input', 'experience_input', 'education_input'] as $field) {
+            $this->assertStringContainsString($phrases[$field], $text);
+        }
+        $this->assertSame($text, ArabicPdfText::normalizeExtracted($text));
+        // Reusable visual acceptance fixture, like arabic-cv-bidi.pdf above.
+        $directory = storage_path('app/testing');
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+        file_put_contents($directory.'/arabic-pdf-logical.pdf', $binary);
+    }
+
     public function test_download_response_is_non_empty_for_both_templates_and_languages(): void
     {
         $classic = $this->template('classic', 'classic_rtl');
