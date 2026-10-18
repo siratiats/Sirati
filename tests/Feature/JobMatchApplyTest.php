@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Contracts\CvAiProvider;
 use App\Cv\CvDocument;
+use App\Cv\LocalizedText;
 use App\Enums\AiStatus;
 use App\Jobs\GenerateJobMatchAdviceJob;
 use App\Models\GeneratedCv;
@@ -11,6 +13,7 @@ use App\Services\AtsScoringService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
+use Mockery;
 use Smalot\PdfParser\Parser;
 use Tests\TestCase;
 
@@ -252,6 +255,49 @@ class JobMatchApplyTest extends TestCase
         $this->postJson($url, ['suggestion_keys' => ['skill']])->assertStatus(402);
         $this->getJson('/api/job-matches/'.$match->id)->assertStatus(402);
         $this->assertDatabaseCount('generated_cvs', 1);
+    }
+
+    public function test_real_guard_marks_invented_facts_and_the_apply_endpoint_rejects_them_without_writing(): void
+    {
+        $user = $this->premiumUser();
+        Sanctum::actingAs($user);
+        foreach ([1, 17, random_int(100, 9999)] as $unsupportedNumber) {
+            $document = new CvDocument(
+                exportLanguage: 'en',
+                summary: LocalizedText::make(en: 'Documented systems for customers.'),
+            );
+            $cv = $this->savedCv($user, $document);
+            $id = $this->postJson('/api/job-matches', [
+                'generated_cv_id' => $cv->id,
+                'job_description_input' => 'Document systems for customers.',
+            ])->assertCreated()->json('data.id');
+            $suggestion = $this->suggestion(
+                fake()->uuid(), 'summary', 'text', $document->resolve()->summary,
+                'Documented systems for '.$unsupportedNumber.' customers.',
+            );
+            $suggestion['jd_terms'] = ['systems'];
+            $this->assertFalse($suggestion['needs_user_fact']);
+            $provider = Mockery::mock(CvAiProvider::class);
+            $provider->shouldReceive('isConfigured')->once()->andReturn(true);
+            $provider->shouldReceive('jobMatchAdvice')->once()->andReturn(['suggestions' => [$suggestion]]);
+
+            // Exercise the production job and real guard, then the client-visible
+            // advice and apply endpoints rather than pre-setting the safety flag.
+            (new GenerateJobMatchAdviceJob($id))->handle($provider, app(AtsScoringService::class));
+            $this->getJson('/api/job-matches/'.$id)->assertOk()
+                ->assertJsonPath('data.ai_status', 'completed')
+                ->assertJsonPath('data.ai_feedback.suggestions.0.needs_user_fact', true);
+            $match = JobMatch::findOrFail($id);
+            $beforeMatch = $match->getRawOriginal();
+            $beforeCv = $cv->fresh()->getRawOriginal();
+            $count = GeneratedCv::count();
+            $this->postJson('/api/job-matches/'.$id.'/apply-suggestions', [
+                'suggestion_keys' => [$suggestion['key']],
+            ])->assertUnprocessable()->assertJsonValidationErrors('suggestion_keys');
+            $this->assertSame($count, GeneratedCv::count());
+            $this->assertSame($beforeCv, $cv->fresh()->getRawOriginal());
+            $this->assertSame($beforeMatch, $match->fresh()->getRawOriginal());
+        }
     }
 
     public function test_apply_uses_requested_export_language_and_preserves_the_other_translation(): void

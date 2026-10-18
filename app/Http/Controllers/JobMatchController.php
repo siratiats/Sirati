@@ -16,20 +16,29 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 class JobMatchController extends Controller
 {
     public function store(Request $request, SubscriptionGate $gate, AtsScoringService $scorer)
     {
-        $gate->assertCanJobMatch($request->user());
+        $key = $request->header('Idempotency-Key');
+        try {
+            $gate->assertCanJobMatch($request->user());
+        } catch (HttpException $exception) {
+            // The gate checks configuration and entitlement before quota. A keyed
+            // request may replay an existing attempt even when that quota is full.
+            if ($exception->getStatusCode() !== 429 || $key === null) {
+                throw $exception;
+            }
+        }
         $input = $request->validate([
             'generated_cv_id' => ['required', 'integer', 'min:1'],
             'job_description_input' => ['required', 'string', 'max:4000'],
             'target_job_title' => ['sometimes', 'string', 'max:160'],
             'language' => ['sometimes', Rule::in(['ar', 'en'])],
         ]);
-        $key = $request->header('Idempotency-Key');
         if ($key !== null && (trim($key) === '' || strlen($key) > 128)) {
             throw ValidationException::withMessages(['idempotency_key' => 'Use a non-empty key of at most 128 bytes.']);
         }
@@ -56,9 +65,8 @@ class JobMatchController extends Controller
                     return [$existing, false];
                 }
             }
-            $used = JobMatch::where('user_id', $request->user()->id)
-                ->where('created_at', '>=', now()->startOfDay())->count();
-            abort_if($used >= $gate->jobMatchDailyLimit(), 429, 'Daily Job Match quota reached.');
+            // New attempts must pass the quota again under the per-user lock.
+            $gate->assertCanJobMatch($request->user());
 
             return [JobMatch::create([
                 'user_id' => $request->user()->id,

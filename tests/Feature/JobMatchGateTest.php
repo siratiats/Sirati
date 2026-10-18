@@ -3,15 +3,14 @@
 namespace Tests\Feature;
 
 use App\Exceptions\SubscriptionRequiredException;
+use App\Models\JobMatch;
 use App\Models\User;
 use App\Services\Subscriptions\SubscriptionGate;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\Sanctum;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -31,32 +30,6 @@ class JobMatchGateTest extends TestCase
             'monetization.job_match.daily_limit' => 20,
             'services.revenuecat.webhook_secret' => 'job-match-test-webhook-secret',
         ]);
-
-        // Task C owns the production migration. Keep this gate suite runnable
-        // in isolation, and use the real table once that migration is present.
-        if (! Schema::hasTable('job_matches')) {
-            Schema::create('job_matches', function (Blueprint $table): void {
-                $table->id();
-                $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-                $table->unsignedBigInteger('generated_cv_id')->nullable();
-                $table->string('idempotency_key');
-                $table->string('target_job_title');
-                $table->text('job_description_input');
-                $table->string('language');
-                $table->unsignedInteger('score_total');
-                $table->string('grade');
-                $table->unsignedInteger('job_match');
-                $table->string('category');
-                foreach (['criteria', 'keywords_found', 'keywords_missing', 'strengths', 'weaknesses', 'ai_feedback', 'applied_suggestion_ids'] as $column) {
-                    $table->json($column)->nullable();
-                }
-                $table->string('ai_status');
-                $table->text('ai_error')->nullable();
-                $table->string('cv_snapshot_hash');
-                $table->timestamps();
-                $table->unique(['user_id', 'idempotency_key']);
-            });
-        }
     }
 
     public static function entitlementCases(): iterable
@@ -197,6 +170,38 @@ class JobMatchGateTest extends TestCase
         }
 
         Log::shouldHaveReceived('critical')->times(3);
+    }
+
+    #[DataProvider('invalidConfigurationCases')]
+    public function test_http_endpoints_fail_closed_with_the_real_gate(string $environment, string $key, mixed $value): void
+    {
+        $this->app['env'] = $environment;
+        config([$key => $value]);
+        Log::spy();
+        $this->assertSame(SubscriptionGate::class, app(SubscriptionGate::class)::class);
+
+        foreach ([false, true] as $premium) {
+            $user = $this->user($premium, 3600);
+            $match = JobMatch::factory()->for($user)->create();
+            Sanctum::actingAs($user);
+
+            $this->postJson('/api/job-matches', [
+                'generated_cv_id' => 1,
+                'job_description_input' => $match->job_description_input,
+            ], ['Idempotency-Key' => $match->idempotency_key])->assertStatus(503);
+            $this->getJson('/api/job-matches/'.$match->id)->assertStatus(503);
+            $this->postJson('/api/job-matches/'.$match->id.'/apply-suggestions', [
+                'suggestion_keys' => ['unverified'],
+            ])->assertStatus(503);
+            $this->assertNull($match->fresh()->applied_generated_cv_id);
+        }
+
+        $this->assertDatabaseCount('job_matches', 2);
+        $this->assertDatabaseCount('generated_cvs', 0);
+        Log::shouldHaveReceived('critical')->with(
+            'Job Match unavailable: required configuration is missing or invalid.',
+            ['configuration' => $key, 'environment' => $environment],
+        )->times(6);
     }
 
     public function test_local_and_testing_allow_unconfigured_infrastructure_but_never_free_access(): void
@@ -357,27 +362,8 @@ class JobMatchGateTest extends TestCase
 
     private function match(User $user, \DateTimeInterface $createdAt, string $status = 'completed'): void
     {
-        DB::table('job_matches')->insert([
-            'user_id' => $user->id,
-            'generated_cv_id' => null,
-            'idempotency_key' => fake()->uuid(),
-            'target_job_title' => fake()->jobTitle(),
-            'job_description_input' => fake()->paragraph(),
-            'language' => 'en',
-            'score_total' => 60,
-            'grade' => 'C',
-            'job_match' => 60,
-            'category' => 'general',
-            'criteria' => '{}',
-            'keywords_found' => '[]',
-            'keywords_missing' => '[]',
-            'strengths' => '[]',
-            'weaknesses' => '[]',
+        JobMatch::factory()->for($user)->create([
             'ai_status' => $status,
-            'ai_feedback' => null,
-            'ai_error' => null,
-            'applied_suggestion_ids' => '[]',
-            'cv_snapshot_hash' => hash('sha256', fake()->uuid()),
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
         ]);
