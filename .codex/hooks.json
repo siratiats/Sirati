@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "node .agents/guard.cjs", "statusMessage": "delegate-coding guard" }
+        ]
+      }
+    ]
+  }
+}

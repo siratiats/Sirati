@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [ { "type": "command", "command": "node .agents/guard.cjs --cursor", "timeout": 10, "failClosed": true } ],
+    "beforeShellExecution": [ { "type": "command", "command": "node .agents/guard.cjs --cursor", "timeout": 10, "failClosed": true } ],
+    "beforeReadFile": [ { "type": "command", "command": "node .agents/guard.cjs --cursor", "timeout": 10, "failClosed": true } ]
+  }
+}
