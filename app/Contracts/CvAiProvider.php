@@ -25,6 +25,7 @@ interface CvAiProvider
      * @return array<string, mixed>
      */
     public function enhanceCvField(string $field, string $draft, string $jobTitle, string $language): array;
+
     public function enhanceJobDescription(string $jobTitle, ?string $jobDescription, string $language): array;
 
     /**
@@ -34,4 +35,28 @@ interface CvAiProvider
      * @return array{is_resume: bool, document_type: string, confidence: float, reason_ar: string, reason_en: string}
      */
     public function classifyDocument(string $text): array;
+
+    /**
+     * @param  array<string, mixed>  $cvSnapshot
+     * @return array{
+     *     executive_summary: string,
+     *     strengths: list<string>,
+     *     gaps: list<string>,
+     *     suggestions: list<array{
+     *         key: string,
+     *         target: array{
+     *             section: string,
+     *             entry_id: string|null,
+     *             field: string|null,
+     *             bullet_index: int|null
+     *         },
+     *         before: string|null,
+     *         after: string,
+     *         rationale: string,
+     *         jd_terms: list<string>,
+     *         needs_user_fact: bool
+     *     }>
+     * }
+     */
+    public function jobMatchAdvice(array $cvSnapshot, string $jobDescription, string $language): array;
 }

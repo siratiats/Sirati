@@ -11,9 +11,12 @@ use App\Services\Ai\AiOutputTruncation;
 use App\Services\Ai\AiTimeouts;
 use App\Services\Ai\EnhanceCvFieldResultGuard;
 use App\Services\Ai\GenerateCvResultGuard;
+use App\Services\Ai\JobMatchResultGuard;
 use App\Services\Ai\Prompts\AnalysisAdviceSystemPrompt;
 use App\Services\Ai\Prompts\CvMarkdownFormat;
 use App\Services\Ai\Prompts\EnhanceCvFieldSystemPrompt;
+use App\Services\Ai\Prompts\JobMatchSystemPrompt;
+use App\Services\Ai\Schemas\JobMatchAdviceSchema;
 use App\Services\Ai\Schemas\OperationSchemas;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
@@ -102,6 +105,25 @@ class ClaudeCvService implements CvAiProvider
             'You are a strict document auditor for an ATS CV analysis platform. Return only valid JSON. Determine whether the provided document is a genuine Curriculum Vitae (CV) / Resume or NOT a CV (e.g. bank transfer receipt, invoice, bill, payment slip, certificate of attendance, contract, academic transcript, ID card, random text, poetry, recipe, code snippet).',
             "Determine if this document is a resume or not:\n\n".mb_substr($text, 0, 3000)."\n\nReturn JSON with keys: is_resume boolean, document_type string (one of: resume, bank_receipt, invoice, certificate, contract, id_document, academic_transcript, other_non_resume), confidence number, reason_ar string, reason_en string."
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $cvSnapshot
+     *
+     * @throws ConnectionException
+     * @throws RequestException
+     * @throws AiRefusalException
+     * @throws UnexpectedValueException
+     */
+    public function jobMatchAdvice(array $cvSnapshot, string $jobDescription, string $language): array
+    {
+        $raw = $this->requestJson(
+            JobMatchAdviceSchema::NAME,
+            (new JobMatchSystemPrompt)->build($language),
+            JobMatchSystemPrompt::buildUserPrompt($cvSnapshot, $jobDescription, $language),
+        );
+
+        return JobMatchResultGuard::enforceProviderOutput($raw, $cvSnapshot, $jobDescription, 'Claude');
     }
 
     /**

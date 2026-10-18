@@ -20,6 +20,7 @@ final class OperationSchemas
             EnhanceJobDescriptionSchema::NAME => EnhanceJobDescriptionSchema::responseFormat(),
             EnhanceCvFieldSchema::NAME => EnhanceCvFieldSchema::responseFormat(),
             ClassifyDocumentSchema::NAME => ClassifyDocumentSchema::responseFormat(),
+            JobMatchAdviceSchema::NAME, 'job_match' => JobMatchAdviceSchema::responseFormat(),
             default => throw new InvalidArgumentException("Unknown AI operation schema: {$operation}"),
         };
     }
@@ -32,6 +33,7 @@ final class OperationSchemas
             EnhanceJobDescriptionSchema::NAME => EnhanceJobDescriptionSchema::MAX_TOKENS,
             EnhanceCvFieldSchema::NAME => EnhanceCvFieldSchema::MAX_TOKENS,
             ClassifyDocumentSchema::NAME => ClassifyDocumentSchema::MAX_TOKENS,
+            JobMatchAdviceSchema::NAME, 'job_match' => JobMatchAdviceSchema::MAX_TOKENS,
             default => throw new InvalidArgumentException("Unknown AI operation schema: {$operation}"),
         };
     }
@@ -49,6 +51,7 @@ final class OperationSchemas
             EnhanceJobDescriptionSchema::NAME => EnhanceJobDescriptionSchema::schema(),
             EnhanceCvFieldSchema::NAME => EnhanceCvFieldSchema::schema(),
             ClassifyDocumentSchema::NAME => ClassifyDocumentSchema::schema(),
+            JobMatchAdviceSchema::NAME, 'job_match' => JobMatchAdviceSchema::schema(),
             default => throw new InvalidArgumentException("Unknown AI operation schema: {$operation}"),
         };
 
@@ -71,6 +74,7 @@ final class OperationSchemas
             EnhanceJobDescriptionSchema::class,
             EnhanceCvFieldSchema::class,
             ClassifyDocumentSchema::class,
+            JobMatchAdviceSchema::class,
         ];
     }
 }
