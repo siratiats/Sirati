@@ -128,10 +128,12 @@ class SubscriptionGate
 
     // ------------------------------------------------------------ assertions
 
-    public function assertCanJobMatch(User $user): void
+    /** Access to existing matches and replays never depends on quota usage. */
+    public function assertCanAccessJobMatch(User $user): void
     {
         $this->assertJobMatchConfigured();
-        $limit = $this->jobMatchDailyLimit();
+        // Validate required configuration even when no new attempt is requested.
+        $this->jobMatchDailyLimit();
 
         // Never use hasFullAccess(): the general rollout switch is not a bypass.
         if (! $this->isSubscribed($user)) {
@@ -141,8 +143,14 @@ class SubscriptionGate
                 messageEn: 'Job Match is for subscribers. Subscribe to discover strengths, gaps and suggested CV edits.',
             );
         }
+    }
 
-        if ($this->jobMatchesUsedToday($user) >= $limit) {
+    /** Only a new attempt checks quota, under the controller's per-user lock. */
+    public function assertCanJobMatch(User $user): void
+    {
+        $this->assertCanAccessJobMatch($user);
+
+        if ($this->jobMatchesUsedToday($user) >= $this->jobMatchDailyLimit()) {
             throw new HttpException(
                 429,
                 'Daily Job Match limit reached. Try again after the quota resets.',
