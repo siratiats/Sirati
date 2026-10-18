@@ -7,7 +7,6 @@ use App\Cv\CvDocument;
 use App\Cv\LocalizedText;
 use App\Cv\PersonalDetails;
 use App\Enums\AiStatus;
-use App\Exceptions\SubscriptionRequiredException;
 use App\Jobs\GenerateJobMatchAdviceJob;
 use App\Models\GeneratedCv;
 use App\Models\JobMatch;
@@ -23,32 +22,12 @@ use Laravel\Sanctum\Sanctum;
 use Mockery;
 use Tests\TestCase;
 
-// Task A's new methods may not exist in this isolated worktree yet.
-// The substitute implements only its frozen entitlement/quota contracts.
-class JobMatchGateDouble extends SubscriptionGate
-{
-    public function assertCanJobMatch(User $user): void
-    {
-        if (! $user->isPremium()) {
-            throw new SubscriptionRequiredException('job_match', 'Subscription required.', 'Subscription required.');
-        }
-    }
-
-    public function jobMatchDailyLimit(): int
-    {
-        return (int) config('monetization.job_match.daily_limit', 20);
-    }
-}
-
 trait JobMatchFixtures
 {
     protected function prepareJobMatch(): void
     {
         Queue::fake();
         $this->withoutMiddleware(ThrottleRequests::class);
-        if (! method_exists(SubscriptionGate::class, 'assertCanJobMatch')) {
-            $this->app->instance(SubscriptionGate::class, new JobMatchGateDouble);
-        }
         config(['monetization.job_match.daily_limit' => 20]);
     }
 
@@ -197,6 +176,42 @@ class JobMatchControllerTest extends TestCase
         $another = $this->premiumUser();
         Sanctum::actingAs($another);
         $this->postJson('/api/job-matches', ['generated_cv_id' => $this->savedCv($another)->id, 'job_description_input' => 'automation'])->assertCreated();
+    }
+
+    public function test_replays_at_full_quota_preserve_attempts_and_dispatch_only_once_for_every_ai_state(): void
+    {
+        $this->travelTo(now()->startOfDay()->addHours(12));
+        $gate = app(SubscriptionGate::class);
+        foreach ([1, 3, 7] as $limit) {
+            config(['monetization.job_match.daily_limit' => $limit]);
+            $user = $this->premiumUser();
+            Sanctum::actingAs($user);
+            $cv = $this->savedCv($user);
+            $input = [
+                'generated_cv_id' => $cv->id,
+                'job_description_input' => fake()->paragraph(),
+                'target_job_title' => fake()->jobTitle(),
+            ];
+            foreach (range(1, $limit) as $attempt) {
+                $headers = ['Idempotency-Key' => fake()->uuid()];
+                $id = $this->postJson('/api/job-matches', $input, $headers)->assertCreated()->json('data.id');
+            }
+
+            foreach ([AiStatus::Queued, AiStatus::Processing, AiStatus::Completed, AiStatus::Failed] as $state) {
+                JobMatch::findOrFail($id)->update(['ai_status' => $state]);
+                foreach (range(1, 3) as $replay) {
+                    $this->postJson('/api/job-matches', $input, $headers)->assertOk()
+                        ->assertJsonPath('data.id', $id)->assertJsonPath('data.ai_status', $state->value);
+                    $this->assertSame($limit, $gate->jobMatchesUsedToday($user));
+                }
+            }
+            $this->postJson('/api/job-matches', $input, ['Idempotency-Key' => fake()->uuid()])
+                ->assertStatus(429)->assertHeader('Retry-After');
+            $this->postJson('/api/job-matches', $input)->assertStatus(429);
+            Queue::assertPushed(GenerateJobMatchAdviceJob::class, fn ($job) => $job->jobMatchId === $id);
+        }
+        Queue::assertPushed(GenerateJobMatchAdviceJob::class, 1 + 3 + 7);
+        $this->assertDatabaseCount('job_matches', 1 + 3 + 7);
     }
 
     public function test_character_limits_include_unicode_boundaries_and_invalid_keys(): void
