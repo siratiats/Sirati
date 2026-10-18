@@ -8,6 +8,7 @@ use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Models\User;
 use App\Services\Cv\CvMarkdownRenderer;
+use App\Services\Cv\LogicalTextMpdf;
 use App\Support\CvMarkdownIdentityBlock;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -15,7 +16,6 @@ use Illuminate\Support\Str;
 use Mpdf\Config\ConfigVariables;
 use Mpdf\Config\FontVariables;
 use Mpdf\HTMLParserMode;
-use Mpdf\Mpdf;
 
 class CvTemplateRenderer
 {
@@ -23,7 +23,7 @@ class CvTemplateRenderer
      * Bump when template HTML, fonts, or renderer behaviour changes so a
      * cached blob from a previous deploy cannot outlive the new code.
      */
-    public const RENDER_VERSION = '4';
+    public const RENDER_VERSION = '6';
 
     public function __construct(
         private readonly CvMarkdownRenderer $markdownRenderer,
@@ -201,14 +201,20 @@ class CvTemplateRenderer
         $fontDirs[] = resource_path('fonts/ibm-plex-sans-arabic');
 
         $fontData = (new FontVariables)->getDefaults()['fontdata'];
+        // Keep Latin source letters instead of font GSUB ff/ffi ligatures in
+        // both languages. Retain shaping for Arabic and the other scripts.
+        foreach ($fontData as &$font) {
+            $font['useOTL'] = ($font['useOTL'] ?? 0) & ~0x01;
+        }
+        unset($font);
         $fontData['ibmplexsansarabic'] = [
             'R' => 'IBMPlexSansArabic-Regular.ttf',
             'B' => 'IBMPlexSansArabic-Bold.ttf',
-            'useOTL' => 0xFF,
+            'useOTL' => 0xFE,
             'useKashida' => 75,
         ];
 
-        $pdf = new Mpdf([
+        $pdf = new LogicalTextMpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
             'tempDir' => $tempDir,
@@ -243,7 +249,7 @@ class CvTemplateRenderer
         if (trim($css) !== '') {
             $pdf->WriteHTML($css, HTMLParserMode::HEADER_CSS);
         }
-        $pdf->WriteHTML($body, HTMLParserMode::HTML_BODY);
+        $pdf->WriteHTML($this->markdownRenderer->preparePdfHtml($body, $language), HTMLParserMode::HTML_BODY);
 
         return $pdf->Output('', 'S');
     }

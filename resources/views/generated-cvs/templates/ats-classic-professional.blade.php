@@ -26,6 +26,9 @@
             color: {{ $s['text_color'] }};
             font-size: {{ $s['font_size'] }}pt;
             line-height: 1.3;
+            {{-- Keep technical identifiers intact; a layout break at an internal
+                 hyphen otherwise becomes an inserted space during extraction. --}}
+            hyphens: none;
             margin: 0;
             text-align: {{ $start }};
         }
