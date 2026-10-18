@@ -14,7 +14,14 @@ return [
     |
     */
 
-    'enabled' => (bool) env('MONETIZATION_ENABLED', false),
+    // Preserve invalid values so security-sensitive gates can reject them.
+    'enabled' => env('MONETIZATION_ENABLED', false),
+
+    // Job Match is always premium-only, independently of the master switch.
+    // Do not cast here: an empty, malformed or non-positive limit must fail closed.
+    'job_match' => [
+        'daily_limit' => env('JOB_MATCH_DAILY_LIMIT', 20),
+    ],
 
     /*
     |--------------------------------------------------------------------------
