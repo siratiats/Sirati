@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\SubscriptionWebhookController;
 use App\Http\Controllers\CvAnalysisController;
 use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\GeneratedCvController;
+use App\Http\Controllers\JobMatchController;
 use App\Http\Controllers\MobileAuthController;
 use App\Http\Controllers\MobileContentController;
 use App\Http\Controllers\NotificationEngagementController;
@@ -74,6 +75,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/cv-analyses/{analysis}', [CvAnalysisController::class, 'showApi']);
         Route::post('/cv-analyses/{analysis}/generated-cv', [GeneratedCvController::class, 'storeFromAnalysisApi'])
             ->middleware('throttle:ai-heavy');
+
+        Route::middleware('throttle:ai-heavy')->group(function () {
+            Route::post('/job-matches', [JobMatchController::class, 'store']);
+            Route::get('/job-matches/{id}', [JobMatchController::class, 'show']);
+            Route::post('/job-matches/{id}/apply-suggestions', [JobMatchController::class, 'applySuggestions']);
+        });
 
         Route::get('/generated-cvs', [GeneratedCvController::class, 'indexApi']);
         Route::post('/generated-cvs', [GeneratedCvController::class, 'storeApi'])
