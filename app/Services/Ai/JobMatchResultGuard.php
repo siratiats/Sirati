@@ -3,6 +3,7 @@
 namespace App\Services\Ai;
 
 use App\Exceptions\AiRefusalException;
+use App\Services\Ai\Prompts\JobMatchSystemPrompt;
 use App\Services\AtsScoringService;
 use App\Support\ArabicIndicDigits;
 use UnexpectedValueException;
@@ -98,6 +99,8 @@ final class JobMatchResultGuard
         'كوبرنيتس', 'دوكر', 'بايثون', 'جافا', 'أوراكل', 'ساب', 'سيلزفورس', 'فلاتر', 'ريأكت',
         'لارافل', 'الذكاء الاصطناعي', 'تعلم الآلة', 'الأمن السيبراني', 'الحوسبة السحابية',
         'بلوكتشين', 'البيانات الضخمة', 'تحليل البيانات', 'إدارة المخاطر', 'المعايير الدولية',
+        'جافاسكريبت', 'تايب سكريبت', 'إكسل', 'تابلوه', 'باور بي آي', 'أجايل', 'سكرم', 'تيرفورم',
+        'لينكس', 'ووردبريس', 'شوبيفاي', 'ماجنتو', 'فيجما', 'فوتوشوب', 'بوستجري', 'ريديس', 'كافكا',
     ];
 
     /**
@@ -156,10 +159,13 @@ final class JobMatchResultGuard
             throw new UnexpectedValueException("{$provider} job_match_advice reply has malformed top-level fields.");
         }
 
+        $truncatedCv = JobMatchSystemPrompt::truncateCvSnapshot($cvSnapshot);
+        $truncatedJd = JobMatchSystemPrompt::truncateJobDescription($jobDescription);
+
         return self::sanitize(
             $raw,
-            self::extractCvTerms($cvSnapshot),
-            self::extractJdTerms($jobDescription),
+            $truncatedCv,
+            self::extractJdTerms($truncatedJd),
         );
     }
 
@@ -223,7 +229,14 @@ final class JobMatchResultGuard
             return self::emptyResult();
         }
 
-        $cvStrings = self::flattenTerms($cvTerms, filterInjections: false);
+        $cvSnapshot = null;
+        if ($cvTerms !== [] && ! array_is_list($cvTerms)) {
+            $cvSnapshot = JobMatchSystemPrompt::truncateCvSnapshot($cvTerms);
+            $cvStrings = self::extractCvTerms($cvSnapshot);
+        } else {
+            $cvStrings = self::flattenTerms($cvTerms, filterInjections: false);
+        }
+
         $jdStrings = self::flattenTerms($jdTerms, filterInjections: true);
 
         $cvEvidence = self::buildEvidence($cvStrings);
@@ -242,6 +255,7 @@ final class JobMatchResultGuard
             $cvEvidence,
             $jdEvidence,
             $combinedEvidence,
+            $cvSnapshot,
         );
 
         return [
@@ -260,7 +274,10 @@ final class JobMatchResultGuard
      */
     public static function extractCvTerms(array $cvSnapshot): array
     {
-        $strings = self::flattenTerms($cvSnapshot, filterInjections: false);
+        $truncated = $cvSnapshot !== [] && ! array_is_list($cvSnapshot)
+            ? JobMatchSystemPrompt::truncateCvSnapshot($cvSnapshot)
+            : $cvSnapshot;
+        $strings = self::flattenTerms($truncated, filterInjections: false);
         $terms = [];
 
         foreach ($strings as $str) {
@@ -283,7 +300,8 @@ final class JobMatchResultGuard
      */
     public static function extractJdTerms(string $jobDescription): array
     {
-        $cleanJd = self::stripInjectedSegments($jobDescription);
+        $truncatedJd = JobMatchSystemPrompt::truncateJobDescription($jobDescription);
+        $cleanJd = self::stripInjectedSegments($truncatedJd);
         if (trim($cleanJd) === '') {
             return [];
         }
@@ -347,6 +365,7 @@ final class JobMatchResultGuard
                 self::hasUngroundedDate($sentence, $combinedEvidence)
                 || self::hasUngroundedNumber($sentence, $combinedEvidence)
                 || self::hasUngroundedEmployer($sentence, $combinedEvidence)
+                || self::hasUngroundedSkill($sentence, $combinedEvidence)
             ) {
                 continue;
             }
@@ -440,6 +459,7 @@ final class JobMatchResultGuard
      * @param  array<string, mixed>  $cvEvidence
      * @param  array<string, mixed>  $jdEvidence
      * @param  array<string, mixed>  $combinedEvidence
+     * @param  array<string, mixed>|null  $cvSnapshot
      * @return list<array{
      *     key: string,
      *     target: array{section: string, entry_id: string|null, field: string|null, bullet_index: int|null},
@@ -455,6 +475,7 @@ final class JobMatchResultGuard
         array $cvEvidence,
         array $jdEvidence,
         array $combinedEvidence,
+        ?array $cvSnapshot = null,
     ): array {
         if (! is_array($values)) {
             return [];
@@ -499,10 +520,13 @@ final class JobMatchResultGuard
                 continue;
             }
 
-            $rawKey = is_string($item['key'] ?? null) ? trim($item['key']) : '';
-            $key = $rawKey !== '' ? $rawKey : 'sug_'.((int) $index + 1);
-            if (isset($usedKeys[$key])) {
-                $key = $key.'_'.((int) $index + 1);
+            $rawKey = is_string($item['key'] ?? null) ? self::stripTagsAndControlChars($item['key']) : '';
+            $baseKey = $rawKey !== '' ? $rawKey : 'sug_'.((int) $index + 1);
+            $key = $baseKey;
+            $suffix = (int) $index + 1;
+            while (isset($usedKeys[$key])) {
+                $key = $baseKey.'_'.$suffix;
+                $suffix++;
             }
             $usedKeys[$key] = true;
 
@@ -549,11 +573,18 @@ final class JobMatchResultGuard
                 $needsUserFact = true;
             }
 
-            if ($before !== null && (
-                self::hasUngroundedDate($before, $cvEvidence)
+            if ($cvSnapshot !== null && ! self::isTargetAndBeforeGroundedInSnapshot($target, $before, $cvSnapshot)) {
+                $needsUserFact = true;
+            }
+
+            if (
+                $before === null
+                || self::hasUngroundedDate($before, $cvEvidence)
                 || self::hasUngroundedNumber($before, $cvEvidence)
                 || self::hasUngroundedEmployer($before, $cvEvidence)
-            )) {
+                || self::hasUngroundedSkill($before, $cvEvidence)
+                || ! self::isBeforeGroundedInEvidence($before, $cvEvidence)
+            ) {
                 $needsUserFact = true;
             }
 
@@ -569,6 +600,225 @@ final class JobMatchResultGuard
         }
 
         return $out;
+    }
+
+    /**
+     * Verify that target (section, entry_id, field, bullet_index) and before
+     * exist in the structured CV snapshot.
+     *
+     * @param  array{section: string, entry_id: string|null, field: string|null, bullet_index: int|null}  $target
+     * @param  array<string, mixed>  $cvSnapshot
+     */
+    private static function isTargetAndBeforeGroundedInSnapshot(
+        array $target,
+        ?string $before,
+        array $cvSnapshot,
+    ): bool {
+        if ($before === null || trim($before) === '') {
+            return false;
+        }
+
+        $section = $target['section'];
+        $entryId = $target['entry_id'];
+        $field = $target['field'];
+        $bulletIndex = $target['bullet_index'];
+
+        if (! array_key_exists($section, $cvSnapshot)) {
+            return false;
+        }
+
+        $sectionData = $cvSnapshot[$section];
+        if ($sectionData === null || $sectionData === '' || $sectionData === []) {
+            return false;
+        }
+
+        if (in_array($section, ['summary', 'personal'], true)) {
+            if ($entryId !== null || $bulletIndex !== null) {
+                return false;
+            }
+
+            if ($section === 'summary') {
+                if ($field !== null && ! in_array($field, ['summary', 'ar', 'en', 'text', 'content'], true)) {
+                    return false;
+                }
+
+                return self::nodeContainsBeforeText($sectionData, $before);
+            }
+
+            if ($field !== null) {
+                if (! is_array($sectionData) || ! array_key_exists($field, $sectionData)) {
+                    return false;
+                }
+
+                return self::nodeContainsBeforeText($sectionData[$field], $before);
+            }
+
+            return self::nodeContainsBeforeText($sectionData, $before);
+        }
+
+        if (! is_array($sectionData)) {
+            if ($entryId !== null || $bulletIndex !== null) {
+                return false;
+            }
+
+            return self::nodeContainsBeforeText($sectionData, $before);
+        }
+
+        $targetNode = null;
+
+        if ($entryId !== null) {
+            foreach ($sectionData as $entry) {
+                if (! is_array($entry)) {
+                    continue;
+                }
+
+                $idCandidate = isset($entry['id']) && is_scalar($entry['id']) ? trim((string) $entry['id']) : null;
+                $keyCandidate = isset($entry['key']) && is_scalar($entry['key']) ? trim((string) $entry['key']) : null;
+
+                if ($idCandidate === $entryId || $keyCandidate === $entryId) {
+                    $targetNode = $entry;
+                    break;
+                }
+            }
+
+            if ($targetNode === null) {
+                return false;
+            }
+        } else {
+            $sectionHasEntryIds = false;
+            foreach ($sectionData as $entry) {
+                if (is_array($entry) && (
+                    (isset($entry['id']) && is_scalar($entry['id']) && trim((string) $entry['id']) !== '')
+                    || (isset($entry['key']) && is_scalar($entry['key']) && trim((string) $entry['key']) !== '')
+                )) {
+                    $sectionHasEntryIds = true;
+                    break;
+                }
+            }
+
+            if ($sectionHasEntryIds) {
+                return false;
+            }
+
+            if ($bulletIndex !== null) {
+                if ($section === 'skills' && array_key_exists($bulletIndex, $sectionData)) {
+                    return self::nodeContainsBeforeText($sectionData[$bulletIndex], $before);
+                }
+                if (count($sectionData) === 1 && is_array($sectionData[0] ?? null)) {
+                    $targetNode = $sectionData[0];
+                } else {
+                    return false;
+                }
+            } else {
+                return self::nodeContainsBeforeText($sectionData, $before);
+            }
+        }
+
+        if ($bulletIndex !== null) {
+            if ($field !== null && ! in_array($field, ['bullets', 'items'], true)) {
+                return false;
+            }
+
+            $bulletKey = $field ?? (isset($targetNode['bullets']) ? 'bullets' : (isset($targetNode['items']) ? 'items' : null));
+            if ($bulletKey === null || ! isset($targetNode[$bulletKey]) || ! is_array($targetNode[$bulletKey])) {
+                return false;
+            }
+
+            if (! array_key_exists($bulletIndex, $targetNode[$bulletKey])) {
+                return false;
+            }
+
+            return self::nodeContainsBeforeText($targetNode[$bulletKey][$bulletIndex], $before);
+        }
+
+        if ($field !== null) {
+            if (! is_array($targetNode) || ! array_key_exists($field, $targetNode)) {
+                return false;
+            }
+
+            return self::nodeContainsBeforeText($targetNode[$field], $before);
+        }
+
+        return self::nodeContainsBeforeText($targetNode, $before);
+    }
+
+    private static function nodeContainsBeforeText(mixed $node, string $before): bool
+    {
+        $normBefore = self::normalizeComparableText($before);
+        if ($normBefore === '') {
+            return false;
+        }
+
+        $strings = is_array($node)
+            ? self::flattenTerms($node, filterInjections: false)
+            : (is_scalar($node) ? [(string) $node] : []);
+
+        foreach ($strings as $candidate) {
+            $normCandidate = self::normalizeComparableText($candidate);
+            if ($normCandidate !== '' && ($normCandidate === $normBefore || str_contains($normCandidate, $normBefore))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function normalizeComparableText(string $text): string
+    {
+        $normalized = AtsScoringService::normalizeArabic(mb_strtolower(self::normalizeDigits($text), 'UTF-8'));
+        $normalized = preg_replace('/\s+/u', ' ', $normalized) ?? $normalized;
+
+        return self::trimPunctuation($normalized);
+    }
+
+    /**
+     * @param  array<string, mixed>  $cvEvidence
+     */
+    private static function isBeforeGroundedInEvidence(string $before, array $cvEvidence): bool
+    {
+        if ($cvEvidence['isEmpty']) {
+            return false;
+        }
+
+        $normBefore = self::normalizeComparableText($before);
+        if ($normBefore === '') {
+            return false;
+        }
+
+        if (in_array($normBefore, $cvEvidence['phrases'], true) || self::isTermInNormalizedString($normBefore, $cvEvidence['normalized'])) {
+            return true;
+        }
+
+        $stopWords = [
+            'و', 'في', 'من', 'على', 'الى', 'إلى', 'عن', 'مع', 'او', 'أو', 'ب', 'ل', 'ال',
+            'in', 'on', 'at', 'to', 'of', 'for', 'with', 'and', 'or', 'the', 'a', 'an', 'as', 'by',
+        ];
+        $stopSet = array_flip($stopWords);
+
+        $tokens = preg_split('/[^\p{L}\p{N}+#]+/u', $normBefore) ?: [];
+        $checkedCount = 0;
+
+        foreach ($tokens as $tok) {
+            $tok = trim($tok, '.-_');
+            if ($tok === '' || mb_strlen($tok) < 2 || isset($stopSet[$tok])) {
+                continue;
+            }
+
+            $checkedCount++;
+            $found = false;
+            foreach (self::expandTokenVariants($tok) as $variant) {
+                if (isset($cvEvidence['tokens'][$variant])) {
+                    $found = true;
+                    break;
+                }
+            }
+
+            if (! $found) {
+                return false;
+            }
+        }
+
+        return $checkedCount > 0;
     }
 
     /**
@@ -688,7 +938,6 @@ final class JobMatchResultGuard
         $numbers = [];
         foreach (self::extractNumbers($raw) as $n) {
             $numbers[$n] = true;
-            $numbers[rtrim($n, '%')] = true;
         }
 
         $tokens = [];
@@ -783,7 +1032,7 @@ final class JobMatchResultGuard
     private static function hasUngroundedDate(string $text, array $evidence): bool
     {
         foreach (self::extractDates($text) as $date) {
-            if (! isset($evidence['dates'][$date]) && ! str_contains($evidence['normalized'], $date)) {
+            if (! isset($evidence['dates'][$date])) {
                 return true;
             }
         }
@@ -799,17 +1048,35 @@ final class JobMatchResultGuard
         $normalized = self::normalizeDigits($text);
         $dates = [];
 
+        // 1. Compound numeric dates (YYYY-MM-DD, YYYY-MM, DD/MM/YYYY, MM/YYYY)
         preg_match_all(
-            '/(?<!\d)(?:19|20)\d{2}(?!\d)|(?<!\d)\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}(?!\d)|(?<!\d)(?:19|20)\d{2}[\/-]\d{1,2}(?!\d)/u',
+            '/(?<!\d)(?:(?:19|20)\d{2}[\/-]\d{1,2}(?:[\/-]\d{1,2})?|\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{1,2}[\/-](?:19|20)\d{2})(?!\d)/u',
             $normalized,
-            $numericMatches,
+            $compoundMatches,
         );
-        foreach ($numericMatches[0] ?? [] as $match) {
+        foreach ($compoundMatches[0] ?? [] as $match) {
             $dates[] = mb_strtolower(trim($match), 'UTF-8');
         }
 
+        // 2. Standalone 4-digit years (1900-2099) on strict non-digit/non-letter boundaries
         preg_match_all(
-            '/\b(?:January|February|March|April|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b|\bMay(?=\s+\d{1,4})/iu',
+            '/(?<![\p{L}\d])(?:19|20)\d{2}(?![\p{L}\d])/u',
+            $normalized,
+            $yearMatches,
+        );
+        foreach ($yearMatches[0] ?? [] as $year) {
+            $dates[] = mb_strtolower(trim($year), 'UTF-8');
+        }
+
+        // 3. Quarters (Q1-Q4)
+        preg_match_all('/\bQ[1-4]\b/iu', $normalized, $quarterMatches);
+        foreach ($quarterMatches[0] ?? [] as $quarter) {
+            $dates[] = mb_strtolower(trim($quarter), 'UTF-8');
+        }
+
+        // 4. English month tokens
+        preg_match_all(
+            '/\b(?:January|February|March|April|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b|\bMay(?=\s+\d{1,4}|\s*,?\s*(?:19|20)\d{2})/iu',
             $normalized,
             $enMonths,
         );
@@ -817,9 +1084,10 @@ final class JobMatchResultGuard
             $dates[] = mb_strtolower(trim($month), 'UTF-8');
         }
 
+        // 5. Arabic month tokens on strict word/token boundaries
         $arNorm = AtsScoringService::normalizeArabic($normalized);
         preg_match_all(
-            '/(?:^|[\s،,\-\/])(يناير|فبراير|مارس|ابريل|مايو|يونيو|يوليو|اغسطس|سبتمبر|اكتوبر|نوفمبر|ديسمبر|محرم|صفر|رمضان|شوال)(?=$|[\s،,\-\/])/u',
+            '/(?<![\p{L}\p{N}])(يناير|فبراير|مارس|ابريل|مايو|يونيو|يوليو|اغسطس|سبتمبر|اكتوبر|نوفمبر|ديسمبر|محرم|صفر|ربيع الاول|ربيع الثاني|ربيع الاخر|جمادى الاولى|جمادى الاخره|رجب|شعبان|رمضان|شوال|ذو القعده|ذو الحجه)(?![\p{L}\p{N}])/u',
             $arNorm,
             $arMonths,
         );
@@ -836,12 +1104,7 @@ final class JobMatchResultGuard
     private static function hasUngroundedNumber(string $text, array $evidence): bool
     {
         foreach (self::extractNumbers($text) as $number) {
-            $bare = rtrim($number, '%');
-            if (
-                ! isset($evidence['numbers'][$number])
-                && ! isset($evidence['numbers'][$bare])
-                && ! str_contains($evidence['normalized'], $bare)
-            ) {
+            if (! isset($evidence['numbers'][$number])) {
                 return true;
             }
         }
@@ -857,12 +1120,62 @@ final class JobMatchResultGuard
         $normalized = self::normalizeDigits($text);
         $numbers = [];
 
-        preg_match_all(
-            '/(?<![\p{L}\d])\d+(?:[.,]\d+)*%?(?!(?:d|fa|g)\b)(?![\p{L}\d])/iu',
+        // Strip compound numeric dates and standalone non-percentage 4-digit years first so
+        // month/day/year components inside dates do not leak as standalone numbers.
+        $working = preg_replace(
+            '/(?<!\d)(?:(?:19|20)\d{2}[\/-]\d{1,2}(?:[\/-]\d{1,2})?|\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{1,2}[\/-](?:19|20)\d{2})(?!\d)/u',
+            ' ',
             $normalized,
+        ) ?? $normalized;
+
+        $working = preg_replace(
+            '/(?<![\p{L}\d.])(?:19|20)\d{2}(?![\p{L}\d.])(?!\s*(?:%|percent\b|بالمئة|بالمئه|في\s+المئة|في\s+المائة|في\s+المئه))/iu',
+            ' ',
+            $working,
+        ) ?? $working;
+
+        // 1. Suffix percentages (e.g. "5%", "5 %", "5 percent", "5 بالمئة")
+        preg_match_all(
+            '/(?<![\p{L}\d.])(\d+(?:,\d{3})*(?:\.\d+)?)\s*(?:%|percent\b|بالمئة|بالمئه|في\s+المئة|في\s+المائة|في\s+المئه)/iu',
+            $working,
+            $suffixPctMatches,
+        );
+        foreach ($suffixPctMatches[1] ?? [] as $num) {
+            $clean = str_replace(',', '', trim($num));
+            if ($clean !== '') {
+                $numbers[] = $clean.'%';
+            }
+        }
+        $working = preg_replace(
+            '/(?<![\p{L}\d.])(\d+(?:,\d{3})*(?:\.\d+)?)\s*(?:%|percent\b|بالمئة|بالمئه|في\s+المئة|في\s+المائة|في\s+المئه)/iu',
+            ' ',
+            $working,
+        ) ?? $working;
+
+        // 2. Prefix percentages (e.g. "%5" in Arabic text)
+        preg_match_all(
+            '/(?<![\p{L}\d.])%\s*(\d+(?:,\d{3})*(?:\.\d+)?)(?![\p{L}\d.])/u',
+            $working,
+            $prefixPctMatches,
+        );
+        foreach ($prefixPctMatches[1] ?? [] as $num) {
+            $clean = str_replace(',', '', trim($num));
+            if ($clean !== '') {
+                $numbers[] = $clean.'%';
+            }
+        }
+        $working = preg_replace(
+            '/(?<![\p{L}\d.])%\s*(\d+(?:,\d{3})*(?:\.\d+)?)(?![\p{L}\d.])/u',
+            ' ',
+            $working,
+        ) ?? $working;
+
+        // 3. Standalone numeric tokens on strict token boundaries
+        preg_match_all(
+            '/(?<![\p{L}\d.])\d+(?:,\d{3})*(?:\.\d+)?(?!(?:d|fa|g)\b)(?![\p{L}\d.])/iu',
+            $working,
             $digitMatches,
         );
-
         foreach ($digitMatches[0] ?? [] as $rawNum) {
             $clean = str_replace(',', '', trim($rawNum));
             if ($clean !== '') {
@@ -870,8 +1183,9 @@ final class JobMatchResultGuard
             }
         }
 
+        // 4. English number words on strict word boundaries
         preg_match_all(
-            '/\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|hundred|thousand|million|billion)\s+(years?|months?|weeks?|days?|users?|clients?|customers?|projects?|teams?|engineers?|developers?|members?|countries|regions|branches|percent)\b/iu',
+            '/\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|billion)\b/iu',
             $normalized,
             $enWordNums,
         );
@@ -879,9 +1193,10 @@ final class JobMatchResultGuard
             $numbers[] = mb_strtolower(trim($wordNum), 'UTF-8');
         }
 
+        // 5. Arabic number words on strict token boundaries
         $arNorm = AtsScoringService::normalizeArabic($normalized);
         preg_match_all(
-            '/(?:^|[\s،,.])(سنتين|عامين|شهرين|ثلاثه?|اربعه?|خمسه?|سته?|سبعه?|ثماني?ه?|تسعه?|عشره?|عشرين|ثلاثين|اربعين|خمسين|مئه|مائه|الف|مليون)\s+(?:سنوات|اعوام|اشهر|مشاريع|عملاء|مستخدمين|فرق|فروع)/u',
+            '/(?<![\p{L}\p{N}])(سنتين|عامين|شهرين|ثلاثه?|اربعه?|خمسه?|سته?|سبعه?|ثماني?ه?|تسعه?|عشره?|عشرين|ثلاثين|اربعين|خمسين|ستين|سبعين|ثمانين|تسعين|مئه|مائه|الف|الاف|مليون|مليار)(?![\p{L}\p{N}])/u',
             $arNorm,
             $arWordNums,
         );
@@ -998,7 +1313,7 @@ final class JobMatchResultGuard
             }
 
             preg_match_all(
-                '/(?:باستخدام|بواسطة|بتقنية|بأداة|في\s+برنامج|في\s+نظام|على\s+منصة)\s+([^\s،,.؛;\r\n()]+)/u',
+                '/(?:باستخدام|بواسطة|بتقنية|بأداة|في\s+برنامج|في\s+نظام|على\s+منصة|(?:خبرة|خبره)(?:\s+عملية|\s+عمليه|\s+قوية|\s+قويه|\s+واسعة|\s+واسعه)?\s+في|توافق(?:\s+جيد|\s+قوي|\s+ممتاز)?\s+في|(?:نقص|ضعف|غياب)(?:\s+خبرة|\s+خبره)?\s+في|(?:مذكورة|مذكوره)\s+في|(?:إشارة|اشاره)\s+(?:إلى|الى)|(?:إتقان|اتقان)|(?:مهارة|مهاره|مهارات)|(?:معرفة|معرفه)\s+بـ?|(?:متخصص|تخصص)\s+في)\s+([^\s،,.؛;\r\n()]+)/u',
                 $text,
                 $arSkillPhrases,
             );
@@ -1006,6 +1321,9 @@ final class JobMatchResultGuard
                 'تطوير', 'بناء', 'تحسين', 'إدارة', 'ادارة', 'تنظيم', 'تنفيذ', 'تحليل', 'تصميم',
                 'أدوات', 'ادوات', 'أساليب', 'اساليب', 'منهجية', 'منهجيه', 'طرق', 'فعالة', 'فعاله',
                 'حديثة', 'حديثه', 'متقدمة', 'متقدمه', 'أفضل', 'افضل', 'تقنيات', 'أنظمة', 'انظمه',
+                'السيرة', 'السيره', 'الذاتية', 'الذاتيه', 'العمل', 'المجال', 'الوظيفة', 'الوظيفه',
+                'الدور', 'المشاريع', 'الأداء', 'الاداء', 'الفريق', 'الإدارة', 'الاداره', 'التطوير',
+                'هذا', 'هذه', 'ذلك', 'تلك', 'بشكل', 'عام', 'شركة', 'شركه', 'مؤسسة', 'مؤسسه',
             ];
             foreach ($arSkillPhrases[1] ?? [] as $arSkill) {
                 $arSkill = self::trimPunctuation($arSkill);
@@ -1238,8 +1556,15 @@ final class JobMatchResultGuard
 
     private static function stripTagsAndControlChars(string $text): string
     {
-        $text = preg_replace('/<\s*script\b[^>]*>[\s\S]*?<\s*\/\s*script\s*>/iu', ' ', $text) ?? $text;
-        $text = preg_replace('/<\s*\/?\s*(?:cv_snapshot|job_description|system|instructions?|prompt|script|iframe|object|embed)\b[^>]*>/iu', ' ', $text) ?? $text;
+        $scriptPattern = '/<\s*script\b[^>]*>[\s\S]*?<\s*\/\s*script\s*>/iu';
+        $tagPattern = '/<\s*\/?\s*(?:cv_snapshot|job_description|system|instructions?|prompt|user|assistant|developer|role|rules?|context|override|script|iframe|object|embed)\b[^>]*>?/iu';
+
+        do {
+            $previous = $text;
+            $text = preg_replace($scriptPattern, ' ', $text) ?? $text;
+            $text = preg_replace($tagPattern, ' ', $text) ?? $text;
+        } while ($text !== $previous);
+
         $text = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $text) ?? $text;
         $text = preg_replace('/[ \t]+/u', ' ', $text) ?? $text;
 
@@ -1261,6 +1586,8 @@ final class JobMatchResultGuard
             '۷' => '7',
             '۸' => '8',
             '۹' => '9',
+            '٪' => '%',
+            '％' => '%',
         ]);
     }
 

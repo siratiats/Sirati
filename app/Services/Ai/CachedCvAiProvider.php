@@ -26,7 +26,7 @@ class CachedCvAiProvider implements CvAiProvider
      * Bump by hand whenever prompt text or schema changes so stale cache
      * entries are not reused after a prompt edit.
      */
-    public const PROMPT_VERSION = '9';
+    public const PROMPT_VERSION = '10';
 
     /** Normalized provider name ('openai' | 'anthropic') the wrapped driver talks to. */
     private readonly string $provider;
@@ -145,12 +145,47 @@ class CachedCvAiProvider implements CvAiProvider
             operation: 'job_match_advice',
             payload: [
                 'operation' => 'job_match_advice',
-                'cv_snapshot_hash' => hash('sha256', $this->normalizePayload($cvSnapshot)),
+                'cv_snapshot_hash' => hash('sha256', $this->canonicalSnapshotJson($cvSnapshot)),
                 'jd_hash' => hash('sha256', $this->normalizeText($jobDescription)),
                 'language' => $this->normalizeText($language),
             ],
             callback: fn (): array => $this->inner->jobMatchAdvice($cvSnapshot, $jobDescription, $language),
         );
+    }
+
+    /**
+     * Serialize a CV snapshot into a canonical JSON string without lowercasing,
+     * digit-normalizing, or collapsing whitespace, so any distinct CV snapshot
+     * produces a distinct hash while associative key ordering remains canonical.
+     *
+     * @param  array<string, mixed>  $cvSnapshot
+     */
+    private function canonicalSnapshotJson(array $cvSnapshot): string
+    {
+        return json_encode(
+            $this->canonicalizeSnapshotValue($cvSnapshot),
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
+        );
+    }
+
+    private function canonicalizeSnapshotValue(mixed $value): mixed
+    {
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        if (array_is_list($value)) {
+            return array_map($this->canonicalizeSnapshotValue(...), $value);
+        }
+
+        ksort($value);
+
+        $normalized = [];
+        foreach ($value as $key => $child) {
+            $normalized[$key] = $this->canonicalizeSnapshotValue($child);
+        }
+
+        return $normalized;
     }
 
     /**

@@ -4,11 +4,25 @@ namespace App\Services\Ai\Prompts;
 
 final class JobMatchSystemPrompt
 {
-    public const VERSION = '1';
+    public const VERSION = '2';
 
     public const CV_TAG = 'cv_snapshot';
 
     public const JD_TAG = 'job_description';
+
+    public const MAX_CV_CHARS = 16000;
+
+    public const MAX_JD_CHARS = 8000;
+
+    private const LIST_SECTION_TRIM_ORDER = [
+        'custom_sections',
+        'projects',
+        'certifications',
+        'languages',
+        'education',
+        'experience',
+        'skills',
+    ];
 
     public static function for(string $language = 'ar'): string
     {
@@ -38,9 +52,9 @@ final class JobMatchSystemPrompt
         $normalizedLang = strtolower(trim($language)) === 'en' ? 'en' : 'ar';
         $languageName = $normalizedLang === 'en' ? 'English (en)' : 'Arabic (ar)';
 
-        $cvJson = json_encode($cvSnapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}';
-        $safeCv = self::sanitizeDelimitedContent(mb_substr($cvJson, 0, 16000));
-        $safeJd = self::sanitizeDelimitedContent(mb_substr($jobDescription, 0, 8000));
+        $truncatedCv = self::truncateCvSnapshot($cvSnapshot, self::MAX_CV_CHARS);
+        $safeCv = json_encode($truncatedCv, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}';
+        $safeJd = self::sanitizeDelimitedContent(self::truncateJobDescription($jobDescription, self::MAX_JD_CHARS));
 
         return implode("\n\n", [
             "Requested output language: {$languageName}",
@@ -53,11 +67,129 @@ final class JobMatchSystemPrompt
 
     public static function sanitizeDelimitedContent(string $text): string
     {
-        return preg_replace(
-            '/<\s*\/?\s*(?:cv_snapshot|job_description|system|instructions?|prompt)\b[^>]*>/iu',
-            '',
-            $text,
-        ) ?? $text;
+        $pattern = '/<\s*\/?\s*(?:cv_snapshot|job_description|system|instructions?|prompt|user|assistant|developer|role|rules?|context|override|script|iframe|object|embed)\b[^>]*>?/iu';
+
+        do {
+            $previous = $text;
+            $text = preg_replace($pattern, '', $text) ?? $text;
+        } while ($text !== $previous);
+
+        return str_replace(['<', '>'], ['&lt;', '&gt;'], $text);
+    }
+
+    public static function truncateJobDescription(string $jobDescription, int $maxChars = self::MAX_JD_CHARS): string
+    {
+        return mb_substr($jobDescription, 0, max(0, $maxChars));
+    }
+
+    /**
+     * Truncate a CV snapshot on entry boundaries so the encoded JSON never exceeds
+     * $maxChars and is never cut mid-JSON.
+     *
+     * @param  array<string, mixed>  $cvSnapshot
+     * @return array<string, mixed>
+     */
+    public static function truncateCvSnapshot(array $cvSnapshot, int $maxChars = self::MAX_CV_CHARS): array
+    {
+        $maxChars = max(2, $maxChars);
+        $truncated = self::sanitizeSnapshotNode($cvSnapshot);
+        if (! is_array($truncated)) {
+            return [];
+        }
+
+        $encode = static fn (array $data): string => json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}';
+
+        if (mb_strlen($encode($truncated)) <= $maxChars) {
+            return $truncated;
+        }
+
+        $listSections = self::LIST_SECTION_TRIM_ORDER;
+        foreach (array_keys($truncated) as $key) {
+            if (is_string($key) && ! in_array($key, $listSections, true) && is_array($truncated[$key]) && array_is_list($truncated[$key])) {
+                array_unshift($listSections, $key);
+            }
+        }
+
+        foreach ($listSections as $section) {
+            while (
+                isset($truncated[$section])
+                && is_array($truncated[$section])
+                && array_is_list($truncated[$section])
+                && $truncated[$section] !== []
+                && mb_strlen($encode($truncated)) > $maxChars
+            ) {
+                $lastIndex = count($truncated[$section]) - 1;
+                $lastEntry = $truncated[$section][$lastIndex] ?? null;
+
+                // If we are down to the first entry in this section and it has multiple bullets/items,
+                // trim whole bullets from the end before dropping the entire entry.
+                if ($lastIndex === 0 && is_array($lastEntry)) {
+                    $bulletField = isset($lastEntry['bullets']) && is_array($lastEntry['bullets']) && count($lastEntry['bullets']) > 1
+                        ? 'bullets'
+                        : (isset($lastEntry['items']) && is_array($lastEntry['items']) && count($lastEntry['items']) > 1 ? 'items' : null);
+
+                    if ($bulletField !== null) {
+                        array_pop($truncated[$section][0][$bulletField]);
+
+                        continue;
+                    }
+                }
+
+                array_pop($truncated[$section]);
+            }
+
+            if (mb_strlen($encode($truncated)) <= $maxChars) {
+                return $truncated;
+            }
+        }
+
+        // Fallback if a single scalar field (e.g. a huge summary) still exceeds budget:
+        // clamp scalar strings in the PHP array so the JSON remains syntactically valid.
+        foreach ([2000, 1000, 500, 200, 50, 10, 0] as $scalarLimit) {
+            $clamped = self::clampScalarStrings($truncated, $scalarLimit);
+            if (is_array($clamped) && mb_strlen($encode($clamped)) <= $maxChars) {
+                return $clamped;
+            }
+        }
+
+        return [];
+    }
+
+    private static function sanitizeSnapshotNode(mixed $node): mixed
+    {
+        if (is_string($node)) {
+            return self::sanitizeDelimitedContent($node);
+        }
+
+        if (! is_array($node)) {
+            return $node;
+        }
+
+        $out = [];
+        foreach ($node as $key => $value) {
+            $safeKey = is_string($key) ? self::sanitizeDelimitedContent($key) : $key;
+            $out[$safeKey] = self::sanitizeSnapshotNode($value);
+        }
+
+        return $out;
+    }
+
+    private static function clampScalarStrings(mixed $node, int $maxScalarChars): mixed
+    {
+        if (is_string($node)) {
+            return mb_substr($node, 0, max(0, $maxScalarChars));
+        }
+
+        if (! is_array($node)) {
+            return $node;
+        }
+
+        $out = [];
+        foreach ($node as $key => $value) {
+            $out[$key] = self::clampScalarStrings($value, $maxScalarChars);
+        }
+
+        return $out;
     }
 
     private function roleAndSecuritySection(): string
