@@ -79,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::middleware('throttle:ai-heavy')->group(function () {
             Route::post('/job-matches', [JobMatchController::class, 'store']);
             Route::get('/job-matches/{id}', [JobMatchController::class, 'show']);
+            Route::post('/job-matches/{id}/retry-advice', [JobMatchController::class, 'retryAdvice']);
             Route::post('/job-matches/{id}/apply-suggestions', [JobMatchController::class, 'applySuggestions']);
         });
 

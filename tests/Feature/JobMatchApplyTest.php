@@ -33,6 +33,7 @@ class JobMatchApplyTest extends TestCase
     {
         return [
             'key' => $key,
+            'kind' => $section === 'skills' ? 'append_skill' : 'replace',
             'target' => ['section' => $section, 'field' => $field, 'entry_id' => $entryId, 'bullet_index' => $bulletIndex],
             'before' => $before,
             'after' => $after,

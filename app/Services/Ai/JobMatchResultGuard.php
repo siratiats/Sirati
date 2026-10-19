@@ -483,6 +483,7 @@ final class JobMatchResultGuard
 
         $out = [];
         $usedKeys = [];
+        $usedTargets = [];
 
         foreach ($values as $index => $item) {
             if (! is_array($item)) {
@@ -494,7 +495,7 @@ final class JobMatchResultGuard
             }
 
             $after = self::stripTagsAndControlChars($item['after']);
-            if ($after === '' || self::isInjectionOrRefusal($after)) {
+            if ($after === '' || preg_match('/\R/u', $item['after']) || self::isInjectionOrRefusal($after)) {
                 continue;
             }
 
@@ -504,7 +505,7 @@ final class JobMatchResultGuard
                 if (self::isInjectionOrRefusal($cleanedBefore)) {
                     continue;
                 }
-                $before = $cleanedBefore !== '' ? $cleanedBefore : null;
+                $before = $cleanedBefore;
             }
 
             $rationale = is_string($item['rationale'] ?? null)
@@ -519,6 +520,25 @@ final class JobMatchResultGuard
             if ($target === null) {
                 continue;
             }
+
+            $kind = $item['kind'] ?? null;
+            if (! in_array($kind, ['replace', 'append_skill', 'append_bullet'], true)
+                || ! self::hasValidAfterShape($kind, $target, $after, $combinedEvidence)
+                || self::normalizeComparableText($after) === self::normalizeComparableText($before ?? '')) {
+                continue;
+            }
+            // Additions have no previous text. Keep the apply endpoint's empty-string contract.
+            if ($kind !== 'replace') {
+                if ($before !== null && $before !== '') {
+                    continue;
+                }
+                $before = '';
+            }
+            $targetKey = self::suggestionTargetKey($kind, $target, $after);
+            if (isset($usedTargets[$targetKey])) {
+                continue;
+            }
+            $usedTargets[$targetKey] = true;
 
             $rawKey = is_string($item['key'] ?? null) ? self::stripTagsAndControlChars($item['key']) : '';
             $baseKey = $rawKey !== '' ? $rawKey : 'sug_'.((int) $index + 1);
@@ -554,7 +574,7 @@ final class JobMatchResultGuard
             }
             $groundedJdTerms = array_values(array_unique($groundedJdTerms));
 
-            $needsUserFact = (bool) ($item['needs_user_fact'] ?? false);
+            $needsUserFact = (bool) ($item['needs_user_fact'] ?? false) || $kind === 'append_bullet';
 
             if (
                 $cvEvidence['isEmpty']
@@ -573,23 +593,24 @@ final class JobMatchResultGuard
                 $needsUserFact = true;
             }
 
-            if ($cvSnapshot !== null && ! self::isTargetAndBeforeGroundedInSnapshot($target, $before, $cvSnapshot)) {
+            if ($cvSnapshot !== null && ! self::canApplyToSnapshot($kind, $target, $before, $after, $cvSnapshot)) {
                 $needsUserFact = true;
             }
 
-            if (
+            if ($kind === 'replace' && (
                 $before === null
                 || self::hasUngroundedDate($before, $cvEvidence)
                 || self::hasUngroundedNumber($before, $cvEvidence)
                 || self::hasUngroundedEmployer($before, $cvEvidence)
                 || self::hasUngroundedSkill($before, $cvEvidence)
                 || ! self::isBeforeGroundedInEvidence($before, $cvEvidence)
-            ) {
+            )) {
                 $needsUserFact = true;
             }
 
             $out[] = [
                 'key' => $key,
+                'kind' => $kind,
                 'target' => $target,
                 'before' => $before,
                 'after' => $after,
@@ -602,161 +623,80 @@ final class JobMatchResultGuard
         return $out;
     }
 
-    /**
-     * Verify that target (section, entry_id, field, bullet_index) and before
-     * exist in the structured CV snapshot.
-     *
-     * @param  array{section: string, entry_id: string|null, field: string|null, bullet_index: int|null}  $target
-     * @param  array<string, mixed>  $cvSnapshot
-     */
-    private static function isTargetAndBeforeGroundedInSnapshot(
-        array $target,
-        ?string $before,
-        array $cvSnapshot,
-    ): bool {
-        if ($before === null || trim($before) === '') {
+    /** Validate data shapes, without guessing the language or direction of prose. */
+    private static function hasValidAfterShape(string $kind, array $target, string $after, array $evidence): bool
+    {
+        $limit = $kind === 'append_skill' || $target['section'] === 'skills'
+            ? 60 : ($target['section'] === 'summary' ? 2000 : 500);
+        if (mb_strlen($after) > $limit) {
             return false;
         }
-
-        $section = $target['section'];
-        $entryId = $target['entry_id'];
-        $field = $target['field'];
-        $bulletIndex = $target['bullet_index'];
-
-        if (! array_key_exists($section, $cvSnapshot)) {
-            return false;
-        }
-
-        $sectionData = $cvSnapshot[$section];
-        if ($sectionData === null || $sectionData === '' || $sectionData === []) {
-            return false;
-        }
-
-        if (in_array($section, ['summary', 'personal'], true)) {
-            if ($entryId !== null || $bulletIndex !== null) {
+        if ($kind === 'append_skill' || $target['section'] === 'skills') {
+            // A literal name must match an evidence term or a catalogued skill,
+            // rather than arbitrary prose containing that skill somewhere within it.
+            if (preg_match('/[\r\n,;:!?????]|[.]$/u', $after)) {
                 return false;
             }
-
-            if ($section === 'summary') {
-                if ($field !== null && ! in_array($field, ['summary', 'ar', 'en', 'text', 'content'], true)) {
-                    return false;
-                }
-
-                return self::nodeContainsBeforeText($sectionData, $before);
-            }
-
-            if ($field !== null) {
-                if (! is_array($sectionData) || ! array_key_exists($field, $sectionData)) {
-                    return false;
-                }
-
-                return self::nodeContainsBeforeText($sectionData[$field], $before);
-            }
-
-            return self::nodeContainsBeforeText($sectionData, $before);
-        }
-
-        if (! is_array($sectionData)) {
-            if ($entryId !== null || $bulletIndex !== null) {
+            $name = self::normalizeComparableText($after);
+            $names = [...$evidence['phrases'], ...self::allKnownSkills()];
+            if (! in_array($name, $names, true)) {
                 return false;
-            }
-
-            return self::nodeContainsBeforeText($sectionData, $before);
-        }
-
-        $targetNode = null;
-
-        if ($entryId !== null) {
-            foreach ($sectionData as $entry) {
-                if (! is_array($entry)) {
-                    continue;
-                }
-
-                $idCandidate = isset($entry['id']) && is_scalar($entry['id']) ? trim((string) $entry['id']) : null;
-                $keyCandidate = isset($entry['key']) && is_scalar($entry['key']) ? trim((string) $entry['key']) : null;
-
-                if ($idCandidate === $entryId || $keyCandidate === $entryId) {
-                    $targetNode = $entry;
-                    break;
-                }
-            }
-
-            if ($targetNode === null) {
-                return false;
-            }
-        } else {
-            $sectionHasEntryIds = false;
-            foreach ($sectionData as $entry) {
-                if (is_array($entry) && (
-                    (isset($entry['id']) && is_scalar($entry['id']) && trim((string) $entry['id']) !== '')
-                    || (isset($entry['key']) && is_scalar($entry['key']) && trim((string) $entry['key']) !== '')
-                )) {
-                    $sectionHasEntryIds = true;
-                    break;
-                }
-            }
-
-            if ($sectionHasEntryIds) {
-                return false;
-            }
-
-            if ($bulletIndex !== null) {
-                if ($section === 'skills' && array_key_exists($bulletIndex, $sectionData)) {
-                    return self::nodeContainsBeforeText($sectionData[$bulletIndex], $before);
-                }
-                if (count($sectionData) === 1 && is_array($sectionData[0] ?? null)) {
-                    $targetNode = $sectionData[0];
-                } else {
-                    return false;
-                }
-            } else {
-                return self::nodeContainsBeforeText($sectionData, $before);
             }
         }
-
-        if ($bulletIndex !== null) {
-            if ($field !== null && ! in_array($field, ['bullets', 'items'], true)) {
-                return false;
-            }
-
-            $bulletKey = $field ?? (isset($targetNode['bullets']) ? 'bullets' : (isset($targetNode['items']) ? 'items' : null));
-            if ($bulletKey === null || ! isset($targetNode[$bulletKey]) || ! is_array($targetNode[$bulletKey])) {
-                return false;
-            }
-
-            if (! array_key_exists($bulletIndex, $targetNode[$bulletKey])) {
-                return false;
-            }
-
-            return self::nodeContainsBeforeText($targetNode[$bulletKey][$bulletIndex], $before);
+        if ($kind === 'append_skill') {
+            return $target['section'] === 'skills' && $target['entry_id'] === null
+                && in_array($target['field'], ['name', 'append'], true) && $target['bullet_index'] === null;
+        }
+        if ($kind === 'append_bullet') {
+            return $target['section'] === 'experience' && $target['entry_id'] !== null
+                && in_array($target['field'], ['bullet', 'bullets'], true) && $target['bullet_index'] === null;
         }
 
-        if ($field !== null) {
-            if (! is_array($targetNode) || ! array_key_exists($field, $targetNode)) {
-                return false;
-            }
-
-            return self::nodeContainsBeforeText($targetNode[$field], $before);
-        }
-
-        return self::nodeContainsBeforeText($targetNode, $before);
+        return true;
     }
 
-    private static function nodeContainsBeforeText(mixed $node, string $before): bool
+    private static function suggestionTargetKey(string $kind, array $target, string $after): string
     {
-        $normBefore = self::normalizeComparableText($before);
-        if ($normBefore === '') {
+        if ($kind === 'append_skill') {
+            return 'skill:'.self::normalizeComparableText($after);
+        }
+        if ($target['section'] === 'summary') {
+            return 'summary';
+        }
+        $field = $target['field'] === 'bullet' ? 'bullets' : $target['field'];
+
+        return json_encode([$target['section'], $target['entry_id'], $field, $target['bullet_index']], JSON_THROW_ON_ERROR);
+    }
+
+    /** Mirror the supported apply targets against the frozen, requested-language text. */
+    private static function canApplyToSnapshot(string $kind, array $target, ?string $before, string $after, array $snapshot): bool
+    {
+        $language = $snapshot['export_language'] ?? 'ar';
+        if ($kind === 'append_skill') {
+            foreach ($snapshot['skills'] ?? [] as $skill) {
+                $name = \App\Cv\LocalizedText::fromArray($skill['name'] ?? [])->resolve($language);
+                if (self::normalizeComparableText($name) === self::normalizeComparableText($after)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        if ($kind !== 'replace' || $before === null) {
             return false;
         }
+        if ($target['section'] === 'summary' && in_array($target['field'], ['summary', 'text'], true)
+            && in_array($target['entry_id'], [null, 'summary'], true) && $target['bullet_index'] === null) {
+            return \App\Cv\LocalizedText::fromArray($snapshot['summary'] ?? [])->resolve($language) === $before;
+        }
+        if ($target['section'] === 'experience' && in_array($target['field'], ['bullet', 'bullets'], true)
+            && $target['entry_id'] !== null && $target['bullet_index'] !== null) {
+            $entries = array_values(array_filter($snapshot['experience'] ?? [],
+                static fn (array $entry): bool => ($entry['id'] ?? null) === $target['entry_id']));
+            if (count($entries) === 1) {
+                $bullet = $entries[0]['bullets'][$target['bullet_index']] ?? null;
 
-        $strings = is_array($node)
-            ? self::flattenTerms($node, filterInjections: false)
-            : (is_scalar($node) ? [(string) $node] : []);
-
-        foreach ($strings as $candidate) {
-            $normCandidate = self::normalizeComparableText($candidate);
-            if ($normCandidate !== '' && ($normCandidate === $normBefore || str_contains($normCandidate, $normBefore))) {
-                return true;
+                return is_array($bullet) && \App\Cv\LocalizedText::fromArray($bullet)->resolve($language) === $before;
             }
         }
 

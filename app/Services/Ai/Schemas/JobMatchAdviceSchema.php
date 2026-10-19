@@ -54,6 +54,7 @@ final class JobMatchAdviceSchema
                         'additionalProperties' => false,
                         'required' => [
                             'key',
+                            'kind',
                             'target',
                             'before',
                             'after',
@@ -63,6 +64,7 @@ final class JobMatchAdviceSchema
                         ],
                         'properties' => [
                             'key' => ['type' => 'string'],
+                            'kind' => ['type' => 'string', 'enum' => ['replace', 'append_skill', 'append_bullet']],
                             'target' => [
                                 'type' => 'object',
                                 'additionalProperties' => false,

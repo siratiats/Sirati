@@ -145,6 +145,7 @@ class CachedCvAiProvider implements CvAiProvider
             operation: 'job_match_advice',
             payload: [
                 'operation' => 'job_match_advice',
+                'prompt_version' => \App\Services\Ai\Prompts\JobMatchSystemPrompt::VERSION,
                 'cv_snapshot_hash' => hash('sha256', $this->canonicalSnapshotJson($cvSnapshot)),
                 'jd_hash' => hash('sha256', $this->normalizeText($jobDescription)),
                 'language' => $this->normalizeText($language),

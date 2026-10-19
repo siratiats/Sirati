@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\GeneratedCvResource;
 use App\Http\Resources\JobMatchResource;
+use App\Enums\AiStatus;
 use App\Jobs\GenerateJobMatchAdviceJob;
 use App\Models\GeneratedCv;
 use App\Models\JobMatch;
@@ -67,7 +68,7 @@ class JobMatchController extends Controller
                 'target_job_title' => $title,
                 'job_description_input' => $input['job_description_input'],
                 'language' => $language,
-                'cv_snapshot' => JobMatch::adviceSnapshot($document),
+                'cv_snapshot' => JobMatch::adviceSnapshot($document->withExportLanguage($language)),
                 'cv_snapshot_hash' => JobMatch::snapshotHash($document),
                 ...JobMatch::scoreAttributes($scorer->scoreDocument($document, null, $input['job_description_input'])),
             ]), true];
@@ -91,6 +92,37 @@ class JobMatchController extends Controller
         $gate->assertCanAccessJobMatch($request->user());
 
         return new JobMatchResource($match);
+    }
+
+    public function retryAdvice(Request $request, int $id, SubscriptionGate $gate): JobMatchResource
+    {
+        $match = DB::transaction(function () use ($request, $id, $gate): JobMatch {
+            $match = JobMatch::where('user_id', $request->user()->id)->lockForUpdate()->findOrFail($id);
+            $gate->assertCanJobMatch($request->user(), checkQuota: false);
+
+            // Concurrent retries see the state committed by the first caller.
+            if (in_array($match->ai_status, [AiStatus::Queued, AiStatus::Processing], true)) {
+                return $match;
+            }
+            abort_unless($match->ai_status === AiStatus::Failed, 409, 'Only failed advice can be retried.');
+            $match->update(['ai_status' => AiStatus::Queued, 'ai_error' => null, 'ai_feedback' => null]);
+
+            DB::afterCommit(function () use ($match): void {
+                try {
+                    GenerateJobMatchAdviceJob::dispatch($match->id);
+                } catch (Throwable $exception) {
+                    JobMatch::whereKey($match->id)->where('ai_status', AiStatus::Queued->value)->update([
+                        'ai_status' => AiStatus::Failed->value,
+                        'ai_error' => 'Job Match advice is unavailable.',
+                    ]);
+                    Log::warning('Job Match advice dispatch failed.', ['job_match_id' => $match->id, 'exception' => $exception::class]);
+                }
+            });
+
+            return $match;
+        });
+
+        return new JobMatchResource($match->refresh());
     }
 
     public function applySuggestions(Request $request, int $id, SubscriptionGate $gate, JobMatchApplyService $service): array

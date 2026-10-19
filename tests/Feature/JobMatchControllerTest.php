@@ -360,7 +360,7 @@ class JobMatchControllerTest extends TestCase
         $provider->shouldReceive('jobMatchAdvice')->once()->with($snapshot, $match->job_description_input, $match->language)->andReturn($raw);
         $scorer = app(AtsScoringService::class);
         $guard = Mockery::mock();
-        $guard->shouldReceive('sanitize')->once()->with($raw, [...$scorer->extractJobTerms(JobMatch::snapshotText(CvDocument::fromArray($snapshot))), JobMatch::snapshotText(CvDocument::fromArray($snapshot))], [...$scorer->extractJobTerms($match->job_description_input), $match->job_description_input])->andReturn($raw);
+        $guard->shouldReceive('sanitize')->once()->with($raw, $snapshot, [...$scorer->extractJobTerms($match->job_description_input), $match->job_description_input])->andReturn($raw);
         $this->app->instance(JobMatchResultGuard::class, $guard);
         $job = new GenerateJobMatchAdviceJob($match->id);
         $job->handle($provider, $scorer);
