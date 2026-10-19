@@ -58,9 +58,9 @@ return [
     ],
 
     'cv_ai' => [
-        // Production is deepinfra (see .env.example). openai is the fallback;
-        // claude is bake-off / explicit opt-in only. The env() default stays
-        // openai so an unset CV_AI_PROVIDER (phpunit) does not hit DeepInfra.
+        // Default is claude (Haiku 5.5, see .env.example); deepinfra / openai remain
+        // selectable and openai is the fallback. The env() default stays openai so an
+        // unset CV_AI_PROVIDER (phpunit) never calls a paid provider.
         'provider' => env('CV_AI_PROVIDER', 'openai'),
         'queue' => env('CV_AI_QUEUE', 'default'),
         'response_cache_enabled' => filter_var(
