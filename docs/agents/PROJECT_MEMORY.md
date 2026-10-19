@@ -24,3 +24,6 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 - `APP_PUBLIC_URL` defaults to https://siratie.com and the signed PDF links use it; for emulator tests point it at the local server or use the authenticated `/api/generated-cvs/{id}/download` route. `CvExportGuard` refuses PDFs for CVs without phone/email, so seeded test CVs need a phone.
 - Job Match with a thin CV: every added skill/experience is `needs_user_fact`; the user must tick "I confirm this is true for me" (`confirmed_fact_keys`) before it can be applied.
 - Delegation: Muse cannot write outside its own workspace or run `flutter`, so it does not fit work in the nested `flutter_app` repo; Codex/agy handle Flutter. Never kill a coder before checking its worktree for uncommitted work.
+
+## Subscriptions (decision 2026-10-19)
+- Premium is Apple in-app purchase via RevenueCat. Apple verification is pending (about 2026-10-26), so the Flutter app deliberately has NO purchase SDK, restore flow or checkout yet. Do not build or fake one: the paywall only explains premium and re-reads server entitlement (`/auth/me`). The backend plans API and RevenueCat webhook already exist.
