@@ -29,6 +29,8 @@ class JobMatchResource extends JsonResource
             'ai_feedback' => $this->ai_feedback,
             'ai_error' => $this->ai_error,
             'applied_suggestion_ids' => $this->applied_suggestion_ids ?? [],
+            'confirmed_fact_keys' => $this->confirmed_fact_keys ?? [],
+            'suggestion_application_audit' => $this->suggestion_application_audit ?? [],
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

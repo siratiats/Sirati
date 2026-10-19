@@ -132,8 +132,10 @@ class JobMatchController extends Controller
         $input = $request->validate([
             'suggestion_keys' => ['required', 'array', 'min:1', 'max:50'],
             'suggestion_keys.*' => ['required', 'string', 'max:128', 'distinct'],
+            'confirmed_fact_keys' => ['sometimes', 'array', 'max:50'],
+            'confirmed_fact_keys.*' => ['required', 'string', 'max:128', 'distinct'],
         ]);
-        $cv = $service->apply($match, $input['suggestion_keys']);
+        $cv = $service->apply($match, $input['suggestion_keys'], $input['confirmed_fact_keys'] ?? []);
 
         return ['data' => [
             'generated_cv' => new GeneratedCvResource($cv),

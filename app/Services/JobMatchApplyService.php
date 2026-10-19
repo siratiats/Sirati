@@ -15,18 +15,19 @@ class JobMatchApplyService
 {
     public function __construct(private readonly AtsScoringService $scorer) {}
 
-    public function apply(JobMatch $match, array $keys): GeneratedCv
+    public function apply(JobMatch $match, array $keys, array $confirmedFactKeys = []): GeneratedCv
     {
-        return DB::transaction(function () use ($match, $keys): GeneratedCv {
+        return DB::transaction(function () use ($match, $keys, $confirmedFactKeys): GeneratedCv {
             $match = JobMatch::whereKey($match->id)->lockForUpdate()->firstOrFail();
             $source = GeneratedCv::where('user_id', $match->user_id)->whereKey($match->generated_cv_id)
                 ->lockForUpdate()->first();
             abort_unless($source !== null, 409, 'The source CV no longer exists.');
             abort_unless(hash_equals($match->cv_snapshot_hash, JobMatch::snapshotHash($source->cvDocument())), 409, 'The source CV has changed. Create a new Job Match.');
             abort_unless($match->ai_status === AiStatus::Completed, 409, 'Advice is not ready.');
-            $keys = array_values(array_unique($keys));
-            if ($keys === [] || count($keys) > 50) {
-                $this->invalid('Select between 1 and 50 suggestions.');
+            $this->validateKeys($keys, 'suggestion_keys', required: true);
+            $this->validateKeys($confirmedFactKeys, 'confirmed_fact_keys');
+            if (array_diff($confirmedFactKeys, $keys) !== []) {
+                $this->invalid('Confirmed facts must be selected suggestions.', 'confirmed_fact_keys');
             }
             $suggestions = [];
             foreach ($match->ai_feedback['suggestions'] ?? [] as $suggestion) {
@@ -37,6 +38,13 @@ class JobMatchApplyService
                 $suggestions[$key] = $suggestion;
             }
             $previous = $match->applied_suggestion_ids ?? [];
+            foreach ($confirmedFactKeys as $key) {
+                if (($suggestions[$key]['needs_user_fact'] ?? null) !== true) {
+                    $this->invalid('Only suggestions requiring a user fact can be confirmed.', 'confirmed_fact_keys');
+                }
+            }
+            // Saved attestations remain valid for incremental apply and request replay.
+            $confirmed = array_values(array_unique([...($match->confirmed_fact_keys ?? []), ...$confirmedFactKeys]));
             $all = array_values(array_unique([...$previous, ...$keys]));
             $baseline = CvDocument::fromArray($match->cv_snapshot)->toArray();
             $document = $baseline;
@@ -46,7 +54,8 @@ class JobMatchApplyService
                     $this->invalid('Unknown suggestion.');
                 }
                 $suggestion = $suggestions[$key];
-                if (($suggestion['needs_user_fact'] ?? true) !== false) {
+                $needsFact = $suggestion['needs_user_fact'] ?? null;
+                if (! is_bool($needsFact) || ($needsFact && ! in_array($key, $confirmed, true))) {
                     $this->invalid('This suggestion requires a user supplied fact.');
                 }
                 $kind = $suggestion['kind'] ?? null;
@@ -131,7 +140,15 @@ class JobMatchApplyService
             $match->update([
                 ...JobMatch::scoreAttributes($score),
                 'applied_suggestion_ids' => $all,
+                'confirmed_fact_keys' => $confirmed,
                 'applied_generated_cv_id' => $copy->id,
+                // Identifiers and attestations only; never persist CV text in the audit.
+                'suggestion_application_audit' => [...($match->suggestion_application_audit ?? []), [
+                    'applied_suggestion_ids' => $all,
+                    'confirmed_fact_keys' => $confirmed,
+                    'applied_generated_cv_id' => $copy->id,
+                    'applied_at' => now()->toISOString(),
+                ]],
             ]);
 
             return $copy;
@@ -151,8 +168,23 @@ class JobMatchApplyService
         $targets[$target] = true;
     }
 
-    private function invalid(string $message): never
+    private function validateKeys(array $keys, string $field, bool $required = false): void
     {
-        throw ValidationException::withMessages(['suggestion_keys' => $message]);
+        if (! array_is_list($keys) || ($required && $keys === []) || count($keys) > 50) {
+            $this->invalid('Use a list of at most 50 suggestion keys.', $field);
+        }
+        foreach ($keys as $key) {
+            if (! is_string($key) || trim($key) === '' || mb_strlen($key) > 128) {
+                $this->invalid('Invalid suggestion key.', $field);
+            }
+        }
+        if (count(array_unique($keys)) !== count($keys)) {
+            $this->invalid('Suggestion keys must be unique.', $field);
+        }
+    }
+
+    private function invalid(string $message, string $field = 'suggestion_keys'): never
+    {
+        throw ValidationException::withMessages([$field => $message]);
     }
 }
