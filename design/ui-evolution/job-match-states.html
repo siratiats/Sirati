@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>سيرتي - تحليل مطابقة الوظيفة</title>
+<!-- Fonts: IBM Plex Sans Arabic & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-bright": "#f3faff",
+            "error": "#ba1a1a",
+            "surface-variant": "#d4e5ee",
+            "surface-container": "#dff0fa",
+            "on-surface": "#0e1e24",
+            "error-container": "#ffdad6",
+            "on-secondary-fixed": "#001e2f",
+            "on-tertiary-container": "#ffcf9e",
+            "surface": "#f3faff",
+            "on-primary-fixed": "#00201c",
+            "surface-container-lowest": "#ffffff",
+            "primary-fixed-dim": "#84d5c8",
+            "secondary": "#40627b",
+            "inverse-primary": "#84d5c8",
+            "inverse-surface": "#23333a",
+            "on-secondary-container": "#43647d",
+            "on-error-container": "#93000a",
+            "tertiary-fixed": "#ffdcbb",
+            "on-tertiary-fixed": "#2b1700",
+            "secondary-container": "#bee1fe",
+            "primary": "#005048",
+            "on-surface-variant": "#3e4947",
+            "secondary-fixed": "#c9e6ff",
+            "surface-tint": "#016a60",
+            "inverse-on-surface": "#e2f3fd",
+            "tertiary": "#673c00",
+            "on-primary-fixed-variant": "#005048",
+            "surface-container-highest": "#d4e5ee",
+            "secondary-fixed-dim": "#a8cbe7",
+            "primary-container": "#006a60",
+            "on-tertiary-fixed-variant": "#673d00",
+            "on-primary-container": "#95e7da",
+            "surface-dim": "#ccdde6",
+            "outline-variant": "#bec9c6",
+            "background": "#FAF7F2",
+            "surface-container-low": "#e6f6ff",
+            "on-primary": "#ffffff",
+            "on-background": "#0e1e24",
+            "surface-container-high": "#daebf4",
+            "on-secondary": "#ffffff",
+            "on-error": "#ffffff",
+            "primary-fixed": "#9ff2e4",
+            "tertiary-fixed-dim": "#ffb869",
+            "tertiary-container": "#875100",
+            "outline": "#6e7977",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed-variant": "#274a62"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "space-xl": "2rem",
+            "margin-tablet": "1.5rem",
+            "margin-desktop": "2.5rem",
+            "gutter-desktop": "1.5rem",
+            "gutter": "1rem",
+            "margin": "1rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem"
+          },
+          fontFamily: {
+            "headline-md": ["IBM Plex Sans Arabic", "sans-serif"],
+            "body-md": ["IBM Plex Sans Arabic", "sans-serif"],
+            "headline-sm": ["IBM Plex Sans Arabic", "sans-serif"],
+            "headline-lg": ["IBM Plex Sans Arabic", "sans-serif"],
+            "headline-xl-mobile": ["IBM Plex Sans Arabic", "sans-serif"],
+            "label-lg": ["IBM Plex Sans Arabic", "sans-serif"],
+            "headline-xl": ["IBM Plex Sans Arabic", "sans-serif"],
+            "body-lg": ["IBM Plex Sans Arabic", "sans-serif"],
+            "label-sm": ["IBM Plex Sans Arabic", "sans-serif"],
+            "body-sm": ["IBM Plex Sans Arabic", "sans-serif"],
+            "label-md": ["IBM Plex Sans Arabic", "sans-serif"]
+          },
+          fontSize: {
+            "headline-md": ["20px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "body-md": ["15px", { "lineHeight": "26px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "headline-lg": ["24px", { "lineHeight": "36px", "fontWeight": "700" }],
+            "headline-xl-mobile": ["26px", { "lineHeight": "38px", "fontWeight": "700" }],
+            "label-lg": ["14px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "headline-xl": ["32px", { "lineHeight": "48px", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "28px", "fontWeight": "400" }],
+            "label-sm": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-sm": ["14px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "label-md": ["13px", { "lineHeight": "20px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background-color: #FAF7F2;
+      color: #0e1e24;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Custom shimmer animation */
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Radial Progress helper */
+    .progress-circle {
+      stroke-dasharray: 264;
+      stroke-dashoffset: calc(264 - (264 * 78) / 100);
+      transition: stroke-dashoffset 0.8s ease-in-out;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen text-on-surface antialiased flex justify-center selection:bg-primary-fixed selection:text-primary">
+<!-- Mobile View Container: 390px simulated native frame -->
+<div class="w-full max-w-[390px] min-h-screen bg-background flex flex-col relative pb-32">
+<!-- TopAppBar (Shared Component adherence) -->
+<header class="sticky top-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md shadow-sm border-b border-outline-variant/30">
+<div class="flex justify-between items-center w-full px-4 h-16 max-w-7xl mx-auto">
+<!-- Leading: Back Action / Profile Context -->
+<button aria-label="الرجوع" class="w-10 h-10 rounded-full flex items-center justify-center text-primary hover:bg-surface-container-high transition-colors active:scale-95" type="button">
+<span class="material-symbols-outlined text-[24px]">arrow_forward</span>
+</button>
+<!-- Headline Anchor -->
+<div class="flex flex-col items-center">
+<span class="text-headline-sm font-headline-sm text-primary tracking-tight">سيرتي</span>
+<span class="text-[11px] text-outline font-label-sm leading-none mt-0.5">مطابقة مهندس السحابة والـ DevOps</span>
+</div>
+<!-- Trailing: Contextual notifications icon from JSON -->
+<button aria-label="الإشعارات" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors active:scale-95" type="button">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+</button>
+</div>
+</header>
+<!-- Sub-Header: State Switcher Segmented Control (Interactive demonstration) -->
+<div class="px-4 pt-3 pb-2 bg-background sticky top-16 z-30">
+<div class="bg-[#ECE7DF] p-1 rounded-xl flex items-center justify-between text-center shadow-inner" role="tablist">
+<button aria-selected="true" class="flex-1 py-1.5 px-2 rounded-lg text-label-md font-label-md transition-all duration-200 bg-surface-container-lowest text-primary shadow-sm font-bold flex items-center justify-center gap-1" id="tab-ready" onclick="switchState('ready')" role="tab">
+<span class="w-2 h-2 rounded-full bg-[#0B7A53]"></span>
+<span>جاهزة (2)</span>
+</button>
+<button aria-selected="false" class="flex-1 py-1.5 px-2 rounded-lg text-label-md font-label-md transition-all duration-200 text-on-surface-variant hover:text-primary flex items-center justify-center gap-1" id="tab-processing" onclick="switchState('processing')" role="tab">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>معالجة</span>
+</button>
+<button aria-selected="false" class="flex-1 py-1.5 px-2 rounded-lg text-label-md font-label-md transition-all duration-200 text-on-surface-variant hover:text-primary flex items-center justify-center gap-1" id="tab-failed" onclick="switchState('failed')" role="tab">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span>تعذر</span>
+</button>
+</div>
+</div>
+<!-- Main Content Area -->
+<main class="px-4 space-y-4 pt-1">
+<!-- Job Anchor Card (Summary of Target Job) -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 border border-[#E2DDD5] shadow-[0_2px_8px_-2px_rgba(18,56,79,0.04)]">
+<div class="flex items-start justify-between">
+<div class="space-y-0.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#FDF5EB] text-[#8A5612] border border-[#E5C28F]">
+<span class="material-symbols-outlined text-[13px] text-[#C97F1B]" style="font-variation-settings: 'FILL' 1;">verified</span>
+              وظيفة موثوقة في الرياض
+            </span>
+<h1 class="text-headline-sm font-headline-sm text-[#12384F] pt-1">كبير مهندسي السحابة (Cloud/DevOps)</h1>
+<p class="text-body-sm font-body-sm text-outline">شركة تقنية مالية • دوام كامل</p>
+</div>
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">domain</span>
+</div>
+</div>
+</section>
+<!-- Common Metric Section: Score Ring & Keyword Verification (Always accessible across states) -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 border border-[#E2DDD5] shadow-[0_2px_8px_-2px_rgba(18,56,79,0.04)]">
+<div class="flex items-center justify-between pb-3 border-b border-[#E2DDD5]/70">
+<div>
+<h2 class="text-headline-sm font-headline-sm text-[#12384F]">نسبة تطابق سيرتك الذاتية</h2>
+<p class="text-label-sm font-label-sm text-outline">مقارنة مع 14 معياراً أساسياً بالوظيفة</p>
+</div>
+<!-- Circular Score Ring Graphic -->
+<div class="relative w-16 h-16 flex items-center justify-center flex-shrink-0">
+<svg class="w-16 h-16 -rotate-90 transform" viewbox="0 0 96 96">
+<circle cx="48" cy="48" fill="transparent" r="42" stroke="#E2DDD5" stroke-width="7"></circle>
+<circle class="progress-circle" cx="48" cy="48" fill="transparent" r="42" stroke="#006A60" stroke-linecap="round" stroke-width="7"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-[17px] font-bold text-[#12384F] leading-none">78%</span>
+<span class="text-[10px] text-[#006A60] font-semibold mt-0.5">جيد جداً</span>
+</div>
+</div>
+</div>
+<!-- Matched & Missing Keywords Chips -->
+<div class="pt-3 space-y-2.5">
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<span class="text-label-sm font-label-md text-[#12384F] flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-[#0B7A53]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                المهارات المتطابقة (3)
+              </span>
+<span class="text-[11px] text-outline font-label-sm">موجودة في سيرتك</span>
+</div>
+<div class="flex flex-wrap gap-1.5">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-[#E8F5EF] text-[#0B7A53] border border-[#C2E8D7]">
+<span class="material-symbols-outlined text-[14px]">done</span>
+                Docker
+              </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-[#E8F5EF] text-[#0B7A53] border border-[#C2E8D7]">
+<span class="material-symbols-outlined text-[14px]">done</span>
+                Terraform
+              </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-[#E8F5EF] text-[#0B7A53] border border-[#C2E8D7]">
+<span class="material-symbols-outlined text-[14px]">done</span>
+                CI/CD Pipelines
+              </span>
+</div>
+</div>
+<div>
+<div class="flex items-center justify-between mb-1.5">
+<span class="text-label-sm font-label-md text-[#12384F] flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-[#BA1A1A]">cancel</span>
+                المهارات الناقصة أو غير البارزة (2)
+              </span>
+<span class="text-[11px] text-[#BA1A1A] font-semibold">مطلوبة بشدة</span>
+</div>
+<div class="flex flex-wrap gap-1.5">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-[#FDF2F2] text-[#BA1A1A] border border-[#F5C2C2]">
+<span class="material-symbols-outlined text-[14px]">priority_high</span>
+                Kubernetes (K8s)
+              </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-[#FDF2F2] text-[#BA1A1A] border border-[#F5C2C2]">
+<span class="material-symbols-outlined text-[14px]">priority_high</span>
+                AWS Cloud Architecture
+              </span>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================== -->
+<!-- STATE 1: PROCESSING (قيد المعالجة)         -->
+<!-- ========================================== -->
+<section class="hidden space-y-3" id="state-processing-view">
+<div class="bg-surface-container-lowest rounded-2xl p-4 border border-[#E2DDD5] shadow-[0_2px_8px_-2px_rgba(18,56,79,0.04)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary animate-spin">
+<span class="material-symbols-outlined text-[22px]">progress_activity</span>
+</div>
+<div>
+<h3 class="text-label-lg font-label-lg text-[#12384F]">جاري تجهيز التعديلات المخصصة...</h3>
+<p class="text-body-sm font-body-sm text-outline">نقوم الآن بصياغة جمل تعزز قبول السيرة في أنظمة ATS</p>
+</div>
+</div>
+</div>
+<!-- Shimmer Skeleton Placeholder Card 1 -->
+<div class="bg-surface-container-lowest rounded-2xl p-4 border border-[#E2DDD5] space-y-3">
+<div class="flex justify-between items-center">
+<div class="h-4 w-28 bg-[#E2DDD5] rounded animate-pulse-subtle"></div>
+<div class="h-5 w-16 bg-[#E2DDD5] rounded-full animate-pulse-subtle"></div>
+</div>
+<div class="h-14 w-full bg-[#FAF7F2] rounded-xl border border-[#E2DDD5] p-2 space-y-2">
+<div class="h-3 w-3/4 bg-[#E2DDD5] rounded animate-pulse-subtle"></div>
+<div class="h-3 w-1/2 bg-[#E2DDD5] rounded animate-pulse-subtle"></div>
+</div>
+<div class="h-16 w-full bg-[#FAF7F2] rounded-xl border border-[#E2DDD5] p-2 space-y-2">
+<div class="h-3 w-4/5 bg-[#E2DDD5] rounded animate-pulse-subtle"></div>
+<div class="h-3 w-2/3 bg-[#E2DDD5] rounded animate-pulse-subtle"></div>
+</div>
+<div class="h-3 w-36 bg-[#E2DDD5] rounded animate-pulse-subtle"></div>
+</div>
+<!-- Shimmer Skeleton Placeholder Card 2 -->
+<div class="bg-surface-container-lowest rounded-2xl p-4 border border-[#E2DDD5] space-y-3">
+<div class="flex justify-between items-center">
+<div class="h-4 w-32 bg-[#E2DDD5] rounded animate-pulse-subtle"></div>
+<div class="h-5 w-14 bg-[#E2DDD5] rounded-full animate-pulse-subtle"></div>
+</div>
+<div class="h-16 w-full bg-[#FAF7F2] rounded-xl border border-[#E2DDD5] p-2 space-y-2">
+<div class="h-3 w-5/6 bg-[#E2DDD5] rounded animate-pulse-subtle"></div>
+<div class="h-3 w-2/3 bg-[#E2DDD5] rounded animate-pulse-subtle"></div>
+</div>
+</div>
+</section>
+<!-- ========================================== -->
+<!-- STATE 2: FAILED (تعذر التحليل الذكي)       -->
+<!-- ========================================== -->
+<section class="hidden space-y-3" id="state-failed-view">
+<div class="bg-surface-container-lowest rounded-2xl p-5 border border-[#E2DDD5] text-center shadow-[0_2px_8px_-2px_rgba(18,56,79,0.04)]">
+<div class="w-12 h-12 mx-auto mb-3 rounded-full bg-error-container/60 text-error flex items-center justify-center">
+<span class="material-symbols-outlined text-[28px]">cloud_off</span>
+</div>
+<h3 class="text-headline-sm font-headline-sm text-[#12384F] mb-1">الاقتراحات الذكية غير متوفرة حالياً</h3>
+<p class="text-body-sm font-body-sm text-outline max-w-[270px] mx-auto leading-relaxed mb-5">
+            تم تسجيل بيانات التطابق بنجاح، لكن خوادم الذكاء الاصطناعي تستغرق وقتاً أطول من المعتاد لصياغة التعديلات.
+          </p>
+<div class="space-y-2">
+<button class="w-full h-12 bg-primary hover:bg-[#005850] active:scale-[0.99] transition-all text-on-primary rounded-xl font-label-lg flex items-center justify-center gap-2 shadow-sm" onclick="switchState('processing')" type="button">
+<span class="material-symbols-outlined text-[20px]">refresh</span>
+<span>إعادة المحاولة الآن</span>
+</button>
+<button class="w-full h-10 text-primary text-label-md hover:bg-surface-container/50 rounded-xl transition-colors" onclick="switchState('ready')" type="button">
+              عرض نموذج مقترح سابقاً
+            </button>
+</div>
+</div>
+<div class="bg-[#FDF5EB] rounded-2xl p-3.5 border border-[#E5C28F] flex items-start gap-2.5">
+<span class="material-symbols-outlined text-[20px] text-[#C97F1B] mt-0.5" style="font-variation-settings: 'FILL' 1;">info</span>
+<p class="text-[13px] text-[#8A5612] leading-5">
+            يمكنك دائماً مراجعة المهارات الناقصة (Kubernetes و AWS Cloud) وإضافتها يدوياً في صفحة تحرير السيرة.
+          </p>
+</div>
+</section>
+<!-- ========================================== -->
+<!-- STATE 3: READY / ACTIVE PRIMARY VIEW       -->
+<!-- ========================================== -->
+<section class="space-y-4" id="state-ready-view">
+<div class="flex items-center justify-between px-1">
+<h2 class="text-headline-sm font-headline-sm text-[#12384F]">تعديلات موصى بها من الذكاء الاصطناعي</h2>
+<span class="text-label-sm font-label-md text-primary bg-primary-fixed/40 px-2 py-0.5 rounded-md">2 اقتراحات</span>
+</div>
+<!-- Suggestion Card 1: Experience Improvement -->
+<article class="bg-surface-container-lowest rounded-2xl p-4 border border-[#E2DDD5] shadow-[0_2px_8px_-2px_rgba(18,56,79,0.04)] space-y-3">
+<!-- Card Header -->
+<div class="flex items-center justify-between pb-2 border-b border-[#E2DDD5]/60">
+<div class="flex items-center gap-2">
+<span class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[16px]">work</span>
+</span>
+<div>
+<span class="text-label-md font-label-md text-[#12384F] block leading-tight">الخبرات المهنية</span>
+<span class="text-[11px] text-outline">مهندس نظم أول • شركة حلول</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-full text-label-sm font-bold bg-[#E8F5EF] text-[#0B7A53] border border-[#C2E8D7]">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+              +5 نقاط
+            </span>
+</div>
+<!-- Current Gap Block (Red tint) -->
+<div class="bg-[#FDF2F2] border-r-4 border-[#C73B36] rounded-xl p-3">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[12px] font-bold text-[#BA1A1A] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">remove_circle_outline</span>
+                الصياغة الحالية في سيرتك:
+              </span>
+<span class="text-[11px] text-[#BA1A1A] bg-white/70 px-1.5 py-0.5 rounded">نقص الكلمة المفتاحية</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface line-through opacity-75">
+              "إدارة وتحديث الخوادم والتطبيقات الداخلية وضمان استقرار بيئة العمل."
+            </p>
+</div>
+<!-- Suggested Optimization Block (Green tint) -->
+<div class="bg-[#EAF7F1] border-r-4 border-[#0B7A53] rounded-xl p-3">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[12px] font-bold text-[#0B7A53] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">add_circle</span>
+                الصياغة المقترحة (متوافقة مع ATS):
+              </span>
+<span class="text-[11px] text-[#0B7A53] bg-white/80 px-1.5 py-0.5 rounded font-semibold">+ Kubernetes</span>
+</div>
+<p class="text-body-sm font-body-sm text-[#0e1e24] leading-relaxed">
+              "إدارة ونشر بيئات الحاويات السحابية باستخدام <strong class="text-primary font-bold">Kubernetes (K8s)</strong> و Docker مع تقليل وقت التعطل بنسبة 35%."
+            </p>
+</div>
+<!-- Reason Line -->
+<div class="flex items-start gap-1.5 text-outline text-[12px] leading-5 pt-0.5">
+<span class="material-symbols-outlined text-[16px] text-primary mt-0.5">lightbulb</span>
+<span><strong class="text-[#12384F]">سبب التعديل:</strong> تكررت مهارة Kubernetes 5 مرات في متطلبات الوظيفة المعلنة كمتطلب حاسم للقبول.</span>
+</div>
+<!-- Factual Confirmation Checkbox (Requirement for unverified claim) -->
+<div class="mt-2 pt-2.5 border-t border-[#E2DDD5]/70">
+<label class="flex items-start gap-2.5 p-2 rounded-xl bg-[#FDF5EB] border border-[#E5C28F] cursor-pointer active:bg-[#f8eedc] transition-colors select-none">
+<input checked="" class="w-5 h-5 mt-0.5 rounded border-[#C97F1B] text-primary focus:ring-primary focus:ring-offset-0" type="checkbox"/>
+<div class="flex-1">
+<div class="flex items-center gap-1 text-[13px] font-bold text-[#8A5612]">
+<span class="material-symbols-outlined text-[16px] text-[#C97F1B]" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span>تأكيد المهارة الواقعية</span>
+</div>
+<p class="text-[12px] text-[#8A5612] leading-tight mt-0.5">
+                  أؤكد أنني قمت بالفعل بتشغيل وإدارة بيئات Kubernetes وتطبيقها يطابق خبرتي.
+                </p>
+</div>
+</label>
+</div>
+</article>
+<!-- Suggestion Card 2: Professional Summary Improvement -->
+<article class="bg-surface-container-lowest rounded-2xl p-4 border border-[#E2DDD5] shadow-[0_2px_8px_-2px_rgba(18,56,79,0.04)] space-y-3">
+<!-- Card Header -->
+<div class="flex items-center justify-between pb-2 border-b border-[#E2DDD5]/60">
+<div class="flex items-center gap-2">
+<span class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[16px]">badge</span>
+</span>
+<div>
+<span class="text-label-md font-label-md text-[#12384F] block leading-tight">ملخص السيرة الذاتية</span>
+<span class="text-[11px] text-outline">المقدمة المهنية</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-full text-label-sm font-bold bg-[#E8F5EF] text-[#0B7A53] border border-[#C2E8D7]">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+              +6 نقاط
+            </span>
+</div>
+<!-- Current Gap Block (Red tint) -->
+<div class="bg-[#FDF2F2] border-r-4 border-[#C73B36] rounded-xl p-3">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[12px] font-bold text-[#BA1A1A] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">remove_circle_outline</span>
+                الصياغة الحالية:
+              </span>
+<span class="text-[11px] text-[#BA1A1A] bg-white/70 px-1.5 py-0.5 rounded">غير محدد</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface line-through opacity-75">
+              "مهندس حاسب آلي ذو خبرة 5 سنوات في تقنية المعلومات وإدارة الشبكات السحابية."
+            </p>
+</div>
+<!-- Suggested Optimization Block (Green tint) -->
+<div class="bg-[#EAF7F1] border-r-4 border-[#0B7A53] rounded-xl p-3">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[12px] font-bold text-[#0B7A53] flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">add_circle</span>
+                الصياغة المقترحة:
+              </span>
+<span class="text-[11px] text-[#0B7A53] bg-white/80 px-1.5 py-0.5 rounded font-semibold">+ AWS Cloud</span>
+</div>
+<p class="text-body-sm font-body-sm text-[#0e1e24] leading-relaxed">
+              "مهندس <strong class="text-primary font-bold">AWS Cloud &amp; DevOps</strong> معتمد بخبرة 5 سنوات في أتمتة البنية التحتية وحلول التوسع العالي."
+            </p>
+</div>
+<!-- Reason Line -->
+<div class="flex items-start gap-1.5 text-outline text-[12px] leading-5 pt-0.5">
+<span class="material-symbols-outlined text-[16px] text-primary mt-0.5">lightbulb</span>
+<span><strong class="text-[#12384F]">سبب التعديل:</strong> الإعلان يبحث صراحة عن مهندس سحابة بيئات AWS في السطر الأول لفرز المرشحين.</span>
+</div>
+<!-- Factual Confirmation Checkbox -->
+<div class="mt-2 pt-2.5 border-t border-[#E2DDD5]/70">
+<label class="flex items-start gap-2.5 p-2 rounded-xl bg-[#FDF5EB] border border-[#E5C28F] cursor-pointer active:bg-[#f8eedc] transition-colors select-none">
+<input checked="" class="w-5 h-5 mt-0.5 rounded border-[#C97F1B] text-primary focus:ring-primary focus:ring-offset-0" type="checkbox"/>
+<div class="flex-1">
+<div class="flex items-center gap-1 text-[13px] font-bold text-[#8A5612]">
+<span class="material-symbols-outlined text-[16px] text-[#C97F1B]" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span>تأكيد الاعتماد أو الخبرة في AWS</span>
+</div>
+<p class="text-[12px] text-[#8A5612] leading-tight mt-0.5">
+                  أؤكد امتلاكي للمهارة العملية المذكورة في بيئة AWS السحابية.
+                </p>
+</div>
+</label>
+</div>
+</article>
+</section>
+</main>
+<!-- Sticky Bottom Action Bar (48dp height minimum, primary teal) -->
+<div class="fixed bottom-14 left-0 right-0 z-30 flex justify-center px-4 pointer-events-none">
+<div class="w-full max-w-[390px] pointer-events-auto">
+<div class="bg-surface-container-lowest/90 backdrop-blur-md p-3 rounded-2xl border border-[#E2DDD5] shadow-[0_8px_20px_-4px_rgba(18,56,79,0.15)] flex items-center justify-between gap-3">
+<div class="leading-tight">
+<span class="text-[11px] text-outline font-label-sm block">المطابقة بعد التعديل:</span>
+<div class="flex items-center gap-1">
+<span class="text-[17px] font-bold text-[#0B7A53]">89%</span>
+<span class="text-[12px] font-bold text-[#0B7A53]">(+11 نقطة)</span>
+</div>
+</div>
+<button class="h-12 px-5 bg-primary-container hover:bg-[#005850] active:scale-95 transition-all text-on-primary rounded-xl font-label-lg font-bold flex items-center justify-center gap-2 shadow-sm min-w-[200px]" id="apply-btn" type="button">
+<span class="material-symbols-outlined text-[20px]">auto_fix_high</span>
+<span>تطبيق تعديلين (+11 نقطة)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- BottomNavBar (Shared Component adherence) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-3 py-2 pb-safe bg-surface-container-lowest border-t border-outline-variant/30 shadow-[0_-4px_12px_rgba(18,56,79,0.04)]">
+<div class="w-full max-w-[390px] mx-auto flex justify-around items-center">
+<!-- Tab 1: الرئيسية -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors duration-150 py-1.5 px-3" href="#home">
+<span class="material-symbols-outlined text-[22px]">home</span>
+<span class="text-label-sm font-label-sm mt-0.5">الرئيسية</span>
+</a>
+<!-- Tab 2: سيرتي الذاتية (Active) -->
+<a class="flex flex-col items-center justify-center text-primary font-semibold py-1.5 px-3 rounded-xl bg-primary-fixed/30" href="#cv">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">description</span>
+<span class="text-label-sm font-label-sm mt-0.5">سيرتي الذاتية</span>
+</a>
+<!-- Tab 3: الوظائف -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors duration-150 py-1.5 px-3" href="#jobs">
+<span class="material-symbols-outlined text-[22px]">work</span>
+<span class="text-label-sm font-label-sm mt-0.5">الوظائف</span>
+</a>
+<!-- Tab 4: تعلّم -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-colors duration-150 py-1.5 px-3" href="#learn">
+<span class="material-symbols-outlined text-[22px]">school</span>
+<span class="text-label-sm font-label-sm mt-0.5">تعلّم</span>
+</a>
+</div>
+</nav>
+</div>
+<!-- Micro-interactions JavaScript for tab states -->
+<script>
+    function switchState(state) {
+      const views = {
+        ready: document.getElementById('state-ready-view'),
+        processing: document.getElementById('state-processing-view'),
+        failed: document.getElementById('state-failed-view')
+      };
+      
+      const tabs = {
+        ready: document.getElementById('tab-ready'),
+        processing: document.getElementById('tab-processing'),
+        failed: document.getElementById('tab-failed')
+      };
+
+      const applyBtnContainer = document.querySelector('.fixed.bottom-14');
+
+      // Update visible view
+      Object.keys(views).forEach(key => {
+        if (key === state) {
+          views[key].classList.remove('hidden');
+        } else {
+          views[key].classList.add('hidden');
+        }
+      });
+
+      // Update switcher tab styling
+      Object.keys(tabs).forEach(key => {
+        if (key === state) {
+          tabs[key].classList.add('bg-surface-container-lowest', 'text-primary', 'shadow-sm', 'font-bold');
+          tabs[key].classList.remove('text-on-surface-variant');
+          tabs[key].setAttribute('aria-selected', 'true');
+        } else {
+          tabs[key].classList.remove('bg-surface-container-lowest', 'text-primary', 'shadow-sm', 'font-bold');
+          tabs[key].classList.add('text-on-surface-variant');
+          tabs[key].setAttribute('aria-selected', 'false');
+        }
+      });
+
+      // Toggle action bar visibility
+      if (state === 'ready') {
+        applyBtnContainer.classList.remove('hidden');
+      } else {
+        applyBtnContainer.classList.add('hidden');
+      }
+    }
+
+    // Interactive button feedback
+    document.getElementById('apply-btn').addEventListener('click', function() {
+      const originalText = this.innerHTML;
+      this.innerHTML = `<span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span><span>جاري حفظ السيرة وتحديثها...</span>`;
+      setTimeout(() => {
+        this.innerHTML = `<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span><span>تم تطبيق التعديلات بنجاح!</span>`;
+        this.classList.remove('bg-primary-container');
+        this.classList.add('bg-[#0B7A53]');
+      }, 1200);
+    });
+  </script>
+</body></html>

@@ -1,0 +1,68 @@
+# Sirati UI/UX audit - Scope C
+
+Read-only audit completed; no files changed. Reviewed the requested screens, shared widgets, theme, PRODUCT.md, and brand specification. Findings below are code-confirmed; device rendering, screen-reader behavior, and 200% scaling were not runtime-tested.
+
+**Priority:** fix U-01-U-07 first. IDs rank user impact across the requested groups. Contrast uses WCAG sRGB luminance, including opacity compositing; **4.5:1 is the strict text threshold**.
+
+## 1. Color & contrast
+
+- **U-06 · high - Incorrect teal foreground tokens.** [Job card](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/job_news_card.dart:160) and [highlighted metadata](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/job_news_common.dart:19) use `primary` for text. `#007F73` on light tint `#DDF6F3` is **4.331:1**; on dark tint `#0E3B36`, **2.523:1**. The card's Details label on dark surface `#1A201D` is **3.377:1**. Use `primaryInk`: light `#006A60`, dark `#2FC4B2`; tinted pairs become **5.742:1 / 5.690:1**. Apply the same correction to [secondary/text AppButton foregrounds](/D:/Sirati/flutter_app/lib/shared/widgets/components/app_button.dart:165).
+- **U-07 · high - Amber status text fails contrast.** [Tamheer badge](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/job_news_card.dart:100) uses `#C97F1B` on `#FDE9C7`: **2.702:1**. The [password meter's Medium label](/D:/Sirati/flutter_app/lib/shared/widgets/password_strength_meter.dart:46) uses that amber on `#FAF7F2`: **3.007:1**. Use light `onWarningContainer` `#8A5612`, yielding **5.162:1 / 5.745:1**; retain dark `#E0A03A`. This makes training badges and password feedback readable.
+- **U-08 · med - Featured-card colors cross theme boundaries.** [Match badge](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/featured_job_card.dart:129) and [Apply label](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/featured_job_card.dart:231) use dark-theme `primaryDark` `#1A9E8F` on white: **3.317:1**. Give these permanently white surfaces a dedicated `#006A60` ink in both themes: **6.501:1**. For tinted New/verified/skill badges, use `primaryInk` rather than `primaryDark`; the latter on dark teal tint is **3.730:1**.
+- **U-09 · med - Future AI steps are almost unreadable.** [Step rows](/D:/Sirati/flutter_app/lib/shared/widgets/loading/ai_progress_overlay.dart:541) combine text alpha `.6` with row opacity `.55`, leaving effective alpha `.33`. Contrast is approximately **1.641:1 light / 1.619:1 dark**. Use opaque `textSecondary` (`#3C4947` / `#AEB8B4`) and row opacity `1`; distinguish pending steps with `Icons.circle_outlined`, not faded text.
+- **U-10 · med - Featured verification badge misses the threshold.** [Badge background](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/featured_job_card.dart:73) composites 20% white over light `brandSurface` `#006A60`; white text reaches only **4.232:1** at that gradient endpoint. Use opaque `brandSurfaceDeep` with white text instead, preserving the existing teal identity.
+
+## 2. Typography
+
+- **U-16 · med - Jobs bypass the readable type scale.** [Job-card labels](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/job_news_card.dart:158) fall to **10.5-11.5sp**, while [filter labels](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/job_news_filters_bar.dart:250) reach **11.5sp**. Use **13sp/600** for badges, skills, dates and filter labels; **14sp/400** for supporting prose. Resolve line heights through the typography tokens, preserving Arabic's taller metrics.
+- **U-17 · med - Submit labels cannot reflow.** [SubmitButton](/D:/Sirati/flutter_app/lib/shared/widgets/submit_button.dart:54) forces `maxLines: 1` with ellipsis, affecting profile, password, deletion and welcome actions. Allow wrapping without a line cap, retain **54dp minimum height**, and use **16dp horizontal / 12dp vertical padding**. Long translated labels can then remain complete at 200% scaling.
+
+## 3. Icons & logo/branding
+
+- **U-12 · med - Bookmark suggests an unavailable action.** [Job-card bookmark](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/job_news_card.dart:184) is a plain icon inside a card that opens details. Remove `Icons.bookmark_border_rounded` until saving is implemented; it currently invites a save interaction that cannot happen.
+- **U-19 · low - Splash wordmarks diverge from the specified identity.** [Welcome wordmark](/D:/Sirati/flutter_app/lib/features/dashboard/presentation/splash/welcome_body.dart:64) and [boot wordmark](/D:/Sirati/flutter_app/lib/features/dashboard/presentation/splash/splash_boot_body.dart:135) inherit IBM Plex rather than the specified wordmark families. Bundle **Manrope 800**, lowercase `sirati`, and **Tajawal 700**, `?????`, at **28sp** for the welcome lockup. Keep IBM Plex for interface text and preserve the ascent mark's orientation.
+
+## 4. Layout, spacing, hierarchy & CTAs
+
+- **U-04 · high - Important information sits in non-wrapping Rows.** The [job compatibility heading and score](/D:/Sirati/flutter_app/lib/features/jobs/presentation/job_news_detail_screen.dart:168), [job-card badge row](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/job_news_card.dart:55), and [history language/date row](/D:/Sirati/flutter_app/lib/features/dashboard/presentation/history/history_cards.dart:262) contain unconstrained text/chips. These structures cannot reflow when content exceeds the available width. Use `Wrap(spacing: 8, runSpacing: 8)` for badges/metadata; put compatibility heading and score on separate lines at narrow widths or enlarged text.
+- **U-05 · high - Explicit targets fall below 48dp.** The [bell/avatar](/D:/Sirati/flutter_app/lib/shared/widgets/screen_header.dart:180) are **42dp/46dp**; [language toggle](/D:/Sirati/flutter_app/lib/shared/widgets/language_toggle.dart:26) is **42dp**; [theme options](/D:/Sirati/flutter_app/lib/features/settings/presentation/settings/settings_widgets.dart:143) have a **44dp** minimum. [Jobs chips](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/job_news_filters_bar.dart:69) explicitly use compact density and `shrinkWrap`. Give controls **48x48dp minimum hit areas**, restore padded chip targets and standard density, and keep **8dp** between neighboring controls.
+
+## 5. UX flow & copy
+
+- **U-11 · med - Education promises a notification it cannot deliver.** [CTA text](/D:/Sirati/flutter_app/lib/features/dashboard/presentation/education_screen.dart:281) says "Notify Me on Launch / ?????? ??? ???????", while the [handler](/D:/Sirati/flutter_app/lib/features/dashboard/presentation/education_screen.dart:23) explicitly documents no notification pipeline. Change it to **"Register interest / ???? ???????"**, retaining the existing confirmation that users should revisit the tab. This sets an honest expectation.
+
+## 6. Loading, empty, error & offline states
+
+- **U-13 · med - A populated jobs screen can announce no jobs.** [The list](/D:/Sirati/flutter_app/lib/features/jobs/presentation/job_news_screen.dart:256) shows the empty message whenever `latest.isEmpty`; [the feed](/D:/Sirati/flutter_app/lib/features/jobs/domain/job_news_feed.dart:59) intentionally excludes the featured job from `latest`. With one result, the screen shows a job and "No job news is published yet." Show the global empty state only when `feed.items.isEmpty`; hide Latest when only the featured result exists. For filtered emptiness, use **"No matching jobs / ?? ???? ????? ??????"** and a **48dp** Clear filters action.
+- **U-14 · med - Refresh errors disappear behind retained data.** [AsyncValue conversion](/D:/Sirati/flutter_app/lib/shared/widgets/loading/async_value_snapshot.dart:9) returns data first and discards any accompanying error. Jobs, notifications and history therefore cannot explain that a refresh failed while showing previous results. Preserve the error separately and show an inline **"Couldn't refresh; showing previous results / ???? ???????? ???? ??????? ???????"** notice with `Icons.refresh_rounded` and a **48dp** retry action.
+- **U-15 · med - Job-title loading failure looks like an empty catalogue.** [Profile](/D:/Sirati/flutter_app/lib/features/settings/presentation/profile_screen.dart:168) substitutes an empty list for a failed titles request and [passes only loading state](/D:/Sirati/flutter_app/lib/features/settings/presentation/profile_screen.dart:220) to the picker. Handle `titlesAsync.hasError` explicitly: retain the current selection and show **"Couldn't load job titles / ???? ????? ???????? ????????"**, **13sp/600**, plus a **48dp** Retry button.
+- **U-20 · med - Empty notifications cannot be pulled to refresh.** [The empty branch](/D:/Sirati/flutter_app/lib/features/settings/presentation/notifications_screen.dart:115) sits outside the `RefreshIndicator` used by populated results. Wrap both empty and populated scrollables in the same refresh control, retaining `AlwaysScrollableScrollPhysics`, so users can refresh an empty inbox.
+
+## 7. Accessibility & RTL
+
+- **U-01 · high - Shared controls remove their activation semantics.** [AppListTile](/D:/Sirati/flutter_app/lib/shared/widgets/app_list_tile.dart:117) excludes descendant semantics but supplies no semantic `onTap`; [AppButton](/D:/Sirati/flutter_app/lib/shared/widgets/components/app_button.dart:153) does likewise. Add `Semantics.onTap` using the enabled callback, or retain native control semantics. For the [notification preference row](/D:/Sirati/flutter_app/lib/features/settings/presentation/settings_screen.dart:241), use `SwitchListTile` so its label, toggle state and action survive together. Production impact includes settings navigation and [CV section Add buttons](/D:/Sirati/flutter_app/lib/features/cv_builder/presentation/section_editor_framework.dart:157).
+- **U-02 · high - AppInput replaces native editing semantics with a label.** [The wrapper](/D:/Sirati/flutter_app/lib/shared/widgets/components/app_input.dart:53) sets `excludeSemantics: true` around `TextField`, removing its value, selection and editing actions without replacements. Remove that exclusion and let the native field expose its semantics through `InputDecoration.labelText`. This affects production [personal-details inputs](/D:/Sirati/flutter_app/lib/features/cv_builder/presentation/personal_details_editor.dart:291), not only the gallery.
+- **U-03 · high - Password fields lack attached names and validation state.** [Change-password inputs](/D:/Sirati/flutter_app/lib/features/settings/presentation/change_password_screen.dart:128) use separate visual labels and identical bullet hints; [shared fields](/D:/Sirati/flutter_app/lib/shared/widgets/form_fields.dart:665) clear native `errorText` and render errors separately. Pass localized `labelText` for each field, expose its current validation message, and mark newly displayed error feedback `liveRegion: true`. On failed submission, focus and scroll to the first invalid field.
+- **U-18 · med - Onboarding dots are tiny, unnamed interactive controls.** [Dots](/D:/Sirati/flutter_app/lib/features/settings/presentation/onboarding_screen.dart:489) produce **24x28dp inactive** and **38x28dp active** targets without page labels or selected semantics. Center each dot in **48x48dp** and add localized **"Page 1 of 3 / ?????? 1 ?? 3"**, `button: true`, and `selected: active`. Preserve ambient RTL ordering.
+
+## Keep these existing strengths
+
+- [DirectionalIcon](/D:/Sirati/flutter_app/lib/shared/widgets/directional_icon.dart:48) avoids double mirroring. The notification chevron also already mirrors through Flutter's `matchTextDirection`.
+- [Arabic typography tokens](/D:/Sirati/flutter_app/lib/shared/theme/app_typography.dart:71) allocate more vertical space than Latin; preserve that distinction.
+- [Latin-digit formatting](/D:/Sirati/flutter_app/lib/core/utils/app_format.dart:7) is an explicit product policy. Preserve it across Arabic counters, scores and dates.
+- [Password visibility controls](/D:/Sirati/flutter_app/lib/shared/widgets/password_visibility_toggle.dart:19) have localized Show/Hide labels.
+- [Typed error states](/D:/Sirati/flutter_app/lib/shared/widgets/empty_state.dart:165), actionable history empty states, offline-cache notices and reduced-motion alternatives should remain.
+
+**Verification:** inspected source and production consumers; calculated contrast in memory. No Flutter build, analyzer, widget tests or files were generated. Acceptance should pump real production screens in Arabic/English, light/dark, at 100%/200% text scale, asserting semantic actions, 48dp targets, layout reflow and strict text contrast ≥4.5.
+
+## SCREENS TO REDESIGN IN STITCH:
+
+- **Jobs feed:** simplify the three filter tiers, make status badges wrap, and distinguish filtered emptiness from unpublished content.
+- **Job details:** stack compatibility information responsively and make application versus CV-tailoring actions clear.
+- **Education:** shorten the coming-soon layout around an honest Register interest action.
+- **History:** reflow dates, language and scores for enlarged text while preserving scannable record titles.
+
+LEARNINGS: `primary` and `primaryDark` are unsafe text choices in several contexts; `primaryInk` is the intended adaptive foreground.
+LEARNINGS: `AppButton` and `AppInput` serve production CV editors, despite also appearing in the component gallery.
+LEARNINGS: `JobNewsFeed.latest` excludes the featured item, so one available job legitimately produces an empty latest list.
+LEARNINGS: Arabic UI intentionally uses Latin digits; some older formatting comments contradict that policy.
