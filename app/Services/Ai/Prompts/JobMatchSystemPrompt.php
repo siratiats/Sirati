@@ -2,9 +2,11 @@
 
 namespace App\Services\Ai\Prompts;
 
+use App\Services\Ai\Schemas\JobMatchAdviceSchema;
+
 final class JobMatchSystemPrompt
 {
-    public const VERSION = '4';
+    public const VERSION = '5';
 
     public const CV_TAG = 'cv_snapshot';
 
@@ -227,6 +229,7 @@ final class JobMatchSystemPrompt
     {
         return implode("\n", [
             '## Output Schema & Language',
+            '- Be concise: return at most '.JobMatchAdviceSchema::MAX_SUGGESTIONS.' suggestions, highest impact first; at most '.JobMatchAdviceSchema::MAX_STRENGTHS.' strengths and '.JobMatchAdviceSchema::MAX_GAPS.' gaps; each rationale must be at most '.JobMatchAdviceSchema::MAX_RATIONALE_CHARS.' characters. Prefer fewer high-value suggestions over filler.',
             '- '.$languageDirective,
             '- Output a single JSON object with additionalProperties: false and exact top-level keys:',
             '  - executive_summary: string',

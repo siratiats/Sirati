@@ -8,15 +8,19 @@ use App\Cv\LocalizedText;
 use App\Cv\PersonalDetails;
 use App\Enums\AiStatus;
 use App\Jobs\GenerateJobMatchAdviceJob;
+use App\Models\AiCallLog;
 use App\Models\GeneratedCv;
 use App\Models\JobMatch;
 use App\Models\User;
+use App\Services\Ai\CachedCvAiProvider;
 use App\Services\Ai\JobMatchResultGuard;
 use App\Services\AtsScoringService;
 use App\Services\Subscriptions\SubscriptionGate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 use Mockery;
@@ -162,6 +166,81 @@ class JobMatchControllerTest extends TestCase
         $this->postJson('/api/job-matches', $input, $headers)->assertStatus(409);
         $this->assertDatabaseCount('job_matches', 1);
         Queue::assertPushed(GenerateJobMatchAdviceJob::class, 1);
+    }
+
+    public function test_identical_matches_share_one_claude_call_while_quotas_and_records_remain_per_user(): void
+    {
+        config([
+            'monetization.job_match.daily_limit' => 1,
+            'services.cv_ai.provider' => 'claude',
+            'services.cv_ai.response_cache_enabled' => true,
+            'services.anthropic.api_key' => 'test-key',
+            'services.anthropic.model' => 'claude-haiku-5-5',
+            'services.anthropic.base_url' => 'https://api.anthropic.com/v1',
+            'cache.default' => 'array',
+        ]);
+        Cache::flush();
+        $this->app->forgetInstance(CvAiProvider::class);
+        $provider = app(CvAiProvider::class);
+        $this->assertInstanceOf(CachedCvAiProvider::class, $provider);
+        $feedback = [
+            'executive_summary' => 'Experienced in systems and documentation.',
+            'strengths' => ['Experienced in systems'],
+            'gaps' => [],
+            'suggestions' => [[
+                'key' => fake()->uuid(), 'kind' => 'replace',
+                'target' => ['section' => 'summary', 'entry_id' => null, 'field' => 'text', 'bullet_index' => null],
+                'before' => 'Experienced in systems and documentation.',
+                'after' => 'Experienced in documentation and systems.',
+                'rationale' => 'Highlight documentation', 'jd_terms' => ['documentation'], 'needs_user_fact' => false,
+            ]],
+        ];
+        Http::preventStrayRequests();
+        Http::fake(['https://api.anthropic.com/v1/messages' => Http::response([
+            'stop_reason' => 'end_turn',
+            'content' => [['type' => 'text', 'text' => json_encode($feedback)]],
+            'usage' => ['input_tokens' => 300, 'output_tokens' => 200],
+        ])]);
+        $users = [$this->premiumUser(), $this->premiumUser()];
+        $cvs = array_map(fn ($user) => $this->savedCv($user), $users);
+        $matches = [];
+        $jd = 'systems documentation '.fake()->word();
+        foreach ($users as $index => $user) {
+            Sanctum::actingAs($user);
+            $payload = ['generated_cv_id' => $cvs[$index]->id, 'job_description_input' => $jd, 'language' => 'en'];
+            $headers = ['Idempotency-Key' => fake()->uuid()];
+            $id = $this->postJson('/api/job-matches', $payload, $headers)->assertCreated()->json('data.id');
+            $matches[] = $id;
+            Queue::assertPushed(GenerateJobMatchAdviceJob::class, fn ($job) => $job->jobMatchId === $id);
+            (new GenerateJobMatchAdviceJob($id))->handle($provider, app(AtsScoringService::class));
+            $this->getJson('/api/job-matches/'.$id)->assertOk()
+                ->assertJsonPath('data.ai_status', 'completed')
+                ->assertJsonPath('data.ai_feedback', $feedback);
+            $this->postJson('/api/job-matches', $payload, $headers)->assertOk()->assertJsonPath('data.id', $id);
+            $this->postJson('/api/job-matches', $payload, ['Idempotency-Key' => fake()->uuid()])->assertStatus(429);
+            $this->assertSame(1, app(SubscriptionGate::class)->jobMatchesUsedToday($user));
+            $this->assertSame($user->id, JobMatch::findOrFail($id)->user_id);
+        }
+        $this->assertSame(JobMatch::findOrFail($matches[0])->cv_snapshot, JobMatch::findOrFail($matches[1])->cv_snapshot);
+        foreach ($users as $index => $user) {
+            Sanctum::actingAs($user);
+            $foreignId = $matches[1 - $index];
+            $this->getJson('/api/job-matches/'.$foreignId)->assertNotFound();
+            $this->postJson('/api/job-matches/'.$foreignId.'/retry-advice')->assertNotFound();
+            $this->postJson('/api/job-matches/'.$foreignId.'/apply-suggestions', ['suggestion_keys' => [$feedback['suggestions'][0]['key']]])->assertNotFound();
+            $this->postJson('/api/job-matches', ['generated_cv_id' => $cvs[1 - $index]->id, 'job_description_input' => $jd])->assertNotFound();
+        }
+        Http::assertSentCount(1);
+        Queue::assertPushed(GenerateJobMatchAdviceJob::class, 2);
+        $this->assertDatabaseCount('job_matches', 2);
+        $logs = AiCallLog::query()->where('operation', 'job_match_advice')->orderBy('id')->get();
+        $this->assertCount(2, $logs);
+        $this->assertSame($users[0]->id, $logs[0]->user_id);
+        $this->assertFalse($logs[0]->was_response_cache_hit);
+        $this->assertSame($users[1]->id, $logs[1]->user_id);
+        $this->assertTrue($logs[1]->was_response_cache_hit);
+        $this->assertSame(0, $logs[1]->input_tokens);
+        $this->assertSame(0, $logs[1]->output_tokens);
     }
 
     public function test_daily_quota_is_per_user_and_resets_at_day_boundary(): void

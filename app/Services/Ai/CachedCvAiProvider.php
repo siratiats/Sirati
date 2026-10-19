@@ -27,7 +27,7 @@ class CachedCvAiProvider implements CvAiProvider
      * Bump by hand whenever prompt text or schema changes so stale cache
      * entries are not reused after a prompt edit.
      */
-    public const PROMPT_VERSION = '11';
+    public const PROMPT_VERSION = '12';
 
     /** Normalized provider name ('openai' | 'anthropic') the wrapped driver talks to. */
     private readonly string $provider;

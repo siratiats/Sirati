@@ -51,7 +51,7 @@ final class OperationSchemas
             EnhanceJobDescriptionSchema::NAME => EnhanceJobDescriptionSchema::schema(),
             EnhanceCvFieldSchema::NAME => EnhanceCvFieldSchema::schema(),
             ClassifyDocumentSchema::NAME => ClassifyDocumentSchema::schema(),
-            JobMatchAdviceSchema::NAME, 'job_match' => JobMatchAdviceSchema::schema(),
+            JobMatchAdviceSchema::NAME, 'job_match' => JobMatchAdviceSchema::anthropicSchema(),
             default => throw new InvalidArgumentException("Unknown AI operation schema: {$operation}"),
         };
 

@@ -6,12 +6,18 @@ use App\Contracts\CvAiProvider;
 use App\Exceptions\AiRefusalException;
 use App\Exceptions\AiTruncationException;
 use App\Models\AiCallLog;
+use App\Services\Ai\AiCallContext;
 use App\Services\Ai\BakeOff\ArabicCvCorpus;
+use App\Services\Ai\Prompts\JobMatchSystemPrompt;
+use App\Services\Ai\Schemas\JobMatchAdviceSchema;
 use App\Services\Ai\Schemas\OperationSchemas;
+use App\Services\AtsScoringService;
 use App\Services\ClaudeCvService;
 use App\Services\OpenAiCvService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ClaudeCvServiceTest extends TestCase
@@ -37,6 +43,100 @@ class ClaudeCvServiceTest extends TestCase
         $provider = app(CvAiProvider::class);
 
         $this->assertInstanceOf(ClaudeCvService::class, $provider);
+    }
+
+    public function test_job_match_caches_only_the_static_system_block_and_preserves_model_rules(): void
+    {
+        config(['services.anthropic.model' => 'claude-haiku-5-5']);
+        Http::preventStrayRequests();
+        Http::fake(['https://api.anthropic.com/v1/messages' => Http::response([
+            'stop_reason' => 'end_turn',
+            'content' => [['type' => 'text', 'text' => json_encode([
+                'executive_summary' => '', 'strengths' => [], 'gaps' => [], 'suggestions' => [],
+            ])]],
+        ])]);
+
+        foreach (['ar', 'en'] as $language) {
+            foreach (range(1, 2) as $iteration) {
+                $snapshot = ['summary' => [$language => fake()->sentence()]];
+                $jd = fake()->paragraph();
+                app(ClaudeCvService::class)->jobMatchAdvice($snapshot, $jd, $language);
+                Http::assertSent(function ($request) use ($snapshot, $jd, $language) {
+                    $data = $request->data();
+                    if (($data['messages'][0]['content'] ?? null) !== JobMatchSystemPrompt::buildUserPrompt($snapshot, $jd, $language)) {
+                        return false;
+                    }
+                    $this->assertSame('claude-haiku-5-5', $data['model']);
+                    $this->assertArrayNotHasKey('temperature', $data);
+                    $this->assertArrayNotHasKey('cache_control', $data);
+                    $this->assertSame([[
+                        'type' => 'text',
+                        'text' => JobMatchSystemPrompt::for($language),
+                        'cache_control' => ['type' => 'ephemeral'],
+                    ]], $data['system']);
+                    $this->assertSame([[
+                        'role' => 'user',
+                        'content' => JobMatchSystemPrompt::buildUserPrompt($snapshot, $jd, $language),
+                    ]], $data['messages']);
+                    $this->assertSame(OperationSchemas::maxTokens(JobMatchAdviceSchema::NAME), $data['max_tokens']);
+                    $this->assertSame(OperationSchemas::anthropicOutputConfig(JobMatchAdviceSchema::NAME), $data['output_config']);
+
+                    return true;
+                });
+            }
+        }
+        Http::assertSentCount(4);
+    }
+
+    public static function jobMatchUsageCases(): array
+    {
+        return [
+            'cache write' => ['cache_creation_input_tokens'],
+            'cache read' => ['cache_read_input_tokens'],
+            'uncached' => [null],
+        ];
+    }
+
+    #[DataProvider('jobMatchUsageCases')]
+    public function test_job_match_usage_logs_allowlisted_counts_for_cache_writes_reads_and_uncached_responses(?string $cacheField): void
+    {
+        Log::spy();
+        $usage = ['input_tokens' => random_int(20, 500), 'output_tokens' => random_int(1, 300)];
+        if ($cacheField !== null) {
+            $usage[$cacheField] = random_int(1024, 4000);
+        }
+        Http::fake(['https://api.anthropic.com/v1/messages' => Http::response([
+            'stop_reason' => 'end_turn',
+            'content' => [['type' => 'text', 'text' => '{"executive_summary":"","strengths":[],"gaps":[],"suggestions":[]}']],
+            'usage' => [...$usage, 'untrusted_field' => fake()->email()],
+        ])]);
+        app(ClaudeCvService::class)->jobMatchAdvice(['summary' => ['en' => fake()->sentence()]], fake()->paragraph(), 'en');
+
+        Log::shouldHaveReceived('info')->with('Claude Job Match usage', \Mockery::on(function ($context) use ($usage) {
+            if ($context['input_tokens'] !== $usage['input_tokens'] || $context['output_tokens'] !== $usage['output_tokens']) {
+                return false;
+            }
+            $duration = $context['duration_ms'];
+            $this->assertIsInt($duration);
+            $this->assertGreaterThanOrEqual(0, $duration);
+            $this->assertSame([
+                'provider' => 'anthropic',
+                'model' => config('services.anthropic.model'),
+                'operation' => JobMatchAdviceSchema::NAME,
+                'duration_ms' => $duration,
+                'input_tokens' => $usage['input_tokens'],
+                'output_tokens' => $usage['output_tokens'],
+                'cache_creation_input_tokens' => $usage['cache_creation_input_tokens'] ?? 0,
+                'cache_read_input_tokens' => $usage['cache_read_input_tokens'] ?? 0,
+            ], $context);
+
+            return true;
+        }))->once();
+        $log = AiCallLog::query()->latest('id')->firstOrFail();
+        $this->assertSame($usage['input_tokens'], $log->input_tokens);
+        $this->assertSame($usage['output_tokens'], $log->output_tokens);
+        $this->assertSame($usage['cache_read_input_tokens'] ?? 0, $log->cached_tokens);
+        $this->assertSame(['anthropic', config('services.anthropic.model')], AiCallContext::pull());
     }
 
     public function test_provider_switch_defaults_to_openai(): void
@@ -155,7 +255,7 @@ class ClaudeCvServiceTest extends TestCase
 
         $this->assertCount(30, $all);
 
-        $valid = array_keys(\App\Services\AtsScoringService::jobKeywords());
+        $valid = array_keys(AtsScoringService::jobKeywords());
         $categories = collect($all)->pluck('category')->unique()->values();
 
         $this->assertGreaterThanOrEqual(6, $categories->count());

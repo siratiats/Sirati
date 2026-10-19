@@ -50,12 +50,67 @@ class JobMatchAiGuardTest extends TestCase
 
         $anthropicConfig = OperationSchemas::anthropicOutputConfig(JobMatchAdviceSchema::NAME);
         $this->assertSame('json_schema', $anthropicConfig['format']['type']);
-        $this->assertSame(JobMatchAdviceSchema::schema(), $anthropicConfig['format']['schema']);
+        $this->assertSame(JobMatchAdviceSchema::anthropicSchema(), $anthropicConfig['format']['schema']);
         $this->assertSame(JobMatchAdviceSchema::MAX_TOKENS, OperationSchemas::maxTokens(JobMatchAdviceSchema::NAME));
         foreach ([$openAiFormat['json_schema']['schema'], $anthropicConfig['format']['schema']] as $schema) {
             $suggestion = $schema['properties']['suggestions']['items'];
             $this->assertContains('kind', $suggestion['required']);
             $this->assertSame(['replace', 'append_skill', 'append_bullet'], $suggestion['properties']['kind']['enum']);
+        }
+    }
+
+    public function test_output_caps_are_shared_by_schema_prompt_and_runtime_guard(): void
+    {
+        $schema = JobMatchAdviceSchema::schema();
+        $anthropic = OperationSchemas::anthropicOutputConfig(JobMatchAdviceSchema::NAME)['format']['schema'];
+        foreach (['strengths' => 6, 'gaps' => 6, 'suggestions' => 8] as $field => $cap) {
+            $this->assertSame($cap, $schema['properties'][$field]['maxItems']);
+            $this->assertArrayNotHasKey('maxItems', $anthropic['properties'][$field]);
+            $this->assertStringContainsString((string) $cap, $anthropic['properties'][$field]['description']);
+        }
+        $this->assertSame(240, $schema['properties']['suggestions']['items']['properties']['rationale']['maxLength']);
+        $this->assertArrayNotHasKey('maxLength', $anthropic['properties']['suggestions']['items']['properties']['rationale']);
+        $this->assertStringContainsString('240', $anthropic['properties']['suggestions']['items']['properties']['rationale']['description']);
+        $this->assertSame(3072, OperationSchemas::maxTokens(JobMatchAdviceSchema::NAME));
+        foreach (['ar', 'en'] as $language) {
+            $prompt = JobMatchSystemPrompt::for($language);
+            $this->assertStringContainsString('at most 8 suggestions', $prompt);
+            $this->assertStringContainsString('at most 6 strengths and 6 gaps', $prompt);
+            $this->assertStringContainsString('at most 240 characters', $prompt);
+        }
+
+        foreach ([0, 1, 5, 6, 7, 8, 9, random_int(10, 20)] as $count) {
+            $terms = [];
+            $suggestions = [null, ['after' => '']];
+            for ($index = 0; $index < $count; $index++) {
+                $term = 'skill'.strtr(bin2hex(random_bytes(6)), '0123456789', 'ghijklmnop');
+                $terms[] = $term;
+                $rationaleLength = [0, 239, 240, 241, 480][$index % 5];
+                $rationale = mb_substr(str_repeat('توضيح🙂', 100), 0, $rationaleLength);
+                $suggestion = [
+                    'key' => fake()->uuid(), 'kind' => 'append_skill',
+                    'target' => ['section' => 'skills', 'entry_id' => null, 'field' => 'append', 'bullet_index' => null],
+                    'before' => '', 'after' => $term, 'rationale' => $rationale,
+                    'jd_terms' => [$term], 'needs_user_fact' => false,
+                ];
+                // Invalid and duplicate items must not use up a valid result slot.
+                array_push($suggestions, $suggestion, $suggestion);
+            }
+            $raw = [
+                'executive_summary' => '',
+                'strengths' => [null, '', ...$terms, ...$terms],
+                'gaps' => [false, '', ...$terms, ...$terms],
+                'suggestions' => $suggestions,
+            ];
+            $result = JobMatchResultGuard::sanitize($raw, $terms, $terms);
+            $this->assertSame(array_slice($terms, 0, 6), $result['strengths']);
+            $this->assertSame(array_slice($terms, 0, 6), $result['gaps']);
+            $this->assertSame(array_slice($terms, 0, 8), array_column($result['suggestions'], 'after'));
+            foreach ($result['suggestions'] as $index => $suggestion) {
+                $this->assertSame(mb_substr($suggestions[2 + $index * 2]['rationale'], 0, 240), $suggestion['rationale']);
+                $this->assertFalse($suggestion['needs_user_fact']);
+            }
+            $this->assertSame($result, JobMatchResultGuard::sanitize($result, $terms, $terms));
         }
     }
 
@@ -1016,7 +1071,7 @@ class JobMatchAiGuardTest extends TestCase
             );
 
             $outputKeys = array_column($sanitized['suggestions'], 'key');
-            $this->assertCount(count($keyList), $outputKeys);
+            $this->assertCount(min(JobMatchAdviceSchema::MAX_SUGGESTIONS, count($keyList)), $outputKeys);
             $this->assertSame(
                 count($outputKeys),
                 count(array_unique($outputKeys)),
