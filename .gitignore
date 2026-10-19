@@ -13,6 +13,7 @@
 /.zed
 /.agents/skills
 /.agents/teamwork
+/.agents/tracker
 /.claude
 /.impeccable
 /.opencode
