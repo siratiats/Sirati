@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Contracts\CvAiProvider;
-use App\Cv\CvDocument;
 use App\Enums\AiStatus;
 use App\Models\JobMatch;
 use App\Services\Ai\AiTimeouts;
@@ -44,14 +43,11 @@ class GenerateJobMatchAdviceJob implements ShouldQueue
                 throw new RuntimeException('AI provider is not configured.');
             }
             Auth::setUser($match->user);
-            $document = CvDocument::fromArray($match->cv_snapshot);
             $raw = $provider->jobMatchAdvice($match->cv_snapshot, $match->job_description_input, $match->language);
-            // Ranked ATS terms omit standalone numbers and are capped at 25. Keep full
-            // evidence as well so existing dates, employers, and less frequent skills survive.
-            $evidence = JobMatch::snapshotText($document);
+            // Keep the structured snapshot so the guard can validate appliable targets.
             $feedback = app(JobMatchResultGuard::class)->sanitize(
                 $raw,
-                [...$scorer->extractJobTerms($evidence), $evidence],
+                $match->cv_snapshot,
                 [...$scorer->extractJobTerms($match->job_description_input), $match->job_description_input],
             );
             $match->update(['ai_status' => AiStatus::Completed, 'ai_feedback' => $feedback, 'ai_error' => null]);

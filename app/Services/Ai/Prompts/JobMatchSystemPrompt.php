@@ -4,7 +4,7 @@ namespace App\Services\Ai\Prompts;
 
 final class JobMatchSystemPrompt
 {
-    public const VERSION = '2';
+    public const VERSION = '4';
 
     public const CV_TAG = 'cv_snapshot';
 
@@ -215,6 +215,11 @@ final class JobMatchSystemPrompt
             '  - Set needs_user_fact to false ONLY when every employer, date, number, metric, and skill in after is already present in <'.self::CV_TAG.'>.',
             '  - If a suggestion would require adding a new skill, metric, number, date, certification, or employer not evidenced in <'.self::CV_TAG.'>, do NOT fabricate a value; set needs_user_fact to true and explain in rationale what fact the candidate must confirm or provide.',
             '  - List in jd_terms only terms that actually appear in <'.self::JD_TAG.'>.',
+            '  - after MUST be the literal replacement or addition text that would appear in the CV, never advice, instructions, a question, a placeholder, or a conditional sentence. Put all advice and confirmation requests in rationale, even when needs_user_fact is true.',
+            '  - Omit empty suggestions, unchanged text (including formatting-only changes), and duplicate targets. Suggest each replacement target only once; distinct skill additions are distinct targets.',
+            '  - kind is required and must be exactly replace, append_skill, or append_bullet. All after text must be a single line. For append_skill, after is one skill name, already trimmed, at most 60 characters, with no newline; target is skills with field name or append, entry_id and bullet_index null, and before is null or an empty string. Do not prefix the skill with an instruction or qualification.',
+            '  - For replace, copy before exactly from the CV in the requested language. Summary replacements use summary/text and at most 2000 characters; experience bullet replacements use experience/bullets with the existing entry_id and bullet_index and at most 500 characters.',
+            '  - For append_bullet, use experience/bullets with an existing entry_id, null bullet_index, empty-string before, and a literal CV bullet of at most 500 characters. These additions require user review; set needs_user_fact=true.',
         ]);
     }
 
@@ -227,7 +232,7 @@ final class JobMatchSystemPrompt
             '  - executive_summary: string',
             '  - strengths: array of strings',
             '  - gaps: array of strings',
-            '  - suggestions: array of objects with exact keys {key: string, target: {section: string, entry_id: string|null, field: string|null, bullet_index: integer|null}, before: string|null, after: string, rationale: string, jd_terms: array of strings, needs_user_fact: boolean}.',
+            '  - suggestions: array of objects with exact keys {key: string, kind: replace|append_skill|append_bullet, target: {section: string, entry_id: string|null, field: string|null, bullet_index: integer|null}, before: string|null, after: string, rationale: string, jd_terms: array of strings, needs_user_fact: boolean}.',
             '- Do not wrap the JSON in markdown fences or include any commentary outside the JSON object.',
         ]);
     }

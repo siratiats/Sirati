@@ -146,11 +146,11 @@ class SubscriptionGate
     }
 
     /** Only a new attempt checks quota, under the controller's per-user lock. */
-    public function assertCanJobMatch(User $user): void
+    public function assertCanJobMatch(User $user, bool $checkQuota = true): void
     {
         $this->assertCanAccessJobMatch($user);
 
-        if ($this->jobMatchesUsedToday($user) >= $this->jobMatchDailyLimit()) {
+        if ($checkQuota && $this->jobMatchesUsedToday($user) >= $this->jobMatchDailyLimit()) {
             throw new HttpException(
                 429,
                 'Daily Job Match limit reached. Try again after the quota resets.',

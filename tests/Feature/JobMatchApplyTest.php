@@ -14,6 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Sanctum\Sanctum;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Smalot\PdfParser\Parser;
 use Tests\TestCase;
 
@@ -29,10 +30,11 @@ class JobMatchApplyTest extends TestCase
         $this->prepareJobMatch();
     }
 
-    private function suggestion(string $key, string $section, string $field, string $before, string $after, ?string $entryId = null, ?int $bulletIndex = null): array
+    private function suggestion(string $key, string $section, string $field, ?string $before, string $after, ?string $entryId = null, ?int $bulletIndex = null): array
     {
         return [
             'key' => $key,
+            'kind' => $section === 'skills' ? 'append_skill' : 'replace',
             'target' => ['section' => $section, 'field' => $field, 'entry_id' => $entryId, 'bullet_index' => $bulletIndex],
             'before' => $before,
             'after' => $after,
@@ -136,13 +138,22 @@ class JobMatchApplyTest extends TestCase
         $this->getJson('/api/generated-cvs/'.$copyId.'/preview?language=en')->assertOk()->assertSee('Kubernetes');
     }
 
-    public function test_accepted_term_reaches_preview_html_and_downloaded_pdf(): void
+    public static function skillAppendCases(): iterable
+    {
+        foreach (['name', 'append'] as $field) {
+            yield "$field with null before" => [$field, null];
+            yield "$field with empty before" => [$field, ''];
+        }
+    }
+
+    #[DataProvider('skillAppendCases')]
+    public function test_accepted_term_reaches_preview_html_and_downloaded_pdf(string $field, ?string $before): void
     {
         $user = $this->premiumUser();
         Sanctum::actingAs($user);
         $cv = $this->savedCv($user, $this->richDocument());
-        $accepted = 'Kubernetes';
-        $match = $this->createMatch($user, $cv, [$this->suggestion('skill', 'skills', 'append', '', $accepted)]);
+        $accepted = fake()->words(2, true).' C++';
+        $match = $this->createMatch($user, $cv, [$this->suggestion('skill', 'skills', $field, $before, $accepted)]);
         $copyId = $this->postJson('/api/job-matches/'.$match->id.'/apply-suggestions', ['suggestion_keys' => ['skill']])->assertOk()->json('data.generated_cv.id');
         $this->getJson('/api/generated-cvs/'.$copyId.'/preview?language=en')->assertOk()->assertSee($accepted);
         $download = $this->get('/api/generated-cvs/'.$copyId.'/download?language=en');
@@ -211,7 +222,9 @@ class JobMatchApplyTest extends TestCase
     {
         $user = $this->premiumUser();
         Sanctum::actingAs($user);
-        foreach (['unknown', 'fact', 'missing_fact_flag', 'unsupported', 'conflict', 'duplicate', 'empty'] as $case) {
+        foreach (['unknown', 'fact', 'missing_fact_flag', 'unsupported', 'conflict', 'duplicate', 'empty',
+            'missing_kind', 'unknown_kind', 'replace_skill', 'append_summary', 'append_bullet', 'skill_index',
+            'long_skill', 'long_summary', 'multiline_skill', 'untrimmed_skill'] as $case) {
             $cv = $this->savedCv($user);
             $safe = $this->suggestion('safe', 'summary', 'text', $cv->summary_input, 'Systems documentation specialist');
             $unsafe = $this->suggestion('unsafe', 'skills', 'append', '', 'Kubernetes');
@@ -230,6 +243,26 @@ class JobMatchApplyTest extends TestCase
                 $keys = ['safe', 'safe'];
             } elseif ($case === 'empty') {
                 $keys = [];
+            } elseif ($case === 'missing_kind') {
+                unset($unsafe['kind']);
+            } elseif ($case === 'unknown_kind') {
+                $unsafe['kind'] = fake()->uuid();
+            } elseif ($case === 'replace_skill') {
+                $unsafe['kind'] = 'replace';
+            } elseif ($case === 'append_summary') {
+                $unsafe = [...$safe, 'key' => 'unsafe', 'kind' => 'append_skill'];
+            } elseif ($case === 'append_bullet') {
+                $unsafe['kind'] = 'append_bullet';
+            } elseif ($case === 'skill_index') {
+                $unsafe['target']['bullet_index'] = 0;
+            } elseif ($case === 'long_skill') {
+                $unsafe['after'] = str_repeat("\u{062A}", 61);
+            } elseif ($case === 'long_summary') {
+                $safe['after'] = str_repeat("\u{062A}", 2001);
+            } elseif ($case === 'multiline_skill') {
+                $unsafe['after'] = fake()->word()."\u{2028}".fake()->word();
+            } elseif ($case === 'untrimmed_skill') {
+                $unsafe['after'] = ' '.fake()->word().' ';
             }
             $match = $this->createMatch($user, $cv, [$safe, $unsafe]);
             $count = GeneratedCv::count();

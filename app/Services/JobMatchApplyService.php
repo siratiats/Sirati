@@ -49,30 +49,45 @@ class JobMatchApplyService
                 if (($suggestion['needs_user_fact'] ?? true) !== false) {
                     $this->invalid('This suggestion requires a user supplied fact.');
                 }
-                if (! is_string($suggestion['before'] ?? null) || ! is_string($suggestion['after'] ?? null)
-                    || trim($suggestion['after']) === '' || mb_strlen($suggestion['after']) > 7000) {
+                $kind = $suggestion['kind'] ?? null;
+                $after = $suggestion['after'] ?? null;
+                if (! in_array($kind, ['replace', 'append_skill', 'append_bullet'], true)
+                    || ! is_string($after) || trim($after) === '' || preg_match('/\R/u', $after)) {
+                    $this->invalid('Invalid suggestion text.');
+                }
+                $before = $suggestion['before'] ?? null;
+                if ($kind !== 'append_skill' && ! is_string($before)) {
                     $this->invalid('Invalid suggestion text.');
                 }
                 $target = $suggestion['target'] ?? [];
                 $section = $target['section'] ?? null;
                 $field = $target['field'] ?? null;
                 $entryId = $target['entry_id'] ?? null;
+                $bulletIndex = $target['bullet_index'] ?? null;
+                $lengthCap = $section === 'skills' ? 60 : ($section === 'summary' ? 2000 : 500);
+                if (mb_strlen($after) > $lengthCap) {
+                    $this->invalid('Invalid suggestion text.');
+                }
                 $language = $match->language;
-                if ($section === 'summary' && in_array($field, ['summary', 'text'], true)
-                    && in_array($entryId, [null, 'summary'], true)) {
-                    $this->expectBefore($baseline['summary'], $language, $suggestion['before']);
+                if ($kind === 'replace' && $section === 'summary' && in_array($field, ['summary', 'text'], true)
+                    && in_array($entryId, [null, 'summary'], true) && $bulletIndex === null) {
+                    $this->expectBefore($baseline['summary'], $language, $before);
                     $this->reserve($targets, 'summary');
-                    $document['summary'][$language] = $suggestion['after'];
-                } elseif ($section === 'skills' && in_array($field, ['name', 'append'], true) && $entryId === null) {
-                    abort_unless($suggestion['before'] === '', 409, 'Skill append must have an empty before value.');
-                    // Multiple distinct append suggestions are safe; never replace existing skill metadata.
-                    $this->reserve($targets, 'skill:'.mb_strtolower(trim($suggestion['after'])));
-                    $existing = array_map(fn (array $skill): string => mb_strtolower(LocalizedText::fromArray($skill['name'])->resolve($language)), $document['skills'] ?? []);
-                    if (! in_array(mb_strtolower(trim($suggestion['after'])), $existing, true)) {
-                        $document['skills'][] = ['id' => (string) Str::uuid(), 'name' => [$language => trim($suggestion['after'])]];
+                    $document['summary'][$language] = $after;
+                } elseif ($kind === 'append_skill' && $section === 'skills' && in_array($field, ['name', 'append'], true)
+                    && $entryId === null && $bulletIndex === null) {
+                    abort_unless($before === null || $before === '', 409, 'Skill append must have an empty before value.');
+                    if ($after !== trim($after)) {
+                        $this->invalid('Invalid suggestion text.');
                     }
-                } elseif ($section === 'experience' && in_array($field, ['bullet', 'bullets'], true) && is_string($entryId) && $entryId !== '') {
-                    $index = $target['bullet_index'] ?? null;
+                    // Multiple distinct append suggestions are safe; never replace existing skill metadata.
+                    $this->reserve($targets, 'skill:'.mb_strtolower(trim($after)));
+                    $existing = array_map(fn (array $skill): string => mb_strtolower(LocalizedText::fromArray($skill['name'])->resolve($language)), $document['skills'] ?? []);
+                    if (! in_array(mb_strtolower(trim($after)), $existing, true)) {
+                        $document['skills'][] = ['id' => (string) Str::uuid(), 'name' => [$language => trim($after)]];
+                    }
+                } elseif ($kind === 'replace' && $section === 'experience' && in_array($field, ['bullet', 'bullets'], true) && is_string($entryId) && $entryId !== '') {
+                    $index = $bulletIndex;
                     if (! is_int($index) || $index < 0) {
                         $this->invalid('Invalid bullet index.');
                     }
@@ -83,7 +98,7 @@ class JobMatchApplyService
                     abort_unless(is_array($before), 409, 'Experience bullet no longer exists.');
                     $this->expectBefore($before, $language, $suggestion['before']);
                     $this->reserve($targets, 'experience:'.$entryId.':'.$index);
-                    $document['experience'][$entryIndex]['bullets'][$index][$language] = $suggestion['after'];
+                    $document['experience'][$entryIndex]['bullets'][$index][$language] = $after;
                 } else {
                     $this->invalid('Unsupported suggestion target.');
                 }
