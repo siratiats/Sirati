@@ -153,7 +153,9 @@ class ClaudeCvService implements CvAiProvider
             ->post(rtrim((string) config('services.anthropic.base_url'), '/').'/messages', [
                 'model' => $model,
                 'max_tokens' => OperationSchemas::maxTokens($operation),
-                'system' => $systemPrompt,
+                'system' => $operation === JobMatchAdviceSchema::NAME
+                    ? [['type' => 'text', 'text' => $systemPrompt, 'cache_control' => ['type' => 'ephemeral']]]
+                    : $systemPrompt,
                 'messages' => [
                     ['role' => 'user', 'content' => $userPrompt],
                 ],
@@ -230,6 +232,20 @@ class ClaudeCvService implements CvAiProvider
     private function logAiCall(string $operation, string $model, array $response, int $durationMs): void
     {
         AiCallContext::record('anthropic', $model);
+
+        if ($operation === JobMatchAdviceSchema::NAME) {
+            // Allowlist usage metadata only: prompts and response text may contain PII.
+            Log::info('Claude Job Match usage', [
+                'provider' => 'anthropic',
+                'model' => $model,
+                'operation' => $operation,
+                'duration_ms' => $durationMs,
+                'input_tokens' => (int) data_get($response, 'usage.input_tokens', 0),
+                'output_tokens' => (int) data_get($response, 'usage.output_tokens', 0),
+                'cache_creation_input_tokens' => (int) data_get($response, 'usage.cache_creation_input_tokens', 0),
+                'cache_read_input_tokens' => (int) data_get($response, 'usage.cache_read_input_tokens', 0),
+            ]);
+        }
 
         try {
             AiCallLog::create([

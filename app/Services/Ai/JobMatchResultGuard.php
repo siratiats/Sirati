@@ -5,6 +5,7 @@ namespace App\Services\Ai;
 use App\Cv\LocalizedText;
 use App\Exceptions\AiRefusalException;
 use App\Services\Ai\Prompts\JobMatchSystemPrompt;
+use App\Services\Ai\Schemas\JobMatchAdviceSchema;
 use App\Services\AtsScoringService;
 use App\Support\ArabicIndicDigits;
 use UnexpectedValueException;
@@ -249,8 +250,8 @@ final class JobMatchResultGuard
             $combinedEvidence,
         );
 
-        $strengths = self::sanitizeStrengths($raw['strengths'] ?? null, $cvEvidence);
-        $gaps = self::sanitizeGaps($raw['gaps'] ?? null, $combinedEvidence);
+        $strengths = array_slice(self::sanitizeStrengths($raw['strengths'] ?? null, $cvEvidence), 0, JobMatchAdviceSchema::MAX_STRENGTHS);
+        $gaps = array_slice(self::sanitizeGaps($raw['gaps'] ?? null, $combinedEvidence), 0, JobMatchAdviceSchema::MAX_GAPS);
         $suggestions = self::sanitizeSuggestions(
             $raw['suggestions'] ?? null,
             $cvEvidence,
@@ -518,6 +519,8 @@ final class JobMatchResultGuard
                 continue;
             }
 
+            $rationale = mb_substr($rationale, 0, JobMatchAdviceSchema::MAX_RATIONALE_CHARS);
+
             $target = self::sanitizeTarget($item['target'] ?? null);
             if ($target === null) {
                 continue;
@@ -618,6 +621,9 @@ final class JobMatchResultGuard
                 'jd_terms' => $groundedJdTerms,
                 'needs_user_fact' => $needsUserFact,
             ];
+            if (count($out) >= JobMatchAdviceSchema::MAX_SUGGESTIONS) {
+                break;
+            }
         }
 
         return $out;
