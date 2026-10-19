@@ -153,7 +153,6 @@ class ClaudeCvService implements CvAiProvider
             ->post(rtrim((string) config('services.anthropic.base_url'), '/').'/messages', [
                 'model' => $model,
                 'max_tokens' => OperationSchemas::maxTokens($operation),
-                'temperature' => 0.2,
                 'system' => $systemPrompt,
                 'messages' => [
                     ['role' => 'user', 'content' => $userPrompt],
