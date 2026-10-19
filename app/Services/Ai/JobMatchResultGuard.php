@@ -2,6 +2,7 @@
 
 namespace App\Services\Ai;
 
+use App\Cv\LocalizedText;
 use App\Exceptions\AiRefusalException;
 use App\Services\Ai\Prompts\JobMatchSystemPrompt;
 use App\Services\AtsScoringService;
@@ -462,6 +463,7 @@ final class JobMatchResultGuard
      * @param  array<string, mixed>|null  $cvSnapshot
      * @return list<array{
      *     key: string,
+     *     kind: string,
      *     target: array{section: string, entry_id: string|null, field: string|null, bullet_index: int|null},
      *     before: string|null,
      *     after: string,
@@ -522,12 +524,10 @@ final class JobMatchResultGuard
             }
 
             $kind = $item['kind'] ?? null;
-            if (! in_array($kind, ['replace', 'append_skill', 'append_bullet'], true)
-                || ! self::hasValidAfterShape($kind, $target, $after, $combinedEvidence)
-                || self::normalizeComparableText($after) === self::normalizeComparableText($before ?? '')) {
+            if (! is_string($kind) || ! self::hasValidAfterShape($kind, $target, $after, $before)) {
                 continue;
             }
-            // Additions have no previous text. Keep the apply endpoint's empty-string contract.
+            // Canonicalize additions to an empty before value.
             if ($kind !== 'replace') {
                 if ($before !== null && $before !== '') {
                     continue;
@@ -623,36 +623,49 @@ final class JobMatchResultGuard
         return $out;
     }
 
-    /** Validate data shapes, without guessing the language or direction of prose. */
-    private static function hasValidAfterShape(string $kind, array $target, string $after, array $evidence): bool
+    /**
+     * Structural shape only. Kind decides the rule; do not guess from punctuation
+     * or from how Arabic letters are written.
+     */
+    private static function hasValidAfterShape(string $kind, array $target, string $after, ?string $before): bool
     {
-        $limit = $kind === 'append_skill' || $target['section'] === 'skills'
-            ? 60 : ($target['section'] === 'summary' ? 2000 : 500);
-        if (mb_strlen($after) > $limit) {
+        if (preg_match('/\R/u', $after) === 1 || $after === '' || mb_strlen($after) > self::afterLengthCap($kind, $target)) {
             return false;
         }
-        if ($kind === 'append_skill' || $target['section'] === 'skills') {
-            // A literal name must match an evidence term or a catalogued skill,
-            // rather than arbitrary prose containing that skill somewhere within it.
-            if (preg_match('/[\r\n,;:!?????]|[.]$/u', $after)) {
-                return false;
-            }
-            $name = self::normalizeComparableText($after);
-            $names = [...$evidence['phrases'], ...self::allKnownSkills()];
-            if (! in_array($name, $names, true)) {
-                return false;
-            }
-        }
+
         if ($kind === 'append_skill') {
-            return $target['section'] === 'skills' && $target['entry_id'] === null
-                && in_array($target['field'], ['name', 'append'], true) && $target['bullet_index'] === null;
-        }
-        if ($kind === 'append_bullet') {
-            return $target['section'] === 'experience' && $target['entry_id'] !== null
-                && in_array($target['field'], ['bullet', 'bullets'], true) && $target['bullet_index'] === null;
+            return $after === trim($after)
+                && $target['section'] === 'skills'
+                && $target['entry_id'] === null
+                && in_array($target['field'], ['name', 'append'], true)
+                && $target['bullet_index'] === null;
         }
 
-        return true;
+        if (self::normalizeComparableText($after) === self::normalizeComparableText($before ?? '')) {
+            return false;
+        }
+
+        if ($kind === 'append_bullet') {
+            return $target['section'] === 'experience'
+                && is_string($target['entry_id']) && $target['entry_id'] !== ''
+                && in_array($target['field'], ['bullet', 'bullets'], true)
+                && $target['bullet_index'] === null;
+        }
+
+        return $kind === 'replace';
+    }
+
+    /** @param  array{section: string, entry_id: string|null, field: string|null, bullet_index: int|null}  $target */
+    private static function afterLengthCap(string $kind, array $target): int
+    {
+        if ($kind === 'append_skill' || $target['section'] === 'skills') {
+            return 60;
+        }
+        if ($target['section'] === 'summary') {
+            return 2000;
+        }
+
+        return 500;
     }
 
     private static function suggestionTargetKey(string $kind, array $target, string $after): string
@@ -674,7 +687,7 @@ final class JobMatchResultGuard
         $language = $snapshot['export_language'] ?? 'ar';
         if ($kind === 'append_skill') {
             foreach ($snapshot['skills'] ?? [] as $skill) {
-                $name = \App\Cv\LocalizedText::fromArray($skill['name'] ?? [])->resolve($language);
+                $name = LocalizedText::fromArray($skill['name'] ?? [])->resolve($language);
                 if (self::normalizeComparableText($name) === self::normalizeComparableText($after)) {
                     return false;
                 }
@@ -687,7 +700,7 @@ final class JobMatchResultGuard
         }
         if ($target['section'] === 'summary' && in_array($target['field'], ['summary', 'text'], true)
             && in_array($target['entry_id'], [null, 'summary'], true) && $target['bullet_index'] === null) {
-            return \App\Cv\LocalizedText::fromArray($snapshot['summary'] ?? [])->resolve($language) === $before;
+            return LocalizedText::fromArray($snapshot['summary'] ?? [])->resolve($language) === $before;
         }
         if ($target['section'] === 'experience' && in_array($target['field'], ['bullet', 'bullets'], true)
             && $target['entry_id'] !== null && $target['bullet_index'] !== null) {
@@ -696,7 +709,7 @@ final class JobMatchResultGuard
             if (count($entries) === 1) {
                 $bullet = $entries[0]['bullets'][$target['bullet_index']] ?? null;
 
-                return is_array($bullet) && \App\Cv\LocalizedText::fromArray($bullet)->resolve($language) === $before;
+                return is_array($bullet) && LocalizedText::fromArray($bullet)->resolve($language) === $before;
             }
         }
 

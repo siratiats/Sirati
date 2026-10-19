@@ -22,14 +22,14 @@ class JobMatchExportTest extends TestCase
 
     public static function exportCases(): iterable
     {
-        yield 'English' => ['en', ['C++', 'SQL']];
-        yield 'Arabic' => ['ar', ['تحليل البيانات', 'إدارة المخاطر']];
-        yield 'Arabic with Latin and punctuation' => ['ar', ['C++', 'SQL']];
-        yield 'Arabic with other Latin terms' => ['ar', ['C#', 'PostgreSQL']];
+        yield 'English seed 20261019' => ['English', 'en', ['C++', 'SQL'], 20261019];
+        yield 'Arabic seed 20261020' => ['Arabic', 'ar', ["\u{062A}\u{062D}\u{0644}\u{064A}\u{0644} \u{0627}\u{0644}\u{0628}\u{064A}\u{0627}\u{0646}\u{0627}\u{062A}", "\u{0625}\u{062F}\u{0627}\u{0631}\u{0629} \u{0627}\u{0644}\u{0645}\u{062E}\u{0627}\u{0637}\u{0631}"], 20261020];
+        yield 'Arabic with Latin and punctuation seed 20261021' => ['Arabic with Latin and punctuation', 'ar', ['C++', 'SQL'], 20261021];
+        yield 'Arabic with other Latin terms seed 20261022' => ['Arabic with other Latin terms', 'ar', ['C#', 'PostgreSQL'], 20261022];
     }
 
     #[DataProvider('exportCases')]
-    public function test_selected_grounded_edits_reach_the_downloaded_copy_without_losing_or_reordering_facts(string $language, array $skills): void
+    public function test_selected_grounded_edits_reach_the_downloaded_copy_without_losing_or_reordering_facts(string $case, string $language, array $skills, int $seed): void
     {
         $this->seed(CvTemplateSeeder::class);
         config(['queue.default' => 'sync', 'monetization.enabled' => true, 'monetization.job_match.daily_limit' => 1]);
@@ -38,6 +38,10 @@ class JobMatchExportTest extends TestCase
         // Values vary independently of the review examples; every expected fact
         // comes from the submitted document rather than a hard-coded PDF sample.
         $faker = Factory::create($language === 'ar' ? 'ar_SA' : 'en_US');
+        $faker->seed($seed);
+        fake()->seed($seed);
+        mt_srand($seed);
+        $label = $case.' seed '.$seed;
         $ar = $language === 'ar';
         $local = fn (string $value): array => [$language => $value];
         $name = $faker->name();
@@ -61,8 +65,8 @@ class JobMatchExportTest extends TestCase
         $acceptedBullet = $bullet.($ar ? ' باستخدام ' : ' using ').$skills[0];
         $rejectedBullet = ($ar ? 'تحسين ' : 'Improved ').$untouched;
         $email = $faker->safeEmail();
-        $phone = '+9665'.random_int(10000000, 99999999);
-        $startYear = random_int(2005, 2010);
+        $phone = '+9665'.$faker->numberBetween(10000000, 99999999);
+        $startYear = $faker->numberBetween(2005, 2010);
         $entryId = fake()->uuid();
         $document = CvDocument::fromArray([
             'export_language' => $language,
@@ -82,6 +86,7 @@ class JobMatchExportTest extends TestCase
         ]);
         $suggestion = fn (string $key, string $section, string $before, string $after, ?int $index = null): array => [
             'key' => $key,
+            'kind' => 'replace',
             'target' => ['section' => $section, 'field' => $section === 'summary' ? 'text' : 'bullets',
                 'entry_id' => $section === 'summary' ? null : $entryId, 'bullet_index' => $index],
             'before' => $before, 'after' => $after,
@@ -110,10 +115,11 @@ class JobMatchExportTest extends TestCase
         $input = ['generated_cv_id' => $sourceId, 'job_description_input' => $jd, 'language' => $language];
         $headers = ['Idempotency-Key' => fake()->uuid()];
         $created = $this->postJson('/api/job-matches', $input, $headers)->assertCreated()
-            ->assertJsonPath('data.ai_status', 'completed')->assertJsonCount(3, 'data.ai_feedback.suggestions');
+            ->assertJsonPath('data.ai_status', 'completed');
+        $this->assertCount(3, $created->json('data.ai_feedback.suggestions'), $label.' must keep every grounded suggestion.');
         $matchId = $created->json('data.id');
         foreach ($created->json('data.ai_feedback.suggestions') as $advice) {
-            $this->assertFalse($advice['needs_user_fact'], 'Grounded advice must remain selectable through the real guard.');
+            $this->assertFalse($advice['needs_user_fact'], $label.' grounded advice must remain selectable through the real guard.');
         }
         $originalScore = $created->json('data.job_match');
         $applied = $this->postJson('/api/job-matches/'.$matchId.'/apply-suggestions', [
@@ -147,8 +153,8 @@ class JobMatchExportTest extends TestCase
         foreach ([$name, $headline, $role, $company, $untouched, $secondRole, $secondCompany, $secondBullet, $degree, $institution] as $fact) {
             // The English template intentionally uppercases the candidate's name.
             $position = mb_stripos($text, $fact, $previous + 1);
-            $this->assertNotFalse($position, 'Missing exported fact: '.$fact.' in '.$text);
-            $this->assertGreaterThan($previous, $position, 'Export reordered fact: '.$fact);
+            $this->assertNotFalse($position, $label.' missing exported fact: '.$fact.' in '.$text);
+            $this->assertGreaterThan($previous, $position, $label.' export reordered fact: '.$fact);
             $previous = $position;
         }
 

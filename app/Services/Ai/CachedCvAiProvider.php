@@ -4,6 +4,7 @@ namespace App\Services\Ai;
 
 use App\Contracts\CvAiProvider;
 use App\Models\AiCallLog;
+use App\Services\Ai\Prompts\JobMatchSystemPrompt;
 use App\Support\ArabicIndicDigits;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -26,7 +27,7 @@ class CachedCvAiProvider implements CvAiProvider
      * Bump by hand whenever prompt text or schema changes so stale cache
      * entries are not reused after a prompt edit.
      */
-    public const PROMPT_VERSION = '10';
+    public const PROMPT_VERSION = '11';
 
     /** Normalized provider name ('openai' | 'anthropic') the wrapped driver talks to. */
     private readonly string $provider;
@@ -145,7 +146,7 @@ class CachedCvAiProvider implements CvAiProvider
             operation: 'job_match_advice',
             payload: [
                 'operation' => 'job_match_advice',
-                'prompt_version' => \App\Services\Ai\Prompts\JobMatchSystemPrompt::VERSION,
+                'prompt_version' => self::PROMPT_VERSION.'+'.JobMatchSystemPrompt::VERSION,
                 'cv_snapshot_hash' => hash('sha256', $this->canonicalSnapshotJson($cvSnapshot)),
                 'jd_hash' => hash('sha256', $this->normalizeText($jobDescription)),
                 'language' => $this->normalizeText($language),

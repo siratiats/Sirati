@@ -52,6 +52,11 @@ class JobMatchAiGuardTest extends TestCase
         $this->assertSame('json_schema', $anthropicConfig['format']['type']);
         $this->assertSame(JobMatchAdviceSchema::schema(), $anthropicConfig['format']['schema']);
         $this->assertSame(JobMatchAdviceSchema::MAX_TOKENS, OperationSchemas::maxTokens(JobMatchAdviceSchema::NAME));
+        foreach ([$openAiFormat['json_schema']['schema'], $anthropicConfig['format']['schema']] as $schema) {
+            $suggestion = $schema['properties']['suggestions']['items'];
+            $this->assertContains('kind', $suggestion['required']);
+            $this->assertSame(['replace', 'append_skill', 'append_bullet'], $suggestion['properties']['kind']['enum']);
+        }
     }
 
     public function test_system_and_user_prompts_enforce_delimited_untrusted_tags_and_language(): void
@@ -664,6 +669,146 @@ class JobMatchAiGuardTest extends TestCase
         );
     }
 
+    public function test_job_match_cache_key_includes_operation_and_global_prompt_versions(): void
+    {
+        $snapshot = ['summary' => ['en' => 'PHP']];
+        $jobDescription = 'PHP role';
+        $language = 'en';
+        $inner = Mockery::mock(CvAiProvider::class);
+        $inner->shouldReceive('jobMatchAdvice')->once()->andReturn([
+            'executive_summary' => 'PHP',
+            'strengths' => [],
+            'gaps' => [],
+            'suggestions' => [],
+        ]);
+        $cached = new CachedCvAiProvider($inner, 'openai', 'gpt-4.1-mini');
+        $canonical = json_encode(
+            ['summary' => ['en' => 'PHP']],
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES,
+        );
+        $payload = [
+            'operation' => 'job_match_advice',
+            'prompt_version' => CachedCvAiProvider::PROMPT_VERSION.'+'.JobMatchSystemPrompt::VERSION,
+            'cv_snapshot_hash' => hash('sha256', $canonical),
+            'jd_hash' => hash('sha256', $cached->normalizeText($jobDescription)),
+            'language' => $cached->normalizeText($language),
+        ];
+        $key = $cached->cacheKey('job_match_advice', $cached->normalizePayload($payload));
+        $cached->jobMatchAdvice($snapshot, $jobDescription, $language);
+
+        $this->assertSame(
+            ['executive_summary' => 'PHP', 'strengths' => [], 'gaps' => [], 'suggestions' => []],
+            Cache::get($key),
+        );
+        $this->assertNotSame($key, $cached->cacheKey('job_match_advice', $cached->normalizePayload([
+            ...$payload,
+            'prompt_version' => CachedCvAiProvider::PROMPT_VERSION.'+'.JobMatchSystemPrompt::VERSION.'-other',
+        ])));
+        $this->assertNotSame($key, $cached->cacheKey(
+            'job_match_advice',
+            $cached->normalizePayload($payload),
+            promptVersion: CachedCvAiProvider::PROMPT_VERSION.'-other',
+        ));
+    }
+
+    public function test_after_shape_follows_kind_and_ignores_punctuation_heuristics(): void
+    {
+        $skill = "SQL\u{061F}";
+        $sanitized = JobMatchResultGuard::sanitize([
+            'executive_summary' => 'PHP',
+            'suggestions' => [
+                [
+                    'key' => 'punctuated_skill',
+                    'kind' => 'append_skill',
+                    'target' => ['section' => 'skills', 'entry_id' => null, 'field' => 'name', 'bullet_index' => null],
+                    'before' => null,
+                    'after' => $skill,
+                    'rationale' => 'Add the skill',
+                    'jd_terms' => ['SQL'],
+                    'needs_user_fact' => false,
+                ],
+                [
+                    'key' => 'too_long_skill',
+                    'kind' => 'append_skill',
+                    'target' => ['section' => 'skills', 'entry_id' => null, 'field' => 'name', 'bullet_index' => null],
+                    'before' => '',
+                    'after' => str_repeat('A', 61),
+                    'rationale' => 'Too long',
+                    'jd_terms' => [],
+                    'needs_user_fact' => false,
+                ],
+                [
+                    'key' => 'unchanged',
+                    'kind' => 'replace',
+                    'target' => ['section' => 'summary', 'entry_id' => null, 'field' => 'text', 'bullet_index' => null],
+                    'before' => 'PHP developer',
+                    'after' => 'PHP developer',
+                    'rationale' => 'No change',
+                    'jd_terms' => ['PHP'],
+                    'needs_user_fact' => false,
+                ],
+                [
+                    'key' => 'multiline_skill',
+                    'kind' => 'append_skill',
+                    'target' => ['section' => 'skills', 'entry_id' => null, 'field' => 'name', 'bullet_index' => null],
+                    'before' => '',
+                    'after' => "SQL\nLaravel",
+                    'rationale' => 'Two lines',
+                    'jd_terms' => ['SQL'],
+                    'needs_user_fact' => false,
+                ],
+            ],
+        ], ['PHP developer', 'SQL'], ['SQL']);
+
+        $byKey = collect($sanitized['suggestions'])->keyBy('key');
+        $this->assertSame(['punctuated_skill'], $byKey->keys()->all());
+        $this->assertSame('append_skill', $byKey['punctuated_skill']['kind']);
+        $this->assertSame('', $byKey['punctuated_skill']['before']);
+        $this->assertSame($skill, $byKey['punctuated_skill']['after']);
+    }
+
+    public static function afterShapeCases(): iterable
+    {
+        $skillTarget = ['section' => 'skills', 'field' => 'name', 'entry_id' => null, 'bullet_index' => null];
+        $summaryTarget = ['section' => 'summary', 'field' => 'text', 'entry_id' => null, 'bullet_index' => null];
+        $bulletTarget = ['section' => 'experience', 'field' => 'bullets', 'entry_id' => 'entry', 'bullet_index' => null];
+        foreach ([['append_skill', $skillTarget, 60], ['replace', $summaryTarget, 2000], ['append_bullet', $bulletTarget, 500]] as [$kind, $target, $cap]) {
+            foreach ([$cap - 1, $cap, $cap + 1] as $length) {
+                yield "$kind length $length" => [$kind, $target, '', str_repeat("\u{062A}", $length), $length <= $cap];
+            }
+            foreach (["\n", "\r", "\r\n", "\u{0085}", "\u{2028}", "\u{2029}"] as $index => $newline) {
+                yield "$kind newline $index" => [$kind, $target, '', 'Service'.$newline.'coordination', false];
+            }
+            yield "$kind whitespace only" => [$kind, $target, '', '   ', false];
+        }
+        foreach ([',', ';', ':', '!', '?', '.', "\u{060C}", "\u{061B}", "\u{061F}"] as $index => $punctuation) {
+            // Arbitrary multi-word names need no catalogue entry or punctuation guess.
+            yield "literal mixed skill punctuation $index" => ['append_skill', $skillTarget, null, "Service \u{062A}\u{0646}\u{0633}\u{064A}\u{0642}".$punctuation, true];
+        }
+        yield 'unchanged after normalization' => ['replace', $summaryTarget, 'SERVICE coordination', ' service   coordination. ', false];
+        yield 'missing kind' => [null, $skillTarget, '', 'Service coordination', false];
+        yield 'unknown kind' => ['unknown', $skillTarget, '', 'Service coordination', false];
+        yield 'skill with previous text' => ['append_skill', $skillTarget, 'Previous skill', 'Service coordination', false];
+        yield 'skill target mismatch' => ['append_skill', $summaryTarget, '', 'Service coordination', false];
+        yield 'bullet target mismatch' => ['append_bullet', $skillTarget, '', 'Service coordination', false];
+        yield 'bullet with previous text' => ['append_bullet', $bulletTarget, 'Previous bullet', 'Service coordination', false];
+    }
+
+    #[DataProvider('afterShapeCases')]
+    public function test_suggestion_shapes_enforce_kind_boundaries(?string $kind, array $target, ?string $before, string $after, bool $accepted): void
+    {
+        $result = JobMatchResultGuard::sanitize(['suggestions' => [[
+            'key' => 'shape', 'kind' => $kind, 'target' => $target, 'before' => $before,
+            'after' => $after, 'rationale' => '', 'jd_terms' => [], 'needs_user_fact' => false,
+        ]]], [$after], []);
+
+        $this->assertCount($accepted ? 1 : 0, $result['suggestions']);
+        if ($accepted) {
+            $this->assertSame($after, $result['suggestions'][0]['after']);
+            $this->assertSame($kind, $result['suggestions'][0]['kind']);
+        }
+    }
+
     public function test_substring_numbers_and_dates_never_ground_distinct_numeric_or_date_tokens(): void
     {
         mt_srand(20261019);
@@ -775,11 +920,11 @@ class JobMatchAiGuardTest extends TestCase
                 ];
 
                 $sanitized = JobMatchResultGuard::sanitize($raw, $cvTerms, $jdTerms);
-            $sanitized['suggestions'] = array_merge(...array_map(
-                fn (array $suggestion): array => JobMatchResultGuard::sanitize(
-                    [...$raw, 'suggestions' => [$suggestion]], $cvTerms, $jdTerms,
-                )['suggestions'], $raw['suggestions'],
-            ));
+                $sanitized['suggestions'] = array_merge(...array_map(
+                    fn (array $suggestion): array => JobMatchResultGuard::sanitize(
+                        [...$raw, 'suggestions' => [$suggestion]], $cvTerms, $jdTerms,
+                    )['suggestions'], $raw['suggestions'],
+                ));
 
                 $this->assertSame('Solid SQL alignment.', $sanitized['executive_summary']);
                 $this->assertSame(["Supported {$largeCount} enterprise accounts with Laravel"], $sanitized['strengths']);

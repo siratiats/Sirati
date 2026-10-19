@@ -4,7 +4,7 @@ namespace App\Services\Ai\Prompts;
 
 final class JobMatchSystemPrompt
 {
-    public const VERSION = '3';
+    public const VERSION = '4';
 
     public const CV_TAG = 'cv_snapshot';
 
@@ -217,7 +217,7 @@ final class JobMatchSystemPrompt
             '  - List in jd_terms only terms that actually appear in <'.self::JD_TAG.'>.',
             '  - after MUST be the literal replacement or addition text that would appear in the CV, never advice, instructions, a question, a placeholder, or a conditional sentence. Put all advice and confirmation requests in rationale, even when needs_user_fact is true.',
             '  - Omit empty suggestions, unchanged text (including formatting-only changes), and duplicate targets. Suggest each replacement target only once; distinct skill additions are distinct targets.',
-            '  - kind is required: replace, append_skill, or append_bullet. All after text must be a single line. For append_skill, after is ONLY one literal skill name, at most 60 characters; target is skills/name with entry_id and bullet_index null, and before is the empty string (never null). Do not prefix the skill with an instruction or qualification.',
+            '  - kind is required and must be exactly replace, append_skill, or append_bullet. All after text must be a single line. For append_skill, after is one skill name, already trimmed, at most 60 characters, with no newline; target is skills with field name or append, entry_id and bullet_index null, and before is null or an empty string. Do not prefix the skill with an instruction or qualification.',
             '  - For replace, copy before exactly from the CV in the requested language. Summary replacements use summary/text and at most 2000 characters; experience bullet replacements use experience/bullets with the existing entry_id and bullet_index and at most 500 characters.',
             '  - For append_bullet, use experience/bullets with an existing entry_id, null bullet_index, empty-string before, and a literal CV bullet of at most 500 characters. These additions require user review; set needs_user_fact=true.',
         ]);

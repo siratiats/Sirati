@@ -88,6 +88,7 @@ class JobMatchControllerTest extends TestCase
     {
         $this->postJson('/api/job-matches', [])->assertUnauthorized();
         $this->getJson('/api/job-matches/1')->assertUnauthorized();
+        $this->postJson('/api/job-matches/1/retry-advice')->assertUnauthorized();
         $this->postJson('/api/job-matches/1/apply-suggestions', [])->assertUnauthorized();
     }
 
@@ -112,6 +113,7 @@ class JobMatchControllerTest extends TestCase
         Sanctum::actingAs($this->premiumUser());
         $this->postJson('/api/job-matches', ['generated_cv_id' => $cv->id, 'job_description_input' => 'automation'])->assertNotFound();
         $this->getJson('/api/job-matches/'.$match->id)->assertNotFound();
+        $this->postJson('/api/job-matches/'.$match->id.'/retry-advice')->assertNotFound();
         $this->postJson('/api/job-matches/'.$match->id.'/apply-suggestions', ['suggestion_keys' => ['x']])->assertNotFound();
         Queue::assertNothingPushed();
     }
@@ -231,6 +233,7 @@ class JobMatchControllerTest extends TestCase
             $key = fake()->uuid();
             $match->update(['ai_feedback' => ['suggestions' => [[
                 'key' => $key,
+                'kind' => 'replace',
                 'target' => ['section' => 'summary', 'field' => 'text'],
                 'before' => $cv->summary_input,
                 'after' => $cv->summary_input.' '.fake()->sentence(),
@@ -303,9 +306,50 @@ class JobMatchControllerTest extends TestCase
         Queue::assertNothingPushed();
     }
 
+    public function test_retry_advice_is_premium_and_owner_only_and_does_not_spend_quota(): void
+    {
+        config(['monetization.job_match.daily_limit' => 1]);
+        $owner = $this->premiumUser();
+        $cv = $this->savedCv($owner);
+        $match = $this->createMatch($owner, $cv);
+        $url = '/api/job-matches/'.$match->id.'/retry-advice';
+        $gate = app(SubscriptionGate::class);
+
+        Sanctum::actingAs($owner);
+        $this->postJson($url)->assertStatus(409);
+        $match->update(['ai_status' => AiStatus::Processing]);
+        $this->postJson($url)->assertOk()->assertJsonPath('data.ai_status', 'processing');
+        $match->update(['ai_status' => AiStatus::Queued, 'ai_error' => 'stale']);
+        $this->postJson($url)->assertOk()->assertJsonPath('data.ai_status', 'queued')->assertJsonPath('data.ai_error', 'stale');
+        Queue::assertNothingPushed();
+
+        $match->update([
+            'ai_status' => AiStatus::Failed,
+            'ai_error' => 'Job Match advice is unavailable.',
+            'ai_feedback' => ['suggestions' => [['key' => 'old']]],
+        ]);
+        $this->postJson($url)->assertOk()
+            ->assertJsonPath('data.ai_status', 'queued')
+            ->assertJsonPath('data.ai_error', null)
+            ->assertJsonPath('data.ai_feedback', null);
+        $this->postJson($url)->assertOk()->assertJsonPath('data.ai_status', 'queued');
+        Queue::assertPushed(GenerateJobMatchAdviceJob::class, 1);
+        $this->assertSame(1, $gate->jobMatchesUsedToday($owner));
+        $this->postJson('/api/job-matches', [
+            'generated_cv_id' => $cv->id,
+            'job_description_input' => 'a different role',
+        ])->assertStatus(429);
+        $this->assertSame(1, $gate->jobMatchesUsedToday($owner));
+
+        $owner->revokeSubscription();
+        $match->update(['ai_status' => AiStatus::Failed]);
+        $this->postJson($url)->assertStatus(402);
+        Queue::assertPushed(GenerateJobMatchAdviceJob::class, 1);
+    }
+
     public function test_all_job_match_routes_keep_authentication_and_heavy_throttling(): void
     {
-        foreach ([['POST', '/api/job-matches'], ['GET', '/api/job-matches/1'], ['POST', '/api/job-matches/1/apply-suggestions']] as [$method, $uri]) {
+        foreach ([['POST', '/api/job-matches'], ['GET', '/api/job-matches/1'], ['POST', '/api/job-matches/1/retry-advice'], ['POST', '/api/job-matches/1/apply-suggestions']] as [$method, $uri]) {
             $route = app('router')->getRoutes()->match(Request::create($uri, $method));
             $this->assertContains('auth:sanctum', $route->gatherMiddleware());
             $this->assertContains('throttle:ai-heavy', $route->gatherMiddleware());

@@ -177,7 +177,7 @@ class DeepInfraCvService implements CvAiProvider
             function () use ($cvSnapshot, $jobDescription, $normalizedLang, $model): array {
                 $raw = $this->requestJson(
                     JobMatchAdviceSchema::NAME,
-                    (new JobMatchSystemPrompt)->build($normalizedLang)."\n\nYou MUST return a valid JSON object with keys: executive_summary string, strengths array of strings, gaps array of strings, suggestions array of objects {key, target: {section, entry_id, field, bullet_index}, before, after, rationale, jd_terms, needs_user_fact}.",
+                    (new JobMatchSystemPrompt)->build($normalizedLang)."\n\nYou MUST return a valid JSON object with keys: executive_summary string, strengths array of strings, gaps array of strings, suggestions array of objects {key, kind: replace|append_skill|append_bullet, target: {section, entry_id, field, bullet_index}, before, after, rationale, jd_terms, needs_user_fact}.",
                     JobMatchSystemPrompt::buildUserPrompt($cvSnapshot, $jobDescription, $normalizedLang),
                     $model,
                 );
