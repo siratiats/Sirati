@@ -416,11 +416,11 @@ class AtsScoringService
     /**
      * Extract informative terms from a job description for keyword scoring (SIRATI-90).
      *
-     * Returns an ordered list of unigrams and bigrams from the JD text, lower-cased,
+     * Returns curated phrases plus unigrams and repeated bigrams, lower-cased,
      * stopword-filtered, deduplicated, and capped at 25 terms. Bigrams win over their
      * component unigrams when both are present (a bigram is a stronger, more specific signal).
      *
-     * The extractor is deliberately dumb — no stemming, no TF-IDF. The point is to score
+     * The extractor uses literal phrase aliases — no stemming or TF-IDF — to score
      * the CV against terms the poster actually wrote, not against a static category list.
      * If more sophistication is needed later (n-gram frequency, phrase mining, embedding
      * similarity), the return type is stable: swap the internals without touching callers.
@@ -434,84 +434,67 @@ class AtsScoringService
             return [];
         }
 
-        // English + Arabic stopwords. Kept short on purpose — over-filtering drops signal.
-        static $stopwords = [
-            // English
-            'the', 'and', 'for', 'with', 'you', 'your', 'our', 'are', 'will', 'has', 'have',
-            'this', 'that', 'from', 'into', 'over', 'under', 'about', 'per', 'via', 'been',
-            'were', 'was', 'when', 'while', 'they', 'them', 'their', 'his', 'her', 'him',
-            'she', 'who', 'whom', 'which', 'what', 'why', 'how', 'not', 'nor', 'but', 'yet',
-            'any', 'all', 'each', 'every', 'some', 'such', 'more', 'most', 'less', 'least',
-            'other', 'others', 'than', 'then', 'too', 'very', 'also', 'here', 'there',
-            'must', 'should', 'shall', 'may', 'might', 'can', 'could', 'would', 'do', 'does',
-            'did', 'done', 'being', 'able', 'like', 'just', 'only', 'own', 'same', 'both',
-            'able to', 'looking for', 'responsible for', 'work with', 'ability to',
-            // Common JD boilerplate
-            'job', 'role', 'position', 'candidate', 'applicant', 'company', 'team', 'work',
-            'working', 'day', 'days', 'year', 'years', 'month', 'months', 'week', 'time',
-            'good', 'great', 'strong', 'excellent', 'ideal', 'preferred', 'required',
-            'requirements', 'responsibilities', 'qualifications', 'benefits', 'plus',
-            'preferred qualifications', 'nice to have',
-            // Arabic
-            'في', 'من', 'الى', 'إلى', 'على', 'عن', 'هذا', 'هذه', 'ذلك', 'تلك', 'هو', 'هي',
-            'هم', 'انت', 'أنت', 'انا', 'أنا', 'نحن', 'لك', 'له', 'لها', 'لهم', 'ما', 'ماذا',
-            'من', 'اين', 'كيف', 'متى', 'لماذا', 'او', 'أو', 'ثم', 'ايضا', 'أيضا', 'كل',
-            'بعض', 'جميع', 'اكثر', 'أكثر', 'اقل', 'أقل', 'مع', 'او', 'الذي', 'التي',
-            'اللذين', 'اللواتي', 'يجب', 'ينبغي', 'يمكن', 'قد', 'كان', 'كانت', 'يكون',
-            'مهام', 'مسؤوليات', 'متطلبات', 'وظيفة', 'فرصة', 'شركة', 'فريق', 'عمل',
-        ];
-        $stopSet = array_flip($stopwords);
+        $catalog = self::jobTermCatalog();
+        $stopSet = array_flip($catalog['stopwords']);
 
-        // Normalise: lowercase, drop URLs / emails / phones, strip bullet markers,
+        // Lowercase and separate URLs, emails, and bullet markers without joining words,
         // and normalise Arabic (tatweel, diacritics, alef/teh) so terms match the CV
         // scoring path.
         $text = mb_strtolower($jobDescription);
-        $text = preg_replace('/https?:\/\/\S+/u', ' ', $text) ?? $text;
-        $text = preg_replace('/[\w.+-]+@[\w-]+\.\w+/u', ' ', $text) ?? $text;
-        $text = preg_replace('/[•●▪◦◊★☆♦·]/u', ' ', $text) ?? $text;
+        $text = preg_replace('/https?:\/\/\S+/u', ';', $text) ?? $text;
+        $text = preg_replace('/[\w.+-]+@[\w-]+\.\w+/u', ';', $text) ?? $text;
+        $text = preg_replace('/[•●▪◦◊★☆♦·]/u', ';', $text) ?? $text;
         $text = self::normalizeArabic($text);
 
-        // Tokenise on non-letter runs. Keep letters + digits inside a token
-        // (so "aws", "s3", "c++" survive; punctuation between tokens is a split).
-        // Word-chars per Unicode, plus + and # for tech names.
-        $tokens = preg_split('/[^\p{L}\p{N}+#]+/u', $text) ?: [];
-        $tokens = array_values(array_filter($tokens, static function ($t): bool {
-            $t = trim((string) $t);
-            if ($t === '') {
-                return false;
+        // Match curated phrases before unigrams, longest aliases first. These are
+        // literal catalog entries, with Unicode boundaries and flexible whitespace.
+        $aliases = [];
+        foreach ($catalog['phrases'] as $canonical => $variants) {
+            foreach ($variants as $variant) {
+                $aliases[$variant] = $canonical;
             }
-            // Drop pure numbers, single letters, and 2-char tokens (mostly noise).
-            if (preg_match('/^\d+$/u', $t)) {
-                return false;
-            }
-            return mb_strlen($t) >= 3;
-        }));
+        }
+        $phraseWords = array_unique([...array_keys($aliases), ...array_filter($catalog['stopwords'], fn (string $word): bool => str_contains($word, ' '))]);
+        usort($phraseWords, fn (string $a, string $b): int => mb_strlen($b) <=> mb_strlen($a));
+        $patterns = array_map(self::literalPhrasePattern(...), $phraseWords);
+        $pattern = '/'.implode('|', $patterns).'|[\p{L}\p{N}+#]+|[^\s\p{L}\p{N}+#]+/u';
+        preg_match_all($pattern, $text, $matches);
 
-        // Build unigrams and bigrams with frequency.
-        $unigramFreq = [];
-        $bigramFreq = [];
-        $unigramFirstSeen = [];
-        $bigramFirstSeen = [];
-        $order = 0;
+        $unigramFreq = $bigramFreq = $phraseFreq = [];
+        $unigramFirstSeen = $bigramFirstSeen = $phraseFirstSeen = [];
+        $covered = [];
         $prev = null;
-
-        foreach ($tokens as $t) {
-            if (! isset($stopSet[$t])) {
-                $unigramFreq[$t] = ($unigramFreq[$t] ?? 0) + 1;
-                $unigramFirstSeen[$t] ??= $order;
-            }
-            if ($prev !== null) {
-                // Only keep bigrams where BOTH tokens are content words. "laravel and"
-                // and "and kubernetes" are noise; "distributed systems" and "rest apis"
-                // are the phrases worth matching against as a unit.
-                if (! isset($stopSet[$prev]) && ! isset($stopSet[$t])) {
-                    $bg = $prev.' '.$t;
-                    $bigramFreq[$bg] = ($bigramFreq[$bg] ?? 0) + 1;
-                    $bigramFirstSeen[$bg] ??= $order;
+        foreach ($matches[0] as $order => $token) {
+            $t = preg_replace('/\s+/u', ' ', $token);
+            if (isset($aliases[$t])) {
+                $canonical = $aliases[$t];
+                $phraseFreq[$canonical] = ($phraseFreq[$canonical] ?? 0) + 1;
+                $phraseFirstSeen[$canonical] ??= $order;
+                foreach ($catalog['phrases'][$canonical] as $variant) {
+                    foreach (preg_split('/[^\p{L}\p{N}+#]+/u', $variant) as $part) {
+                        $covered[$part] = true;
+                    }
                 }
+                $prev = null;
+
+                continue;
+            }
+            // Punctuation, short words, and stopwords break adjacency; removing
+            // them must never manufacture a technical phrase or a repeated bigram.
+            if (isset($stopSet[$t]) || mb_strlen($t) < 3
+                || preg_match('/^\p{N}+$|[^\p{L}\p{N}+#]/u', $t)) {
+                $prev = null;
+
+                continue;
+            }
+            $unigramFreq[$t] = ($unigramFreq[$t] ?? 0) + 1;
+            $unigramFirstSeen[$t] ??= $order;
+            if ($prev !== null) {
+                $bg = $prev.' '.$t;
+                $bigramFreq[$bg] = ($bigramFreq[$bg] ?? 0) + 1;
+                $bigramFirstSeen[$bg] ??= $order;
             }
             $prev = $t;
-            $order++;
         }
 
         // Only keep bigrams that appear MORE THAN ONCE. A single-occurrence bigram is
@@ -523,7 +506,6 @@ class AtsScoringService
         // Bigrams win over their constituent unigrams — but only KEPT bigrams. If
         // "cloud platform" is a repeated phrase, drop bare "cloud" and "platform" so
         // the CV isn't double-credited; if it appeared once, keep the unigrams.
-        $covered = [];
         foreach (array_keys($keptBigrams) as $bg) {
             foreach (explode(' ', $bg) as $part) {
                 $covered[$part] = true;
@@ -531,6 +513,9 @@ class AtsScoringService
         }
 
         $terms = [];
+        foreach ($phraseFreq as $phrase => $freq) {
+            $terms[] = ['term' => $phrase, 'freq' => $freq, 'order' => $phraseFirstSeen[$phrase], 'len' => count(explode(' ', $phrase)) + 1];
+        }
         foreach ($keptBigrams as $bg => $freq) {
             $terms[] = ['term' => $bg, 'freq' => $freq, 'order' => $bigramFirstSeen[$bg], 'len' => 2];
         }
@@ -550,10 +535,32 @@ class AtsScoringService
             if ($a['len'] !== $b['len']) {
                 return $b['len'] <=> $a['len'];
             }
+
             return $a['order'] <=> $b['order'];
         });
 
         return array_slice(array_map(static fn (array $t): string => $t['term'], $terms), 0, 25);
+    }
+
+    /** Literal data only: no guessing Arabic spelling or logical/visual order. */
+    private static function jobTermCatalog(): array
+    {
+        static $catalog = null;
+        if ($catalog === null) {
+            $data = require __DIR__.'/../../resources/ats/job_terms.php';
+            $normalize = fn (string $term): string => self::normalizeArabic(mb_strtolower($term));
+            $catalog = ['stopwords' => array_map($normalize, $data['stopwords']), 'phrases' => []];
+            foreach ($data['phrases'] as $canonical => $aliases) {
+                $catalog['phrases'][$normalize($canonical)] = array_unique(array_map($normalize, [$canonical, ...$aliases]));
+            }
+        }
+
+        return $catalog;
+    }
+
+    private static function literalPhrasePattern(string $phrase): string
+    {
+        return '(?<![\p{L}\p{N}+#])'.str_replace(' ', '\s+', preg_quote($phrase, '/')).'(?![\p{L}\p{N}+#])';
     }
 
     private function matchKeyword(string $rawText, string $lowerText, string $normalizedText, string $keyword): bool
@@ -561,6 +568,14 @@ class AtsScoringService
         $kw = mb_strtolower(trim($keyword));
         if ($kw === '') {
             return false;
+        }
+
+        $canonical = self::normalizeArabic($kw);
+        $aliases = self::jobTermCatalog()['phrases'][$canonical] ?? null;
+        if ($aliases !== null) {
+            $pattern = '/'.implode('|', array_map(self::literalPhrasePattern(...), $aliases)).'/u';
+
+            return (bool) preg_match($pattern, self::normalizeArabic($lowerText));
         }
 
         // Common English keyword stems

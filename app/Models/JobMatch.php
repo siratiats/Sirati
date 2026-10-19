@@ -24,6 +24,8 @@ class JobMatch extends Model
             'weaknesses' => 'array',
             'ai_feedback' => 'array',
             'applied_suggestion_ids' => 'array',
+            'confirmed_fact_keys' => 'array',
+            'suggestion_application_audit' => 'array',
             'cv_snapshot' => 'array',
             'ai_status' => AiStatus::class,
         ];
