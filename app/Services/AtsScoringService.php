@@ -222,6 +222,7 @@ class AtsScoringService
         $criteria = [];
         foreach (self::CRITERIA_META as $key => $meta) {
             $criteria[$key] = [
+                'key' => $key,
                 'score' => $scoresByKey[$key],
                 'max' => $meta['max'],
                 'label' => $meta['label'],
