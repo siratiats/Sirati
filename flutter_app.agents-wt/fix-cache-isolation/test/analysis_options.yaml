@@ -1,0 +1,7 @@
+# Tests decode JSON payloads and assert on nested dynamic maps; the
+# avoid_dynamic_calls rule stays on for lib/ where it guards real parsing.
+include: ../analysis_options.yaml
+
+linter:
+  rules:
+    avoid_dynamic_calls: false

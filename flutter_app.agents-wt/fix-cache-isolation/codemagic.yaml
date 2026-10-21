@@ -1,0 +1,113 @@
+workflows:
+  android-preview:
+    name: Android App Preview
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+
+    environment:
+      flutter: stable
+      vars:
+        SIRATI_API_BASE_URL: "https://sirati-main-shokc5.laravel.cloud/api"
+
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Analyze
+        script: flutter analyze
+
+      # Goldens are OS/engine-sensitive (Windows baselines vs macOS CI).
+      # Tagged `golden` — excluded here; run locally / on matching OS instead.
+      - name: Run tests
+        script: flutter test --exclude-tags golden
+
+      - name: Build Android debug APK for App Preview
+        script: |
+          flutter build apk --debug \
+            --dart-define=SIRATI_API_BASE_URL=$SIRATI_API_BASE_URL \
+            --dart-define=SENTRY_DSN=$SENTRY_DSN \
+            --dart-define=SENTRY_ENVIRONMENT=preview
+
+    artifacts:
+      - build/app/outputs/flutter-apk/app-debug.apk
+
+  ios-preview:
+    name: iOS Simulator App Preview
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+
+    environment:
+      flutter: stable
+      xcode: latest
+      vars:
+        SIRATI_API_BASE_URL: "https://sirati-main-shokc5.laravel.cloud/api"
+
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+
+      - name: Analyze
+        script: flutter analyze
+
+      - name: Run tests
+        script: flutter test --exclude-tags golden
+
+      - name: Build iOS simulator app for App Preview
+        script: |
+          flutter build ios --simulator --debug \
+            --dart-define=SIRATI_API_BASE_URL=$SIRATI_API_BASE_URL \
+            --dart-define=SENTRY_DSN=$SENTRY_DSN \
+            --dart-define=SENTRY_ENVIRONMENT=preview
+
+    artifacts:
+      - build/ios/iphonesimulator/Runner.app
+
+  ios-testflight:
+    name: iOS TestFlight Release
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: Codemagic Sirati CI
+    environment:
+      flutter: stable
+      # App Store uploads require the iOS 26 SDK (Xcode 26).
+      xcode: 26
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.sirati.sirati
+      vars:
+        SIRATI_API_BASE_URL: "https://sirati-main-shokc5.laravel.cloud/api"
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Install CocoaPods
+        script: |
+          cd ios
+          if [ -f Podfile.lock ]; then
+            pod install --deployment
+          else
+            echo "Podfile.lock is missing; commit it after the next macOS pod install."
+            pod install
+          fi
+          cd ..
+      - name: Analyze
+        script: flutter analyze
+      - name: Run tests
+        script: flutter test --exclude-tags golden
+      - name: Set up code signing
+        script: xcode-project use-profiles
+      - name: Validate privacy manifest
+        script: plutil -lint ios/Runner/PrivacyInfo.xcprivacy
+      - name: Build iOS IPA
+        script: |
+          BUILD_NUM=${BUILD_NUMBER:-22}
+          flutter build ipa --release \
+            --build-number=$BUILD_NUM \
+            --dart-define=SIRATI_API_BASE_URL=$SIRATI_API_BASE_URL
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Sirati')</title>
+    <title>@yield('title', 'Siratie')</title>
     <style>
         :root {
             --sir-primary: #0ea5e9;
@@ -542,7 +542,7 @@
                         <circle cx="78" cy="23" r="6"></circle>
                     </svg>
                 </span>
-                <span>Sirati</span>
+                <span>Siratie</span>
             </a>
             <div class="links">
                 <a href="{{ route('landing') }}">الرئيسية</a>

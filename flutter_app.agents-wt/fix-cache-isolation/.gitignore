@@ -1,0 +1,29 @@
+# Flutter & Dart build / tool artifacts
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+.metadata
+
+# Logs & archives
+*.log
+*.zip
+
+# IDE & editors
+.idea/
+*.iml
+.vscode/
+
+# Local design mockups
+new_design/
+new_stitch_design/
+
+# Golden tests & generated l10n
+lib/l10n/generated/
+test/golden/failures/
+.agents/logs/
+.env
+.env.local

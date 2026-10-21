@@ -1,6 +1,6 @@
 @extends('layouts.sirati')
 
-@section('title', 'نتيجة تحليل السيرة | Sirati')
+@section('title', 'نتيجة تحليل السيرة | Siratie')
 
 @section('content')
     <section class="grid grid-2">

@@ -14,7 +14,7 @@
 
 Hello {{ $name ?? '' }},
 
-Use this verification code to confirm your email in the Sirati app:
+Use this verification code to confirm your email in the Siratie app:
 
 {{ $code }}
 

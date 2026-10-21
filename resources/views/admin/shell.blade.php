@@ -2,7 +2,7 @@
 
 @section('html_lang', 'en')
 @section('html_dir', 'ltr')
-@section('title', trim($__env->yieldContent('admin_title', 'Admin')).' | Sirati Admin')
+@section('title', trim($__env->yieldContent('admin_title', 'Admin')).' | Siratie Admin')
 @section('body_class', 'admin-body')
 @section('page_class', 'admin-page')
 @section('hide_nav', true)
@@ -23,7 +23,7 @@
     @endphp
 
     <div class="admin-shell">
-        <div class="admin-mobile-bar"><a class="admin-sidebar-brand" href="{{ route('admin.index') }}"><span class="mark" aria-hidden="true"><svg viewBox="0 0 100 100" role="img" focusable="false"><path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27"></path><circle cx="78" cy="23" r="6"></circle></svg></span><span><strong>Sirati Admin</strong><span>Application management</span></span></a><button class="button button-secondary" type="button" data-admin-menu-toggle aria-controls="admin-sidebar" aria-expanded="false">Menu</button></div>
+        <div class="admin-mobile-bar"><a class="admin-sidebar-brand" href="{{ route('admin.index') }}"><span class="mark" aria-hidden="true"><svg viewBox="0 0 100 100" role="img" focusable="false"><path d="M22 55 C26 64 34 73 41 73 C47 73 51 66 56 58 C63 47 69 36 75 27"></path><circle cx="78" cy="23" r="6"></circle></svg></span><span><strong>Siratie Admin</strong><span>Application management</span></span></a><button class="button button-secondary" type="button" data-admin-menu-toggle aria-controls="admin-sidebar" aria-expanded="false">Menu</button></div>
         <button class="admin-sidebar-backdrop" type="button" data-admin-menu-close aria-label="Close admin navigation"></button>
         <aside class="admin-sidebar" id="admin-sidebar" aria-label="Admin navigation">
             <a class="admin-sidebar-brand" href="{{ route('admin.index') }}">
@@ -34,7 +34,7 @@
                     </svg>
                 </span>
                 <span>
-                    <strong>Sirati Admin</strong>
+                    <strong>Siratie Admin</strong>
                     <span>Application management</span>
                 </span>
             </a>
@@ -61,8 +61,8 @@
             <header class="admin-topbar">
                 <div>
                     <span class="admin-eyebrow">@yield('admin_eyebrow', 'Operations')</span>
-                    <h1>@yield('admin_heading', 'Sirati Admin')</h1>
-                    <p>@yield('admin_description', 'Manage the data and workflows that power the Sirati application.')</p>
+                    <h1>@yield('admin_heading', 'Siratie Admin')</h1>
+                    <p>@yield('admin_description', 'Manage the data and workflows that power the Siratie application.')</p>
                 </div>
                 <div class="admin-topbar-actions">
                     @yield('admin_actions')

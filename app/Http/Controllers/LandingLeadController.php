@@ -27,6 +27,6 @@ class LandingLeadController extends Controller
 
         return redirect()
             ->route('landing')
-            ->with('status', 'تم تسجيل اهتمامك بنجاح. سنرسل لك نسخة تجربة Sirati عند إطلاقها.');
+            ->with('status', 'تم تسجيل اهتمامك بنجاح. سنرسل لك نسخة تجربة Siratie عند إطلاقها.');
     }
 }

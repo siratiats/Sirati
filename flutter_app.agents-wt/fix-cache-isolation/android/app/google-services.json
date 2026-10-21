@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "723811480072",
+    "project_id": "sirati-98cef",
+    "storage_bucket": "sirati-98cef.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:723811480072:android:c5fa26859f06b3465b57bd",
+        "android_client_info": {
+          "package_name": "com.sirati.sirati"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpgNml2Lwqy_qEPmUYeA7YBSZszGobxT8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,6 +1,6 @@
 @extends('layouts.sirati')
 
-@section('title', 'فحص السيرة | Sirati')
+@section('title', 'فحص السيرة | Siratie')
 
 @section('content')
     <section class="hero-card">

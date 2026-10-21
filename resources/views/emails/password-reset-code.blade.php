@@ -61,7 +61,7 @@
                     Hello{{ $name !== '' ? ' '.$name : '' }},
                 </p>
                 <p style="margin:0 0 8px 0; font-size:15px; line-height:1.65; color:#3C4947; text-align:left;">
-                    Use this code to reset your password in the Sirati app:
+                    Use this code to reset your password in the Siratie app:
                 </p>
 
                 @include('emails.partials.otp-code-box', ['code' => $code])

@@ -2,7 +2,7 @@
 
 @section('html_lang', 'en')
 @section('html_dir', 'ltr')
-@section('title', 'Admin Login | Sirati')
+@section('title', 'Admin Login | Siratie')
 
 @section('content')
     <section class="hero-card" style="max-width: 560px; margin: 0 auto;">

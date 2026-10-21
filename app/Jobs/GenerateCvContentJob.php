@@ -139,8 +139,8 @@ class GenerateCvContentJob implements ShouldQueue
                     ? ($english ? 'Your CV is ready' : 'سيرتك الذاتية جاهزة')
                     : ($english ? 'CV generation did not finish' : 'تعذر إكمال توليد السيرة'),
                 $completed
-                    ? ($english ? 'Open Sirati to review and export your CV.' : 'افتح سيرتي لمراجعة السيرة وتصديرها.')
-                    : ($english ? 'Open Sirati to see what went wrong and retry.' : 'افتح سيرتي لمعرفة السبب وإعادة المحاولة.'),
+                    ? ($english ? 'Open Siratie to review and export your CV.' : 'افتح سيرتي لمراجعة السيرة وتصديرها.')
+                    : ($english ? 'Open Siratie to see what went wrong and retry.' : 'افتح سيرتي لمعرفة السبب وإعادة المحاولة.'),
                 $completed ? 'cv_ready' : 'cv_failed',
                 'open_cv',
                 '/cv/'.$generatedCv->id,

@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      { "type": "command", "bash": "node guard.cjs", "powershell": "node guard.cjs", "cwd": ".agents", "timeoutSec": 10 }
+    ]
+  }
+}

@@ -30,7 +30,7 @@ class CvTextExtractor
                 'pdf' => $this->extractPdf($file->getRealPath()),
                 'txt' => Utf8Sanitizer::sanitize((string) file_get_contents($file->getRealPath())),
                 default => throw ValidationException::withMessages([
-                    'resume_file' => 'يدعم Sirati حالياً ملفات PDF و TXT فقط.',
+                    'resume_file' => 'يدعم Siratie حالياً ملفات PDF و TXT فقط.',
                 ]),
             };
         }

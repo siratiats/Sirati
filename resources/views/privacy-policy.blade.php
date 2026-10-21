@@ -1,6 +1,6 @@
 @extends('layouts.sirati')
 
-@section('title', 'سياسة الخصوصية | Sirati')
+@section('title', 'سياسة الخصوصية | Siratie')
 
 @section('content')
     <section class="hero-card">
@@ -62,7 +62,7 @@
 
         <h2>English Summary & Compliance Overview</h2>
         <p>
-            Sirati complies with the Saudi Personal Data Protection Law (PDPL). We process personal data strictly to provide ATS analysis, CV generation, job recommendations, and account services. We never sell your data or use it for advertising. Third-party sub-processors include <strong>OpenAI / DeepInfra</strong> (AI content generation), <strong>RevenueCat</strong> (in-app subscription entitlement management), <strong>Google Firebase</strong> (push notifications), and <strong>Sentry</strong> (crash diagnostics with sensitive PII scrubbed). Guest CV submissions are retained temporarily for up to 24 hours and permanently pruned. Registered users may permanently delete their entire account and all associated CV data at any time via in-app settings (DELETE /api/auth/account). For privacy questions, contact <a href="mailto:support@siratie.com">support@siratie.com</a>.
+            Siratie complies with the Saudi Personal Data Protection Law (PDPL). We process personal data strictly to provide ATS analysis, CV generation, job recommendations, and account services. We never sell your data or use it for advertising. Third-party sub-processors include <strong>OpenAI / DeepInfra</strong> (AI content generation), <strong>RevenueCat</strong> (in-app subscription entitlement management), <strong>Google Firebase</strong> (push notifications), and <strong>Sentry</strong> (crash diagnostics with sensitive PII scrubbed). Guest CV submissions are retained temporarily for up to 24 hours and permanently pruned. Registered users may permanently delete their entire account and all associated CV data at any time via in-app settings (DELETE /api/auth/account). For privacy questions, contact <a href="mailto:support@siratie.com">support@siratie.com</a>.
         </p>
     </section>
 @endsection

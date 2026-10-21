@@ -704,7 +704,7 @@ final readonly class CvDocument implements JsonSerializable
 
         return [
             '$id' => 'sirati.cv_document.v'.self::SCHEMA_VERSION,
-            'title' => 'Sirati CV Document',
+            'title' => 'Siratie CV Document',
             'type' => 'object',
             'additionalProperties' => false,
             'required' => ['schema_version', 'export_language', 'personal', 'summary'],

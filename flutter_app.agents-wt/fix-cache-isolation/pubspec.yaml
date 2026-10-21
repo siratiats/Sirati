@@ -1,0 +1,86 @@
+name: sirati
+description: CV analysis and generation app powered by Sirati backend.
+publish_to: 'none'
+version: 1.0.0+25
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_localizations:
+    sdk: flutter
+
+  intl: '>=0.19.0 <0.21.0'
+
+  # HTTP client for Laravel backend API calls
+  http: ^1.2.0
+
+  # File picker for CV upload (PDF/TXT)
+  file_picker: ^8.0.0
+
+  # Open URLs (PDF download, share links)
+  url_launcher: ^6.3.0
+
+  # Share CV as PDF
+  share_plus: ^10.1.0
+
+  # Google Sign-In
+  google_sign_in: ^6.2.0
+
+  # Apple Sign-In (iOS only)
+  sign_in_with_apple: ^6.1.0
+
+  # Secure token storage
+  flutter_secure_storage: ^9.0.0
+
+  # Lightweight JSON disk cache (offline last-known content)
+  shared_preferences: ^2.3.0
+
+  # Firebase
+  firebase_core: ^4.13.0
+  firebase_messaging: ^16.5.0
+  firebase_crashlytics: ^5.2.7
+  sentry_flutter: ^9.25.0
+
+  # Local notifications (foreground display)
+  flutter_local_notifications: ^19.0.0
+
+  # Device identification
+  device_info_plus: ^10.1.0
+
+  # System in-app review prompt (rate-limited by the OS)
+  in_app_review: ^2.0.10
+  flutter_riverpod: ^3.4.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  shared_preferences_platform_interface: ^2.4.1
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.3
+  analyzer: ^6.4.1
+
+flutter:
+  generate: true
+  uses-material-design: true
+
+  fonts:
+    - family: IBM Plex Sans Arabic
+      fonts:
+        - asset: assets/fonts/IBMPlexSansArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSansArabic-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/IBMPlexSansArabic-Bold.ttf
+          weight: 700
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/branding/sirati_app_icon_1024.png
+  min_sdk_android: 21
+  adaptive_icon_background: "#12384F"
+  adaptive_icon_foreground: assets/branding/sirati_app_icon_1024.png

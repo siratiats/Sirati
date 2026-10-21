@@ -38,7 +38,7 @@ class PasswordResetCode extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $appName = config('app.name', 'Sirati');
+        $appName = config('app.name', 'Siratie');
         $minutes = min(
             (int) config('auth.passwords.users.expire', 60),
             (int) config('auth.verification.expire', 15),

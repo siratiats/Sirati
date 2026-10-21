@@ -1,0 +1,28 @@
+# Lints: flutter_lints baseline + rules that catch real bugs (unawaited
+# futures, dynamic calls, leaked streams, BuildContext across async gaps) and
+# keep diffs consistent (quotes, import order).
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - new_design/uploads/**
+    - lib/l10n/generated/**
+
+linter:
+  rules:
+    # Correctness
+    - unawaited_futures
+    - avoid_dynamic_calls
+    - cancel_subscriptions
+    - close_sinks
+    - use_build_context_synchronously
+    - always_declare_return_types
+    # Consistency
+    - prefer_single_quotes
+    - directives_ordering
+    - prefer_final_locals
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - unnecessary_lambdas
+    - use_super_parameters
+    - avoid_print

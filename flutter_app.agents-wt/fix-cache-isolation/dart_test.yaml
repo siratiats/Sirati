@@ -1,0 +1,6 @@
+# Declares custom tags used by flutter_test (see test/golden/*).
+tags:
+  golden:
+    description: >
+      Pixel golden tests. OS/engine sensitive — Codemagic excludes these via
+      `flutter test --exclude-tags golden`.

@@ -1,0 +1,34 @@
+# Normalize line endings for cross-platform Flutter development.
+* text=auto eol=lf
+
+# Explicit text
+*.dart text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.gradle text eol=lf
+*.properties text eol=lf
+*.kt text eol=lf
+*.swift text eol=lf
+*.plist text eol=lf
+
+# Binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.jar binary
+*.aar binary
+*.so binary
+*.dll binary
+*.exe binary
+*.apk binary
+*.aab binary

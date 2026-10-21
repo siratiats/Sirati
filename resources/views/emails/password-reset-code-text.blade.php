@@ -14,7 +14,7 @@
 
 Hello {{ $name ?? '' }},
 
-Use this code to reset your password in the Sirati app:
+Use this code to reset your password in the Siratie app:
 
 {{ $code }}
 

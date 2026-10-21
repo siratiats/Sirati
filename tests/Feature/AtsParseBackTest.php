@@ -202,7 +202,7 @@ class AtsParseBackTest extends TestCase
         // Metadata assertions (SIRATI-45 AC 47)
         $this->assertStringContainsString('Nora Al-Mansoor', (string) ($details['Author'] ?? ''));
         $this->assertStringContainsString('Nora Al-Mansoor', (string) ($details['Title'] ?? ''));
-        $this->assertSame('Sirati CV Platform', (string) ($details['Creator'] ?? ''));
+        $this->assertSame('Siratie CV Platform', (string) ($details['Creator'] ?? ''));
     }
 
     public function test_generated_mixed_runs_round_trip_exactly_across_pdf_pages_without_mutating_source(): void

@@ -235,9 +235,9 @@ class CvTemplateRenderer
         // Document Metadata (SIRATI-45 AC 47)
         $docTitle = trim($cv['candidate']['name'].' - '.$cv['candidate']['target_job_title']);
         $pdf->SetTitle($docTitle !== '' ? $docTitle : 'Curriculum Vitae');
-        $pdf->SetAuthor($cv['candidate']['name'] ?: 'Sirati User');
+        $pdf->SetAuthor($cv['candidate']['name'] ?: 'Siratie User');
         $pdf->SetSubject('Curriculum Vitae');
-        $pdf->SetCreator('Sirati CV Platform');
+        $pdf->SetCreator('Siratie CV Platform');
 
         $css = '';
         $body = $html;
