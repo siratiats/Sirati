@@ -167,6 +167,37 @@ class CvMvpTest extends TestCase
             ->assertJsonPath('data.items.0.badge', 'ATS 92%');
     }
 
+    public function test_mobile_my_cvs_badge_is_empty_when_a_cv_has_no_score(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        foreach ([null, 0, 64] as $score) {
+            GeneratedCv::create([
+                'user_id' => $user->id,
+                'full_name' => 'Salem Sayer',
+                'target_job_title' => 'Role '.var_export($score, true),
+                'language' => 'en',
+                'skills_input' => 'SQL',
+                'experience_input' => 'Experience text with enough characters to pass validation and score well.',
+                'education_input' => 'Bachelor of Data Science',
+                'generated_markdown' => '# Salem Sayer',
+                'form_payload' => [],
+                'ai_status' => 'not_configured',
+                'score_total' => $score,
+                'grade' => $score === null ? null : 'B',
+                'criteria' => [],
+            ]);
+        }
+
+        $items = collect($this->getJson('/api/mobile/my-cvs?lang=en')->assertOk()->json('data.items'))
+            ->keyBy('title');
+
+        $this->assertSame('', $items['Role NULL']['badge'], 'an unscored CV must not show "ATS %"');
+        $this->assertSame('ATS 0%', $items['Role 0']['badge']);
+        $this->assertSame('ATS 64%', $items['Role 64']['badge']);
+    }
+
     public function test_mobile_cv_data_is_scoped_to_authenticated_user(): void
     {
         $owner = User::factory()->create();

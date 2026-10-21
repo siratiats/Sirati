@@ -81,7 +81,7 @@ class MobileContentController extends Controller
                 'id' => $cv->id,
                 'title' => $cv->target_job_title ?: $cv->full_name,
                 'updated_label' => $this->updatedLabel($cv->updated_at, $language),
-                'badge' => 'ATS '.$cv->score_total.'%',
+                'badge' => $cv->score_total === null ? '' : 'ATS '.$cv->score_total.'%',
                 'score_total' => $cv->score_total,
                 'is_draft' => false,
                 'can_download' => true,
