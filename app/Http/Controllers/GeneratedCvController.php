@@ -175,7 +175,7 @@ class GeneratedCvController extends Controller
 
         $queueAi = $request->header('X-Sirati-Async') === '1';
         $generatedCv = $this->createGeneratedCv(
-            $this->payloadFromAnalysis($analysis, $overrides),
+            $this->payloadFromAnalysis($analysis, $overrides, (string) $request->user()->name),
             $openAi,
             $scorer,
             $request->user()->id,
@@ -536,7 +536,7 @@ class GeneratedCvController extends Controller
         ];
     }
 
-    private function payloadFromAnalysis(CvAnalysis $analysis, array $overrides): array
+    private function payloadFromAnalysis(CvAnalysis $analysis, array $overrides, string $accountName = ''): array
     {
         $resumeText = $analysis->resume_text;
         $skills = array_values(array_unique(array_filter([
@@ -546,7 +546,7 @@ class GeneratedCvController extends Controller
 
         return [
             'full_name' => $this->filledValue($overrides['full_name'] ?? null)
-                ?? $this->guessFullName($resumeText),
+                ?? $this->guessFullName($resumeText, $accountName),
             'email' => $this->filledValue($overrides['email'] ?? null)
                 ?? $this->firstMatch('/[\w.+-]+@[\w-]+\.\w+/u', $resumeText),
             'phone' => $this->filledValue($overrides['phone'] ?? null)
@@ -578,13 +578,27 @@ class GeneratedCvController extends Controller
         return $analysis->resume_text."\n\nتحسينات مطلوبة:\n- ".implode("\n- ", $quickWins);
     }
 
-    private function guessFullName(string $resumeText): string
+    /**
+     * The first non-empty line when it reads like a name: a plain line or an H1 ("# Sara Test").
+     * A section heading ("## Summary") or an over-long line means the text has no name header,
+     * so the account name is used instead of guessing from the body.
+     */
+    private function guessFullName(string $resumeText, string $accountName = ''): string
     {
-        $firstLine = collect(preg_split('/\R/u', $resumeText) ?: [])
-            ->map(fn (string $line) => trim($line))
-            ->first(fn (string $line) => $line !== '' && mb_strlen($line) <= 160);
+        foreach (preg_split('/\R/u', $resumeText) ?: [] as $raw) {
+            $line = trim((string) $raw);
+            if ($line === '') {
+                continue;
+            }
+            $isHeading = (bool) preg_match('/^#{2,}\s/u', $line);
+            $name = trim((string) preg_replace('/^#\s+/u', '', $line));
+            if (! $isHeading && $name !== '' && mb_strlen($name) <= 160) {
+                return $name;
+            }
+            break;
+        }
 
-        return $firstLine ?: 'صاحب السيرة';
+        return trim($accountName) !== '' ? trim($accountName) : 'صاحب السيرة';
     }
 
     private function firstMatch(string $pattern, string $text): ?string
