@@ -27,3 +27,14 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 
 ## Subscriptions (decision 2026-10-19)
 - Premium is Apple in-app purchase via RevenueCat. Apple verification is pending (about 2026-10-26), so the Flutter app deliberately has NO purchase SDK, restore flow or checkout yet. Do not build or fake one: the paywall only explains premium and re-reads server entitlement (`/auth/me`). The backend plans API and RevenueCat webhook already exist.
+
+## Flutter UI work learnings (2026-10-19..21)
+- Generated l10n (`lib/l10n/generated/`) is git-ignored: run `flutter pub get && flutter gen-l10n` in every fresh checkout/worktree, or branding/l10n tests fail with stale strings ("Sirati" instead of "Siratie").
+- Merging ARB files: use a structural key union (add keys from both sides, conflict only when both changed the same key), never text-merge; check en/ar key parity after.
+- Worktrees: `test/ci_workflow_test.dart` fails in a worktree only (`../.github` missing); it passes on main. Merge to main, then run the full suite once.
+- Coders: Codex wrapper cannot run Flutter (sandbox) so it writes tests blind; Grok and Antigravity can run Flutter; Muse cannot run Flutter or edit the nested repo (read-only audits only). Antigravity often returns no report. Grok hit its turn cap on 100+ turn jobs: keep tasks small.
+- Fonts: only IBM Plex Sans Arabic 400/600/700 are shipped; never use w500/w800. A runtime test (`shipped_font_weights_test.dart`) checks pumped feature widgets.
+- Design system: disabled/loading buttons must stay distinct and pass AA; form fields keep their own InputDecoration chrome (do not wrap the TextField in a filled container: it tints helper text); reduced motion must stop indeterminate animations; contrast probe counts each opacity layer once.
+- Check ATS: hub passes `initialCvId` + `initialMarkdown` through the route table; supplied markdown is used without refetch.
+- Production API is https://siratie.com/api; pushing the Laravel repo does not auto-deploy (checked 2026-10-21: new `/api/job-matches` 404 until the server pulls, migrates and restarts the queue worker).
+- The Flutter and Laravel git remotes embed access tokens in their URLs: never print `git remote -v`.
