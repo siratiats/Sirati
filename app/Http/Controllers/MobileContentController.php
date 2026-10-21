@@ -6,6 +6,7 @@ use App\Http\Resources\JobTitleResource;
 use App\Models\CvTemplate;
 use App\Models\EducationContent;
 use App\Models\GeneratedCv;
+use App\Models\JobMatch;
 use App\Models\JobNews;
 use App\Models\JobTitle;
 use App\Models\MobileNotification;
@@ -57,7 +58,7 @@ class MobileContentController extends Controller
                 ],
                 'latest_cv' => $latestGeneratedCv ? [
                     'id' => $latestGeneratedCv->id,
-                    'title' => $latestGeneratedCv->target_job_title,
+                    'title' => $this->displayTitles($request, [$latestGeneratedCv], $language)[$latestGeneratedCv->id] ?? $latestGeneratedCv->target_job_title,
                     'score_total' => $latestGeneratedCv->score_total,
                     'updated_at' => $latestGeneratedCv->updated_at?->toISOString(),
                 ] : null,
@@ -65,11 +66,43 @@ class MobileContentController extends Controller
         ];
     }
 
+    /**
+     * A copy created by applying Job Match edits keeps its original's headline, so the CV
+     * lists show it as "<headline> — <job title>" (or "(tailored)") to tell the two apart.
+     *
+     * @param  iterable<GeneratedCv>  $cvs
+     * @return array<int, string> display title by generated CV id
+     */
+    private function displayTitles(Request $request, iterable $cvs, string $language): array
+    {
+        $cvs = collect($cvs);
+        $matches = JobMatch::where('user_id', $request->user()->id)
+            ->whereIn('applied_generated_cv_id', $cvs->pluck('id'))
+            ->get(['applied_generated_cv_id', 'target_job_title'])
+            ->keyBy('applied_generated_cv_id');
+
+        return $cvs->mapWithKeys(function (GeneratedCv $cv) use ($matches, $language): array {
+            $base = (string) ($cv->target_job_title ?: $cv->full_name);
+            $match = $matches->get($cv->id);
+            if ($match === null) {
+                return [$cv->id => $base];
+            }
+            $job = trim((string) $match->target_job_title);
+            $title = $job !== '' && mb_strtolower($job) !== mb_strtolower(trim($base))
+                ? $base.' — '.$job
+                : $base.($language === 'en' ? ' (tailored)' : ' (مخصصة)');
+
+            return [$cv->id => $title];
+        })->all();
+    }
+
     public function myCvs(Request $request): array
     {
         $language = $this->language($request);
         $publicBaseUrl = rtrim((string) config('app.public_url', 'https://siratie.com'), '/');
-        $items = $request->user()->generatedCvs()->latest()->limit(20)->get()->map(function (GeneratedCv $cv) use ($language, $publicBaseUrl): array {
+        $cvs = $request->user()->generatedCvs()->latest()->limit(20)->get();
+        $titles = $this->displayTitles($request, $cvs, $language);
+        $items = $cvs->map(function (GeneratedCv $cv) use ($language, $publicBaseUrl, $titles): array {
             $signedPath = URL::temporarySignedRoute(
                 'api.generated-cvs.pdf',
                 now()->addDays(7),
@@ -79,7 +112,7 @@ class MobileContentController extends Controller
 
             return [
                 'id' => $cv->id,
-                'title' => $cv->target_job_title ?: $cv->full_name,
+                'title' => $titles[$cv->id] ?? ($cv->target_job_title ?: $cv->full_name),
                 'updated_label' => $this->updatedLabel($cv->updated_at, $language),
                 'badge' => $cv->score_total === null ? '' : 'ATS '.$cv->score_total.'%',
                 'score_total' => $cv->score_total,

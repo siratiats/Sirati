@@ -108,6 +108,37 @@ class JobMatchApplyTest extends TestCase
         Queue::assertNothingPushed();
     }
 
+    public function test_tailored_copy_is_named_apart_from_its_original_in_the_cv_lists(): void
+    {
+        $user = $this->premiumUser();
+        Sanctum::actingAs($user);
+
+        $cases = [
+            // [match job title, list language, expected title builder from the original title]
+            [null, 'en', fn (string $base) => $base.' (tailored)'],
+            ['Platform Engineer', 'en', fn (string $base) => $base.' — Platform Engineer'],
+            [null, 'ar', fn (string $base) => $base.' (مخصصة)'],
+        ];
+
+        foreach ($cases as [$jobTitle, $lang, $expected]) {
+            $cv = $this->savedCv($user, $this->richDocument());
+            $skill = $this->suggestion('skill', 'skills', 'name', '', 'Kubernetes');
+            $match = $this->createMatch($user, $cv, [$skill]);
+            if ($jobTitle !== null) {
+                $match->update(['target_job_title' => $jobTitle]);
+            }
+            $copyId = $this->postJson('/api/job-matches/'.$match->id.'/apply-suggestions', ['suggestion_keys' => ['skill']])
+                ->assertOk()->json('data.generated_cv.id');
+
+            $items = collect($this->getJson('/api/mobile/my-cvs?lang='.$lang)->assertOk()->json('data.items'))->keyBy('id');
+            $base = (string) $cv->fresh()->target_job_title;
+
+            $this->assertSame($base, $items[$cv->id]['title'], 'the original keeps its own title');
+            $this->assertSame($expected($base), $items[$copyId]['title']);
+            $this->assertNotSame($items[$cv->id]['title'], $items[$copyId]['title']);
+        }
+    }
+
     public function test_entries_without_ids_receive_stable_advice_targets_and_apply_through_the_api(): void
     {
         $user = $this->premiumUser();
