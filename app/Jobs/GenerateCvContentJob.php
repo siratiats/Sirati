@@ -142,8 +142,8 @@ class GenerateCvContentJob implements ShouldQueue
                     ? ($english ? 'Open Siratie to review and export your CV.' : 'افتح سيرتي لمراجعة السيرة وتصديرها.')
                     : ($english ? 'Open Siratie to see what went wrong and retry.' : 'افتح سيرتي لمعرفة السبب وإعادة المحاولة.'),
                 $completed ? 'cv_ready' : 'cv_failed',
-                'open_cv',
-                '/cv/'.$generatedCv->id,
+                'screen',
+                'my-cvs/'.$generatedCv->id,
                 ['generated_cv_id' => (string) $generatedCv->id],
             );
         } catch (Throwable $exception) {

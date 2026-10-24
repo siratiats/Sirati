@@ -251,8 +251,8 @@ class AsyncCvAiTest extends TestCase
         Queue::assertPushed(SendPushNotificationJob::class, function (SendPushNotificationJob $job) use ($user, $generatedCv) {
             return $job->userId === $user->id
                 && $job->type === 'cv_failed'
-                && $job->actionType === 'open_cv'
-                && $job->actionUrl === '/cv/'.$generatedCv->id
+                && $job->actionType === 'screen'
+                && $job->actionUrl === 'my-cvs/'.$generatedCv->id
                 && $job->title === 'CV generation did not finish';
         });
     }
@@ -271,8 +271,8 @@ class AsyncCvAiTest extends TestCase
         Queue::assertPushed(SendPushNotificationJob::class, function (SendPushNotificationJob $job) use ($user, $generatedCv) {
             return $job->userId === $user->id
                 && $job->type === 'cv_failed'
-                && $job->actionType === 'open_cv'
-                && $job->actionUrl === '/cv/'.$generatedCv->id
+                && $job->actionType === 'screen'
+                && $job->actionUrl === 'my-cvs/'.$generatedCv->id
                 && $job->title === 'تعذر إكمال توليد السيرة'
                 && str_contains($job->body, 'افتح سيرتي لمعرفة السبب');
         });
@@ -303,8 +303,8 @@ class AsyncCvAiTest extends TestCase
         Queue::assertPushed(SendPushNotificationJob::class, function (SendPushNotificationJob $job) use ($user, $generatedCv) {
             return $job->userId === $user->id
                 && $job->type === 'cv_ready'
-                && $job->actionType === 'open_cv'
-                && $job->actionUrl === '/cv/'.$generatedCv->id
+                && $job->actionType === 'screen'
+                && $job->actionUrl === 'my-cvs/'.$generatedCv->id
                 && $job->title === 'سيرتك الذاتية جاهزة'
                 && str_contains($job->body, 'افتح سيرتي لمراجعة السيرة وتصديرها');
         });
