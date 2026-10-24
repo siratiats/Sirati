@@ -32,10 +32,10 @@ return [
 
     'anthropic' => [
         'api_key' => env('ANTHROPIC_API_KEY'),
-        // Haiku 4.5 ($1/$5 per MTok) is the closest tier to gpt-4.1-mini for the
-        // bake-off. Sonnet 4.5 is a superseded generation at $3/$15 and would
-        // measure a model you would not ship on cost grounds anyway.
-        'model' => env('ANTHROPIC_MODEL', 'claude-haiku-4-5'),
+        // Haiku 5.5 ($1/$5 per MTok) is the closest tier to gpt-4.1-mini for the
+        // bake-off. Sonnet 5.5 is at $3/$15 and would measure a model you would
+        // not ship on cost grounds anyway.
+        'model' => env('ANTHROPIC_MODEL', 'claude-haiku-5-5'),
         'base_url' => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com/v1'),
         'version' => env('ANTHROPIC_VERSION', '2023-06-01'),
         'timeout' => (int) env('ANTHROPIC_TIMEOUT', 30),
