@@ -12,6 +12,7 @@ use App\Services\Cv\LogicalTextMpdf;
 use App\Support\CvMarkdownIdentityBlock;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Mpdf\Config\ConfigVariables;
 use Mpdf\Config\FontVariables;
@@ -141,19 +142,7 @@ class CvTemplateRenderer
         CvTemplate $template,
         string $language,
     ): string {
-        $updatedAt = $generatedCv->updated_at;
-        $updatedKey = $updatedAt instanceof \DateTimeInterface
-            ? $updatedAt->format('U.u')
-            : (string) $updatedAt;
-
-        $cacheKey = 'cv-pdf-blob:'.hash('sha256', implode('|', [
-            self::RENDER_VERSION,
-            (string) $generatedCv->id,
-            $updatedKey,
-            $template->slug,
-            $language,
-            (string) ($generatedCv->ai_status?->value ?? ''),
-        ]));
+        $cacheKey = $this->pdfCacheKey($generatedCv, $template, $language);
 
         $cached = Cache::remember($cacheKey, 3600, function () use ($generatedCv, $template, $language): string {
             return base64_encode($this->renderPdfBlobUncached($generatedCv, $template, $language));
@@ -312,6 +301,7 @@ class CvTemplateRenderer
                 'linkedin' => $this->formatPdfText($linkedin, $language),
                 'location' => $this->formatPdfText($location, $language),
                 'contacts' => $contacts,
+                'photo' => $this->photoDataUri($generatedCv),
             ],
             'contentHtml' => $contentHtml,
             'structured_sections' => $structuredSections,
@@ -342,6 +332,50 @@ class CvTemplateRenderer
                 'config' => $template->config_json ?: [],
             ],
         ];
+    }
+
+    /**
+     * Cache key of a rendered PDF: everything that changes the file.
+     */
+    public function pdfCacheKey(GeneratedCv $generatedCv, CvTemplate $template, string $language): string
+    {
+        $updatedAt = $generatedCv->updated_at;
+        $updatedKey = $updatedAt instanceof \DateTimeInterface
+            ? $updatedAt->format('U.u')
+            : (string) $updatedAt;
+
+        return 'cv-pdf-blob:'.hash('sha256', implode('|', [
+            self::RENDER_VERSION,
+            (string) $generatedCv->id,
+            $updatedKey,
+            $template->slug,
+            $language,
+            (string) ($generatedCv->ai_status?->value ?? ''),
+            // A new or removed profile photo changes the CV header.
+            (string) $generatedCv->user?->avatar_path,
+        ]));
+    }
+
+    /**
+     * The owner's profile photo, inline so both the HTML preview and mPDF can
+     * show it without fetching a URL. Null without a photo, or when the file
+     * is gone or too large to embed.
+     */
+    private function photoDataUri(GeneratedCv $generatedCv): ?string
+    {
+        $path = $generatedCv->user?->avatar_path;
+        $disk = Storage::disk('public');
+        if ($path === null || ! $disk->exists($path) || $disk->size($path) > 2 * 1024 * 1024) {
+            return null;
+        }
+
+        $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            default => 'image/jpeg',
+        };
+
+        return 'data:'.$mime.';base64,'.base64_encode((string) $disk->get($path));
     }
 
     private function viewFor(CvTemplate $template): string

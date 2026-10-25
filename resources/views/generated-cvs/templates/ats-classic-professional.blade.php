@@ -33,6 +33,7 @@
             text-align: {{ $start }};
         }
         .header { text-align: center; padding-bottom: 5pt; border-bottom: 2pt solid {{ $s['rule_color'] }}; margin-bottom: 8pt; page-break-inside: avoid; }
+        .photo { width: 24mm; height: 24mm; border-radius: 12mm; margin: 0 auto 4pt; display: block; }
         h1.name {
             margin: 0;
             font-size: {{ $s['name_size'] }}pt;
@@ -77,6 +78,9 @@
 </head>
 <body>
     <div class="header">
+        @if (! empty($cv['candidate']['photo']))
+            <img class="photo" src="{{ $cv['candidate']['photo'] }}" alt="">
+        @endif
         <h1 class="name">{{ $cv['candidate']['name'] }}</h1>
         @if (filled($cv['candidate']['target_job_title']))
             <div class="headline">{{ $cv['candidate']['target_job_title'] }}</div>

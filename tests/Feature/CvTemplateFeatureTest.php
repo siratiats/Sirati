@@ -193,14 +193,7 @@ class CvTemplateFeatureTest extends TestCase
 
         $this->assertStringStartsWith('%PDF-', $pdf1);
 
-        $cacheKey = 'cv-pdf-blob:'.hash('sha256', implode('|', [
-            CvTemplateRenderer::RENDER_VERSION,
-            (string) $cv->id,
-            $cv->updated_at->format('U.u'),
-            $template->slug,
-            'ar',
-            'completed',
-        ]));
+        $cacheKey = app(CvTemplateRenderer::class)->pdfCacheKey($cv, $template, 'ar');
 
         $rawCached = Cache::get($cacheKey);
         $this->assertNotNull($rawCached);

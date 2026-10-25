@@ -11,6 +11,8 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -257,6 +259,54 @@ class MobileAuthController extends Controller
         ]);
     }
 
+    /**
+     * Profile photo, shown in the app and on the CV header. The app crops it
+     * square before upload; anything else is stored as sent.
+     */
+    public function uploadAvatar(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'avatar' => ['required', 'image', 'mimes:jpeg,png,webp', 'max:5120', 'dimensions:min_width=64,min_height=64,max_width=4096,max_height=4096'],
+        ]);
+
+        /** @var User $user */
+        $user = $request->user();
+        $previous = $user->avatar_path;
+
+        $file = $validated['avatar'];
+        $path = $file->storeAs(
+            'avatars',
+            Str::uuid()->toString().'.'.$file->extension(),
+            'public',
+        );
+        if ($path === false) {
+            abort(500, 'تعذر حفظ الصورة.');
+        }
+
+        $user->forceFill(['avatar_path' => $path])->save();
+        if ($previous !== null && $previous !== $path) {
+            Storage::disk('public')->delete($previous);
+        }
+
+        return response()->json([
+            'data' => $this->userPayload($user->fresh()->loadMissing('jobTitle')),
+        ]);
+    }
+
+    public function deleteAvatar(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        if ($user->avatar_path !== null) {
+            Storage::disk('public')->delete($user->avatar_path);
+            $user->forceFill(['avatar_path' => null])->save();
+        }
+
+        return response()->json([
+            'data' => $this->userPayload($user->fresh()->loadMissing('jobTitle')),
+        ]);
+    }
+
     public function deleteAccount(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -276,6 +326,9 @@ class MobileAuthController extends Controller
         // without this step rows would remain with user_id = null (privacy risk).
         $user->cvAnalyses()->delete();
         $user->generatedCvs()->delete();
+        if ($user->avatar_path !== null) {
+            Storage::disk('public')->delete($user->avatar_path);
+        }
         $user->mobileNotifications()->delete();
         $user->fcmTokens()->delete();
         $user->tokens()->delete();
@@ -374,6 +427,7 @@ class MobileAuthController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'location' => $user->location,
+            'avatar_url' => $user->avatar_path ? asset('storage/'.$user->avatar_path) : null,
             'job_title_id' => $user->job_title_id,
             'job_title_other' => $user->job_title_other,
             'job_title' => $jobTitle ? [

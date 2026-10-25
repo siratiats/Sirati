@@ -52,6 +52,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/change-password', [MobileAuthController::class, 'changePassword'])
             ->middleware('throttle:5,1');
         Route::put('/auth/profile', [MobileAuthController::class, 'updateProfile']);
+        Route::post('/auth/avatar', [MobileAuthController::class, 'uploadAvatar'])
+            ->middleware('throttle:10,1');
+        Route::delete('/auth/avatar', [MobileAuthController::class, 'deleteAvatar']);
         Route::post('/fcm-tokens', [FcmTokenController::class, 'store']);
         Route::delete('/fcm-tokens', [FcmTokenController::class, 'destroy']);
 
