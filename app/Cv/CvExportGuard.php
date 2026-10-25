@@ -14,24 +14,28 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  */
 final class CvExportGuard
 {
+    public const BLOCKED_GENERATING = 'generating';
+
+    public const BLOCKED_MISSING_CONTACT = 'missing_contact';
+
+    public const BLOCKED_UNSTRUCTURED_EXPERIENCE = 'unstructured_experience';
+
     /**
      * Quality gates run before the paywall on purpose: never ask someone to pay
      * for a CV that is still generating or missing its contact details.
      */
     public static function assertExportable(GeneratedCv $generatedCv, ?User $user = null): void
     {
-        $status = $generatedCv->ai_status instanceof AiStatus
-            ? $generatedCv->ai_status
-            : AiStatus::tryFrom((string) $generatedCv->ai_status);
+        $reason = self::blockedReason($generatedCv);
 
-        if (in_array($status, [AiStatus::Queued, AiStatus::Processing], true)) {
+        if ($reason === self::BLOCKED_GENERATING) {
             throw new HttpException(
                 409,
                 'CV generation is still running. Export is blocked until it finishes.',
             );
         }
 
-        if (! self::isUsable($generatedCv)) {
+        if ($reason !== null) {
             throw new HttpException(
                 422,
                 'This CV is not ready to send to an employer. Add email and phone, and finish generation so experience is structured.',
@@ -43,22 +47,81 @@ final class CvExportGuard
 
     public static function isUsable(GeneratedCv $generatedCv): bool
     {
+        return self::qualityGap($generatedCv) === null;
+    }
+
+    /**
+     * Why the CV cannot be exported yet (one of the BLOCKED_* codes), or null
+     * when it can. The paywall is not part of this: see SubscriptionGate.
+     */
+    public static function blockedReason(GeneratedCv $generatedCv): ?string
+    {
+        if (in_array(self::status($generatedCv), [AiStatus::Queued, AiStatus::Processing], true)) {
+            return self::BLOCKED_GENERATING;
+        }
+
+        return self::qualityGap($generatedCv);
+    }
+
+    /**
+     * Export readiness for clients, so they explain the gap in the app instead
+     * of opening a PDF link the server is going to refuse.
+     *
+     * @return array{ready: bool, blocked_reason: string|null, message_ar: string|null, message_en: string|null}
+     */
+    public static function exportState(GeneratedCv $generatedCv): array
+    {
+        $reason = self::blockedReason($generatedCv);
+
+        return [
+            'ready' => $reason === null,
+            'blocked_reason' => $reason,
+            'message_ar' => $reason === null ? null : self::message($reason, 'ar'),
+            'message_en' => $reason === null ? null : self::message($reason, 'en'),
+        ];
+    }
+
+    public static function message(string $reason, string $language): string
+    {
+        $messages = [
+            self::BLOCKED_GENERATING => [
+                'ar' => 'لا يزال إنشاء السيرة جارياً. حمّلها بعد اكتماله.',
+                'en' => 'Your CV is still being generated. Download it once it finishes.',
+            ],
+            self::BLOCKED_MISSING_CONTACT => [
+                'ar' => 'أضف البريد الإلكتروني ورقم الجوال إلى السيرة قبل إرسالها إلى جهات التوظيف.',
+                'en' => 'Add your email and phone number to the CV before sending it to employers.',
+            ],
+            self::BLOCKED_UNSTRUCTURED_EXPERIENCE => [
+                'ar' => 'الخبرات في السيرة غير منظّمة بعد. عدّل السيرة وأضف لكل خبرة المسمى والشركة والفترة، أو أعد إنشاءها.',
+                'en' => 'Your experience is not structured yet. Edit the CV and give each role a title, company and dates, or generate it again.',
+            ],
+        ];
+
+        return $messages[$reason][$language === 'en' ? 'en' : 'ar'];
+    }
+
+    private static function qualityGap(GeneratedCv $generatedCv): ?string
+    {
         $document = $generatedCv->cvDocument();
         $email = trim((string) $document->personal->email);
         $phone = trim((string) $document->personal->phone);
 
         if ($email === '' || $phone === '') {
-            return false;
+            return self::BLOCKED_MISSING_CONTACT;
         }
 
-        $status = $generatedCv->ai_status instanceof AiStatus
+        if (self::status($generatedCv) === AiStatus::Completed || $document->hasStructuredExperience()) {
+            return null;
+        }
+
+        return self::BLOCKED_UNSTRUCTURED_EXPERIENCE;
+    }
+
+    private static function status(GeneratedCv $generatedCv): ?AiStatus
+    {
+        return $generatedCv->ai_status instanceof AiStatus
             ? $generatedCv->ai_status
             : AiStatus::tryFrom((string) $generatedCv->ai_status);
-
-        if ($status === AiStatus::Completed) {
-            return true;
-        }
-
-        return $document->hasStructuredExperience();
     }
 }

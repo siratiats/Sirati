@@ -17,7 +17,7 @@ final class GenerateCvSchema
 {
     public const NAME = 'generate_cv';
 
-    public const MAX_TOKENS = 4096;
+    public const MAX_TOKENS = 8192;
 
     /**
      * @return array{type: string, json_schema: array{name: string, strict: true, schema: array<string, mixed>}}
