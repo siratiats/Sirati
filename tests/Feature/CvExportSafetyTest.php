@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Cv\CvExportGuard;
 use App\Enums\AiStatus;
 use App\Models\GeneratedCv;
 use App\Models\User;
 use App\Services\CvTemplateRenderer;
 use Database\Seeders\CvTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -41,6 +43,58 @@ class CvExportSafetyTest extends TestCase
         ]);
 
         $this->get("/api/generated-cvs/{$cv->id}/download")->assertStatus(422);
+    }
+
+    /**
+     * Whatever makes a CV unexportable, the readiness every client sees (CV
+     * detail, My CVs list) must match what the PDF endpoints actually do, and
+     * the browser link must explain the gap instead of a bare error page.
+     */
+    public function test_reported_export_state_matches_the_pdf_endpoints(): void
+    {
+        $unstructured = 'I worked at a company and did marketing and campaign work without job titles or dates.';
+        $cases = [
+            'queued' => [['ai_status' => AiStatus::Queued], CvExportGuard::BLOCKED_GENERATING],
+            'processing' => [['ai_status' => AiStatus::Processing], CvExportGuard::BLOCKED_GENERATING],
+            'no phone' => [['phone' => ''], CvExportGuard::BLOCKED_MISSING_CONTACT],
+            'blank phone' => [['phone' => '   '], CvExportGuard::BLOCKED_MISSING_CONTACT],
+            'no email' => [['email' => null], CvExportGuard::BLOCKED_MISSING_CONTACT],
+            'failed, unstructured' => [['ai_status' => AiStatus::Failed, 'experience_input' => $unstructured, 'document' => null], CvExportGuard::BLOCKED_UNSTRUCTURED_EXPERIENCE],
+            'no AI, unstructured' => [['ai_status' => AiStatus::NotConfigured, 'experience_input' => $unstructured, 'document' => null], CvExportGuard::BLOCKED_UNSTRUCTURED_EXPERIENCE],
+            'failed, structured' => [['ai_status' => AiStatus::Failed], null],
+            'completed' => [[], null],
+        ];
+
+        foreach ($cases as $label => [$overrides, $expected]) {
+            $user = User::factory()->create();
+            Sanctum::actingAs($user);
+            $cv = $this->cv($user, $overrides);
+
+            $detail = $this->getJson("/api/generated-cvs/{$cv->id}")->assertOk()->json('data.export');
+            $row = collect($this->getJson('/api/mobile/my-cvs?lang=en')->assertOk()->json('data.items'))
+                ->firstWhere('id', $cv->id);
+
+            foreach (['detail' => $detail, 'list' => $row['export']] as $where => $export) {
+                $this->assertSame($expected === null, $export['ready'], "$label: $where ready");
+                $this->assertSame($expected, $export['blocked_reason'], "$label: $where reason");
+                $this->assertSame($expected === null, $export['message_en'] === null, "$label: $where message");
+            }
+            $this->assertSame($expected === CvExportGuard::BLOCKED_GENERATING, $row['is_draft'], "$label: is_draft");
+
+            $api = $this->get("/api/generated-cvs/{$cv->id}/download")->status();
+            $signed = $this->get(URL::temporarySignedRoute('api.generated-cvs.pdf', now()->addHour(), ['generatedCv' => $cv->id]));
+
+            if ($expected === null) {
+                $this->assertNotContains($api, [409, 422], "$label: ready CV must not be blocked by the guard");
+                $this->assertNotContains($signed->status(), [409, 422], "$label: signed link");
+            } else {
+                $this->assertContains($api, [409, 422], "$label: blocked CV must be refused");
+                $signed->assertStatus($api)
+                    ->assertSee(__('generated_cvs.not_ready.heading', [], 'ar'))
+                    ->assertSee(CvExportGuard::message($expected, 'ar'))
+                    ->assertSee(CvExportGuard::message($expected, 'en'));
+            }
+        }
     }
 
     public function test_completed_cv_html_renders_multiple_experience_entries(): void

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Cv\CvExportGuard;
 use App\Enums\AiStatus;
 use App\Services\Subscriptions\SubscriptionGate;
 use Illuminate\Http\Request;
@@ -49,6 +50,7 @@ class GeneratedCvResource extends JsonResource
             'pdf_url' => $publicBaseUrl.$signedPath,
             'template_pdf_url' => $publicBaseUrl.$signedPath,
             'access' => $this->accessBlock($request),
+            'export' => CvExportGuard::exportState($this->resource),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

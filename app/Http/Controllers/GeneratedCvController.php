@@ -321,6 +321,16 @@ class GeneratedCvController extends Controller
 
         $user = $request->user() ?? $generatedCv->user;
 
+        // This signed link opens in a browser: say what is missing in words,
+        // not with a bare error page.
+        $blocked = CvExportGuard::blockedReason($generatedCv);
+        if ($blocked !== null) {
+            return response()->view('generated-cvs.not-ready', [
+                'messageAr' => CvExportGuard::message($blocked, 'ar'),
+                'messageEn' => CvExportGuard::message($blocked, 'en'),
+            ], $blocked === CvExportGuard::BLOCKED_GENERATING ? 409 : 422);
+        }
+
         CvExportGuard::assertExportable($generatedCv, $user);
 
         return $renderer->downloadResponse(

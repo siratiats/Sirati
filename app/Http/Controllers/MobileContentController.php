@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Cv\CvExportGuard;
 use App\Http\Resources\JobTitleResource;
 use App\Models\CvTemplate;
 use App\Models\EducationContent;
@@ -110,14 +111,17 @@ class MobileContentController extends Controller
                 false
             );
 
+            $export = CvExportGuard::exportState($cv);
+
             return [
                 'id' => $cv->id,
                 'title' => $titles[$cv->id] ?? ($cv->target_job_title ?: $cv->full_name),
                 'updated_label' => $this->updatedLabel($cv->updated_at, $language),
                 'badge' => $cv->score_total === null ? '' : 'ATS '.$cv->score_total.'%',
                 'score_total' => $cv->score_total,
-                'is_draft' => false,
+                'is_draft' => $export['blocked_reason'] === CvExportGuard::BLOCKED_GENERATING,
                 'can_download' => true,
+                'export' => $export,
                 'pdf_url' => $publicBaseUrl.$signedPath,
                 'template_pdf_url' => $publicBaseUrl.$signedPath,
             ];

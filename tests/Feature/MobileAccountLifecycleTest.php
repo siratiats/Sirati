@@ -87,6 +87,43 @@ class MobileAccountLifecycleTest extends TestCase
         ]);
     }
 
+    public function test_update_profile_edits_location_but_never_phone(): void
+    {
+        $user = $this->makeUser(['phone' => '0551234567', 'location' => 'Dammam']);
+        Sanctum::actingAs($user);
+
+        $this->putJson('/api/auth/profile', [
+            'name' => $user->name,
+            'location' => '  Riyadh, Saudi Arabia  ',
+            'phone' => '0000000000',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.location', 'Riyadh, Saudi Arabia')
+            ->assertJsonPath('data.phone', '0551234567');
+
+        // Omitting location keeps it; sending an empty value clears it.
+        $this->putJson('/api/auth/profile', ['name' => 'Other Name'])
+            ->assertOk()
+            ->assertJsonPath('data.location', 'Riyadh, Saudi Arabia');
+
+        $this->putJson('/api/auth/profile', ['name' => 'Other Name', 'location' => ''])
+            ->assertOk()
+            ->assertJsonPath('data.location', null);
+
+        $this->putJson('/api/auth/profile', [
+            'name' => 'Other Name',
+            'location' => str_repeat('x', 121),
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('location');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'phone' => '0551234567',
+            'location' => null,
+        ]);
+    }
+
     public function test_delete_account_rejects_wrong_password(): void
     {
         $user = $this->makeUser();

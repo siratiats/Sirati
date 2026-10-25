@@ -226,6 +226,7 @@ class MobileAuthController extends Controller
         $validated = $request->validate(
             $this->jobTitleRules($request) + [
                 'name' => ['required', 'string', 'max:255'],
+                'location' => ['sometimes', 'nullable', 'string', 'max:120'],
             ],
             $this->jobTitleMessages(),
         );
@@ -233,6 +234,13 @@ class MobileAuthController extends Controller
         /** @var User $user */
         $user = $request->user();
         $user->name = $validated['name'];
+
+        // Email and phone stay read-only here; location is editable but, like
+        // the job title, only changes when the client sends it.
+        if (array_key_exists('location', $validated)) {
+            $location = trim((string) $validated['location']);
+            $user->location = $location === '' ? null : $location;
+        }
 
         // Only touch job title fields when the client sends them — older app
         // builds only patch the name and must not wipe existing targeting data.
