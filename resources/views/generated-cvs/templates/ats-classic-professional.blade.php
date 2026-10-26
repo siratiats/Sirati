@@ -7,6 +7,8 @@
     $keepChars = 600;
     // Letter-spacing and uppercase break Arabic shaping, so they apply to LTR only.
     $spaced = ! $rtl;
+    // Field separators as in the reference layout: "Company  |  City".
+    $sep = '&nbsp;&nbsp;|&nbsp; ';
     $bulletLines = static function (?string $text): array {
         $lines = array_values(array_filter(array_map('trim', preg_split('/\R/u', (string) $text) ?: []), fn ($l) => $l !== ''));
         $bullets = array_values(array_filter($lines, fn ($l) => preg_match('/^[-*•]\s+/u', $l) === 1));
@@ -21,62 +23,65 @@
 <head>
     <meta charset="utf-8">
     <style>
-        @page { margin: 12mm 14mm 12mm 14mm; }
+        {{-- Measurements follow the reference CV (Arial-metric sans, A4, 12.4mm sides). --}}
+        @page { margin: 12mm 12.4mm 12mm 12.4mm; }
         body {
-            {{-- DejaVu keeps Arabic text extractable for ATS parsers; FreeSans is closest to the Arial-style layout for English. --}}
-            font-family: {!! $rtl ? '"DejaVu Sans", sans-serif' : 'freesans, sans-serif' !!};
+            {{-- DejaVu keeps Arabic text extractable for ATS parsers; Liberation Sans is Arial-metric for English. --}}
+            font-family: {!! $rtl ? '"DejaVu Sans", sans-serif' : 'liberationsans, sans-serif' !!};
             color: {{ $s['text_color'] }};
             font-size: {{ $s['font_size'] }}pt;
-            line-height: 1.3;
+            line-height: 1.25;
             {{-- Keep technical identifiers intact; a layout break at an internal
                  hyphen otherwise becomes an inserted space during extraction. --}}
             hyphens: none;
             margin: 0;
             text-align: {{ $start }};
         }
-        .header { text-align: center; padding-bottom: 5pt; border-bottom: 2pt solid {{ $s['rule_color'] }}; margin-bottom: 8pt; page-break-inside: avoid; }
+        .header { text-align: center; padding-bottom: 5pt; border-bottom: 1.5pt solid {{ $s['rule_color'] }}; margin-bottom: 3pt; page-break-inside: avoid; }
         .photo { width: 24mm; height: 24mm; border-radius: 12mm; margin: 0 auto 4pt; display: block; }
         h1.name {
             margin: 0;
             font-size: {{ $s['name_size'] }}pt;
             font-weight: bold;
             color: {{ $s['name_color'] }};
-            @if ($spaced) letter-spacing: 1.5pt; @endif
+            line-height: 1.2;
+            @if ($spaced) letter-spacing: 1.2pt; @endif
             @if ($spaced && $s['uppercase_name']) text-transform: uppercase; @endif
         }
-        .headline { font-weight: bold; color: #333333; font-size: {{ $s['font_size'] }}pt; margin-top: 3pt; }
-        .contact { color: #333333; font-size: {{ $s['font_size'] - 0.5 }}pt; margin-top: 2pt; }
+        .headline { font-weight: bold; color: {{ $s['muted_color'] }}; font-size: {{ $s['font_size'] - 0.5 }}pt; margin-top: 2pt; }
+        .contact { color: {{ $s['muted_color'] }}; font-size: {{ $s['font_size'] - 0.5 }}pt; margin-top: 2pt; }
         .contact-item { direction: ltr; unicode-bidi: embed; }
-        .contact-separator { color: #555555; }
         .content { direction: {{ $cv['direction'] }}; }
         h2.section-title, .content h2 {
-            margin: 9pt 0 4pt;
-            padding-bottom: 1.5pt;
+            margin: 5.7pt 0 3.4pt;
+            padding-bottom: 1.4pt;
             font-size: {{ $s['section_title_size'] }}pt;
             font-weight: bold;
             color: {{ $s['heading_color'] }};
             border-bottom: 0.75pt solid {{ $s['divider_color'] }};
             page-break-after: avoid;
-            @if ($spaced) letter-spacing: 1.2pt; @endif
+            @if ($spaced) letter-spacing: 1pt; @endif
             @if ($spaced && $s['uppercase_section_titles']) text-transform: uppercase; @endif
         }
         p { margin: 0 0 3pt; }
+        .text-block { line-height: 1.14; }
         .content h3 { margin: 5pt 0 1pt; font-size: {{ $s['font_size'] }}pt; font-weight: bold; color: {{ $s['accent_color'] }}; page-break-after: avoid; }
         .accent { color: {{ $s['accent_color'] }}; font-weight: bold; }
-        .muted { color: {{ $s['muted_color'] }}; }
-        .pipe { color: #333333; }
+        .entry-title { font-size: {{ $s['section_title_size'] }}pt; }
+        .muted, .detail { color: {{ $s['muted_color'] }}; }
         .row { width: 100%; border-collapse: collapse; }
         .row td { padding: 0; vertical-align: top; }
-        .row td.date { text-align: {{ $end }}; white-space: nowrap; font-weight: bold; color: #333333; direction: ltr; unicode-bidi: embed; padding-{{ $start }}: 8pt; }
-        .entry { margin-top: 5pt; }
+        .row td.date { text-align: {{ $end }}; white-space: nowrap; font-weight: bold; font-size: {{ $s['font_size'] - 0.5 }}pt; color: {{ $s['muted_color'] }}; direction: ltr; unicode-bidi: embed; padding-{{ $start }}: 8pt; }
+        .entry { margin-top: 4.6pt; }
+        .edu-row { margin-bottom: 2pt; }
         .keep, .entry-head { page-break-inside: avoid; }
-        .entry-note { margin: 0 0 2pt; }
         .entry-company { font-weight: bold; }
-        .entry-desc { @if (! $rtl) font-style: italic; @endif color: {{ $s['muted_color'] }}; margin: 0.5pt 0 1pt; }
-        ul { margin: 1pt 0 0; padding-{{ $start }}: 14pt; padding-{{ $end }}: 0; }
-        li { margin-bottom: 1.5pt; }
-        .skill-group { margin-bottom: 3pt; }
-        .compact li { margin-bottom: 0.5pt; }
+        .entry-desc { @if (! $rtl) font-style: italic; @endif font-size: {{ $s['font_size'] - 0.5 }}pt; color: {{ $s['muted_color'] }}; margin: 0 0 1pt; }
+        ul { margin: 2.2pt 0 0; padding-{{ $start }}: 18pt; padding-{{ $end }}: 0; }
+        li { margin-bottom: 2.7pt; }
+        .skill-group { margin-bottom: 3.5pt; }
+        .compact li { margin-bottom: 1.2pt; }
+        .languages { font-size: {{ $s['font_size'] - 1 }}pt; color: {{ $s['muted_color'] }}; }
         .footer { border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 8pt; margin-top: 12pt; padding-top: 4pt; text-align: center; }
     </style>
 </head>
@@ -92,7 +97,7 @@
         @if ($cv['candidate']['contacts'])
             <div class="contact">
                 @foreach ($cv['candidate']['contacts'] as $contact)
-                    @if (! $loop->first)<span class="contact-separator">{{ $s['show_contact_separator'] ? '•' : '|' }}&nbsp;</span>@endif<span class="contact-item">{{ $contact }}</span>
+                    @if (! $loop->first)<span>&nbsp;&nbsp;&nbsp;{{ $s['show_contact_separator'] ? '•' : '|' }}&nbsp;&nbsp; </span>@endif<span class="contact-item">{{ $contact }}</span>
                 @endforeach
             </div>
         @endif
@@ -116,10 +121,10 @@
                                 <ul class="compact">@foreach (array_slice($lines, 1) as $line)<li>{{ $line }}</li>@endforeach</ul>
                             @endif
                         @elseif (mb_strlen((string) $section['content']) <= $keepChars)
-                            <div class="keep">{!! $heading !!}<p>{!! nl2br(e($section['content']), false) !!}</p></div>
+                            <div class="keep">{!! $heading !!}<p class="text-block">{!! nl2br(e($section['content']), false) !!}</p></div>
                         @else
                             {!! $heading !!}
-                            <p>{!! nl2br(e($section['content']), false) !!}</p>
+                            <p class="text-block">{!! nl2br(e($section['content']), false) !!}</p>
                         @endif
 
                     @elseif ($section['type'] === 'tags')
@@ -127,7 +132,7 @@
                             @foreach ($section['groups'] as $group)
                                 @if ($loop->first)<div class="keep">{!! $heading !!}@endif
                                 <div class="skill-group">
-                                    @if (filled($group['category']))<span class="accent">{{ $group['category'] }}</span><span class="pipe accent">&nbsp;| </span>@endif{{ implode(', ', $group['items']) }}
+                                    @if (filled($group['category']))<span class="accent">{{ $group['category'] }}{!! $sep !!}</span>@endif{{ implode(', ', $group['items']) }}
                                 </div>
                                 @if ($loop->first)</div>@endif
                             @endforeach
@@ -144,22 +149,18 @@
                     @elseif ($key === 'languages')
                         <div class="keep">
                             {!! $heading !!}
-                            <p>
-                                @foreach ($section['entries'] as $entry)
-                                    @if (! $loop->first)<span class="pipe">| </span>@endif{{ $entry['title'] }}@if (filled($entry['subtitle'] ?? null)): {{ $entry['subtitle'] }}@endif
-                                @endforeach
-                            </p>
+                            <p class="languages">{!! collect($section['entries'])->map(fn (array $entry): string => e($entry['title']).(filled($entry['subtitle'] ?? null) ? ': '.e($entry['subtitle']) : ''))->implode($sep) !!}</p>
                         </div>
 
                     @elseif ($key === 'education')
                         @foreach ($section['entries'] as $entry)
                             <div class="entry-head">
                                 @if ($loop->first){!! $heading !!}@endif
-                                <table class="row">
+                                <table class="row edu-row">
                                     <tr>
                                         <td>
-                                            <strong>{{ $entry['title'] }}</strong>
-                                            @if (filled($entry['subtitle'] ?? null))<span class="pipe">| </span><span>{{ $entry['subtitle'] }}</span>@endif
+                                            {{-- Degree in bold, then institution and each detail line in grey. --}}
+                                            <strong>{{ $entry['title'] }}</strong>@foreach (array_filter([$entry['subtitle'] ?? null, ...(preg_split('/\R/u', (string) ($entry['description'] ?? '')) ?: [])], 'filled') as $part)<span class="detail">{!! $sep !!}{{ trim($part) }}</span>@endforeach
                                         </td>
                                         @if (filled($entry['date_range'] ?? null))
                                             <td class="date">{{ $entry['date_range'] }}</td>
@@ -167,20 +168,14 @@
                                     </tr>
                                 </table>
                             </div>
-                            @if (filled($entry['description'] ?? null))
-                                <div class="entry-note">{!! nl2br(e($entry['description']), false) !!}</div>
-                            @endif
                         @endforeach
 
                     @elseif ($key === 'certifications')
                         @foreach ($section['entries'] as $entry)
                             @if ($loop->first)<div class="entry-head">{!! $heading !!}@endif
-                            <ul class="compact">
+                            <ul class="compact"@if (! $loop->first) style="margin-top: 0"@endif>
                                 <li>
-                                    <strong>{{ $entry['title'] }}</strong>
-                                    @foreach (array_filter([$entry['subtitle'] ?? null, $entry['date_range'] ?? null, $entry['description'] ?? null], 'filled') as $part)
-                                        <span class="pipe">| </span><span>{{ $part }}</span>
-                                    @endforeach
+                                    <strong>{{ $entry['title'] }}</strong>@foreach (array_filter([$entry['subtitle'] ?? null, $entry['date_range'] ?? null, $entry['description'] ?? null], 'filled') as $part)<span class="detail">{!! $sep !!}{{ $part }}</span>@endforeach
                                 </li>
                             </ul>
                             @if ($loop->first)</div>@endif
@@ -188,14 +183,15 @@
 
                     @elseif ($section['type'] === 'entries')
                         @foreach ($section['entries'] as $entry)
-                            <div class="entry">
+                            {{-- The first entry follows its section title directly. --}}
+                            <div class="entry"@if ($loop->first) style="margin-top: 0"@endif>
                                 {{-- The job header never parts from its section title (first
                                      entry) or from the start of its body; the body may split. --}}
                                 <div class="entry-head">
                                     @if ($loop->first){!! $heading !!}@endif
-                                    <table class="row">
+                                    <table class="row"@if ($loop->first) style="margin-top: 4pt"@endif>
                                         <tr>
-                                            <td class="accent">{{ $entry['title'] }}</td>
+                                            <td class="accent entry-title">{{ $entry['title'] }}</td>
                                             @if (filled($entry['date_range'] ?? null))
                                                 <td class="date">{{ $entry['date_range'] }}</td>
                                             @endif
@@ -203,15 +199,18 @@
                                     </table>
                                     @if (filled($entry['subtitle'] ?? null) || filled($entry['location'] ?? null))
                                         <div class="entry-company">
-                                            {{ $entry['subtitle'] ?? '' }}@if (filled($entry['subtitle'] ?? null) && filled($entry['location'] ?? null))<span class="pipe">&nbsp;| </span>@endif{{ $entry['location'] ?? '' }}
+                                            {{ $entry['subtitle'] ?? '' }}@if (filled($entry['subtitle'] ?? null) && filled($entry['location'] ?? null)){!! $sep !!}@endif{{ $entry['location'] ?? '' }}
                                         </div>
                                     @endif
+                                    @if (filled($entry['description'] ?? null))
+                                        <div class="entry-desc">{!! nl2br(e($entry['description']), false) !!}</div>
+                                    @endif
+                                    @if (! empty($entry['bullets']))
+                                        <ul><li>{{ $entry['bullets'][0] }}</li></ul>
+                                    @endif
                                 </div>
-                                @if (filled($entry['description'] ?? null))
-                                    <div class="entry-desc">{!! nl2br(e($entry['description']), false) !!}</div>
-                                @endif
-                                @if (! empty($entry['bullets']))
-                                    <ul>@foreach ($entry['bullets'] as $bullet)<li>{{ $bullet }}</li>@endforeach</ul>
+                                @if (count($entry['bullets'] ?? []) > 1)
+                                    <ul style="margin-top: 0">@foreach (array_slice($entry['bullets'], 1) as $bullet)<li>{{ $bullet }}</li>@endforeach</ul>
                                 @endif
                             </div>
                         @endforeach

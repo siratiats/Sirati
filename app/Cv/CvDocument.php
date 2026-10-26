@@ -358,7 +358,7 @@ final readonly class CvDocument implements JsonSerializable
                     $loc = $entry->location->resolve($language);
                     $start = self::displayDate($entry->startDate, $language);
                     $end = $entry->isCurrent ? ($isAr ? 'حتى الآن' : 'Present') : self::displayDate($entry->endDate, $language);
-                    $dateRange = trim(($start ?? '').($end ? ' – '.$end : ''));
+                    $dateRange = implode(' – ', array_filter([$start, $end], fn (?string $part): bool => $part !== null && trim($part) !== ''));
                     $bullets = array_values(array_filter(array_map(
                         fn (LocalizedText $b) => $b->resolve($language),
                         $entry->bullets
@@ -397,7 +397,7 @@ final readonly class CvDocument implements JsonSerializable
                     }
                     $start = self::displayDate($entry->startDate, $language);
                     $end = self::displayDate($entry->endDate, $language);
-                    $dateRange = trim(($start ?? '').($end ? ' – '.$end : ''));
+                    $dateRange = implode(' – ', array_filter([$start, $end], fn (?string $part): bool => $part !== null && trim($part) !== ''));
                     $desc = $entry->narrative->resolve($language);
 
                     if ($title !== '' || $inst !== '' || $desc !== '') {

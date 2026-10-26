@@ -25,7 +25,7 @@ class CvTemplateRenderer
      * Bump when template HTML, fonts, or renderer behaviour changes so a
      * stored PDF from a previous deploy cannot outlive the new code.
      */
-    public const RENDERER_VERSION = '8';
+    public const RENDERER_VERSION = '9';
 
     public function __construct(
         private readonly CvMarkdownRenderer $markdownRenderer,
@@ -253,10 +253,11 @@ class CvTemplateRenderer
             throw new \RuntimeException('Unable to create mPDF font cache directory.');
         }
 
-        $defaultFont = $language === 'ar' ? 'ibmplexsansarabic' : 'freesans';
+        $defaultFont = $language === 'ar' ? 'ibmplexsansarabic' : 'liberationsans';
 
         $fontDirs = (new ConfigVariables)->getDefaults()['fontDir'];
         $fontDirs[] = resource_path('fonts/ibm-plex-sans-arabic');
+        $fontDirs[] = resource_path('fonts/liberation-sans');
 
         $fontData = (new FontVariables)->getDefaults()['fontdata'];
         // Keep Latin source letters instead of font GSUB ff/ffi ligatures in
@@ -271,6 +272,14 @@ class CvTemplateRenderer
             'useOTL' => 0xFE,
             'useKashida' => 75,
         ];
+        // Arial-metric English face (SIL OFL), as in the reference CV layout.
+        // No useOTL: Latin text keeps its source letters, never ff/fi ligatures.
+        $fontData['liberationsans'] = [
+            'R' => 'LiberationSans-Regular.ttf',
+            'B' => 'LiberationSans-Bold.ttf',
+            'I' => 'LiberationSans-Italic.ttf',
+            'BI' => 'LiberationSans-BoldItalic.ttf',
+        ];
 
         $pdf = new LogicalTextMpdf([
             'mode' => 'utf-8',
@@ -283,10 +292,13 @@ class CvTemplateRenderer
             'margin_bottom' => 15,
             'margin_left' => 15,
             'margin_right' => 15,
+            // A 10pt "•" as in the reference layout, not mPDF's larger drawn disc.
+            'list_symbol_size' => '2.6pt',
+            'list_marker_offset' => '8.9pt',
         ]);
         $pdf->autoScriptToLang = false;
         $pdf->autoLangToFont = false;
-        // FreeSans has no Arabic glyphs; let candidate-typed Arabic in an English CV fall back to DejaVu.
+        // Liberation Sans has no Arabic glyphs; let candidate-typed Arabic in an English CV fall back to DejaVu.
         $pdf->useSubstitutions = $language === 'en';
         $pdf->SetDirectionality($language === 'en' ? 'ltr' : 'rtl');
 

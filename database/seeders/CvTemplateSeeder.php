@@ -19,7 +19,7 @@ class CvTemplateSeeder extends Seeder
                 'language_direction' => 'both',
                 'supported_languages' => ['ar', 'en'],
                 'supported_sections' => ['summary', 'skills', 'experience', 'education', 'certifications', 'projects', 'languages'],
-                'color_tokens' => ['primary' => '#1f3864', 'accent' => '#2e4a7d'],
+                'color_tokens' => ['primary' => '#1f3864', 'accent' => '#1f3864'],
                 'config_json' => [
                     'category' => 'professional',
                     'description' => 'Single-column ATS-optimized template for broad professional use.',
