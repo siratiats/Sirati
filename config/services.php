@@ -39,6 +39,8 @@ return [
         'base_url' => env('ANTHROPIC_BASE_URL', 'https://api.anthropic.com/v1'),
         'version' => env('ANTHROPIC_VERSION', '2023-06-01'),
         'timeout' => (int) env('ANTHROPIC_TIMEOUT', 30),
+        // Long outputs (generate_cv, analysis_advice, job_match); see AiTimeouts::ANTHROPIC_LONG_TIMEOUT.
+        'generate_timeout' => (int) env('ANTHROPIC_GENERATE_TIMEOUT', 75),
         'connect_timeout' => (int) env('ANTHROPIC_CONNECT_TIMEOUT', 5),
     ],
 

@@ -356,8 +356,8 @@ final readonly class CvDocument implements JsonSerializable
                     $jobTitle = $entry->title->resolve($language);
                     $company = $entry->company->resolve($language);
                     $loc = $entry->location->resolve($language);
-                    $start = $entry->startDate;
-                    $end = $entry->isCurrent ? ($isAr ? 'حتى الآن' : 'Present') : $entry->endDate;
+                    $start = self::displayDate($entry->startDate, $language);
+                    $end = $entry->isCurrent ? ($isAr ? 'حتى الآن' : 'Present') : self::displayDate($entry->endDate, $language);
                     $dateRange = trim(($start ?? '').($end ? ' – '.$end : ''));
                     $bullets = array_values(array_filter(array_map(
                         fn (LocalizedText $b) => $b->resolve($language),
@@ -395,8 +395,8 @@ final readonly class CvDocument implements JsonSerializable
                     if ($title === '') {
                         $title = $deg;
                     }
-                    $start = $entry->startDate;
-                    $end = $entry->endDate;
+                    $start = self::displayDate($entry->startDate, $language);
+                    $end = self::displayDate($entry->endDate, $language);
                     $dateRange = trim(($start ?? '').($end ? ' – '.$end : ''));
                     $desc = $entry->narrative->resolve($language);
 
@@ -450,7 +450,7 @@ final readonly class CvDocument implements JsonSerializable
                 foreach ($this->certifications as $entry) {
                     $name = $entry->name->resolve($language);
                     $issuer = $entry->issuer->resolve($language);
-                    $date = $entry->date;
+                    $date = self::displayDate($entry->date, $language);
                     $desc = $entry->narrative->resolve($language);
 
                     if ($name !== '' || $issuer !== '' || $desc !== '') {
@@ -862,5 +862,36 @@ final readonly class CvDocument implements JsonSerializable
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    private const MONTHS = [
+        'en' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        'ar' => ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'],
+    ];
+
+    /**
+     * Reader-facing form of a stored date. ISO "YYYY-MM" / "YYYY-MM-DD" and
+     * "MM/YYYY" (what the app's pickers store) print as "Nov 2025"; a day is
+     * never shown on a CV. Anything else is the author's own text and
+     * stays as written.
+     */
+    public static function displayDate(?string $date, string $language): ?string
+    {
+        if ($date === null) {
+            return null;
+        }
+        if (preg_match('/^\s*(\d{4})-(\d{1,2})(?:-\d{1,2})?(?:[T ][\d:.+\-Z]*)?\s*$/', $date, $match) === 1) {
+            [$year, $month] = [$match[1], (int) $match[2]];
+        } elseif (preg_match('/^\s*(\d{1,2})\/(\d{4})\s*$/', $date, $match) === 1) {
+            // "MM/YYYY": what the app's month picker writes.
+            [$year, $month] = [$match[2], (int) $match[1]];
+        } else {
+            return $date;
+        }
+        if ($month < 1 || $month > 12) {
+            return $date;
+        }
+
+        return self::MONTHS[$language === 'en' ? 'en' : 'ar'][$month - 1].' '.$year;
     }
 }

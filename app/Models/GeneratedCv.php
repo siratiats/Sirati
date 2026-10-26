@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Cv\CvDocument;
+use App\Cv\CvTextLayout;
 use App\Enums\AiStatus;
+use App\Support\Utf8Sanitizer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -54,7 +56,15 @@ class GeneratedCv extends Model
         $this->memoizedCvDocument = null;
 
         if (is_string($value)) {
-            $value = \App\Support\Utf8Sanitizer::sanitize($value);
+            $value = Utf8Sanitizer::sanitize($value);
+            if ($key === 'summary_input') {
+                $value = CvTextLayout::unwrapText($value);
+            }
+        } elseif (is_array($value) && in_array($key, ['document', 'form_payload'], true)) {
+            $value = Utf8Sanitizer::sanitizeDeep($value);
+            if ($key === 'document') {
+                $value = CvTextLayout::tidyDocument($value);
+            }
         }
 
         return parent::setAttribute($key, $value);

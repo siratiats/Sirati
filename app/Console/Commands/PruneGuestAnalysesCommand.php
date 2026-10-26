@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\CvAnalysis;
 use App\Models\GeneratedCv;
+use App\Services\CvTemplateRenderer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -23,10 +24,19 @@ class PruneGuestAnalysesCommand extends Command
             ->where('created_at', '<', $threshold)
             ->delete();
 
-        $prunedGeneratedCvs = GeneratedCv::query()
+        $expiredCvs = GeneratedCv::query()
             ->whereNull('user_id')
-            ->where('created_at', '<', $threshold)
-            ->delete();
+            ->where('created_at', '<', $threshold);
+        $pdfRenderer = app(CvTemplateRenderer::class);
+        $cvIds = $expiredCvs->pluck('id');
+        foreach ($cvIds as $cvId) {
+            $pdfRenderer->deletePdfArtifacts($cvId);
+        }
+        $prunedGeneratedCvs = $expiredCvs->whereKey($cvIds)->delete();
+        // A render racing the mass delete must not leave a private artifact.
+        foreach ($cvIds as $cvId) {
+            $pdfRenderer->deletePdfArtifacts($cvId);
+        }
 
         $this->info("Pruned {$prunedAnalyses} guest analyses and {$prunedGeneratedCvs} guest CVs older than {$hours} hours.");
 

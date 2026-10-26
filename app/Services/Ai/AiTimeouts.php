@@ -2,6 +2,8 @@
 
 namespace App\Services\Ai;
 
+use App\Services\Ai\Schemas\OperationSchemas;
+
 /**
  * Single source for the generation-timeout stack.
  *
@@ -34,6 +36,22 @@ final class AiTimeouts
 
     /** DeepInfra timeout for generate_cv / analysis_advice. Qwen 72B / Llama 70B often exceed 45s. */
     public const DEEPINFRA_GENERATE_TIMEOUT = 90;
+
+    /**
+     * Anthropic attempt timeout for long outputs (generate_cv, analysis_advice,
+     * job_match). A long Arabic CV takes 20-50s to decode on Haiku; the 30s
+     * default cut those off and re-ran the whole job.
+     */
+    public const ANTHROPIC_LONG_TIMEOUT = 75;
+
+    /**
+     * Wall-clock budget for a long Anthropic call. Fits one retry of a full
+     * timeout. Claude has no fallback layer, so it gets the job window alone.
+     */
+    public const ANTHROPIC_LONG_BUDGET_SECONDS = 155;
+
+    /** Outputs above this many tokens use the long Anthropic timeout and budget. */
+    public const ANTHROPIC_LONG_OUTPUT_TOKENS = 2048;
 
     /** GenerateCv* job $timeout. */
     public const JOB_SECONDS = 180;
@@ -78,6 +96,13 @@ final class AiTimeouts
      */
     public static function worstCaseJobAttemptSeconds(): int
     {
+        if (strtolower((string) config('services.cv_ai.provider', 'openai')) === 'claude') {
+            return self::layerWorstCaseSeconds(
+                self::ANTHROPIC_LONG_BUDGET_SECONDS,
+                (int) config('services.anthropic.generate_timeout', self::ANTHROPIC_LONG_TIMEOUT),
+            );
+        }
+
         $deepinfraAttempt = (int) config(
             'services.deepinfra.generate_timeout',
             self::DEEPINFRA_GENERATE_TIMEOUT,
@@ -86,5 +111,30 @@ final class AiTimeouts
 
         return self::layerWorstCaseSeconds(self::FALLBACK_BUDGET_SECONDS, $deepinfraAttempt)
             + self::layerWorstCaseSeconds(self::HTTP_BUDGET_SECONDS, $openaiAttempt);
+    }
+
+    public static function isLongAnthropicOperation(string $operation): bool
+    {
+        return OperationSchemas::maxTokens($operation) > self::ANTHROPIC_LONG_OUTPUT_TOKENS;
+    }
+
+    /** Per-attempt Anthropic timeout for an operation, in seconds. */
+    public static function anthropicAttemptSeconds(string $operation): int
+    {
+        return self::isLongAnthropicOperation($operation)
+            ? (int) config('services.anthropic.generate_timeout', self::ANTHROPIC_LONG_TIMEOUT)
+            : (int) config('services.anthropic.timeout', 30);
+    }
+
+    /**
+     * Retry budget for an Anthropic operation. Long operations only run in
+     * queued jobs; short ones (enhance-field, classify) run inside an HTTP
+     * request and keep the short budget.
+     */
+    public static function anthropicBudgetSeconds(string $operation): int
+    {
+        return self::isLongAnthropicOperation($operation)
+            ? self::ANTHROPIC_LONG_BUDGET_SECONDS
+            : self::HTTP_BUDGET_SECONDS;
     }
 }
