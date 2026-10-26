@@ -3,6 +3,8 @@
     $rtl = $cv['direction'] === 'rtl';
     $start = $rtl ? 'right' : 'left';
     $end = $rtl ? 'left' : 'right';
+    // A text block up to about six lines may move whole to keep its heading.
+    $keepChars = 600;
     // Letter-spacing and uppercase break Arabic shaping, so they apply to LTR only.
     $spaced = ! $rtl;
     $bulletLines = static function (?string $text): array {
@@ -66,7 +68,9 @@
         .row { width: 100%; border-collapse: collapse; }
         .row td { padding: 0; vertical-align: top; }
         .row td.date { text-align: {{ $end }}; white-space: nowrap; font-weight: bold; color: #333333; direction: ltr; unicode-bidi: embed; padding-{{ $start }}: 8pt; }
-        .entry { margin-top: 5pt; page-break-inside: avoid; }
+        .entry { margin-top: 5pt; }
+        .keep, .entry-head { page-break-inside: avoid; }
+        .entry-note { margin: 0 0 2pt; }
         .entry-company { font-weight: bold; }
         .entry-desc { @if (! $rtl) font-style: italic; @endif color: {{ $s['muted_color'] }}; margin: 0.5pt 0 1pt; }
         ul { margin: 1pt 0 0; padding-{{ $start }}: 14pt; padding-{{ $end }}: 0; }
@@ -99,81 +103,112 @@
             @foreach ($cv['structured_sections'] as $section)
                 @php($key = $section['key'] ?? '')
                 <div class="section-block">
-                    <h2 class="section-title">{{ $section['title'] }}</h2>
+                    @php($heading = '<h2 class="section-title">'.e($section['title']).'</h2>')
 
+                    {{-- Only the heading and the first item are kept together; a whole
+                         block is kept only when it is short, so nothing long jumps
+                         to the next page and leaves a gap. --}}
                     @if ($section['type'] === 'text')
                         @php($lines = $bulletLines($section['content'] ?? ''))
                         @if ($lines)
-                            <ul class="compact">@foreach ($lines as $line)<li>{{ $line }}</li>@endforeach</ul>
+                            <div class="keep">{!! $heading !!}<ul class="compact"><li>{{ $lines[0] }}</li></ul></div>
+                            @if (count($lines) > 1)
+                                <ul class="compact">@foreach (array_slice($lines, 1) as $line)<li>{{ $line }}</li>@endforeach</ul>
+                            @endif
+                        @elseif (mb_strlen((string) $section['content']) <= $keepChars)
+                            <div class="keep">{!! $heading !!}<p>{!! nl2br(e($section['content']), false) !!}</p></div>
                         @else
-                            <p>{{ $section['content'] }}</p>
+                            {!! $heading !!}
+                            <p>{!! nl2br(e($section['content']), false) !!}</p>
                         @endif
 
                     @elseif ($section['type'] === 'tags')
                         @if (! empty($section['groups']))
                             @foreach ($section['groups'] as $group)
+                                @if ($loop->first)<div class="keep">{!! $heading !!}@endif
                                 <div class="skill-group">
                                     @if (filled($group['category']))<span class="accent">{{ $group['category'] }}</span><span class="pipe accent">&nbsp;| </span>@endif{{ implode(', ', $group['items']) }}
                                 </div>
+                                @if ($loop->first)</div>@endif
                             @endforeach
                         @else
-                            <p>{{ ! empty($section['items']) ? implode(', ', $section['items']) : $section['text'] }}</p>
+                            @php($tagText = ! empty($section['items']) ? implode(', ', $section['items']) : (string) $section['text'])
+                            @if (mb_strlen($tagText) <= $keepChars)
+                                <div class="keep">{!! $heading !!}<p>{{ $tagText }}</p></div>
+                            @else
+                                {!! $heading !!}
+                                <p>{{ $tagText }}</p>
+                            @endif
                         @endif
 
                     @elseif ($key === 'languages')
-                        <p>
-                            @foreach ($section['entries'] as $entry)
-                                @if (! $loop->first)<span class="pipe">| </span>@endif{{ $entry['title'] }}@if (filled($entry['subtitle'] ?? null)): {{ $entry['subtitle'] }}@endif
-                            @endforeach
-                        </p>
+                        <div class="keep">
+                            {!! $heading !!}
+                            <p>
+                                @foreach ($section['entries'] as $entry)
+                                    @if (! $loop->first)<span class="pipe">| </span>@endif{{ $entry['title'] }}@if (filled($entry['subtitle'] ?? null)): {{ $entry['subtitle'] }}@endif
+                                @endforeach
+                            </p>
+                        </div>
 
                     @elseif ($key === 'education')
                         @foreach ($section['entries'] as $entry)
-                            <table class="row" style="margin-bottom: 2pt;">
-                                <tr>
-                                    <td>
-                                        <strong>{{ $entry['title'] }}</strong>
-                                        @foreach (array_filter([$entry['subtitle'] ?? null, $entry['description'] ?? null], 'filled') as $part)
-                                            <span class="pipe">| </span><span>{{ $part }}</span>
-                                        @endforeach
-                                    </td>
-                                    @if (filled($entry['date_range'] ?? null))
-                                        <td class="date">{{ $entry['date_range'] }}</td>
-                                    @endif
-                                </tr>
-                            </table>
+                            <div class="entry-head">
+                                @if ($loop->first){!! $heading !!}@endif
+                                <table class="row">
+                                    <tr>
+                                        <td>
+                                            <strong>{{ $entry['title'] }}</strong>
+                                            @if (filled($entry['subtitle'] ?? null))<span class="pipe">| </span><span>{{ $entry['subtitle'] }}</span>@endif
+                                        </td>
+                                        @if (filled($entry['date_range'] ?? null))
+                                            <td class="date">{{ $entry['date_range'] }}</td>
+                                        @endif
+                                    </tr>
+                                </table>
+                            </div>
+                            @if (filled($entry['description'] ?? null))
+                                <div class="entry-note">{!! nl2br(e($entry['description']), false) !!}</div>
+                            @endif
                         @endforeach
 
                     @elseif ($key === 'certifications')
-                        <ul class="compact">
-                            @foreach ($section['entries'] as $entry)
+                        @foreach ($section['entries'] as $entry)
+                            @if ($loop->first)<div class="entry-head">{!! $heading !!}@endif
+                            <ul class="compact">
                                 <li>
                                     <strong>{{ $entry['title'] }}</strong>
                                     @foreach (array_filter([$entry['subtitle'] ?? null, $entry['date_range'] ?? null, $entry['description'] ?? null], 'filled') as $part)
                                         <span class="pipe">| </span><span>{{ $part }}</span>
                                     @endforeach
                                 </li>
-                            @endforeach
-                        </ul>
+                            </ul>
+                            @if ($loop->first)</div>@endif
+                        @endforeach
 
                     @elseif ($section['type'] === 'entries')
                         @foreach ($section['entries'] as $entry)
                             <div class="entry">
-                                <table class="row">
-                                    <tr>
-                                        <td class="accent">{{ $entry['title'] }}</td>
-                                        @if (filled($entry['date_range'] ?? null))
-                                            <td class="date">{{ $entry['date_range'] }}</td>
-                                        @endif
-                                    </tr>
-                                </table>
-                                @if (filled($entry['subtitle'] ?? null) || filled($entry['location'] ?? null))
-                                    <div class="entry-company">
-                                        {{ $entry['subtitle'] ?? '' }}@if (filled($entry['subtitle'] ?? null) && filled($entry['location'] ?? null))<span class="pipe">&nbsp;| </span>@endif{{ $entry['location'] ?? '' }}
-                                    </div>
-                                @endif
+                                {{-- The job header never parts from its section title (first
+                                     entry) or from the start of its body; the body may split. --}}
+                                <div class="entry-head">
+                                    @if ($loop->first){!! $heading !!}@endif
+                                    <table class="row">
+                                        <tr>
+                                            <td class="accent">{{ $entry['title'] }}</td>
+                                            @if (filled($entry['date_range'] ?? null))
+                                                <td class="date">{{ $entry['date_range'] }}</td>
+                                            @endif
+                                        </tr>
+                                    </table>
+                                    @if (filled($entry['subtitle'] ?? null) || filled($entry['location'] ?? null))
+                                        <div class="entry-company">
+                                            {{ $entry['subtitle'] ?? '' }}@if (filled($entry['subtitle'] ?? null) && filled($entry['location'] ?? null))<span class="pipe">&nbsp;| </span>@endif{{ $entry['location'] ?? '' }}
+                                        </div>
+                                    @endif
+                                </div>
                                 @if (filled($entry['description'] ?? null))
-                                    <div class="entry-desc">{{ $entry['description'] }}</div>
+                                    <div class="entry-desc">{!! nl2br(e($entry['description']), false) !!}</div>
                                 @endif
                                 @if (! empty($entry['bullets']))
                                     <ul>@foreach ($entry['bullets'] as $bullet)<li>{{ $bullet }}</li>@endforeach</ul>

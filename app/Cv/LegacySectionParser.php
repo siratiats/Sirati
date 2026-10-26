@@ -44,9 +44,11 @@ final class LegacySectionParser
 
         $entries = [];
         foreach (self::blocks($blob) as $block) {
-            $entry = self::educationBlock($block, $language);
-            if ($entry !== null) {
-                $entries[] = $entry;
+            foreach (CvTextLayout::splitQualifications($block) as $qualification) {
+                $entry = self::educationBlock($qualification, $language);
+                if ($entry !== null) {
+                    $entries[] = $entry;
+                }
             }
         }
 
@@ -84,6 +86,9 @@ final class LegacySectionParser
                 } elseif ($date === null && $header['location'] === '' && preg_match('/^'.self::DATE_POINT.'$/iu', $header['subtitle']) === 1) {
                     $date = $header['subtitle'];
                     $header['subtitle'] = '';
+                }
+                if ($header['subtitle'] === '') {
+                    [$header['title'], $header['subtitle']] = CvTextLayout::splitIssuer($header['title']);
                 }
                 $entries[] = new Certification(
                     name: LocalizedText::forLanguage($language, $header['title']),
@@ -345,10 +350,18 @@ final class LegacySectionParser
 
                 continue;
             }
+            // An unmarked line right after a bullet is that bullet wrapped
+            // onto a second line when it continues it.
+            $rejoined = $bullets !== [] && $narrative === [] ? CvTextLayout::unwrapLines([end($bullets), $trimmed]) : [];
+            if (count($rejoined) === 1) {
+                $bullets[count($bullets) - 1] = $rejoined[0];
+
+                continue;
+            }
             $narrative[] = $trimmed;
         }
 
-        return [$header, $bullets, trim(implode("\n", $narrative))];
+        return [$header, CvTextLayout::unwrapLines($bullets), CvTextLayout::unwrapText(implode("\n", $narrative))];
     }
 
     /**

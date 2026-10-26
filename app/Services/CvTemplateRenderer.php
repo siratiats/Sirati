@@ -25,7 +25,7 @@ class CvTemplateRenderer
      * Bump when template HTML, fonts, or renderer behaviour changes so a
      * stored PDF from a previous deploy cannot outlive the new code.
      */
-    public const RENDERER_VERSION = '7';
+    public const RENDERER_VERSION = '8';
 
     public function __construct(
         private readonly CvMarkdownRenderer $markdownRenderer,

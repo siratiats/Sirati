@@ -45,3 +45,12 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 - Tests that create a completed CV now push RenderCvPdfJob: reset with Queue::fake() after setup or assert specific AI jobs with assertNotPushed, never drop assertions.
 - Claude long operations (max_tokens > 2048: generate_cv, analysis_advice, job_match) use ANTHROPIC_GENERATE_TIMEOUT (75s) inside a 155s budget; short ones keep 30s/50s because they run in the HTTP request. Claude has no DeepInfra fallback.
 - Redis queue: oldest pending job is index 0 (RPUSH/LPOP). Listeners in app/Listeners are auto-discovered: never also Event::listen them. Payload createdAt is the original push time, so retries have no meaningful wait_ms.
+
+## Pasted CV text (2026-10-26)
+- Text pasted from another PDF arrives with hard line wraps and Latin ligatures (U+FB00-FB06). It is normalized once at ingestion: Utf8Sanitizer (ligatures, also sanitizeDeep for document/form_payload arrays) and CvTextLayout (unwrapLines, narrative that repeats bullets, one education entry per degree, "Name — Issuer"), called from GeneratedCv::setAttribute and LegacySectionParser. Never at render time; old rows were cleaned by migration 2026_10_26_000001.
+- Writes that bypass the model (DB::table / query-builder updates) skip normalization.
+- Classic template: entries may split across pages; only heading + first entry header are kept together (.keep / .entry-head). mPDF ignores page-break-after: avoid.
+- CvDocument::displayDate prints ISO and MM/YYYY as "Nov 2025" / "نوفمبر 2025"; free text stays as written.
+- Certification::fromArray reads "authority" before "issuer": write both.
+- Line joining is strict: join only on a hyphen break, a trailing comma/connector (lowercase connector words), or a lowercase next line after a 4+ word line. No length rules (they joined separate achievements). Arabic wraps without a connector stay split by design.
+- Classic template date cell must stay `direction: ltr`: the PDF text step already orders Arabic, so `rtl` prints an Arabic range end-first (checked visually 2026-10-26).
