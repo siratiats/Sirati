@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Services\CvTemplateRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -158,8 +157,9 @@ class CvTemplateFeatureTest extends TestCase
         $this->assertFalse($template->fresh()->trashed());
     }
 
-    public function test_pdf_blob_is_cached_as_base64_and_survives_cache_roundtrip(): void
+    public function test_pdf_is_stored_privately_and_survives_storage_roundtrip(): void
     {
+        Storage::fake('cv_pdfs');
         $user = User::factory()->create();
         $cv = GeneratedCv::create([
             'user_id' => $user->id,
@@ -193,12 +193,11 @@ class CvTemplateFeatureTest extends TestCase
 
         $this->assertStringStartsWith('%PDF-', $pdf1);
 
-        $cacheKey = app(CvTemplateRenderer::class)->pdfCacheKey($cv, $template, 'ar');
-
-        $rawCached = Cache::get($cacheKey);
-        $this->assertNotNull($rawCached);
-        $this->assertFalse(str_starts_with($rawCached, '%PDF-'));
-        $this->assertSame($pdf1, base64_decode($rawCached));
+        $fingerprint = $renderer->pdfFingerprint($cv, $template, 'ar');
+        $path = 'cv-pdfs/'.$cv->id.'/'.$fingerprint.'.pdf';
+        $this->assertSame($pdf1, Storage::disk('cv_pdfs')->get($path));
+        $this->assertSame('private', config('filesystems.disks.cv_pdfs.visibility'));
+        $this->assertFalse(config('filesystems.disks.cv_pdfs.serve'));
 
         $pdf2 = $renderer->renderPdfBlob($cv, $template, 'ar');
         $this->assertSame($pdf1, $pdf2);

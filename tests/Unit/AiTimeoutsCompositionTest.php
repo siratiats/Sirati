@@ -5,6 +5,13 @@ namespace Tests\Unit;
 use App\Jobs\GenerateCvAdviceJob;
 use App\Jobs\GenerateCvContentJob;
 use App\Services\Ai\AiTimeouts;
+use App\Services\Ai\Schemas\AnalysisAdviceSchema;
+use App\Services\Ai\Schemas\ClassifyDocumentSchema;
+use App\Services\Ai\Schemas\EnhanceCvFieldSchema;
+use App\Services\Ai\Schemas\EnhanceJobDescriptionSchema;
+use App\Services\Ai\Schemas\GenerateCvSchema;
+use App\Services\Ai\Schemas\JobMatchAdviceSchema;
+use App\Services\Ai\Schemas\OperationSchemas;
 use App\Support\QueuedJobTimeouts;
 use Tests\TestCase;
 
@@ -116,6 +123,73 @@ class AiTimeoutsCompositionTest extends TestCase
         foreach (QueuedJobTimeouts::persistentConnectionNames() as $name) {
             $retryAfter = (int) config("queue.connections.{$name}.retry_after");
             $this->assertGreaterThan($worker, $retryAfter, $name);
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function anthropicOperations(): array
+    {
+        return [
+            AnalysisAdviceSchema::NAME,
+            GenerateCvSchema::NAME,
+            EnhanceJobDescriptionSchema::NAME,
+            EnhanceCvFieldSchema::NAME,
+            ClassifyDocumentSchema::NAME,
+            JobMatchAdviceSchema::NAME,
+        ];
+    }
+
+    public function test_claude_worst_case_job_attempt_fits_inside_job_timeout(): void
+    {
+        config(['services.cv_ai.provider' => 'claude']);
+
+        $this->assertLessThan(AiTimeouts::JOB_SECONDS, AiTimeouts::worstCaseJobAttemptSeconds());
+    }
+
+    public function test_every_anthropic_operation_can_decode_its_full_output_inside_one_attempt(): void
+    {
+        // Planning rate for Haiku decoding; below it the attempt is cut off
+        // before a max-length answer can finish.
+        $minimumTokensPerSecond = 120;
+
+        foreach ($this->anthropicOperations() as $operation) {
+            $needed = (int) ceil(OperationSchemas::maxTokens($operation) / $minimumTokensPerSecond);
+
+            $this->assertGreaterThanOrEqual(
+                $needed,
+                AiTimeouts::anthropicAttemptSeconds($operation),
+                $operation,
+            );
+        }
+    }
+
+    public function test_every_anthropic_budget_fits_the_job_and_long_calls_can_retry_one_full_timeout(): void
+    {
+        foreach ($this->anthropicOperations() as $operation) {
+            $attempt = AiTimeouts::anthropicAttemptSeconds($operation);
+            $budget = AiTimeouts::anthropicBudgetSeconds($operation);
+
+            if (AiTimeouts::isLongAnthropicOperation($operation)) {
+                $this->assertGreaterThanOrEqual($attempt, $budget - $attempt, $operation);
+            }
+            $this->assertLessThan(
+                AiTimeouts::JOB_SECONDS,
+                AiTimeouts::layerWorstCaseSeconds($budget, $attempt),
+                $operation,
+            );
+        }
+    }
+
+    public function test_short_anthropic_operations_keep_the_request_path_budget(): void
+    {
+        foreach ($this->anthropicOperations() as $operation) {
+            if (AiTimeouts::isLongAnthropicOperation($operation)) {
+                continue;
+            }
+
+            $this->assertSame(AiTimeouts::HTTP_BUDGET_SECONDS, AiTimeouts::anthropicBudgetSeconds($operation), $operation);
         }
     }
 }

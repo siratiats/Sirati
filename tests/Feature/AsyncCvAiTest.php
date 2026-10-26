@@ -8,6 +8,7 @@ use App\Exceptions\AiRefusalException;
 use App\Exceptions\AiTruncationException;
 use App\Jobs\GenerateCvAdviceJob;
 use App\Jobs\GenerateCvContentJob;
+use App\Jobs\RenderCvPdfJob;
 use App\Jobs\SendPushNotificationJob;
 use App\Models\CvAnalysis;
 use App\Models\GeneratedCv;
@@ -350,7 +351,11 @@ class AsyncCvAiTest extends TestCase
             ->assertJsonPath('data.ai_status', AiStatus::Completed->value)
             ->assertJsonPath('data.generated_markdown', $output['cv_markdown']);
 
-        Queue::assertNothingPushed();
+        Queue::assertNotPushed(GenerateCvContentJob::class);
+        Queue::assertNotPushed(GenerateCvAdviceJob::class);
+        Queue::assertPushed(RenderCvPdfJob::class, fn ($job) => $job->generatedCvId === GeneratedCv::sole()->id);
+        Queue::assertPushed(RenderCvPdfJob::class, 1);
+        Queue::assertCount(1);
     }
 
     public function test_ai_jobs_have_explicit_queue_retry_and_timeout_settings(): void

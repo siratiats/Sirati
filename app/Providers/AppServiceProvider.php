@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Contracts\CvAiProvider;
+use App\Models\GeneratedCv;
+use App\Models\User;
+use App\Observers\GeneratedCvObserver;
 use App\Services\Ai\CachedCvAiProvider;
 use App\Services\ClaudeCvService;
 use App\Services\DeepInfraCvService;
@@ -65,6 +68,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        GeneratedCv::observe(GeneratedCvObserver::class);
+        $pdfObserver = app(GeneratedCvObserver::class);
+        User::updated($pdfObserver->userUpdated(...));
+
         Event::listen(DiagnosingHealth::class, function (): void {
             app(HealthMonitor::class)->assertHealthy();
         });

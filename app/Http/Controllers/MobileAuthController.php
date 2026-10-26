@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JobTitle;
 use App\Models\User;
+use App\Services\CvTemplateRenderer;
 use App\Services\EmailVerificationService;
 use App\Services\PasswordResetService;
 use App\Services\Subscriptions\SubscriptionGate;
@@ -325,7 +326,17 @@ class MobileAuthController extends Controller
         // Hard-delete owned content first. CV tables use nullOnDelete FKs, so
         // without this step rows would remain with user_id = null (privacy risk).
         $user->cvAnalyses()->delete();
+        $pdfRenderer = app(CvTemplateRenderer::class);
+        $cvIds = $user->generatedCvs()->pluck('id');
+        foreach ($cvIds as $cvId) {
+            $pdfRenderer->deletePdfArtifacts($cvId);
+        }
         $user->generatedCvs()->delete();
+        // Close the interval in which an already-running renderer could publish
+        // between the pre-delete cleanup and the mass delete (no model events).
+        foreach ($cvIds as $cvId) {
+            $pdfRenderer->deletePdfArtifacts($cvId);
+        }
         if ($user->avatar_path !== null) {
             Storage::disk('public')->delete($user->avatar_path);
         }

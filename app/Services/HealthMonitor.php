@@ -7,6 +7,7 @@ use App\Support\QueuedJobTimeouts;
 use Illuminate\Queue\Events\Looping;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use RuntimeException;
 use Throwable;
 
@@ -50,6 +51,110 @@ class HealthMonitor
         if (now()->getTimestamp() - (int) $lastHeartbeat > $this->maxAgeSeconds()) {
             throw new RuntimeException('Queue worker heartbeat is stale.');
         }
+
+        $this->assertQueueBacklogIsFresh();
+    }
+
+    /**
+     * Fail closed (AGENTS.md rule 7) when the oldest pending job has waited
+     * longer than max_age_seconds, or when the queue cannot be read at all.
+     */
+    private function assertQueueBacklogIsFresh(): void
+    {
+        $connectionName = $this->queueConnection();
+        $connection = config("queue.connections.{$connectionName}");
+
+        if (! is_array($connection) || ! isset($connection['driver'])) {
+            throw new RuntimeException("Queue health check: connection [{$connectionName}] is not configured.");
+        }
+
+        try {
+            [$queueSize, $oldestAgeSeconds] = match ($connection['driver']) {
+                'database' => $this->databaseQueueAge($connection),
+                'redis' => $this->redisQueueAge($connection),
+                default => throw new RuntimeException(
+                    "Queue health check: unsupported driver [{$connection['driver']}] for connection [{$connectionName}]."
+                ),
+            };
+        } catch (RuntimeException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            throw new RuntimeException(
+                "Queue health check: unable to read queue on connection [{$connectionName}].",
+                0,
+                $exception,
+            );
+        }
+
+        if ($oldestAgeSeconds > $this->maxAgeSeconds()) {
+            throw new RuntimeException(
+                "Queue [{$connectionName}] oldest pending job age ({$oldestAgeSeconds}s) exceeds max age ({$this->maxAgeSeconds()}s); queue size is {$queueSize}."
+            );
+        }
+    }
+
+    /**
+     * @return array{0: int, 1: int} [queue size, oldest pending job age in seconds]
+     */
+    private function databaseQueueAge(array $connection): array
+    {
+        $table = (string) ($connection['table'] ?? 'jobs');
+        $queue = (string) ($connection['queue'] ?? 'default');
+        $dbConnection = $connection['connection'] ?? null;
+
+        // Pending only, mirroring the Redis list: reserved rows are running
+        // (up to the 180s job timeout) and future rows are delayed, not stuck.
+        $query = DB::connection($dbConnection)->table($table)
+            ->where('queue', $queue)
+            ->whereNull('reserved_at')
+            ->where('available_at', '<=', now()->getTimestamp());
+
+        $queueSize = (int) $query->count();
+
+        if ($queueSize === 0) {
+            return [0, 0];
+        }
+
+        $oldest = (clone $query)->orderBy('created_at')->first(['created_at']);
+
+        if ($oldest === null) {
+            throw new RuntimeException('Queue health check: database queue size is non-zero but no job row was readable.');
+        }
+
+        return [$queueSize, max(0, now()->getTimestamp() - (int) $oldest->created_at)];
+    }
+
+    /**
+     * @return array{0: int, 1: int} [queue size, oldest pending job age in seconds]
+     */
+    private function redisQueueAge(array $connection): array
+    {
+        $redisConnection = (string) ($connection['connection'] ?? 'default');
+        $queue = (string) ($connection['queue'] ?? 'default');
+        $key = 'queues:'.$queue;
+
+        $redis = Redis::connection($redisConnection);
+
+        $queueSize = (int) $redis->llen($key);
+
+        if ($queueSize <= 0) {
+            return [0, 0];
+        }
+
+        $payload = $redis->lindex($key, 0);
+
+        if (! is_string($payload) || $payload === '') {
+            throw new RuntimeException('Queue health check: Redis queue is non-empty but its oldest job payload was not readable.');
+        }
+
+        $decoded = json_decode($payload, true);
+        $createdAt = is_array($decoded) ? ($decoded['createdAt'] ?? null) : null;
+
+        if (! is_numeric($createdAt)) {
+            throw new RuntimeException('Queue health check: Redis queue oldest job payload has no push time (createdAt).');
+        }
+
+        return [$queueSize, max(0, now()->getTimestamp() - (int) $createdAt)];
     }
 
     /**

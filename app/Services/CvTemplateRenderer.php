@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use League\Flysystem\UnableToReadFile;
 use Mpdf\Config\ConfigVariables;
 use Mpdf\Config\FontVariables;
 use Mpdf\HTMLParserMode;
@@ -22,9 +23,9 @@ class CvTemplateRenderer
 {
     /**
      * Bump when template HTML, fonts, or renderer behaviour changes so a
-     * cached blob from a previous deploy cannot outlive the new code.
+     * stored PDF from a previous deploy cannot outlive the new code.
      */
-    public const RENDER_VERSION = '6';
+    public const RENDERER_VERSION = '7';
 
     public function __construct(
         private readonly CvMarkdownRenderer $markdownRenderer,
@@ -85,8 +86,13 @@ class CvTemplateRenderer
     ): string {
         $language = ($languageOverride ?? $generatedCv->language) === 'en' ? 'en' : 'ar';
         $template = $this->resolve($templateKey, $language);
-        $view = $this->viewFor($template);
         $cv = $this->viewModel($generatedCv, $template, $watermark, $language, $forExport);
+
+        return $this->renderView($generatedCv, $template, $cv);
+    }
+
+    private function renderView(GeneratedCv $generatedCv, CvTemplate $template, array $cv): string
+    {
         $pdfData = [
             'name' => $cv['candidate']['name'],
             'targetJobTitle' => $cv['candidate']['targetJobTitle'],
@@ -94,7 +100,7 @@ class CvTemplateRenderer
             'contentHtml' => $cv['contentHtml'],
         ];
 
-        return view($view, [
+        return view($this->viewFor($template), [
             'generatedCv' => $generatedCv,
             'pdfData' => $pdfData,
             'cv' => $cv,
@@ -126,13 +132,15 @@ class CvTemplateRenderer
         }
 
         // Entitled export downloads are never watermarked
-        $pdfContent = $this->renderPdfBlob($generatedCv, $template, $language);
+        [$pdfContent, $metrics] = $this->pdfArtifact($generatedCv, $template, $language);
+        Log::info('CV PDF download', ['cv_id' => $generatedCv->id, ...$metrics, 'bytes' => strlen($pdfContent)]);
 
         $slug = Str::slug($generatedCv->full_name) ?: 'candidate';
         $filename = 'sirati-cv-'.$slug.'-'.$generatedCv->id.'.pdf';
 
         return response($pdfContent, 200, [
             'Content-Type' => 'application/pdf',
+            'Content-Length' => (string) strlen($pdfContent),
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
@@ -142,19 +150,80 @@ class CvTemplateRenderer
         CvTemplate $template,
         string $language,
     ): string {
-        $cacheKey = $this->pdfCacheKey($generatedCv, $template, $language);
+        return $this->pdfArtifact($generatedCv, $template, $language)[0];
+    }
 
-        $cached = Cache::remember($cacheKey, 3600, function () use ($generatedCv, $template, $language): string {
-            return base64_encode($this->renderPdfBlobUncached($generatedCv, $template, $language));
+    public function deletePdfArtifacts(int $generatedCvId): void
+    {
+        Cache::lock('cv-pdf-files:'.$generatedCvId, 180)->block(180, function () use ($generatedCvId): void {
+            if (! Storage::disk('cv_pdfs')->deleteDirectory('cv-pdfs/'.$generatedCvId)) {
+                throw new \RuntimeException('Unable to delete CV PDF artifacts.');
+            }
         });
+    }
 
-        if (str_starts_with($cached, '%PDF-')) {
-            return $cached;
+    /** @return array{string, array{cache: string, render_ms?: float}} */
+    private function pdfArtifact(GeneratedCv $generatedCv, CvTemplate $template, string $language): array
+    {
+        $fingerprint = $this->pdfFingerprint($generatedCv, $template, $language);
+        $directory = 'cv-pdfs/'.$generatedCv->id;
+        $path = $directory.'/'.$fingerprint.'.pdf';
+        $disk = Storage::disk('cv_pdfs');
+        $cached = $this->readStoredPdf($path);
+        if ($cached !== null) {
+            return [$cached, ['cache' => 'hit']];
         }
 
-        $decoded = base64_decode($cached, true);
+        return Cache::lock('cv-pdf:'.$generatedCv->id.':'.$fingerprint, 180)->block(180, function () use ($generatedCv, $template, $language, $disk, $directory, $path, $fingerprint): array {
+            // A second waiter must recheck after the first renderer publishes.
+            $cached = $this->readStoredPdf($path);
+            if ($cached !== null) {
+                return [$cached, ['cache' => 'hit']];
+            }
 
-        return $decoded !== false ? $decoded : $cached;
+            $started = hrtime(true);
+            $pdf = $this->renderPdfBlobUncached($generatedCv, $template, $language);
+            $renderMs = (hrtime(true) - $started) / 1_000_000;
+            $group = explode('-', $fingerprint, 2)[0];
+
+            // Publish atomically, then prune only this template/language group.
+            Cache::lock('cv-pdf-files:'.$generatedCv->id, 180)->block(180, function () use ($generatedCv, $template, $language, $fingerprint, $disk, $directory, $path, $group, $pdf): void {
+                // An edit during rendering must not evict its replacement.
+                $currentCv = $generatedCv->exists ? $generatedCv->fresh() : $generatedCv;
+                $currentTemplate = $template->exists ? $template->fresh() : $template;
+                if ($currentCv === null || $currentTemplate === null || $this->pdfFingerprint($currentCv, $currentTemplate, $language) !== $fingerprint) {
+                    return;
+                }
+                $temporary = $path.'.'.Str::uuid().'.tmp';
+                try {
+                    $disk->put($temporary, $pdf, ['visibility' => 'private']);
+                    $disk->move($temporary, $path);
+                } finally {
+                    $disk->delete($temporary);
+                }
+                foreach ($disk->files($directory) as $older) {
+                    if ($older !== $path && str_starts_with(basename($older), $group.'-') && str_ends_with($older, '.pdf')) {
+                        $disk->delete($older);
+                    }
+                }
+            });
+
+            return [$pdf, ['cache' => 'miss', 'render_ms' => $renderMs]];
+        });
+    }
+
+    private function readStoredPdf(string $path): ?string
+    {
+        $disk = Storage::disk('cv_pdfs');
+        try {
+            return $disk->get($path);
+        } catch (UnableToReadFile $exception) {
+            if ($disk->exists($path)) {
+                throw $exception;
+            }
+
+            return null;
+        }
     }
 
     private function renderPdfBlobUncached(
@@ -162,8 +231,9 @@ class CvTemplateRenderer
         CvTemplate $template,
         string $language,
     ): string {
+        $cv = $this->viewModel($generatedCv, $template, false, $language, true);
         try {
-            $html = $this->renderHtml($generatedCv, $template->slug, false, $language, true);
+            $html = $this->renderView($generatedCv, $template, $cv);
         } catch (\Throwable $exception) {
             Log::warning('CV template render fallback used', [
                 'generated_cv_id' => $generatedCv->id,
@@ -171,7 +241,7 @@ class CvTemplateRenderer
                 'error' => $exception->getMessage(),
             ]);
 
-            $html = $this->renderHtml($generatedCv, null, false, $language, true);
+            $html = $this->renderView($generatedCv, $this->resolve(null, $language), $cv);
         }
 
         $tempDir = storage_path('app/mpdf');
@@ -183,7 +253,6 @@ class CvTemplateRenderer
             throw new \RuntimeException('Unable to create mPDF font cache directory.');
         }
 
-        $cv = $this->viewModel($generatedCv, $template, false, $language, true);
         $defaultFont = $language === 'ar' ? 'ibmplexsansarabic' : 'freesans';
 
         $fontDirs = (new ConfigVariables)->getDefaults()['fontDir'];
@@ -337,23 +406,65 @@ class CvTemplateRenderer
     /**
      * Cache key of a rendered PDF: everything that changes the file.
      */
-    public function pdfCacheKey(GeneratedCv $generatedCv, CvTemplate $template, string $language): string
+    public function pdfFingerprint(GeneratedCv $generatedCv, CvTemplate $template, string $language): string
     {
-        $updatedAt = $generatedCv->updated_at;
-        $updatedKey = $updatedAt instanceof \DateTimeInterface
-            ? $updatedAt->format('U.u')
-            : (string) $updatedAt;
+        $photoPath = $generatedCv->user?->avatar_path;
+        $photo = ['path' => $photoPath];
+        $disk = Storage::disk('public');
+        clearstatcache();
+        if ($photoPath !== null && $disk->exists($photoPath)) {
+            $photo['size'] = $disk->size($photoPath);
+            $photo['mtime'] = $disk->lastModified($photoPath);
+            // Detect replacements even at the same size within one timestamp tick.
+            if ($photo['size'] <= 2 * 1024 * 1024) {
+                $photo['sha256'] = hash('sha256', $disk->get($photoPath));
+            }
+        }
 
-        return 'cv-pdf-blob:'.hash('sha256', implode('|', [
-            self::RENDER_VERSION,
-            (string) $generatedCv->id,
-            $updatedKey,
-            $template->slug,
-            $language,
-            (string) ($generatedCv->ai_status?->value ?? ''),
-            // A new or removed profile photo changes the CV header.
-            (string) $generatedCv->user?->avatar_path,
-        ]));
+        // A stable group lets pruning retain other templates and languages.
+        $group = hash('sha256', $template->slug.'|'.$language);
+
+        $attributes = [];
+        foreach (['id', 'user_id', 'full_name', 'email', 'phone', 'linkedin', 'location', 'target_job_title', 'language', 'summary_input', 'skills_input', 'experience_input', 'education_input', 'certifications_input', 'generated_markdown', 'document', 'form_payload', 'ai_status', 'score_total', 'grade', 'updated_at'] as $key) {
+            $value = $generatedCv->getAttribute($key);
+            $attributes[$key] = $value instanceof \DateTimeInterface ? $value->format('U.u') : $value;
+        }
+
+        $inputs = [
+            'renderer' => self::RENDERER_VERSION,
+            'cv' => $attributes,
+            'document' => $generatedCv->cvDocument()->toArray(),
+            'resolved' => $generatedCv->cvDocument()->resolve($language),
+            'template' => [
+                'id' => $template->getKey(),
+                'slug' => $template->slug,
+                'renderer_key' => $template->renderer_key,
+                'name_ar' => $template->name_ar,
+                'name_en' => $template->name_en,
+                'is_premium' => $template->isPremium(),
+                'color_tokens' => $template->color_tokens ?: [],
+                'config_json' => $template->config_json ?: [],
+                'updated_at' => $template->updated_at?->format('U.u'),
+            ],
+            'template_defaults' => config('cv_templates'),
+            'language' => $language,
+            'photo' => $photo,
+        ];
+
+        // Model hydration and JSON object key ordering must not change identity.
+        $canonical = function (mixed $value) use (&$canonical): mixed {
+            if (! is_array($value)) {
+                return $value;
+            }
+            if (! array_is_list($value)) {
+                ksort($value);
+            }
+
+            return array_map($canonical, $value);
+        };
+        $normalized = json_decode(json_encode($inputs, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+
+        return $group.'-'.hash('sha256', json_encode($canonical($normalized), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
     }
 
     /**

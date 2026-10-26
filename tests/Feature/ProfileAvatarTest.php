@@ -120,7 +120,7 @@ class ProfileAvatarTest extends TestCase
         $without = $renderer->renderHtml($cv->fresh(), 'ats-classic-professional', forExport: true);
         $this->assertStringNotContainsString('class="photo"', $without);
         $template = $renderer->resolve('ats-classic-professional', 'en');
-        $keyWithout = $renderer->pdfCacheKey($cv->fresh(), $template, 'en');
+        $keyWithout = $renderer->pdfFingerprint($cv->fresh(), $template, 'en');
 
         Sanctum::actingAs($user);
         $this->post('/api/auth/avatar', [
@@ -130,7 +130,7 @@ class ProfileAvatarTest extends TestCase
         $with = $renderer->renderHtml($cv->fresh(), 'ats-classic-professional', forExport: true);
         $this->assertMatchesRegularExpression('/<img class="photo" src="data:image\/png;base64,[A-Za-z0-9+\/=]+"/', $with);
 
-        $this->assertNotSame($keyWithout, $renderer->pdfCacheKey($cv->fresh(), $template, 'en'),
+        $this->assertNotSame($keyWithout, $renderer->pdfFingerprint($cv->fresh(), $template, 'en'),
             'a cached PDF without the photo is never served after adding one');
         $pdf = $renderer->renderPdfBlob($cv->fresh(), $template, 'en');
         $this->assertStringStartsWith('%PDF-', $pdf);

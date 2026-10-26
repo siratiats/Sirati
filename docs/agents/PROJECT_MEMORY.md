@@ -38,3 +38,10 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 - Check ATS: hub passes `initialCvId` + `initialMarkdown` through the route table; supplied markdown is used without refetch.
 - Production API is https://siratie.com/api; pushing the Laravel repo does not auto-deploy (checked 2026-10-21: new `/api/job-matches` 404 until the server pulls, migrates and restarts the queue worker).
 - The Flutter and Laravel git remotes embed access tokens in their URLs: never print `git remote -v`.
+
+## CV speed: PDF artifacts, Claude timeouts, queue (2026-10-26)
+- PDFs are pre-rendered by RenderCvPdfJob (GeneratedCvObserver, after commit) into private disk `cv_pdfs` at cv-pdfs/{cv_id}/{fingerprint}.pdf; download serves the file, sync render is the fallback. Bump CvTemplateRenderer::RENDERER_VERSION when templates/fonts change.
+- Mass deletes of generated_cvs bypass observers: call CvTemplateRenderer::deletePdfArtifacts($id) before and after (deleteAccount, PruneGuestAnalysesCommand).
+- Tests that create a completed CV now push RenderCvPdfJob: reset with Queue::fake() after setup or assert specific AI jobs with assertNotPushed, never drop assertions.
+- Claude long operations (max_tokens > 2048: generate_cv, analysis_advice, job_match) use ANTHROPIC_GENERATE_TIMEOUT (75s) inside a 155s budget; short ones keep 30s/50s because they run in the HTTP request. Claude has no DeepInfra fallback.
+- Redis queue: oldest pending job is index 0 (RPUSH/LPOP). Listeners in app/Listeners are auto-discovered: never also Event::listen them. Payload createdAt is the original push time, so retries have no meaningful wait_ms.

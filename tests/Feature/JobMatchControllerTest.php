@@ -8,6 +8,7 @@ use App\Cv\LocalizedText;
 use App\Cv\PersonalDetails;
 use App\Enums\AiStatus;
 use App\Jobs\GenerateJobMatchAdviceJob;
+use App\Jobs\RenderCvPdfJob;
 use App\Models\AiCallLog;
 use App\Models\GeneratedCv;
 use App\Models\JobMatch;
@@ -114,12 +115,21 @@ class JobMatchControllerTest extends TestCase
         $owner = $this->premiumUser();
         $cv = $this->savedCv($owner);
         $match = $this->createMatch($owner, $cv);
+        Queue::assertPushed(RenderCvPdfJob::class, 1);
+        Queue::fake();
+        $before = $cv->fresh()->getAttributes();
+        $cvSaves = 0;
+        GeneratedCv::saving(function () use (&$cvSaves): void {
+            $cvSaves++;
+        });
         Sanctum::actingAs($this->premiumUser());
         $this->postJson('/api/job-matches', ['generated_cv_id' => $cv->id, 'job_description_input' => 'automation'])->assertNotFound();
         $this->getJson('/api/job-matches/'.$match->id)->assertNotFound();
         $this->postJson('/api/job-matches/'.$match->id.'/retry-advice')->assertNotFound();
         $this->postJson('/api/job-matches/'.$match->id.'/apply-suggestions', ['suggestion_keys' => ['x']])->assertNotFound();
         Queue::assertNothingPushed();
+        $this->assertSame(0, $cvSaves);
+        $this->assertSame($before, $cv->fresh()->getAttributes());
     }
 
     public function test_scores_follow_deterministic_jd_coverage_across_arbitrary_inputs(): void
@@ -369,6 +379,10 @@ class JobMatchControllerTest extends TestCase
     {
         $user = $this->premiumUser();
         Sanctum::actingAs($user);
+        $cvSaves = 0;
+        GeneratedCv::saving(function () use (&$cvSaves): void {
+            $cvSaves++;
+        });
         foreach (['ar', 'en'] as $exportLanguage) {
             foreach (['translation', 'custom'] as $section) {
                 $document = ['export_language' => $exportLanguage, 'summary' => [$exportLanguage => 'Short summary']];
@@ -378,7 +392,14 @@ class JobMatchControllerTest extends TestCase
                     $document['custom_sections'] = [['key' => 'additional', 'title' => [$exportLanguage => 'Additional'], 'body' => [$exportLanguage => str_repeat('x', 7001)]]];
                 }
                 $cv = $this->savedCv($user, CvDocument::fromArray($document));
+                Queue::assertPushed(RenderCvPdfJob::class, 1);
+                Queue::fake();
+                $cvSaves = 0;
+                $before = $cv->fresh()->getAttributes();
                 $this->postJson('/api/job-matches', ['generated_cv_id' => $cv->id, 'job_description_input' => 'systems'])->assertUnprocessable();
+                Queue::assertNothingPushed();
+                $this->assertSame(0, $cvSaves);
+                $this->assertSame($before, $cv->fresh()->getAttributes());
             }
         }
         $this->assertDatabaseCount('job_matches', 0);
@@ -391,6 +412,13 @@ class JobMatchControllerTest extends TestCase
         $owner = $this->premiumUser();
         $cv = $this->savedCv($owner);
         $match = $this->createMatch($owner, $cv);
+        Queue::assertPushed(RenderCvPdfJob::class, 1);
+        Queue::fake();
+        $before = $cv->fresh()->getAttributes();
+        $cvSaves = 0;
+        GeneratedCv::saving(function () use (&$cvSaves): void {
+            $cvSaves++;
+        });
         $url = '/api/job-matches/'.$match->id.'/retry-advice';
         $gate = app(SubscriptionGate::class);
 
@@ -424,6 +452,9 @@ class JobMatchControllerTest extends TestCase
         $match->update(['ai_status' => AiStatus::Failed]);
         $this->postJson($url)->assertStatus(402);
         Queue::assertPushed(GenerateJobMatchAdviceJob::class, 1);
+        Queue::assertNotPushed(RenderCvPdfJob::class);
+        $this->assertSame(0, $cvSaves);
+        $this->assertSame($before, $cv->fresh()->getAttributes());
     }
 
     public function test_all_job_match_routes_keep_authentication_and_heavy_throttling(): void

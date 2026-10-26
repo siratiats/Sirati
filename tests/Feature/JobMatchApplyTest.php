@@ -6,7 +6,10 @@ use App\Contracts\CvAiProvider;
 use App\Cv\CvDocument;
 use App\Cv\LocalizedText;
 use App\Enums\AiStatus;
+use App\Jobs\GenerateCvAdviceJob;
+use App\Jobs\GenerateCvContentJob;
 use App\Jobs\GenerateJobMatchAdviceJob;
+use App\Jobs\RenderCvPdfJob;
 use App\Models\GeneratedCv;
 use App\Models\JobMatch;
 use App\Services\AtsScoringService;
@@ -73,6 +76,7 @@ class JobMatchApplyTest extends TestCase
         foreach (range(1, 3) as $iteration) {
             $document = $this->richDocument();
             $cv = $this->savedCv($user, $document);
+            Queue::assertPushed(RenderCvPdfJob::class, fn ($job) => $job->generatedCvId === $cv->id);
             $original = $document->toArray();
             $entryId = $original['experience'][0]['id'];
             $summary = $this->suggestion('summary', 'summary', 'text', $document->resolve()->summary, 'Systems specialist using Kubernetes');
@@ -82,6 +86,7 @@ class JobMatchApplyTest extends TestCase
             $result = $this->postJson('/api/job-matches/'.$match->id.'/apply-suggestions', ['suggestion_keys' => ['summary', 'skill', 'bullet']]);
             $result->assertOk();
             $copy = GeneratedCv::findOrFail($result->json('data.generated_cv.id'));
+            Queue::assertPushed(RenderCvPdfJob::class, fn ($job) => $job->generatedCvId === $copy->id);
             $this->assertNotSame($cv->id, $copy->id);
             $this->assertSame($original, $cv->fresh()->cvDocument()->toArray());
             $updated = $copy->cvDocument()->toArray();
@@ -105,7 +110,11 @@ class JobMatchApplyTest extends TestCase
             $this->assertSame($score['total'], $copy->score_total);
             $this->assertNull($copy->idempotency_key);
         }
-        Queue::assertNothingPushed();
+        Queue::assertNotPushed(GenerateCvContentJob::class);
+        Queue::assertNotPushed(GenerateCvAdviceJob::class);
+        Queue::assertNotPushed(GenerateJobMatchAdviceJob::class);
+        Queue::assertPushed(RenderCvPdfJob::class, GeneratedCv::count());
+        Queue::assertCount(GeneratedCv::count());
     }
 
     public function test_tailored_copy_is_named_apart_from_its_original_in_the_cv_lists(): void

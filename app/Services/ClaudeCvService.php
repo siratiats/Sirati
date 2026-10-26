@@ -137,32 +137,47 @@ class ClaudeCvService implements CvAiProvider
         $model = (string) config('services.anthropic.model');
         $startedAt = hrtime(true);
 
-        $attemptTimeout = (int) config('services.anthropic.timeout', 30);
-        $response = AiHttpRetry::configure(
-            Http::withHeaders([
-                'x-api-key' => (string) config('services.anthropic.api_key'),
-                'anthropic-version' => (string) config('services.anthropic.version', '2023-06-01'),
-                'content-type' => 'application/json',
-            ])
-                ->acceptJson()
-                ->connectTimeout(config('services.anthropic.connect_timeout', 5))
-                ->timeout($attemptTimeout),
-            AiTimeouts::HTTP_BUDGET_SECONDS,
-            $attemptTimeout,
-        )
-            ->post(rtrim((string) config('services.anthropic.base_url'), '/').'/messages', [
+        $attemptTimeout = AiTimeouts::anthropicAttemptSeconds($operation);
+        try {
+            $response = AiHttpRetry::configure(
+                Http::withHeaders([
+                    'x-api-key' => (string) config('services.anthropic.api_key'),
+                    'anthropic-version' => (string) config('services.anthropic.version', '2023-06-01'),
+                    'content-type' => 'application/json',
+                ])
+                    ->acceptJson()
+                    ->connectTimeout(config('services.anthropic.connect_timeout', 5))
+                    ->timeout($attemptTimeout),
+                AiTimeouts::anthropicBudgetSeconds($operation),
+                $attemptTimeout,
+            )
+                ->post(rtrim((string) config('services.anthropic.base_url'), '/').'/messages', [
+                    'model' => $model,
+                    'max_tokens' => OperationSchemas::maxTokens($operation),
+                    'system' => $operation === JobMatchAdviceSchema::NAME
+                        ? [['type' => 'text', 'text' => $systemPrompt, 'cache_control' => ['type' => 'ephemeral']]]
+                        : $systemPrompt,
+                    'messages' => [
+                        ['role' => 'user', 'content' => $userPrompt],
+                    ],
+                    'output_config' => OperationSchemas::anthropicOutputConfig($operation),
+                ])
+                ->throw()
+                ->json();
+        } catch (ConnectionException|RequestException $e) {
+            // Failed calls write no AiCallLog row; without this line a timeout
+            // is invisible in latency numbers.
+            Log::warning('Claude call failed', [
+                'operation' => $operation,
                 'model' => $model,
-                'max_tokens' => OperationSchemas::maxTokens($operation),
-                'system' => $operation === JobMatchAdviceSchema::NAME
-                    ? [['type' => 'text', 'text' => $systemPrompt, 'cache_control' => ['type' => 'ephemeral']]]
-                    : $systemPrompt,
-                'messages' => [
-                    ['role' => 'user', 'content' => $userPrompt],
-                ],
-                'output_config' => OperationSchemas::anthropicOutputConfig($operation),
-            ])
-            ->throw()
-            ->json();
+                'duration_ms' => (int) max(0, round((hrtime(true) - $startedAt) / 1_000_000)),
+                'attempt_timeout_s' => $attemptTimeout,
+                'status' => $e instanceof RequestException ? $e->response?->status() : null,
+                'error' => $e::class,
+            ]);
+
+            throw $e;
+        }
 
         $durationMs = (int) max(0, round((hrtime(true) - $startedAt) / 1_000_000));
         $response = is_array($response) ? $response : [];
