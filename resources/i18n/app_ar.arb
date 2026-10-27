@@ -692,5 +692,2137 @@
   "homeJobsTitle": "وظائف تناسبك",
   "homeJobsViewAll": "عرض الكل",
   "homeJobsEmpty": "لا توجد وظائف مناسبة الآن. سنعرض لك الجديد هنا.",
-  "@homeHeroScoreTitle": {"placeholders": {"score": {"type": "String"}}}
+  "@homeHeroScoreTitle": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedErrorNetworkSubtitle": "تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.",
+  "@sharedErrorNetworkSubtitle": {
+    "description": "Error panel subtitle when the device is offline."
+  },
+  "sharedErrorTimeoutSubtitle": "استغرق الخادم وقتاً طويلاً للرد. حاول مرة أخرى.",
+  "@sharedErrorTimeoutSubtitle": {
+    "description": "Error panel subtitle when a request timed out."
+  },
+  "sharedErrorTitleNetwork": "يبدو أنك غير متصل",
+  "@sharedErrorTitleNetwork": {
+    "description": "Error panel title for network failures."
+  },
+  "sharedErrorTitleTimeout": "انتهت مهلة الطلب",
+  "@sharedErrorTitleTimeout": {
+    "description": "Error panel title for timeouts."
+  },
+  "sharedErrorTitleAuth": "انتهت الجلسة",
+  "@sharedErrorTitleAuth": {
+    "description": "Error panel title when the session expired."
+  },
+  "sharedErrorTitleNotFound": "غير موجود",
+  "@sharedErrorTitleNotFound": {
+    "description": "Error panel title when the resource was not found."
+  },
+  "sharedErrorTitleServer": "الخادم غير متاح",
+  "@sharedErrorTitleServer": {
+    "description": "Error panel title for server errors."
+  },
+  "sharedErrorTitleRateLimited": "تم الوصول إلى حد الاستخدام",
+  "@sharedErrorTitleRateLimited": {
+    "description": "Error panel title when the usage limit is reached."
+  },
+  "sharedErrorTitleUnknown": "تعذر التحميل",
+  "@sharedErrorTitleUnknown": {
+    "description": "Error panel title for unknown or validation errors."
+  },
+  "sharedCreateNewCv": "إنشاء سيرة جديدة",
+  "@sharedCreateNewCv": {
+    "description": "Tooltip and accessibility label of the round create-CV button."
+  },
+  "sharedOk": "حسناً",
+  "@sharedOk": {
+    "description": "Default confirm button of app dialogs."
+  },
+  "sharedLanguageToggleShort": "EN",
+  "@sharedLanguageToggleShort": {
+    "description": "Short code of the language the toggle switches TO (shown on the language toggle button)."
+  },
+  "sharedPasswordStrengthEmpty": "أدخل كلمة المرور",
+  "@sharedPasswordStrengthEmpty": {
+    "description": "Password strength meter label when the field is empty."
+  },
+  "sharedPasswordStrengthWeak": "ضعيفة",
+  "@sharedPasswordStrengthWeak": {
+    "description": "Password strength meter level."
+  },
+  "sharedPasswordStrengthMedium": "متوسطة",
+  "@sharedPasswordStrengthMedium": {
+    "description": "Password strength meter level."
+  },
+  "sharedPasswordStrengthStrong": "قوية",
+  "@sharedPasswordStrengthStrong": {
+    "description": "Password strength meter level."
+  },
+  "sharedPasswordStrengthSemantics": "قوة كلمة المرور: {label}",
+  "@sharedPasswordStrengthSemantics": {
+    "description": "Screen-reader label of the password strength meter.",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "قوية"
+      }
+    }
+  },
+  "sharedOfflineShowingSaved": "غير متصل — عرض بيانات محفوظة",
+  "@sharedOfflineShowingSaved": {
+    "description": "Banner shown when cached data is displayed while offline."
+  },
+  "sharedNoDataAvailable": "لا توجد بيانات.",
+  "@sharedNoDataAvailable": {
+    "description": "Error panel message when a request returned no data."
+  },
+  "sharedSomethingWentWrong": "حدث خطأ ما.",
+  "@sharedSomethingWentWrong": {
+    "description": "Generic fallback error message for a failed load."
+  },
+  "sharedAiImprovingWording": "جارٍ تحسين الصياغة…",
+  "@sharedAiImprovingWording": {
+    "description": "Status line shown over a CV field while AI rewrites it."
+  },
+  "sharedAiWorkingOnField": "الذكاء الاصطناعي يعمل على هذا الحقل",
+  "@sharedAiWorkingOnField": {
+    "description": "Screen-reader label of the AI loading veil over a field."
+  },
+  "sharedAiEnhancingField": "{field, select, other{جارٍ تحسين حقل السيرة الذاتية}}",
+  "@sharedAiEnhancingField": {
+    "description": "Screen-reader label while AI enhances a CV field. {field} is the field id; the Arabic text does not show it.",
+    "placeholders": {
+      "field": {
+        "type": "String",
+        "example": "summary"
+      }
+    }
+  },
+  "sharedAiCharacterCount": "{count} / {minimum} حرفاً كحد أدنى",
+  "@sharedAiCharacterCount": {
+    "description": "Character counter under an AI-enhanceable CV field.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      },
+      "minimum": {
+        "type": "int",
+        "example": "40"
+      }
+    }
+  },
+  "sharedAiEnhance": "تحسين",
+  "@sharedAiEnhance": {
+    "description": "Button that asks AI to enhance a CV field."
+  },
+  "sharedAiEnhancing": "جارٍ التحسين...",
+  "@sharedAiEnhancing": {
+    "description": "Enhance button label while AI is working."
+  },
+  "sharedAiEnhanceMinimumHint": "اكتب {minimum} حرفاً على الأقل ليحسّنها الذكاء الاصطناعي",
+  "@sharedAiEnhanceMinimumHint": {
+    "description": "Hint explaining why the Enhance button is disabled.",
+    "placeholders": {
+      "minimum": {
+        "type": "int",
+        "example": "40"
+      }
+    }
+  },
+  "sharedAiWhatImproved": "ما الذي حسّنته سيرتي",
+  "@sharedAiWhatImproved": {
+    "description": "Title of the AI enhancement result card."
+  },
+  "sharedDismiss": "إخفاء",
+  "@sharedDismiss": {
+    "description": "Tooltip of a close button that dismisses a card."
+  },
+  "sharedAiCompleteFacts": "أكمل هذه المعلومات بنفسك",
+  "@sharedAiCompleteFacts": {
+    "description": "Heading above facts the AI could not fill in."
+  },
+  "sharedAiVerifyDetails": "تحقق من هذه التفاصيل في النص المحسّن",
+  "@sharedAiVerifyDetails": {
+    "description": "Heading above unverified claims in AI-enhanced text."
+  },
+  "sharedJobTitleSelectHint": "اختر مسماك الوظيفي",
+  "@sharedJobTitleSelectHint": {
+    "description": "Hint of the job-title picker field when nothing is selected."
+  },
+  "sharedJobTitleSheetTitle": "المسمى الوظيفي",
+  "@sharedJobTitleSheetTitle": {
+    "description": "Title of the job-title picker sheet."
+  },
+  "sharedClear": "مسح",
+  "@sharedClear": {
+    "description": "Button that clears the current selection."
+  },
+  "sharedJobTitleSearchHint": "ابحث عن المسمى…",
+  "@sharedJobTitleSearchHint": {
+    "description": "Search box hint in the job-title picker sheet."
+  },
+  "sharedJobTitleNoMatches": "لا توجد نتائج",
+  "@sharedJobTitleNoMatches": {
+    "description": "Shown when the job-title search has no results."
+  },
+  "sharedNotifications": "الإشعارات",
+  "@sharedNotifications": {
+    "description": "Tooltip and screen-reader label of the notification bell."
+  },
+  "sharedNotificationsUnread": "الإشعارات، {count} غير مقروء",
+  "@sharedNotificationsUnread": {
+    "description": "Screen-reader label of the notification bell when there are unread items.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "sharedProfile": "الملف الشخصي",
+  "@sharedProfile": {
+    "description": "Screen-reader label of the non-tappable profile avatar."
+  },
+  "sharedCareerReadiness": "جاهزية المسار المهني",
+  "@sharedCareerReadiness": {
+    "description": "Title of the score booster card."
+  },
+  "sharedCareerReadinessPercent": "جاهزية المسار {percent} بالمئة",
+  "@sharedCareerReadinessPercent": {
+    "description": "Screen-reader label of the career readiness progress bar.",
+    "placeholders": {
+      "percent": {
+        "type": "int",
+        "example": "65"
+      }
+    }
+  },
+  "sharedAiProgressBarrier": "تقدم الذكاء الاصطناعي",
+  "@sharedAiProgressBarrier": {
+    "description": "Screen-reader label of the AI progress overlay barrier."
+  },
+  "sharedAiStageGenerationQueued": "في قائمة الانتظار",
+  "@sharedAiStageGenerationQueued": {
+    "description": "CV generation progress step 1."
+  },
+  "sharedAiStageGenerationWriting": "كتابة سيرتك الذاتية",
+  "@sharedAiStageGenerationWriting": {
+    "description": "CV generation progress step 2."
+  },
+  "sharedAiStageGenerationSaving": "حفظ سيرتك الذاتية",
+  "@sharedAiStageGenerationSaving": {
+    "description": "CV generation progress step 3."
+  },
+  "sharedAiStageAnalysisReading": "قراءة سيرتك الذاتية",
+  "@sharedAiStageAnalysisReading": {
+    "description": "CV analysis progress step 1."
+  },
+  "sharedAiStageAnalysisScoring": "التقييم وفق معايير ATS",
+  "@sharedAiStageAnalysisScoring": {
+    "description": "CV analysis progress step 2."
+  },
+  "sharedAiStageAnalysisPreparing": "إعداد تقريرك",
+  "@sharedAiStageAnalysisPreparing": {
+    "description": "CV analysis progress step 3."
+  },
+  "sharedAiLongWait": "يستغرق هذا وقتًا أطول من المعتاد — لا يزال العمل جاريًا…",
+  "@sharedAiLongWait": {
+    "description": "AI progress status after a long wait."
+  },
+  "sharedAiDoneGeneration": "سيرتك الذاتية جاهزة",
+  "@sharedAiDoneGeneration": {
+    "description": "AI progress status when CV generation finished."
+  },
+  "sharedAiDoneAnalysis": "تقريرك جاهز",
+  "@sharedAiDoneAnalysis": {
+    "description": "AI progress status when CV analysis finished."
+  },
+  "sharedAiWorking": "الذكاء الاصطناعي يعمل",
+  "@sharedAiWorking": {
+    "description": "Screen-reader label of the AI progress loader."
+  },
+  "sharedAiProcessingRequest": "جارٍ معالجة طلبك. قد يستغرق ذلك بعض الوقت.",
+  "@sharedAiProcessingRequest": {
+    "description": "Reassurance line under the AI progress steps."
+  },
+  "coreGreetingWelcome": "مرحباً",
+  "@coreGreetingWelcome": {
+    "description": "Header greeting when the user has no display name."
+  },
+  "coreGreetingHello": "أهلاً، {name}",
+  "@coreGreetingHello": {
+    "description": "Header greeting with the user display name.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "سارة"
+      }
+    }
+  },
+  "dashboardInputMethodFile": "ملف",
+  "@dashboardInputMethodFile": {
+    "description": "History card chip: the analysis was submitted as an uploaded file."
+  },
+  "dashboardInputMethodMixed": "ملف ونص",
+  "@dashboardInputMethodMixed": {
+    "description": "History card chip: the analysis was submitted as a file plus pasted text."
+  },
+  "dashboardInputMethodPaste": "لصق نص",
+  "@dashboardInputMethodPaste": {
+    "description": "History card chip: the analysis was submitted as pasted text."
+  },
+  "dashboardSplashPreparing": "جارٍ تجهيز مساحتك…",
+  "@dashboardSplashPreparing": {
+    "description": "Status line on the boot splash screen."
+  },
+  "dashboardWelcomeSlogan": "عندما تسعى لتطوير مسارك المهني،\nلا بد أن تمر على محطتنا",
+  "@dashboardWelcomeSlogan": {
+    "description": "Brand slogan on the signed-out welcome screen (keeps its line break)."
+  },
+  "dashboardWelcomeValueTitle": "مسارك المهني يبدأ من سيرتك",
+  "@dashboardWelcomeValueTitle": {
+    "description": "Title of the value card on the welcome screen."
+  },
+  "dashboardWelcomePointBuild": "إنشاء سيرة ذاتية متوافقة مع أنظمة الفرز الآلي",
+  "@dashboardWelcomePointBuild": {
+    "description": "Welcome value card bullet 1."
+  },
+  "dashboardWelcomePointAnalyze": "تحليل سيرتك بنظام ATS",
+  "@dashboardWelcomePointAnalyze": {
+    "description": "Welcome value card bullet 2."
+  },
+  "dashboardWelcomePointTailor": "تعديل السيرة الذاتية لتلائم الوصف الوظيفي",
+  "@dashboardWelcomePointTailor": {
+    "description": "Welcome value card bullet 3."
+  },
+  "dashboardWelcomePointLearning": "تعليم وتطوير مهني",
+  "@dashboardWelcomePointLearning": {
+    "description": "Welcome value card bullet 4."
+  },
+  "dashboardWelcomePointJobs": "إعلانات لفرص وظيفية في القطاع الحكومي والقطاع الخاص",
+  "@dashboardWelcomePointJobs": {
+    "description": "Welcome value card bullet 5."
+  },
+  "dashboardWelcomePrivacyPolicy": "سياسة الخصوصية",
+  "@dashboardWelcomePrivacyPolicy": {
+    "description": "Privacy link on the welcome screen."
+  },
+  "dashboardNotFoundTitle": "الصفحة غير موجودة",
+  "@dashboardNotFoundTitle": {
+    "description": "Title of the 404 screen for an unknown route."
+  },
+  "dashboardNotFoundSubtitle": "هذا الرابط غير صالح. يمكنك العودة للرئيسية.",
+  "@dashboardNotFoundSubtitle": {
+    "description": "Subtitle of the 404 screen."
+  },
+  "dashboardNotFoundGoHome": "العودة للرئيسية",
+  "@dashboardNotFoundGoHome": {
+    "description": "Button on the 404 screen that returns to the home tab."
+  },
+  "dashboardPressBackAgainToExit": "اضغط رجوع مرة أخرى للخروج",
+  "@dashboardPressBackAgainToExit": {
+    "description": "Snack bar after the first back press on the home root."
+  },
+  "dashboardHistory": "السجل",
+  "@dashboardHistory": {
+    "description": "Title of the history screen and the home History button."
+  },
+  "dashboardRefresh": "تحديث",
+  "@dashboardRefresh": {
+    "description": "Tooltip of the refresh button on the history screen."
+  },
+  "dashboardHistoryGeneratedCvsTab": "السير المنشأة",
+  "@dashboardHistoryGeneratedCvsTab": {
+    "description": "History screen tab listing generated CVs."
+  },
+  "dashboardHistoryLoadFailed": "تعذر تحميل السجل.",
+  "@dashboardHistoryLoadFailed": {
+    "description": "Error message when the history list fails to load."
+  },
+  "dashboardHistoryAnalysesEmptySubtitle": "ارفع سيرتك لتحصل على أول درجة ATS ونصائح التحسين.",
+  "@dashboardHistoryAnalysesEmptySubtitle": {
+    "description": "Empty analyses history subtitle."
+  },
+  "dashboardHistoryAnalyzeCv": "تحليل سيرة",
+  "@dashboardHistoryAnalyzeCv": {
+    "description": "Empty analyses history action button."
+  },
+  "dashboardHistoryCvsEmptyTitle": "لا توجد سير ذاتية منشأة بعد",
+  "@dashboardHistoryCvsEmptyTitle": {
+    "description": "Empty generated-CVs history title."
+  },
+  "dashboardHistoryCvsEmptySubtitle": "أنشئ سيرة متوافقة مع ATS وستظهر هنا.",
+  "@dashboardHistoryCvsEmptySubtitle": {
+    "description": "Empty generated-CVs history subtitle."
+  },
+  "dashboardCreateCv": "إنشاء سيرة",
+  "@dashboardCreateCv": {
+    "description": "Create-CV action on dashboard empty states and the education CTA."
+  },
+  "dashboardScoreBadgeSemantics": "الدرجة {score}، التقدير {grade}",
+  "@dashboardScoreBadgeSemantics": {
+    "description": "Screen-reader label of the score badge on history cards.",
+    "placeholders": {
+      "score": {
+        "type": "int",
+        "example": "78"
+      },
+      "grade": {
+        "type": "String",
+        "example": "B"
+      }
+    }
+  },
+  "dashboardLoadMoreLoading": "جارٍ التحميل...",
+  "@dashboardLoadMoreLoading": {
+    "description": "Load-more footer while the next page loads."
+  },
+  "dashboardLoadMoreFailed": "تعذّر تحميل المزيد. إعادة المحاولة",
+  "@dashboardLoadMoreFailed": {
+    "description": "Load-more footer after the next page failed; tapping retries."
+  },
+  "dashboardLoadMore": "تحميل المزيد",
+  "@dashboardLoadMore": {
+    "description": "Load-more footer button for history lists."
+  },
+  "dashboardHomeLoadFailed": "تعذر تحميل الرئيسية.",
+  "@dashboardHomeLoadFailed": {
+    "description": "Error message when the home dashboard fails to load."
+  },
+  "dashboardViewAll": "عرض الكل",
+  "@dashboardViewAll": {
+    "description": "Home recent-activity link that opens the My CVs tab."
+  },
+  "dashboardHeaderNotificationsUnread": "الإشعارات، {count} غير مقروءة",
+  "@dashboardHeaderNotificationsUnread": {
+    "description": "Screen-reader label of the home header bell when there are unread notifications.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "dashboardNavHome": "الرئيسية",
+  "@dashboardNavHome": {
+    "description": "Bottom navigation tab: home."
+  },
+  "dashboardNavMyCvs": "سيرتي",
+  "@dashboardNavMyCvs": {
+    "description": "Bottom navigation tab: my CVs."
+  },
+  "dashboardNavEducation": "التعليم",
+  "@dashboardNavEducation": {
+    "description": "Bottom navigation tab: education (coming soon)."
+  },
+  "dashboardNavJobNews": "الوظائف",
+  "@dashboardNavJobNews": {
+    "description": "Bottom navigation tab: job news."
+  },
+  "dashboardEducationInterestThanks": "شكراً! سجّلنا اهتمامك. تابع هذا القسم عند الإطلاق.",
+  "@dashboardEducationInterestThanks": {
+    "description": "Snack bar after registering interest in the upcoming education section."
+  },
+  "dashboardEducationTitle": "التعليم",
+  "@dashboardEducationTitle": {
+    "description": "Header title of the education tab."
+  },
+  "dashboardEducationSubtitle": "تطوير المسار المهني والدورات التدريبية",
+  "@dashboardEducationSubtitle": {
+    "description": "Header subtitle of the education tab."
+  },
+  "dashboardEducationWhatsComing": "ماذا ينتظرك قريباً؟",
+  "@dashboardEducationWhatsComing": {
+    "description": "Section title above upcoming education features."
+  },
+  "dashboardEducationCoursesTitle": "دورات تدريبية متخصصة",
+  "@dashboardEducationCoursesTitle": {
+    "description": "Upcoming education feature card title."
+  },
+  "dashboardEducationCoursesBody": "دورات مكثفة لتطوير المهارات الأكثر طلباً في سوق العمل السعودي.",
+  "@dashboardEducationCoursesBody": {
+    "description": "Upcoming education feature card description."
+  },
+  "dashboardEducationInterviewTitle": "تحضير المقابلات بالذكاء الاصطناعي",
+  "@dashboardEducationInterviewTitle": {
+    "description": "Upcoming education feature card title."
+  },
+  "dashboardEducationInterviewBody": "محاكاة للمقابلات الوظيفية وأسئلة متوقعة ونصائح لتجاوزها بنجاح.",
+  "@dashboardEducationInterviewBody": {
+    "description": "Upcoming education feature card description."
+  },
+  "dashboardEducationAtsGuidesTitle": "أدلة التوافق مع أنظمة ATS",
+  "@dashboardEducationAtsGuidesTitle": {
+    "description": "Upcoming education feature card title."
+  },
+  "dashboardEducationAtsGuidesBody": "إرشادات عملية لتنسيق السيرة الذاتية واختيار الكلمات المفتاحية الأنسب.",
+  "@dashboardEducationAtsGuidesBody": {
+    "description": "Upcoming education feature card description."
+  },
+  "dashboardEducationComingSoonBadge": "✨ قريباً في سيرتي",
+  "@dashboardEducationComingSoonBadge": {
+    "description": "Badge on the education coming-soon hero."
+  },
+  "dashboardEducationHeroTitle": "القسم التعليمي والدورات المهنية",
+  "@dashboardEducationHeroTitle": {
+    "description": "Title of the education coming-soon hero."
+  },
+  "dashboardEducationHeroBody": "نعمل حالياً على تجهيز دورات تفاعلية وأدلة لاجتياز المقابلات الوظيفية وتطوير مسارك المهني.",
+  "@dashboardEducationHeroBody": {
+    "description": "Body of the education coming-soon hero."
+  },
+  "dashboardEducationInterestRegistered": "تم تسجيل اهتمامك",
+  "@dashboardEducationInterestRegistered": {
+    "description": "Disabled button label after the user registered interest."
+  },
+  "dashboardEducationCtaTitle": "جاهز لإنشاء سيرتك الذاتية الآن؟",
+  "@dashboardEducationCtaTitle": {
+    "description": "Title of the create-CV call to action on the education tab."
+  },
+  "dashboardEducationCtaBody": "أنشئ سيرة احترافية متوافقة مع ATS بخطوات بسيطة.",
+  "@dashboardEducationCtaBody": {
+    "description": "Body of the create-CV call to action on the education tab."
+  },
+  "dashboardEducationDetailTitle": "تفاصيل المحتوى",
+  "@dashboardEducationDetailTitle": {
+    "description": "App bar title of an education content detail page."
+  },
+  "dashboardEducationDetailLoadFailed": "تعذر تحميل هذا المحتوى.",
+  "@dashboardEducationDetailLoadFailed": {
+    "description": "Error message when an education item fails to load."
+  },
+  "dashboardUntitled": "بدون عنوان",
+  "@dashboardUntitled": {
+    "description": "Fallback title for an education item without a title."
+  },
+  "dashboardEducationDetailNoContent": "لا يوجد محتوى لهذا العنصر.",
+  "@dashboardEducationDetailNoContent": {
+    "description": "Shown when an education item has no body."
+  },
+  "cvDraftAvailable": "مسودة متاحة",
+  "@cvDraftAvailable": {
+    "description": "Draft restore banner subtitle when the save time is unknown"
+  },
+  "cvDraftContinueTitle": "المتابعة من حيث توقفت؟",
+  "@cvDraftContinueTitle": {
+    "description": "Draft restore banner title in the CV wizard"
+  },
+  "cvDraftStartFresh": "البدء من جديد",
+  "@cvDraftStartFresh": {
+    "description": "Draft restore banner button that ignores the saved draft"
+  },
+  "cvDraftRestore": "استعادة",
+  "@cvDraftRestore": {
+    "description": "Draft restore banner button that loads the saved draft"
+  },
+  "cvDiscardChangesTitle": "تجاهل التعديلات؟",
+  "@cvDiscardChangesTitle": {
+    "description": "Title of the dialog shown when leaving the CV wizard in edit mode"
+  },
+  "cvDiscardChangesBody": "ستُفقد تعديلاتك غير المحفوظة.",
+  "@cvDiscardChangesBody": {
+    "description": "Body of the discard-changes dialog"
+  },
+  "cvDiscard": "تجاهل",
+  "@cvDiscard": {
+    "description": "Dialog button that throws away unsaved CV edits"
+  },
+  "cvSaveProgressTitle": "حفظ تقدمك؟",
+  "@cvSaveProgressTitle": {
+    "description": "Title of the dialog shown when leaving the CV wizard in create mode"
+  },
+  "cvSaveProgressBody": "سيتم الاحتفاظ بمسودة على هذا الجهاز لتتمكن من المتابعة لاحقاً.",
+  "@cvSaveProgressBody": {
+    "description": "Body of the save-progress dialog"
+  },
+  "cvSaveDraft": "حفظ مسودة",
+  "@cvSaveDraft": {
+    "description": "Dialog button that keeps a local CV draft"
+  },
+  "cvEntryRequired": "مطلوب",
+  "@cvEntryRequired": {
+    "description": "Error under a required CV entry field"
+  },
+  "cvEntryChooseStart": "اختر تاريخ البداية",
+  "@cvEntryChooseStart": {
+    "description": "Error when a CV entry has no start date"
+  },
+  "cvEntryChooseEnd": "اختر تاريخ النهاية أو حدّد \"حالياً\"",
+  "@cvEntryChooseEnd": {
+    "description": "Error when a CV entry has no end date and is not current"
+  },
+  "cvEntryEndBeforeStart": "النهاية قبل البداية",
+  "@cvEntryEndBeforeStart": {
+    "description": "Error when a CV entry end date is before its start date"
+  },
+  "cvEntryFrom": "من *",
+  "@cvEntryFrom": {
+    "description": "Start date button label in a CV entry"
+  },
+  "cvEntryTo": "إلى",
+  "@cvEntryTo": {
+    "description": "End date button label in a CV entry"
+  },
+  "cvEntryJobTitle": "المسمى الوظيفي *",
+  "@cvEntryJobTitle": {
+    "description": "Job title field label in an experience entry"
+  },
+  "cvEntryJobTitleHint": "مثال: أخصائي مبيعات",
+  "@cvEntryJobTitleHint": {
+    "description": "Job title field hint in an experience entry"
+  },
+  "cvEntryCompany": "جهة العمل *",
+  "@cvEntryCompany": {
+    "description": "Company field label in an experience entry"
+  },
+  "cvEntryCity": "المدينة (اختياري)",
+  "@cvEntryCity": {
+    "description": "City field label in an experience entry"
+  },
+  "cvEntryWorkCurrent": "أعمل هنا حالياً",
+  "@cvEntryWorkCurrent": {
+    "description": "Checkbox for a current job"
+  },
+  "cvEntryDuties": "المهام والإنجازات *",
+  "@cvEntryDuties": {
+    "description": "Duties field label in an experience entry"
+  },
+  "cvEntryDutiesHint": "سطر لكل إنجاز، وبالأرقام إن أمكن",
+  "@cvEntryDutiesHint": {
+    "description": "Duties field hint in an experience entry"
+  },
+  "cvEntryDegree": "المؤهل والتخصص *",
+  "@cvEntryDegree": {
+    "description": "Degree field label in an education entry"
+  },
+  "cvEntryDegreeHint": "مثال: بكالوريوس علوم الحاسب",
+  "@cvEntryDegreeHint": {
+    "description": "Degree field hint in an education entry"
+  },
+  "cvEntryInstitution": "الجامعة أو المعهد *",
+  "@cvEntryInstitution": {
+    "description": "Institution field label in an education entry"
+  },
+  "cvEntryStudyCurrent": "أدرس هنا حالياً",
+  "@cvEntryStudyCurrent": {
+    "description": "Checkbox for current studies"
+  },
+  "cvEntryEducationDetails": "المعدل، مرتبة الشرف، المشاريع (اختياري)",
+  "@cvEntryEducationDetails": {
+    "description": "Details field label in an education entry"
+  },
+  "cvEntryCertName": "الشهادة أو الدورة *",
+  "@cvEntryCertName": {
+    "description": "Name field label in a certification entry"
+  },
+  "cvEntryCertIssuer": "الجهة المانحة",
+  "@cvEntryCertIssuer": {
+    "description": "Issuer field label in a certification entry"
+  },
+  "cvEntryCertDate": "التاريخ",
+  "@cvEntryCertDate": {
+    "description": "Date button label in a certification entry"
+  },
+  "cvEntriesCompleteHighlighted": "أكمل الحقول المحددة.",
+  "@cvEntriesCompleteHighlighted": {
+    "description": "Validation error when an entry list has incomplete entries"
+  },
+  "cvEntriesAddOne": "أضف إدخالاً واحداً على الأقل.",
+  "@cvEntriesAddOne": {
+    "description": "Validation error when an entry list is empty"
+  },
+  "cvEntriesMoreDetail": "أضف تفاصيل أكثر: ماذا أنجزت وما النتيجة.",
+  "@cvEntriesMoreDetail": {
+    "description": "Validation error when entries are too short"
+  },
+  "cvEntryRemove": "حذف",
+  "@cvEntryRemove": {
+    "description": "Tooltip of the remove-entry button"
+  },
+  "cvMonthChoose": "اختر",
+  "@cvMonthChoose": {
+    "description": "Month/year button text when no date is picked"
+  },
+  "cvMonthYearTitle": "الشهر والسنة",
+  "@cvMonthYearTitle": {
+    "description": "Title of the month/year picker dialog"
+  },
+  "cvMonthYearDone": "تم",
+  "@cvMonthYearDone": {
+    "description": "Confirm button of the month/year picker dialog"
+  },
+  "cvWizardUpdate": "تحديث السيرة",
+  "@cvWizardUpdate": {
+    "description": "Last wizard step button in edit mode"
+  },
+  "cvWizardGenerate": "توليد السيرة",
+  "@cvWizardGenerate": {
+    "description": "Last wizard step button in create mode"
+  },
+  "cvWizardGenerating": "جارٍ التوليد...",
+  "@cvWizardGenerating": {
+    "description": "Wizard primary button while the CV is generated"
+  },
+  "cvWizardStepPersonal": "الشخصية",
+  "@cvWizardStepPersonal": {
+    "description": "Wizard step title"
+  },
+  "cvWizardStepSkills": "المهارات",
+  "@cvWizardStepSkills": {
+    "description": "Wizard step title"
+  },
+  "cvWizardStepExperience": "الخبرات",
+  "@cvWizardStepExperience": {
+    "description": "Wizard step title"
+  },
+  "cvWizardStepEducation": "التعليم",
+  "@cvWizardStepEducation": {
+    "description": "Wizard step title"
+  },
+  "cvWizardStepOf": "خطوة {step} من {total}",
+  "@cvWizardStepOf": {
+    "description": "Wizard progress header",
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "cvWizardReviewFields": "يرجى مراجعة الحقول المميزة قبل المتابعة.",
+  "@cvWizardReviewFields": {
+    "description": "Error banner on a wizard step with invalid fields"
+  },
+  "cvEducationStepTitle": "التعليم والشهادات",
+  "@cvEducationStepTitle": {
+    "description": "Education wizard step heading"
+  },
+  "cvEducationLabel": "التعليم *",
+  "@cvEducationLabel": {
+    "description": "Education entry list label"
+  },
+  "cvEducationAdd": "إضافة مؤهل آخر",
+  "@cvEducationAdd": {
+    "description": "Button adding an education entry"
+  },
+  "cvCertificationsLabel": "الشهادات والدورات (اختياري)",
+  "@cvCertificationsLabel": {
+    "description": "Certification entry list label"
+  },
+  "cvCertificationsAdd": "إضافة شهادة أخرى",
+  "@cvCertificationsAdd": {
+    "description": "Button adding a certification entry"
+  },
+  "cvExperienceStepTitle": "الخبرات العملية",
+  "@cvExperienceStepTitle": {
+    "description": "Experience wizard step heading"
+  },
+  "cvExperienceLabel": "الخبرة العملية *",
+  "@cvExperienceLabel": {
+    "description": "Experience entry list label"
+  },
+  "cvExperienceHelper": "أضف كل وظيفة على حدة، الأحدث أولاً.",
+  "@cvExperienceHelper": {
+    "description": "Helper text under the experience list"
+  },
+  "cvExperienceXyzBuilder": "صانع الإنجازات المقاسة (معادلة XYZ)",
+  "@cvExperienceXyzBuilder": {
+    "description": "Button opening the XYZ achievement builder"
+  },
+  "cvExperienceAdd": "إضافة خبرة أخرى",
+  "@cvExperienceAdd": {
+    "description": "Button adding an experience entry"
+  },
+  "cvPersonalStepTitle": "المعلومات الشخصية",
+  "@cvPersonalStepTitle": {
+    "description": "Personal wizard step heading"
+  },
+  "cvPersonalFullName": "الاسم الكامل *",
+  "@cvPersonalFullName": {
+    "description": "Full name field label"
+  },
+  "cvPersonalFullNameHint": "سالم سيار",
+  "@cvPersonalFullNameHint": {
+    "description": "Example name shown as the full name hint"
+  },
+  "cvPersonalFullNameRequired": "الاسم الكامل مطلوب.",
+  "@cvPersonalFullNameRequired": {
+    "description": "Validation error for an empty full name"
+  },
+  "cvPersonalEmailRequired": "البريد الإلكتروني مطلوب حتى يتمكن صاحب العمل من الرد.",
+  "@cvPersonalEmailRequired": {
+    "description": "Validation error for an empty email"
+  },
+  "cvPersonalEmailInvalid": "أدخل بريداً إلكترونياً صحيحاً.",
+  "@cvPersonalEmailInvalid": {
+    "description": "Validation error for an invalid email"
+  },
+  "cvPersonalPhone": "رقم الهاتف",
+  "@cvPersonalPhone": {
+    "description": "Phone field label"
+  },
+  "cvPersonalPhoneRequired": "رقم الهاتف مطلوب حتى يتمكن صاحب العمل من الرد.",
+  "@cvPersonalPhoneRequired": {
+    "description": "Validation error for an empty phone"
+  },
+  "cvPersonalLinkedin": "رابط LinkedIn",
+  "@cvPersonalLinkedin": {
+    "description": "LinkedIn field label"
+  },
+  "cvPersonalTargetJob": "المسمى الوظيفي المستهدف *",
+  "@cvPersonalTargetJob": {
+    "description": "Target job title field label"
+  },
+  "cvPersonalTargetJobHint": "مطوّر Laravel Backend",
+  "@cvPersonalTargetJobHint": {
+    "description": "Example target job title hint"
+  },
+  "cvPersonalTargetJobRequired": "المسمى الوظيفي المستهدف مطلوب.",
+  "@cvPersonalTargetJobRequired": {
+    "description": "Validation error for an empty target job title"
+  },
+  "cvPersonalJobDescription": "الوصف الوظيفي (اختياري)",
+  "@cvPersonalJobDescription": {
+    "description": "Job description field label"
+  },
+  "cvPersonalCvLanguage": "لغة السيرة الذاتية",
+  "@cvPersonalCvLanguage": {
+    "description": "Label above the CV language picker"
+  },
+  "cvPersonalEnhancingJobDescription": "جارٍ تحسين الوصف الوظيفي",
+  "@cvPersonalEnhancingJobDescription": {
+    "description": "Screen reader label while the job description is enhanced"
+  },
+  "cvPersonalJobDescriptionHint": "الصق الوصف الوظيفي أو دع سيرتي يكمله من المسمى...",
+  "@cvPersonalJobDescriptionHint": {
+    "description": "Job description field hint"
+  },
+  "cvEnhance": "تحسين",
+  "@cvEnhance": {
+    "description": "Button that asks the AI to enhance a field"
+  },
+  "cvEnhancing": "جارٍ التحسين...",
+  "@cvEnhancing": {
+    "description": "Enhance button while the AI works"
+  },
+  "cvPersonalWriteMore": "اكتب أكثر من سطر لتوجيه الذكاء الاصطناعي بدقة",
+  "@cvPersonalWriteMore": {
+    "description": "Hint when the job description is too short to enhance"
+  },
+  "cvSkillsStepTitle": "المهارات والملخص",
+  "@cvSkillsStepTitle": {
+    "description": "Skills wizard step heading"
+  },
+  "cvSkillsCore": "المهارات الأساسية *",
+  "@cvSkillsCore": {
+    "description": "Core skills field label"
+  },
+  "cvSkillsHelper": "اختر من المقترحات أو اكتب مهارة واضغط إضافة.",
+  "@cvSkillsHelper": {
+    "description": "Helper text under the skills field"
+  },
+  "cvSkillsRequired": "المهارات الأساسية مطلوبة.",
+  "@cvSkillsRequired": {
+    "description": "Validation error for empty skills"
+  },
+  "cvSummaryLabel": "الملخص المهني (اختياري)",
+  "@cvSummaryLabel": {
+    "description": "Professional summary field label"
+  },
+  "cvSummaryHelper": "مثال: مطور Backend متخصص في بناء APIs موثوقة وتحقيق نتائج قابلة للقياس.",
+  "@cvSummaryHelper": {
+    "description": "Helper text under the summary field"
+  },
+  "cvSummaryHint": "نبذة مختصرة عن خبرتك وإنجازاتك...",
+  "@cvSummaryHint": {
+    "description": "Summary field hint"
+  },
+  "cvDraftSaved": "تم حفظ المسودة",
+  "@cvDraftSaved": {
+    "description": "Snackbar after the wizard saves a local draft"
+  },
+  "cvAchievementDuplicate": "هذا الإنجاز موجود مسبقاً في خبراتك.",
+  "@cvAchievementDuplicate": {
+    "description": "Snackbar when a built achievement is already in the experience text"
+  },
+  "cvAchievementAdded": "تمت إضافة الإنجاز إلى الخبرات بنجاح.",
+  "@cvAchievementAdded": {
+    "description": "Snackbar after an achievement is added to experience"
+  },
+  "cvGenerationCancelled": "تم الإلغاء",
+  "@cvGenerationCancelled": {
+    "description": "Snackbar after CV generation is cancelled"
+  },
+  "cvRetryShort": "إعادة",
+  "@cvRetryShort": {
+    "description": "Short retry action on CV wizard error snackbars"
+  },
+  "cvGenerationUnexpectedError": "حدث خطأ غير متوقع أثناء توليد السيرة.",
+  "@cvGenerationUnexpectedError": {
+    "description": "Snackbar for an unexpected CV generation error"
+  },
+  "cvGenerationStillRunning": "لا يزال الذكاء الاصطناعي يعمل في الخلفية. سنُعلمك عند الانتهاء — هذه المسودة غير جاهزة للإرسال إلى جهة التوظيف.",
+  "@cvGenerationStillRunning": {
+    "description": "Notice when CV generation continues in the background"
+  },
+  "cvEnterTargetJobFirst": "أدخل المسمى الوظيفي المستهدف أولاً.",
+  "@cvEnterTargetJobFirst": {
+    "description": "Snackbar when enhancing before a target job title is entered"
+  },
+  "cvEnhanceFieldFailed": "تعذر تحسين هذا الحقل. حاول مرة أخرى.",
+  "@cvEnhanceFieldFailed": {
+    "description": "Snackbar when AI field enhancement fails"
+  },
+  "cvFieldEnhanced": "تم تحسين الحقل. راجع المعلومات الناقصة قبل المتابعة.",
+  "@cvFieldEnhanced": {
+    "description": "Snackbar after AI enhances a field"
+  },
+  "cvUndo": "تراجع",
+  "@cvUndo": {
+    "description": "Snackbar action that restores the text before AI enhancement"
+  },
+  "cvJobDescriptionTooShort": "اكتب أكثر من سطر في الوصف الوظيفي لتوجيه الذكاء الاصطناعي بدقة.",
+  "@cvJobDescriptionTooShort": {
+    "description": "Snackbar when the job description is too short to enhance"
+  },
+  "cvEnhanceJobDescriptionFailed": "تعذر تحسين الوصف الوظيفي. حاول مرة أخرى.",
+  "@cvEnhanceJobDescriptionFailed": {
+    "description": "Snackbar when job description enhancement fails"
+  },
+  "cvJobDescriptionEnhanced": "تم تحسين الوصف الوظيفي.",
+  "@cvJobDescriptionEnhanced": {
+    "description": "Snackbar after the job description is enhanced"
+  },
+  "cvGeneratorEditTitle": "تعديل السيرة",
+  "@cvGeneratorEditTitle": {
+    "description": "CV wizard app bar title in edit mode"
+  },
+  "cvGeneratorCreateTitle": "إنشاء سيرة ذاتية",
+  "@cvGeneratorCreateTitle": {
+    "description": "CV wizard app bar title in create mode"
+  },
+  "cvOpenFailed": "تعذر فتح هذه السيرة.",
+  "@cvOpenFailed": {
+    "description": "Error when a saved CV cannot be loaded"
+  },
+  "cvNotReadyToSend": "هذه السيرة غير جاهزة للإرسال إلى جهة التوظيف بعد.",
+  "@cvNotReadyToSend": {
+    "description": "Warning when the CV export is blocked and the server sent no reason"
+  },
+  "cvOpeningPdf": "جارٍ فتح رابط تنزيل الـ PDF...",
+  "@cvOpeningPdf": {
+    "description": "Snackbar while the PDF download link opens"
+  },
+  "cvPdfLinkUnavailable": "رابط PDF غير متاح حالياً.",
+  "@cvPdfLinkUnavailable": {
+    "description": "Snackbar when the PDF link is missing"
+  },
+  "cvPdfLinkOpenFailed": "تعذر فتح رابط PDF.",
+  "@cvPdfLinkOpenFailed": {
+    "description": "Snackbar when the PDF link cannot be launched"
+  },
+  "cvTemplatesLoadFailed": "تعذر تحميل التصاميم. سيتم استخدام التصميم الافتراضي.",
+  "@cvTemplatesLoadFailed": {
+    "description": "Snackbar when CV templates fail to load"
+  },
+  "cvDeleteTitle": "حذف السيرة؟",
+  "@cvDeleteTitle": {
+    "description": "Title of the delete CV confirmation dialog"
+  },
+  "cvDeleteBody": "لا يمكن التراجع عن هذا الإجراء.",
+  "@cvDeleteBody": {
+    "description": "Body of the delete CV confirmation dialog"
+  },
+  "cvDeleteFailed": "تعذر حذف السيرة.",
+  "@cvDeleteFailed": {
+    "description": "Error when deleting a CV fails"
+  },
+  "cvPdfLinkNotFound": "تعذر العثور على رابط الـ PDF.",
+  "@cvPdfLinkNotFound": {
+    "description": "Error when a saved CV has no PDF link"
+  },
+  "cvPdfOpenFailed": "تعذر فتح ملف PDF.",
+  "@cvPdfOpenFailed": {
+    "description": "Error when the PDF cannot be opened"
+  },
+  "cvListLoadFailed": "تعذر تحميل السير الذاتية.",
+  "@cvListLoadFailed": {
+    "description": "Error when the My CVs list fails to load"
+  },
+  "cvListEmptyTitle": "لا توجد سير ذاتية بعد",
+  "@cvListEmptyTitle": {
+    "description": "Empty state title on My CVs"
+  },
+  "cvListEmptyBody": "أنشئ أول سيرة ذاتية متوافقة مع ATS بخطوات بسيطة.",
+  "@cvListEmptyBody": {
+    "description": "Empty state body on My CVs"
+  },
+  "cvCreateNew": "إنشاء سيرة جديدة",
+  "@cvCreateNew": {
+    "description": "Button that starts a new CV"
+  },
+  "cvUntitled": "سيرة بلا عنوان",
+  "@cvUntitled": {
+    "description": "Card title for a saved CV without a title"
+  },
+  "cvCardEdit": "تعديل",
+  "@cvCardEdit": {
+    "description": "CV card button that opens the editor"
+  },
+  "cvCardDownload": "تنزيل",
+  "@cvCardDownload": {
+    "description": "CV card button that downloads the PDF"
+  },
+  "cvTemplatePickerTitle": "اختر تصميم السيرة",
+  "@cvTemplatePickerTitle": {
+    "description": "Title of the CV template picker"
+  },
+  "cvTemplateDefault": "القالب الافتراضي",
+  "@cvTemplateDefault": {
+    "description": "Subtitle of the default CV template"
+  },
+  "cvXyzFormula": "أنجزت [س] مقاساً بـ [ص] عبر [ع] — صيغة الـ ATS القياسية",
+  "@cvXyzFormula": {
+    "description": "Subtitle of the XYZ achievement builder explaining the formula"
+  },
+  "cvXyzPresetsTitle": "نماذج إلهام سريعة بنقرة واحدة:",
+  "@cvXyzPresetsTitle": {
+    "description": "Heading above the achievement preset chips"
+  },
+  "cvXyzPresetTech": "تحسين الأداء التقني",
+  "@cvXyzPresetTech": {
+    "description": "Achievement preset chip label"
+  },
+  "cvXyzPresetSales": "زيادة المبيعات والأرباح",
+  "@cvXyzPresetSales": {
+    "description": "Achievement preset chip label"
+  },
+  "cvXyzPresetProject": "إدارة وتسليم المشاريع",
+  "@cvXyzPresetProject": {
+    "description": "Achievement preset chip label"
+  },
+  "cvXyzActionLabel": "1. ماذا أنجزت أو طوّرت؟ (الإجراء - س) *",
+  "@cvXyzActionLabel": {
+    "description": "Action field label in the achievement builder"
+  },
+  "cvXyzActionHint": "مثال: طوّرت واجهات برمجة التطبيقات وبوابة الدفع",
+  "@cvXyzActionHint": {
+    "description": "Action field hint in the achievement builder"
+  },
+  "cvXyzMetricLabel": "2. ما النتيجة أو المقياس الرقمي؟ (المقياس - ص)",
+  "@cvXyzMetricLabel": {
+    "description": "Metric field label in the achievement builder"
+  },
+  "cvXyzMetricHint": "مثال: بنسبة 35% أو توفير 15 ساعة أسبوعياً",
+  "@cvXyzMetricHint": {
+    "description": "Metric field hint in the achievement builder"
+  },
+  "cvXyzMethodLabel": "3. كيف حققته وما الأدوات المستخدمة؟ (الأسلوب - ع)",
+  "@cvXyzMethodLabel": {
+    "description": "Method field label in the achievement builder"
+  },
+  "cvXyzMethodHint": "مثال: باستخدام Laravel و Docker وتقنيات التخزين المؤقت Redis",
+  "@cvXyzMethodHint": {
+    "description": "Method field hint in the achievement builder"
+  },
+  "cvXyzPreviewTitle": "معاينة الصياغة النهائية:",
+  "@cvXyzPreviewTitle": {
+    "description": "Heading above the assembled achievement sentence"
+  },
+  "cvXyzInsert": "إدراج في الخبرة",
+  "@cvXyzInsert": {
+    "description": "Button that inserts the achievement into the experience text"
+  },
+  "cvSkillsSelectedCount": "المهارات المحددة ({count})",
+  "@cvSkillsSelectedCount": {
+    "description": "Header of the selected skills box with the number of skills",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cvSkillsClearAll": "مسح الكل",
+  "@cvSkillsClearAll": {
+    "description": "Button that removes all selected skills"
+  },
+  "cvSkillsEmpty": "لم تضف مهارات بعد. اختر من المقترحات أدناه أو اكتب مهاراتك.",
+  "@cvSkillsEmpty": {
+    "description": "Empty state of the selected skills box"
+  },
+  "cvSkillsInputHint": "اكتب مهارة واضغط + ...",
+  "@cvSkillsInputHint": {
+    "description": "Hint of the custom skill input"
+  },
+  "cvSkillsSuggested": "مقترحات ذكية لمسماك الوظيفي:",
+  "@cvSkillsSuggested": {
+    "description": "Heading above suggested skill chips"
+  },
+  "cvExportOptionsTitle": "خيارات التصدير والمشاركة",
+  "@cvExportOptionsTitle": {
+    "description": "Title of the CV export dialog"
+  },
+  "cvExportLanguage": "لغة التصدير:",
+  "@cvExportLanguage": {
+    "description": "Label above the export language selector"
+  },
+  "cvExportSelectedTemplate": "القالب المختار:",
+  "@cvExportSelectedTemplate": {
+    "description": "Label above the export template chips"
+  },
+  "cvExportFileName": "اسم الملف المصدر:",
+  "@cvExportFileName": {
+    "description": "Label above the exported file name"
+  },
+  "cvExportLatinFilename": "استخدام أحرف لاتينية لاسم الملف",
+  "@cvExportLatinFilename": {
+    "description": "Checkbox that makes the exported file name Latin"
+  },
+  "cvExportPremiumWatermark": "هذا قالب مميز. ستظهر علامة مائية للمعاينة حتى تقوم بالترقية.",
+  "@cvExportPremiumWatermark": {
+    "description": "Notice for a premium export template"
+  },
+  "cvExportSubscriptionRequired": "تصدير هذا القالب متاح للمشتركين فقط",
+  "@cvExportSubscriptionRequired": {
+    "description": "Notice when the export template needs a subscription"
+  },
+  "cvExportUpgrade": "الترقية الآن إلى باقة المحترفين",
+  "@cvExportUpgrade": {
+    "description": "Button that opens the upgrade flow from the export dialog"
+  },
+  "cvExportPreparing": "جاري تجهيز وتصدير ملف PDF...",
+  "@cvExportPreparing": {
+    "description": "Progress text while the PDF is exported"
+  },
+  "cvExportDownload": "تحميل",
+  "@cvExportDownload": {
+    "description": "Export dialog button that downloads the PDF"
+  },
+  "cvExportSuccess": "تم تصدير ملف PDF بنجاح",
+  "@cvExportSuccess": {
+    "description": "Snackbar after the PDF is exported"
+  },
+  "cvExportSharePdf": "مشاركة (PDF)",
+  "@cvExportSharePdf": {
+    "description": "Export dialog button that shares the PDF"
+  },
+  "settingsOnboardingWelcomeBody": "حلل سيرتك الذاتية واحصل على درجة ATS، أو أنشئ سيرة ذاتية احترافية بالذكاء الاصطناعي — بالعربية أو الإنجليزية.",
+  "@settingsOnboardingWelcomeBody": {
+    "description": "Onboarding page 1 body."
+  },
+  "settingsOnboardingAtsTitle": "تحليل ATS فوري",
+  "@settingsOnboardingAtsTitle": {
+    "description": "Onboarding page 2 title."
+  },
+  "settingsOnboardingAtsBody": "احصل على درجة واضحة، والكلمات المفتاحية الناقصة، ونقاط القوة والضعف — لتعرف ماذا تحسّن قبل التقديم.",
+  "@settingsOnboardingAtsBody": {
+    "description": "Onboarding page 2 body."
+  },
+  "settingsOnboardingAiTitle": "سيرة بالذكاء في دقائق",
+  "@settingsOnboardingAiTitle": {
+    "description": "Onboarding page 3 title."
+  },
+  "settingsOnboardingAiBody": "أدخل بياناتك وأنشئ سيرة ذاتية أنيقة قابلة للتنزيل بقوالب مهيأة لأنظمة التوظيف.",
+  "@settingsOnboardingAiBody": {
+    "description": "Onboarding page 3 body."
+  },
+  "settingsOnboardingPrevious": "السابق",
+  "@settingsOnboardingPrevious": {
+    "description": "Tooltip of the onboarding back arrow."
+  },
+  "settingsOnboardingSkip": "تخطي",
+  "@settingsOnboardingSkip": {
+    "description": "Onboarding Skip button."
+  },
+  "settingsOnboardingPageOf": "الصفحة {page} من {count}",
+  "@settingsOnboardingPageOf": {
+    "description": "Screen-reader label of an onboarding page dot.",
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authFieldTooLong": "يجب ألا يتجاوز {max} حرفاً",
+  "@authFieldTooLong": {
+    "description": "Validation error when a sign-up field is longer than the maximum.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "authPasswordTooShort": "يجب أن تكون كلمة المرور {min} أحرف على الأقل",
+  "@authPasswordTooShort": {
+    "description": "Validation error when a password is shorter than the minimum length.",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "authEmailInvalid": "البريد الإلكتروني غير صحيح",
+  "@authEmailInvalid": {
+    "description": "Validation error for a malformed email address."
+  },
+  "authPhoneInvalid": "أدخل رقم جوال صحيح",
+  "@authPhoneInvalid": {
+    "description": "Validation error for a malformed phone number on sign-up."
+  },
+  "authRegisterHeroTitle": "انضم إلينا اليوم",
+  "@authRegisterHeroTitle": {
+    "description": "Sign-up screen headline."
+  },
+  "authRegisterHeroSubtitle": "ابدأ رحلتك المهنية وابنِ سيرة ذاتية احترافية",
+  "@authRegisterHeroSubtitle": {
+    "description": "Sign-up screen subtitle."
+  },
+  "authTermsAgreePrefix": "أوافق على ",
+  "@authTermsAgreePrefix": {
+    "description": "Text before the terms link on sign-up (keep the trailing space)."
+  },
+  "authTermsLink": "الشروط والأحكام",
+  "@authTermsLink": {
+    "description": "Terms and conditions link text on sign-up."
+  },
+  "authHaveAccount": "لديك حساب بالفعل؟",
+  "@authHaveAccount": {
+    "description": "Prompt before the Sign In link on sign-up."
+  },
+  "authAgreeTermsRequired": "يرجى الموافقة على الشروط والأحكام",
+  "@authAgreeTermsRequired": {
+    "description": "Warning when submitting sign-up without accepting the terms."
+  },
+  "authRetry": "إعادة",
+  "@authRetry": {
+    "description": "Retry action on auth error snack bars."
+  },
+  "authRegisterUnexpectedError": "حدث خطأ غير متوقع أثناء إنشاء الحساب.",
+  "@authRegisterUnexpectedError": {
+    "description": "Error when sign-up fails unexpectedly."
+  },
+  "authLooksGood": "يبدو جيداً",
+  "@authLooksGood": {
+    "description": "Success hint under a valid auth form field."
+  },
+  "authJobTitleOtherRequired": "يرجى كتابة المسمى الوظيفي عند اختيار أخرى.",
+  "@authJobTitleOtherRequired": {
+    "description": "Validation error when Other job title is chosen but left empty."
+  },
+  "authFixHighlightedFields": "يرجى تصحيح الحقول المحددة للمتابعة.",
+  "@authFixHighlightedFields": {
+    "description": "Banner when an auth form has invalid fields."
+  },
+  "authFullNameLabel": "الاسم الكامل",
+  "@authFullNameLabel": {
+    "description": "Sign-up full name field label."
+  },
+  "authFullNameHint": "اكتب اسمك الكامل",
+  "@authFullNameHint": {
+    "description": "Sign-up full name field hint."
+  },
+  "authNameRequired": "يرجى إدخال اسمك الكامل",
+  "@authNameRequired": {
+    "description": "Validation error for an empty full name."
+  },
+  "authEmailAddressLabel": "البريد الإلكتروني",
+  "@authEmailAddressLabel": {
+    "description": "Email field label on sign-up and password reset."
+  },
+  "authEmailRequired": "يرجى إدخال البريد الإلكتروني",
+  "@authEmailRequired": {
+    "description": "Validation error for an empty email."
+  },
+  "authPhoneLabel": "رقم الجوال",
+  "@authPhoneLabel": {
+    "description": "Sign-up phone field label."
+  },
+  "authPhoneRequired": "يرجى إدخال رقم الجوال",
+  "@authPhoneRequired": {
+    "description": "Validation error for an empty phone number."
+  },
+  "authLocationLabel": "المدينة/الدولة",
+  "@authLocationLabel": {
+    "description": "Sign-up location field label."
+  },
+  "authLocationHint": "الرياض، السعودية",
+  "@authLocationHint": {
+    "description": "Sign-up location field hint."
+  },
+  "authLocationRequired": "يرجى إدخال المدينة أو الدولة",
+  "@authLocationRequired": {
+    "description": "Validation error for an empty location."
+  },
+  "authJobTitleOptionalLabel": "المسمى الوظيفي (اختياري)",
+  "@authJobTitleOptionalLabel": {
+    "description": "Sign-up job title picker label."
+  },
+  "authJobTitleOtherLabel": "المسمى الوظيفي الخاص بك",
+  "@authJobTitleOtherLabel": {
+    "description": "Label of the free-text job title field shown for Other."
+  },
+  "authJobTitleOtherHint": "مثال: مستشار لوجستي",
+  "@authJobTitleOtherHint": {
+    "description": "Hint of the free-text job title field."
+  },
+  "authPasswordLabel": "كلمة المرور",
+  "@authPasswordLabel": {
+    "description": "Password field label on sign-in and sign-up."
+  },
+  "authPasswordRequired": "يرجى إدخال كلمة المرور",
+  "@authPasswordRequired": {
+    "description": "Validation error for an empty password."
+  },
+  "authCreateAccountButton": "إنشاء الحساب",
+  "@authCreateAccountButton": {
+    "description": "Sign-up submit button."
+  },
+  "authCreatingAccount": "جارٍ إنشاء الحساب...",
+  "@authCreatingAccount": {
+    "description": "Sign-up submit button while loading."
+  },
+  "authContinueWithoutAccount": "المتابعة بدون حساب",
+  "@authContinueWithoutAccount": {
+    "description": "Link to use the app without signing up."
+  },
+  "authSessionExpired": "انتهت الجلسة، سجّل الدخول مجدداً.",
+  "@authSessionExpired": {
+    "description": "Notice on the sign-in screen after the session expired."
+  },
+  "authLoginUnexpectedError": "حدث خطأ غير متوقع أثناء تسجيل الدخول.",
+  "@authLoginUnexpectedError": {
+    "description": "Error when sign-in fails unexpectedly."
+  },
+  "authSocialSignInSoon": "تسجيل الدخول عبر {provider} سيتوفر قريباً في التحديث القادم.",
+  "@authSocialSignInSoon": {
+    "description": "Notice that a social sign-in provider is not available yet. provider is a brand name such as Google or Apple.",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "authLoginSubtitle": "سجّل دخولك للمتابعة",
+  "@authLoginSubtitle": {
+    "description": "Sign-in screen subtitle."
+  },
+  "authForgotPasswordLink": "نسيت كلمة المرور؟",
+  "@authForgotPasswordLink": {
+    "description": "Link from sign-in to password reset."
+  },
+  "authSignInButton": "تسجيل الدخول",
+  "@authSignInButton": {
+    "description": "Sign-in submit button."
+  },
+  "authSigningIn": "جارٍ تسجيل الدخول...",
+  "@authSigningIn": {
+    "description": "Sign-in submit button while loading."
+  },
+  "authOrContinueWith": "أو تابع بـ",
+  "@authOrContinueWith": {
+    "description": "Divider text above social sign-in buttons."
+  },
+  "authNoAccount": "ليس لديك حساب؟",
+  "@authNoAccount": {
+    "description": "Prompt before the create-account link on sign-in."
+  },
+  "authCreateAccountLink": "أنشئ حساباً",
+  "@authCreateAccountLink": {
+    "description": "Link from sign-in to sign-up."
+  },
+  "authForgotEmailInvalidNotice": "أدخل بريداً إلكترونياً صحيحاً",
+  "@authForgotEmailInvalidNotice": {
+    "description": "Snack bar on password reset when the stored email is invalid before resending."
+  },
+  "authForgotSendFailed": "تعذر إرسال الرمز. حاول لاحقاً.",
+  "@authForgotSendFailed": {
+    "description": "Error when the password reset code could not be sent."
+  },
+  "authForgotResetFailed": "تعذر تعيين كلمة المرور. حاول مرة أخرى.",
+  "@authForgotResetFailed": {
+    "description": "Error when resetting the password fails unexpectedly."
+  },
+  "authForgotTitle": "استعادة كلمة المرور",
+  "@authForgotTitle": {
+    "description": "Password reset screen title."
+  },
+  "authForgotCodeIntro": "أدخل الرمز المكون من 6 أرقام الذي أرسلناه واختر كلمة مرور جديدة.",
+  "@authForgotCodeIntro": {
+    "description": "Password reset intro after the code was sent."
+  },
+  "authForgotEmailIntro": "أدخل بريدك الإلكتروني وسنرسل لك رمزاً من 6 أرقام لاستعادة كلمة المرور.",
+  "@authForgotEmailIntro": {
+    "description": "Password reset intro before the code is sent."
+  },
+  "authForgotEmailInvalid": "أدخل بريداً إلكترونياً صحيحاً",
+  "@authForgotEmailInvalid": {
+    "description": "Validation error for a malformed email on password reset."
+  },
+  "authForgotSendCode": "إرسال الرمز",
+  "@authForgotSendCode": {
+    "description": "Button that sends the password reset code."
+  },
+  "authSending": "جارٍ الإرسال...",
+  "@authSending": {
+    "description": "Loading label while a verification or reset code is being sent."
+  },
+  "authVerificationCodeLabel": "رمز التحقق",
+  "@authVerificationCodeLabel": {
+    "description": "Label of the 6-digit code field."
+  },
+  "authCodeRequired": "أدخل الرمز المكون من 6 أرقام",
+  "@authCodeRequired": {
+    "description": "Validation error when the code is not 6 digits."
+  },
+  "authNewPasswordLabel": "كلمة المرور الجديدة",
+  "@authNewPasswordLabel": {
+    "description": "New password field label on password reset."
+  },
+  "authForgotNewPasswordRequired": "يرجى إدخال كلمة مرور جديدة",
+  "@authForgotNewPasswordRequired": {
+    "description": "Validation error for an empty new password."
+  },
+  "authForgotConfirmPasswordLabel": "تأكيد كلمة المرور",
+  "@authForgotConfirmPasswordLabel": {
+    "description": "Confirm password field label on password reset."
+  },
+  "authForgotConfirmPasswordRequired": "يرجى تأكيد كلمة المرور",
+  "@authForgotConfirmPasswordRequired": {
+    "description": "Validation error for an empty password confirmation."
+  },
+  "authPasswordsDoNotMatch": "كلمتا المرور غير متطابقتين",
+  "@authPasswordsDoNotMatch": {
+    "description": "Validation error when the two passwords differ."
+  },
+  "authForgotResetButton": "تعيين كلمة المرور",
+  "@authForgotResetButton": {
+    "description": "Password reset submit button."
+  },
+  "authSaving": "جارٍ الحفظ...",
+  "@authSaving": {
+    "description": "Password reset submit button while loading."
+  },
+  "authResendCodeIn": "إعادة الإرسال بعد {seconds} ث",
+  "@authResendCodeIn": {
+    "description": "Disabled resend button with the cooldown in seconds.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "authResendCode": "إعادة إرسال الرمز",
+  "@authResendCode": {
+    "description": "Button that resends the verification or reset code."
+  },
+  "authForgotUseDifferentEmail": "استخدام بريد آخر",
+  "@authForgotUseDifferentEmail": {
+    "description": "Button to go back and enter another email on password reset."
+  },
+  "authVerifySuccess": "تم تأكيد البريد بنجاح.",
+  "@authVerifySuccess": {
+    "description": "Snack bar after the email code was verified."
+  },
+  "authVerifyUnexpectedError": "حدث خطأ غير متوقع أثناء التحقق.",
+  "@authVerifyUnexpectedError": {
+    "description": "Error when email verification fails unexpectedly."
+  },
+  "authVerifyResendFailed": "تعذر إعادة إرسال الرمز. حاول لاحقاً.",
+  "@authVerifyResendFailed": {
+    "description": "Error when the verification code could not be resent."
+  },
+  "authVerifyBackToSignIn": "العودة لتسجيل الدخول",
+  "@authVerifyBackToSignIn": {
+    "description": "Tooltip of the back button on the email verification screen."
+  },
+  "authVerifyTitle": "أكد بريدك الإلكتروني",
+  "@authVerifyTitle": {
+    "description": "Email verification screen title."
+  },
+  "authVerifyCodeSentTo": "أرسلنا رمزاً من 6 أرقام إلى",
+  "@authVerifyCodeSentTo": {
+    "description": "Text shown above the email address the code was sent to."
+  },
+  "authVerifyButton": "تأكيد البريد",
+  "@authVerifyButton": {
+    "description": "Email verification submit button."
+  },
+  "authVerifying": "جارٍ التحقق...",
+  "@authVerifying": {
+    "description": "Email verification submit button while loading."
+  },
+  "authVerifyCheckSpam": "تحقق من البريد المزعج إن لم تجد الرسالة.",
+  "@authVerifyCheckSpam": {
+    "description": "Hint under the resend button on email verification."
+  },
+  "settingsPrivacyTitle": "سياسة الخصوصية",
+  "@settingsPrivacyTitle": {
+    "description": "Privacy policy screen title."
+  },
+  "settingsPrivacyCollectTitle": "ما البيانات التي نجمعها؟",
+  "@settingsPrivacyCollectTitle": {
+    "description": "Privacy policy section title: data collected."
+  },
+  "settingsPrivacyCollectBody": "نجمع بيانات الحساب (الاسم، البريد، والجوال والموقع اختياريًا)، ومحتوى السيرة الذي تدخله أو ترفعه، ونتائج التحليل، وبيانات صلاحية الاشتراك، ورمز إشعارات الجهاز (FCM) لنتمكن من تحليل سيرتك وتحسينها وحفظها وإرسال الإشعارات.",
+  "@settingsPrivacyCollectBody": {
+    "description": "Privacy policy section body: data collected."
+  },
+  "settingsPrivacyUseTitle": "كيف نستخدم البيانات؟",
+  "@settingsPrivacyUseTitle": {
+    "description": "Privacy policy section title: how data is used."
+  },
+  "settingsPrivacyUseBody": "نستخدم بياناتك لحساب درجة ATS، وإنشاء سير محسنة، وعرض السجل، وتخصيص لوحة التحكم، وإرسال إشعارات اختيارية. لا نبيع بياناتك الشخصية ولا نستخدمها لتتبع الإعلانات.",
+  "@settingsPrivacyUseBody": {
+    "description": "Privacy policy section body: how data is used."
+  },
+  "settingsPrivacyProcessorsTitle": "معالجو البيانات من الأطراف الثالثة",
+  "@settingsPrivacyProcessorsTitle": {
+    "description": "Privacy policy section title: sub-processors."
+  },
+  "settingsPrivacyProcessorsBody": "لتقديم خدمات الذكاء الاصطناعي وإدارة المنصة، نتعامل مع مزودي خدمات موثوقين:\n• OpenAI و DeepInfra: معالجة نصوص السيرة وتحليلها بالذكاء الاصطناعي.\n• RevenueCat: إدارة وتأكيد صلاحيات الاشتراكات داخل التطبيق.\n• Firebase (Google): إرسال إشعارات الهاتف.\n• Sentry: تتبع الأعطال التقنية مع حجب وحذف أي بيانات شخصية أو نصوص للسير.",
+  "@settingsPrivacyProcessorsBody": {
+    "description": "Privacy policy section body: list of sub-processors, one per line."
+  },
+  "settingsPrivacyRetentionTitle": "الاحتفاظ بالبيانات وحذفها",
+  "@settingsPrivacyRetentionTitle": {
+    "description": "Privacy policy section title: retention."
+  },
+  "settingsPrivacyRetentionBody": "نحتفظ ببياناتك طوال فترة نشاط حسابك. يمكنك حذف السير الفردية من شاشة سيرتي. ويمكنك حذف حسابك بالكامل وجميع بياناتك نهائياً في أي وقت من الإعدادات ← حذف الحساب. كما تُحذف التحليلات المؤقتة لزوار الويب تلقائياً خلال 24 ساعة.",
+  "@settingsPrivacyRetentionBody": {
+    "description": "Privacy policy section body: retention and deletion."
+  },
+  "settingsPrivacyContactTitle": "التواصل والدعم",
+  "@settingsPrivacyContactTitle": {
+    "description": "Privacy policy section title: contact."
+  },
+  "settingsPrivacyContactBody": "لأي استفسارات تتعلق بالخصوصية أو ممارسة حقوقك بموجب نظام حماية البيانات الشخصية (PDPL)، يمكنك التواصل معنا عبر: {email}",
+  "@settingsPrivacyContactBody": {
+    "description": "Privacy policy section body: contact; email is the support address.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsNotificationsUpdateFailed": "تعذر تحديث الإشعارات. تحقق من الاتصال.",
+  "@settingsNotificationsUpdateFailed": {
+    "description": "Error when marking notifications as read fails."
+  },
+  "settingsNotificationsTitle": "الإشعارات",
+  "@settingsNotificationsTitle": {
+    "description": "Notifications inbox screen title."
+  },
+  "settingsNotificationsReadAll": "قراءة الكل",
+  "@settingsNotificationsReadAll": {
+    "description": "Action that marks all notifications as read."
+  },
+  "settingsNotificationsLoadFailed": "تعذر تحميل الإشعارات.",
+  "@settingsNotificationsLoadFailed": {
+    "description": "Error when the notifications inbox fails to load."
+  },
+  "settingsNotificationsEmptyTitle": "لا توجد إشعارات حالياً",
+  "@settingsNotificationsEmptyTitle": {
+    "description": "Empty notifications inbox title."
+  },
+  "settingsNotificationsEmptyBody": "ستظهر هنا التحديثات حول الوظائف ونشاط سيرتك.",
+  "@settingsNotificationsEmptyBody": {
+    "description": "Empty notifications inbox subtitle."
+  },
+  "settingsNotificationsUnread": "غير مقروء",
+  "@settingsNotificationsUnread": {
+    "description": "Screen-reader label of the unread dot on a notification."
+  },
+  "settingsCleanupFailed": "تعذر مسح بعض البيانات. يرجى المحاولة مرة أخرى.",
+  "@settingsCleanupFailed": {
+    "description": "Error when retrying local cleanup after account deletion fails."
+  },
+  "settingsCleanupMessage": "تم حذف حسابك، لكن تعذر مسح بعض البيانات من هذا الجهاز.",
+  "@settingsCleanupMessage": {
+    "description": "Message on the recovery screen after account deletion with incomplete local cleanup."
+  },
+  "settingsCleanupRetry": "إعادة محاولة المسح",
+  "@settingsCleanupRetry": {
+    "description": "Button that retries clearing local data."
+  },
+  "settingsCleanupClearing": "جارٍ المسح...",
+  "@settingsCleanupClearing": {
+    "description": "Retry cleanup button while loading."
+  },
+  "settingsPasswordChanged": "تم تغيير كلمة المرور بنجاح.",
+  "@settingsPasswordChanged": {
+    "description": "Success after changing the password. Arabic shows the server message instead when it sends one."
+  },
+  "settingsCurrentPasswordIncorrect": "كلمة المرور الحالية غير صحيحة.",
+  "@settingsCurrentPasswordIncorrect": {
+    "description": "Error under the current password field. Arabic shows the server's field error instead."
+  },
+  "settingsPasswordChangeFailed": "تعذر تغيير كلمة المرور. حاول مجدداً.",
+  "@settingsPasswordChangeFailed": {
+    "description": "Error when changing the password fails unexpectedly."
+  },
+  "settingsCurrentPasswordLabel": "كلمة المرور الحالية",
+  "@settingsCurrentPasswordLabel": {
+    "description": "Current password field label."
+  },
+  "settingsCurrentPasswordRequired": "أدخل كلمة المرور الحالية",
+  "@settingsCurrentPasswordRequired": {
+    "description": "Validation error for an empty current password."
+  },
+  "settingsNewPasswordRequired": "أدخل كلمة مرور جديدة",
+  "@settingsNewPasswordRequired": {
+    "description": "Validation error for an empty new password on change password."
+  },
+  "settingsNewPasswordSameAsCurrent": "يجب أن تختلف عن كلمة المرور الحالية",
+  "@settingsNewPasswordSameAsCurrent": {
+    "description": "Validation error when the new password equals the current one."
+  },
+  "settingsConfirmNewPasswordLabel": "تأكيد كلمة المرور الجديدة",
+  "@settingsConfirmNewPasswordLabel": {
+    "description": "Confirm new password field label."
+  },
+  "settingsConfirmNewPasswordRequired": "أكد كلمة المرور الجديدة",
+  "@settingsConfirmNewPasswordRequired": {
+    "description": "Validation error for an empty new password confirmation."
+  },
+  "settingsUpdatePassword": "تحديث كلمة المرور",
+  "@settingsUpdatePassword": {
+    "description": "Change password submit button."
+  },
+  "settingsUpdatingPassword": "جارٍ التحديث...",
+  "@settingsUpdatingPassword": {
+    "description": "Change password submit button while loading."
+  },
+  "settingsDeleteConfirmTitle": "هل أنت متأكد؟",
+  "@settingsDeleteConfirmTitle": {
+    "description": "Title of the final account deletion confirmation dialog."
+  },
+  "settingsDeleteConfirmBody": "لا يمكن التراجع. سيتم حذف جميع السير والتحليلات نهائياً.",
+  "@settingsDeleteConfirmBody": {
+    "description": "Body of the final account deletion confirmation dialog."
+  },
+  "settingsDeleteForever": "حذف نهائي",
+  "@settingsDeleteForever": {
+    "description": "Destructive confirm action in the account deletion dialog."
+  },
+  "settingsAccountDeleted": "تم حذف الحساب.",
+  "@settingsAccountDeleted": {
+    "description": "Snack bar after the account was deleted."
+  },
+  "settingsDeletePasswordIncorrect": "كلمة المرور غير صحيحة.",
+  "@settingsDeletePasswordIncorrect": {
+    "description": "Error when the account deletion password is wrong. Arabic shows the server's field error instead."
+  },
+  "settingsDeleteFailed": "تعذر حذف الحساب.",
+  "@settingsDeleteFailed": {
+    "description": "Error when account deletion fails unexpectedly."
+  },
+  "settingsDeleteWarning": "حذف الحساب يزيل نهائياً ملفك والسير والتحليلات وسجل الإشعارات. لا يمكن التراجع عن هذا الإجراء.",
+  "@settingsDeleteWarning": {
+    "description": "Warning box on the delete account screen."
+  },
+  "settingsDeleteConfirmWithPassword": "أكد بكلمة المرور",
+  "@settingsDeleteConfirmWithPassword": {
+    "description": "Password field heading on the delete account screen."
+  },
+  "settingsDeletePasswordRequired": "كلمة المرور مطلوبة",
+  "@settingsDeletePasswordRequired": {
+    "description": "Validation error for an empty password on account deletion."
+  },
+  "settingsDeleteMyAccount": "احذف حسابي",
+  "@settingsDeleteMyAccount": {
+    "description": "Delete account submit button."
+  },
+  "settingsDeleting": "جارٍ الحذف...",
+  "@settingsDeleting": {
+    "description": "Delete account submit button while loading."
+  },
+  "settingsAvatarCropTitle": "حرّك الصورة وكبّرها",
+  "@settingsAvatarCropTitle": {
+    "description": "Title of the profile photo crop screen."
+  },
+  "settingsAvatarOpenFailed": "تعذر فتح هذه الصورة.",
+  "@settingsAvatarOpenFailed": {
+    "description": "Error when the chosen profile photo cannot be decoded."
+  },
+  "settingsAvatarUsePhoto": "استخدم الصورة",
+  "@settingsAvatarUsePhoto": {
+    "description": "Button that confirms the cropped profile photo."
+  },
+  "settingsPhotoGallery": "اختر من المعرض",
+  "@settingsPhotoGallery": {
+    "description": "Profile photo sheet option: pick from the gallery."
+  },
+  "settingsPhotoCamera": "التقط صورة",
+  "@settingsPhotoCamera": {
+    "description": "Profile photo sheet option: use the camera."
+  },
+  "settingsPhotoRemove": "إزالة الصورة",
+  "@settingsPhotoRemove": {
+    "description": "Profile photo sheet option: remove the photo."
+  },
+  "settingsPhotoRemoved": "تمت إزالة الصورة.",
+  "@settingsPhotoRemoved": {
+    "description": "Snack bar after the profile photo was removed."
+  },
+  "settingsPhotoUpdated": "تم تحديث الصورة.",
+  "@settingsPhotoUpdated": {
+    "description": "Snack bar after the profile photo was uploaded."
+  },
+  "settingsPhotoUpdateFailed": "تعذر تحديث الصورة.",
+  "@settingsPhotoUpdateFailed": {
+    "description": "Error when the profile photo could not be changed."
+  },
+  "settingsPhotoChange": "تغيير صورة الملف",
+  "@settingsPhotoChange": {
+    "description": "Screen-reader label of the profile photo button."
+  },
+  "settingsPhotoHint": "تظهر في ملفك وأعلى سيرتك الذاتية.",
+  "@settingsPhotoHint": {
+    "description": "Hint under the profile photo."
+  },
+  "settingsProfileUpdated": "تم تحديث الملف الشخصي.",
+  "@settingsProfileUpdated": {
+    "description": "Snack bar after the profile was saved."
+  },
+  "settingsProfileUpdateFailed": "تعذر تحديث الملف الشخصي.",
+  "@settingsProfileUpdateFailed": {
+    "description": "Error when saving the profile fails unexpectedly."
+  },
+  "settingsProfileLoadFailed": "تعذر تحميل الملف الشخصي.",
+  "@settingsProfileLoadFailed": {
+    "description": "Error when the profile could not be loaded."
+  },
+  "settingsProfileFullNameLabel": "الاسم الكامل",
+  "@settingsProfileFullNameLabel": {
+    "description": "Profile full name field label."
+  },
+  "settingsProfileNameHint": "اسمك",
+  "@settingsProfileNameHint": {
+    "description": "Profile full name field hint."
+  },
+  "settingsProfileNameRequired": "الاسم مطلوب",
+  "@settingsProfileNameRequired": {
+    "description": "Validation error for an empty profile name."
+  },
+  "settingsProfileJobTitleLabel": "المسمى الوظيفي",
+  "@settingsProfileJobTitleLabel": {
+    "description": "Profile job title picker label."
+  },
+  "settingsProfileJobTitlesLoadFailed": "تعذر تحميل المسميات الوظيفية",
+  "@settingsProfileJobTitlesLoadFailed": {
+    "description": "Error when the job title list could not be loaded."
+  },
+  "settingsProfileEmailReadOnly": "لا يمكن تغيير البريد من هنا.",
+  "@settingsProfileEmailReadOnly": {
+    "description": "Hint under the read-only email field on the profile."
+  },
+  "settingsProfilePhoneLabel": "الجوال",
+  "@settingsProfilePhoneLabel": {
+    "description": "Profile read-only phone field label."
+  },
+  "settingsProfileSaveChanges": "حفظ التغييرات",
+  "@settingsProfileSaveChanges": {
+    "description": "Profile save button."
+  },
+  "settingsProfileTitle": "الملف الشخصي",
+  "@settingsProfileTitle": {
+    "description": "Profile screen title."
+  },
+  "jobsFilterAll": "الكل",
+  "@jobsFilterAll": {
+    "description": "Job news filter chip that clears the preset or category filter."
+  },
+  "jobsPresetMatched": "مناسبة لي 🎯",
+  "@jobsPresetMatched": {
+    "description": "Job news preset chip: jobs matching the user profile."
+  },
+  "jobsPresetGov": "جهات حكومية 🏛️",
+  "@jobsPresetGov": {
+    "description": "Job news preset chip: government employers."
+  },
+  "jobsPresetEnterprise": "شركات كبرى 🏢",
+  "@jobsPresetEnterprise": {
+    "description": "Job news preset chip: large companies."
+  },
+  "jobsPresetTamheer": "تمهير وتدريب 🇸🇦",
+  "@jobsPresetTamheer": {
+    "description": "Job news preset chip: Tamheer training programme."
+  },
+  "jobsFilterRemote": "عن بعد 🌐",
+  "@jobsFilterRemote": {
+    "description": "Job news preset and city chip: remote jobs."
+  },
+  "jobsSearchHint": "ابحث عن وظيفة أو شركة...",
+  "@jobsSearchHint": {
+    "description": "Hint text of the job news search field."
+  },
+  "jobsCategoryTech": "تقنية",
+  "@jobsCategoryTech": {
+    "description": "Job news category chip: technology."
+  },
+  "jobsCategoryFinance": "تمويل",
+  "@jobsCategoryFinance": {
+    "description": "Job news category chip: finance."
+  },
+  "jobsCategoryHealth": "صحة",
+  "@jobsCategoryHealth": {
+    "description": "Job news category chip: health."
+  },
+  "jobsCityAll": "كل المناطق",
+  "@jobsCityAll": {
+    "description": "Job news city chip that clears the city filter."
+  },
+  "jobsCityRiyadh": "الرياض",
+  "@jobsCityRiyadh": {
+    "description": "Job news city chip."
+  },
+  "jobsCityJeddah": "جدة",
+  "@jobsCityJeddah": {
+    "description": "Job news city chip."
+  },
+  "jobsCityDammam": "الدمام",
+  "@jobsCityDammam": {
+    "description": "Job news city chip."
+  },
+  "jobsCityKhobar": "الخبر",
+  "@jobsCityKhobar": {
+    "description": "Job news city chip."
+  },
+  "jobsCityMecca": "مكة",
+  "@jobsCityMecca": {
+    "description": "Job news city chip."
+  },
+  "jobsCityMedina": "المدينة",
+  "@jobsCityMedina": {
+    "description": "Job news city chip."
+  },
+  "jobsPersonalizedTitle": "فرص مهنية مخصصة لك",
+  "@jobsPersonalizedTitle": {
+    "description": "Title of the job news profile banner."
+  },
+  "jobsPersonalizedFallback": "عرض وظائف متوافقة مع مهاراتك وخبراتك.",
+  "@jobsPersonalizedFallback": {
+    "description": "Job news profile banner subtitle when the user has no career field."
+  },
+  "jobsMatchedActive": "المطابقة ✓",
+  "@jobsMatchedActive": {
+    "description": "Job news profile banner toggle while the matched filter is on."
+  },
+  "jobsMatchToggle": "المطابقة 🎯",
+  "@jobsMatchToggle": {
+    "description": "Job news profile banner toggle that turns the matched filter on."
+  },
+  "jobsEmptyFeed": "لا توجد أخبار وظائف منشورة حالياً.",
+  "@jobsEmptyFeed": {
+    "description": "Empty state of the job news list when no filter is active."
+  },
+  "jobsLoadFailed": "تعذر تحميل أخبار الوظائف.",
+  "@jobsLoadFailed": {
+    "description": "Error shown when the job news feed fails to load."
+  },
+  "jobsLatestPostings": "آخر الإعلانات",
+  "@jobsLatestPostings": {
+    "description": "Section title above the job news list."
+  },
+  "jobsDetailTitle": "تفاصيل الخبر",
+  "@jobsDetailTitle": {
+    "description": "App bar title of the job news detail screen."
+  },
+  "jobsVerifiedSourceDetail": "جهة موثقة معتمدة",
+  "@jobsVerifiedSourceDetail": {
+    "description": "Fallback source badge on the job detail screen for a verified employer."
+  },
+  "jobsTamheerProgram": "برنامج تمهير 🇸🇦",
+  "@jobsTamheerProgram": {
+    "description": "Badge on the job detail screen for Tamheer programme jobs."
+  },
+  "jobsCompatibilityTitle": "توافق الوظيفة مع ملفك المهني",
+  "@jobsCompatibilityTitle": {
+    "description": "Title of the match card on the job detail screen."
+  },
+  "jobsSkillsRequired": "المهارات المطلوبة للوظيفة",
+  "@jobsSkillsRequired": {
+    "description": "Section title of required skills on the job detail screen."
+  },
+  "jobsDescriptionTitle": "تفاصيل ومتطلبات الإعلان",
+  "@jobsDescriptionTitle": {
+    "description": "Section title of the posting text on the job detail screen."
+  },
+  "jobsTailorCv": "تخصيص سيرتي الذاتية لهذه الوظيفة 🪄",
+  "@jobsTailorCv": {
+    "description": "Button that opens the CV generator targeted at this job."
+  },
+  "jobsOpenApplyFailed": "تعذر فتح صفحة التقديم.",
+  "@jobsOpenApplyFailed": {
+    "description": "Error when the external application link cannot be opened."
+  },
+  "jobsApplyOfficialSite": "التقديم عبر الموقع الرسمي",
+  "@jobsApplyOfficialSite": {
+    "description": "Button that opens the external application page."
+  },
+  "jobsVerifiedSourceCard": "موثقة",
+  "@jobsVerifiedSourceCard": {
+    "description": "Fallback source badge on a job news card for a verified employer."
+  },
+  "jobsTamheerBadge": "تمهير 🇸🇦",
+  "@jobsTamheerBadge": {
+    "description": "Badge on a job news card for Tamheer programme jobs."
+  },
+  "jobsNewBadge": "جديد",
+  "@jobsNewBadge": {
+    "description": "Badge on the newest job news card."
+  },
+  "jobsDetailsLink": "التفاصيل ←",
+  "@jobsDetailsLink": {
+    "description": "Link text at the bottom of a job news card."
+  },
+  "jobsVerifiedSourceFeatured": "جهة موثقة",
+  "@jobsVerifiedSourceFeatured": {
+    "description": "Fallback source badge on the featured job card for a verified employer."
+  },
+  "jobsTamheerBadgeFeatured": "تمهير 🇸🇦",
+  "@jobsTamheerBadgeFeatured": {
+    "description": "Badge on the featured job card for Tamheer programme jobs."
+  },
+  "jobsApplyNow": "تقدم الآن",
+  "@jobsApplyNow": {
+    "description": "Call to action on the featured job card."
+  },
+  "atsFileTooLarge": "يجب أن يكون حجم الملف {size} ميغابايت أو أقل.",
+  "@atsFileTooLarge": {
+    "description": "Error when the picked CV file is larger than the upload limit (size in MB).",
+    "placeholders": {
+      "size": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "atsUnsupportedFileType": "يُدعم فقط ملف PDF أو TXT.",
+  "@atsUnsupportedFileType": {
+    "description": "Error when the picked CV file is not PDF or TXT."
+  },
+  "atsResumeRequired": "الصق نص السيرة أو ارفع ملف PDF/TXT للبدء.",
+  "@atsResumeRequired": {
+    "description": "Error when the ATS scan is started without a CV."
+  },
+  "atsCancelled": "تم الإلغاء",
+  "@atsCancelled": {
+    "description": "Snack bar after the user cancels a running ATS analysis."
+  },
+  "atsAiStillWorkingAnalysis": "لا يزال الذكاء الاصطناعي يعمل. نتيجتك الأساسية جاهزة، ويمكنك إعادة محاولة التوصيات لاحقاً.",
+  "@atsAiStillWorkingAnalysis": {
+    "description": "Warning when AI suggestions time out but the ATS score is ready."
+  },
+  "atsAnalyzeUnexpectedError": "حدث خطأ غير متوقع أثناء تحليل السيرة.",
+  "@atsAnalyzeUnexpectedError": {
+    "description": "Error when the ATS analysis fails unexpectedly."
+  },
+  "atsOpenAnalysisFailed": "تعذر فتح هذا التحليل.",
+  "@atsOpenAnalysisFailed": {
+    "description": "Error when a saved ATS analysis cannot be loaded."
+  },
+  "atsResultsTitle": "نتائج التحليل",
+  "@atsResultsTitle": {
+    "description": "App bar title of the ATS analysis result screen."
+  },
+  "atsTabScore": "الدرجة والمعايير",
+  "@atsTabScore": {
+    "description": "ATS result tab with the score and criteria."
+  },
+  "atsTabRecommendations": "التوصيات",
+  "@atsTabRecommendations": {
+    "description": "ATS result tab with recommendations."
+  },
+  "atsGenerateImprovedCv": "توليد سيرة محسّنة",
+  "@atsGenerateImprovedCv": {
+    "description": "Button that generates an improved CV from the ATS analysis."
+  },
+  "atsGenerating": "جارٍ التوليد...",
+  "@atsGenerating": {
+    "description": "Loading label of the generate improved CV button."
+  },
+  "atsGenerateUnexpectedError": "حدث خطأ غير متوقع أثناء توليد السيرة.",
+  "@atsGenerateUnexpectedError": {
+    "description": "Error when improved CV generation fails unexpectedly."
+  },
+  "atsAiStillWorkingGeneration": "لا يزال الذكاء الاصطناعي يعمل. نسخة محلية من سيرتك جاهزة، ويمكنك إعادة محاولة التوليد لاحقاً.",
+  "@atsAiStillWorkingGeneration": {
+    "description": "Warning when AI generation times out but a local CV is ready."
+  },
+  "atsUploadTapHint": "اضغط لرفع ملف PDF أو TXT",
+  "@atsUploadTapHint": {
+    "description": "Upload area prompt on the ATS scan form."
+  },
+  "atsUploadMaxSize": "الحد الأقصى 5 ميجابايت",
+  "@atsUploadMaxSize": {
+    "description": "Upload size limit hint on the ATS scan form."
+  },
+  "atsRemoveFile": "إزالة الملف",
+  "@atsRemoveFile": {
+    "description": "Tooltip of the button that removes the picked CV file."
+  },
+  "atsOr": "أو",
+  "@atsOr": {
+    "description": "Divider between the upload and paste options on the ATS scan form."
+  },
+  "atsNoKeywords": "لا توجد كلمات مفتاحية حالياً",
+  "@atsNoKeywords": {
+    "description": "Empty state of an ATS keyword group."
+  },
+  "atsShowMoreCount": "+{count} أخرى",
+  "@atsShowMoreCount": {
+    "description": "Button that expands an ATS keyword group; count is the number of hidden keywords.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "atsKeywordDialogTitle": "كلمة مفتاحية: {keyword}",
+  "@atsKeywordDialogTitle": {
+    "description": "Title of the advice sheet for a missing ATS keyword.",
+    "placeholders": {
+      "keyword": {
+        "type": "String",
+        "example": "Laravel"
+      }
+    }
+  },
+  "atsKeywordDialogBody": "تبحث أنظمة فرز السير الذاتية (ATS) عن كلمة \"{keyword}\" في قسم الخبرات والمهارات. إضافتها ضمن سياق إنجازاتك المقاسة يرفع نسبة تطابق سيرتك بشكل ملحوظ.",
+  "@atsKeywordDialogBody": {
+    "description": "Body of the advice sheet for a missing ATS keyword.",
+    "placeholders": {
+      "keyword": {
+        "type": "String",
+        "example": "Laravel"
+      }
+    }
+  },
+  "atsGotIt": "فهمت ذلك",
+  "@atsGotIt": {
+    "description": "Button that closes the ATS keyword advice sheet."
+  },
+  "atsCriteriaDetails": "تفاصيل المعايير",
+  "@atsCriteriaDetails": {
+    "description": "Section title of the ATS criteria list."
+  },
+  "atsKeywordsTitle": "الكلمات المفتاحية",
+  "@atsKeywordsTitle": {
+    "description": "Section title of the ATS keyword lists."
+  },
+  "atsGradeLabel": "تقدير  {grade}",
+  "@atsGradeLabel": {
+    "description": "Grade chip in the ATS score hero.",
+    "placeholders": {
+      "grade": {
+        "type": "String",
+        "example": "A"
+      }
+    }
+  },
+  "atsJobMatchSemantic": "تطابق الوظيفة",
+  "@atsJobMatchSemantic": {
+    "description": "Screen reader label of the ATS job match progress bar."
+  },
+  "atsJobMatchPercentage": "نسبة التطابق مع الوظيفة",
+  "@atsJobMatchPercentage": {
+    "description": "Caption under the ATS job match progress bar."
+  },
+  "atsKeywordsFound": "موجودة  ({count})",
+  "@atsKeywordsFound": {
+    "description": "Header of the found ATS keywords group with their count.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "atsKeywordsMissing": "ناقصة  ({count})",
+  "@atsKeywordsMissing": {
+    "description": "Header of the missing ATS keywords group with their count.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "atsNoStrengths": "لا توجد نقاط قوة متاحة حالياً",
+  "@atsNoStrengths": {
+    "description": "Empty state of the ATS strengths list."
+  },
+  "atsQuickWins": "تحسينات سريعة",
+  "@atsQuickWins": {
+    "description": "Section title of the ATS quick wins list."
+  },
+  "atsNoQuickWins": "لا توجد تحسينات سريعة متاحة حالياً",
+  "@atsNoQuickWins": {
+    "description": "Empty state of the ATS quick wins list."
+  },
+  "atsUpgradeTitle": "جاهز لترقية سيرتك؟",
+  "@atsUpgradeTitle": {
+    "description": "Title of the improved CV call to action on the recommendations tab."
+  },
+  "atsUpgradeBody": "سنولّد لك سيرة ذاتية محسّنة تلقائياً بناءً على نتائج هذا التحليل",
+  "@atsUpgradeBody": {
+    "description": "Body of the improved CV call to action on the recommendations tab."
+  },
+  "atsKeywordSourceJd": "التقييم مبني على وصف الوظيفة الذي أدخلته",
+  "@atsKeywordSourceJd": {
+    "description": "ATS keyword source badge when keywords come from the pasted job description."
+  },
+  "atsKeywordSourceGeneric": "قائمة عامة — أضف وصف الوظيفة في المرة القادمة لتقييم أدق",
+  "@atsKeywordSourceGeneric": {
+    "description": "ATS keyword source badge when a generic keyword list was used."
+  },
+  "atsBandExcellent": "ممتاز - سيرتك قوية ومؤهلة",
+  "@atsBandExcellent": {
+    "description": "ATS score band description: excellent."
+  },
+  "atsBandVeryGood": "جيد جداً - مع بعض التحسينات",
+  "@atsBandVeryGood": {
+    "description": "ATS score band description: very good."
+  },
+  "atsBandFair": "مقبول - يحتاج مراجعة",
+  "@atsBandFair": {
+    "description": "ATS score band description: fair."
+  },
+  "atsBandWeak": "ضعيف - يحتاج إعادة هيكلة",
+  "@atsBandWeak": {
+    "description": "ATS score band description: weak."
+  },
+  "jobsMatchScore": "{score}% تطابق",
+  "@jobsMatchScore": {
+    "description": "Match score chip on job news cards.",
+    "placeholders": {
+      "score": {
+        "type": "int",
+        "example": "88"
+      }
+    }
+  },
+  "atsBenchmark": "معيار التقييم: {category}",
+  "@atsBenchmark": {
+    "description": "ATS score benchmark line; category is the scoring category label.",
+    "placeholders": {
+      "category": {
+        "type": "String",
+        "example": "Software engineering"
+      }
+    }
+  }
 }
