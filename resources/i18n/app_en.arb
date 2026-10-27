@@ -1,0 +1,689 @@
+{
+  "@@locale": "en",
+  "appTitle": "Siratie",
+  "switchToEnglish": "Switch to English",
+  "switchToArabic": "Switch to Arabic",
+  "languageEnglish": "English",
+  "languageArabic": "Arabic",
+  "somethingWentWrong": "Something went wrong",
+  "safeRetryMessage": "Something went wrong. Your data is safe — try again.",
+  "retry": "Retry",
+  "cancel": "Cancel",
+  "save": "Save",
+  "next": "Next",
+  "back": "Back",
+  "getStarted": "Get started",
+  "createCv": "Create a new CV",
+  "generateCv": "Generate CV",
+  "settings": "Settings",
+  "myCvs": "My CVs",
+  "analyses": "Analyses",
+  "greetingName": "Hello {name}",
+  "@greetingName": {
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sara"
+      }
+    }
+  },
+  "atsScoreLabel": "Match score {score}",
+  "@atsScoreLabel": {
+    "placeholders": {
+      "score": {
+        "type": "int",
+        "example": "87"
+      }
+    }
+  },
+  "cvCount": "{count, plural, zero{No CVs} one{1 CV} two{2 CVs} few{{count} CVs} many{{count} CVs} other{{count} CVs}}",
+  "@cvCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "analysisCount": "{count, plural, zero{No analyses} one{1 analysis} two{2 analyses} few{{count} analyses} many{{count} analyses} other{{count} analyses}}",
+  "@analysisCount": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "welcomeToSirati": "Welcome to Siratie",
+  "buildCvProfessionally": "Build your CV professionally",
+  "createAccount": "Create New Account",
+  "signIn": "Sign In",
+  "invalidSaudiPhone": "Enter a valid Saudi phone number (e.g. +966501234567 or +966112345678)",
+  "invalidUaePhone": "Enter a valid UAE phone number (e.g. +971501234567 or +97143214321)",
+  "invalidKuwaitPhone": "Enter a valid Kuwaiti phone number",
+  "invalidQatarPhone": "Enter a valid Qatari phone number",
+  "invalidBahrainPhone": "Enter a valid Bahraini phone number",
+  "invalidOmanPhone": "Enter a valid Omani phone number",
+  "invalidGulfOrIntlPhone": "Enter a valid Gulf or international phone number (e.g. +966501234567)",
+  "invalidEmail": "Enter a valid email address (e.g. name@example.com)",
+  "personalDetailsTitle": "Personal details and contact",
+  "personalDetailsSubtitle": "Name, target title, and direct contact information",
+  "inputLanguageLabel": "Input language:",
+  "languageModeDual": "Dual (AR + EN)",
+  "languageModeArOnly": "Arabic only",
+  "languageModeEnOnly": "English only",
+  "fullNameAr": "Full name (Arabic)",
+  "fullNameArHint": "e.g. Mohammed bin Abdullah Al-Qahtani",
+  "fullNameEn": "Full Name (English)",
+  "fullNameEnHint": "e.g. Mohammed Al-Qahtani",
+  "headlineAr": "Target job title (Arabic)",
+  "headlineArHint": "e.g. Senior Software Engineer",
+  "headlineEn": "Professional Headline (English)",
+  "headlineEnHint": "e.g. Senior Software Engineer",
+  "locationAr": "City and country (Arabic)",
+  "locationArHint": "e.g. Riyadh, Saudi Arabia",
+  "locationEn": "Location (English)",
+  "locationEnHint": "e.g. Riyadh, Saudi Arabia",
+  "emailLabel": "Email",
+  "phoneLabel": "Phone number (Gulf or international)",
+  "phoneHelper": "Supports Saudi, UAE, Kuwait, Qatar, Bahrain, and Oman numbers",
+  "linkedinLabel": "LinkedIn (optional)",
+  "atsPhotoWarningTitle": "ATS warning about personal photos",
+  "atsPhotoWarningBody": "Most modern hiring standards and ATS software (especially at large and multinational companies) recommend omitting a personal photo so skills are judged fairly and parsers do not misread the document.",
+  "atsPhotoEnabled": "Personal photo option enabled for templates that support it.",
+  "professionalSummaryTitle": "Professional summary",
+  "professionalSummarySubtitle": "An opening paragraph highlighting key skills and leadership experience",
+  "summaryArLabel": "Professional summary in Arabic",
+  "summaryArHint": "Software engineer with 5+ years building cloud systems...",
+  "summaryEnLabel": "Professional Summary in English",
+  "summaryEnHint": "Results-driven software engineer with 5+ years of experience...",
+  "summaryAdviceEmpty": "Recommended: 50 to 200 words (about 300–1000 characters)",
+  "summaryAdviceShort": "The summary is too short — add two key achievements",
+  "summaryAdviceGood": "Excellent length and fully aligned with professional ATS standards",
+  "summaryAdviceLong": "The summary is a bit long — shorten it to keep recruiters' attention",
+  "summaryWordCountLine": "{words} words ({chars} chars) • {advice}",
+  "@summaryWordCountLine": {
+    "placeholders": {
+      "words": {
+        "type": "int"
+      },
+      "chars": {
+        "type": "int"
+      },
+      "advice": {
+        "type": "String"
+      }
+    }
+  },
+  "viewProfile": "View profile",
+  "accountSection": "Account",
+  "editProfile": "Edit profile",
+  "changePassword": "Change password",
+  "preferencesSection": "Preferences",
+  "language": "Language",
+  "appearance": "Appearance",
+  "change": "Change",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "pushNotifications": "Push notifications",
+  "aboutSection": "About",
+  "privacyPolicy": "Privacy policy",
+  "contactUs": "Contact us",
+  "contactUsSubtitle": "Technical support & inquiries",
+  "contactUsEmailSubject": "Siratie Support Inquiry",
+  "contactUsFallback": "Please email support at: {email}",
+  "@contactUsFallback": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "replayIntro": "Replay app intro",
+  "replayIntroSubtitle": "Walk through the product tour again",
+  "appVersion": "App version",
+  "dangerZone": "Danger zone",
+  "logOut": "Log out",
+  "logOutConfirmTitle": "Log out?",
+  "logOutConfirmBody": "You will need to sign in again to access your CVs.",
+  "logOutFailed": "Couldn't sign out on this device. Please try again.",
+  "logOutPartial": "Could not fully sign out on this device.",
+  "deleteAccount": "Delete account",
+  "couldNotLoadProfile": "Could not load your profile.",
+  "notificationPrefUpdateFailed": "Could not update notification preference on server.",
+  "signedOutLocally": "Signed out locally. Server may still have an active session.",
+  "userFallback": "User",
+  "cvEditorTitle": "CV editor",
+  "preparingEditor": "Preparing the CV editor...",
+  "loadErrorTitle": "Could not load",
+  "cvLoadFailed": "Could not load the CV",
+  "autosaving": "Saving automatically...",
+  "unsavedEdits": "Unsaved edits",
+  "saved": "Saved",
+  "backToEdit": "Back to editing",
+  "livePreview": "Live preview",
+  "saveNow": "Save now",
+  "cvSaved": "CV saved successfully",
+  "cvSaveFailed": "Couldn't save. Your edits are kept as a draft on this device.",
+  "tabPersonal": "Details",
+  "tabExperience": "Experience",
+  "tabSkills": "Skills",
+  "tabOrder": "Order",
+  "recoverDraftTitle": "Restore unsaved draft",
+  "recoverDraftBody": "Newer edits were autosaved before the app closed. Restore that draft, or keep the saved version?",
+  "discardDraft": "Discard draft",
+  "restoreDraft": "Restore draft",
+  "draftRestored": "Draft restored successfully",
+  "sectionOrderTitle": "Section order on the CV",
+  "sectionOrderHint": "Drag sections to change how they appear in the PDF export, or use the up and down buttons:",
+  "moveUp": "Move up",
+  "moveDown": "Move down",
+  "sectionPersonal": "Personal details and contact",
+  "sectionSummary": "Professional summary",
+  "sectionExperience": "Work experience",
+  "sectionEducation": "Education",
+  "sectionSkills": "Skills and competencies",
+  "sectionLanguages": "Languages",
+  "sectionCertifications": "Certifications and licenses",
+  "sectionProjects": "Notable projects",
+  "sectionCustom": "Additional custom sections",
+  "calendarSystemLabel": "Calendar for dates:",
+  "calendarGregorian": "Gregorian",
+  "calendarHijri": "Hijri",
+  "workExperienceTitle": "Work experience",
+  "workExperienceSubtitle": "Past and current roles, ordered by date",
+  "addExperience": "Add work experience",
+  "sortChronologically": "Sort by date (newest first)",
+  "educationQualificationsTitle": "Education",
+  "educationQualificationsSubtitle": "Degrees, universities, and academic credentials",
+  "addEducation": "Add education",
+  "jobTitleAr": "Job title (Arabic)",
+  "jobTitleArHint": "e.g. Senior Software Engineer",
+  "jobTitleEn": "Job Title (English)",
+  "jobTitleEnHint": "e.g. Senior Software Engineer",
+  "companyAr": "Employer / company",
+  "companyArHint": "e.g. Saudi Aramco",
+  "companyEn": "Company Name (English)",
+  "companyEnHint": "e.g. Saudi Aramco",
+  "startDateLabel": "Start date (year or month-year)",
+  "startDateHint": "e.g. 2021-01",
+  "endDateLabel": "End date",
+  "endDateHint": "e.g. 2024-05",
+  "currentlyHere": "Present (current role)",
+  "currentlyWorking": "I currently work here",
+  "achievementsLabel": "Key responsibilities and achievements:",
+  "addAchievement": "Add achievement",
+  "noAchievementsHint": "No achievements yet. Add 2–4 bullets with numbers and concrete results.",
+  "achievementHint": "e.g. Improved system efficiency by 35%...",
+  "endDateBeforeStart": "End date cannot precede start date",
+  "institutionAr": "University or institute (Arabic)",
+  "institutionArHint": "e.g. King Saud University",
+  "institutionEn": "Institution (English)",
+  "institutionEnHint": "e.g. King Saud University",
+  "degreeLabel": "Degree",
+  "degreeHint": "e.g. Bachelor / Master",
+  "fieldOfStudyLabel": "Field of study",
+  "fieldOfStudyHint": "e.g. Computer Science",
+  "startYearLabel": "Start year",
+  "startYearHint": "e.g. 2018",
+  "graduationYearLabel": "Graduation year",
+  "graduationYearHint": "e.g. 2022",
+  "skillsTitle": "Skills and competencies",
+  "skillsSubtitle": "Skills are stored as discrete items for ATS matching",
+  "noSkillsHint": "No skills yet. Add technical and interpersonal skills to improve ATS match.",
+  "skillNameHint": "Skill name (e.g. Flutter or project management)",
+  "addItem": "Add",
+  "proficiencyLevel": "Proficiency",
+  "skillLevelBeginner": "Beginner",
+  "skillLevelIntermediate": "Intermediate",
+  "skillLevelAdvanced": "Advanced",
+  "skillLevelExpert": "Expert",
+  "skillCategory": "Skill category",
+  "skillCategoryTechnical": "Technical skills",
+  "skillCategorySoft": "Interpersonal skills",
+  "skillCategoryTools": "Tools and software",
+  "skillCategoryManagement": "Management and planning",
+  "skillCategoryGeneral": "General skills",
+  "languagesTitle": "Languages",
+  "languagesSubtitle": "Languages and proficiency on a standard scale",
+  "noLanguagesHint": "No languages listed yet.",
+  "languageNameHint": "Language (e.g. English)",
+  "languageLevelNative": "Native",
+  "languageLevelFluent": "Fluent",
+  "languageLevelC1": "Advanced professional (C1)",
+  "languageLevelB2": "Intermediate (B2)",
+  "languageLevelA2": "Elementary (A2)",
+  "certificationsTitle": "Certifications and licenses",
+  "certificationsSubtitle": "Professional credentials, courses, and issuing bodies",
+  "addCertification": "Add a professional certification",
+  "certNameLabel": "Certificate / license name",
+  "certNameHint": "e.g. PMP or AWS Solutions Architect",
+  "certIssuerLabel": "Issuing body",
+  "certIssuerHint": "e.g. Project Management Institute or Amazon Web Services",
+  "issueYearLabel": "Year issued",
+  "issueYearHint": "e.g. 2023",
+  "expiryYearLabel": "Year expires",
+  "expiryYearHint": "e.g. 2026",
+  "noExpiry": "Does not expire",
+  "certPermanent": "This credential does not expire",
+  "projectsTitle": "Projects and notable work",
+  "projectsSubtitle": "Past work and demos with direct links",
+  "addProject": "Add a project",
+  "projectTitleLabel": "Project title",
+  "projectTitleHint": "e.g. Cloud payments platform",
+  "projectRoleLabel": "Your role",
+  "projectRoleHint": "e.g. Lead developer / infrastructure engineer",
+  "projectUrlLabel": "Project URL (optional)",
+  "invalidProjectUrl": "The URL must start with https:// or http://",
+  "projectDescLabel": "Description and technologies",
+  "projectDescHint": "Built a system processing 10,000+ operations a day using...",
+  "deleteItem": "Delete",
+  "jobMatchTitle": "Job Match",
+  "jobMatchPremiumBadge": "Premium",
+  "jobMatchEntryTitle": "Match your CV to a job",
+  "jobMatchEntrySubtitle": "Paste a job ad to see how well you fit and get tailored edits.",
+  "jobMatchEntryButton": "Start matching",
+  "jobMatchQuotaRemaining": "{count, plural, =0{No matches left today} =1{1 match left today} other{{count} matches left today}}",
+  "@jobMatchQuotaRemaining": {
+    "description": "Remaining Job Match quota for today.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "jobMatchJobTitleLabel": "Job title (optional)",
+  "jobMatchJobTitleHint": "e.g. Data Analyst",
+  "jobMatchDescriptionLabel": "Job description",
+  "jobMatchDescriptionHint": "Paste the full job ad here...",
+  "jobMatchDescriptionRequired": "Paste the job description first.",
+  "jobMatchDescriptionTooLong": "The job description must be {max} characters or fewer. Shorten it and try again.",
+  "@jobMatchDescriptionTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int",
+        "example": "4000"
+      }
+    }
+  },
+  "jobMatchTitleTooLong": "The job title must be {max} characters or fewer.",
+  "@jobMatchTitleTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int",
+        "example": "160"
+      }
+    }
+  },
+  "jobMatchCharCount": "{count} / {max}",
+  "@jobMatchCharCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "jobMatchPickCvTitle": "Choose a saved CV",
+  "jobMatchPickCvRequired": "Choose the CV to match.",
+  "jobMatchNoCvTitle": "You don't have a saved CV yet",
+  "jobMatchNoCvBody": "Create a CV tailored to this job and we'll match it right after.",
+  "jobMatchCreateTailoredCv": "Create tailored CV",
+  "jobMatchOrCreateTailored": "Or create a new CV tailored to this job",
+  "jobMatchCvsLoadFailed": "Couldn't load your CVs.",
+  "jobMatchRetry": "Try again",
+  "jobMatchSubmit": "Analyze match",
+  "jobMatchSubmitting": "Analyzing...",
+  "jobMatchCvStillPreparing": "Your new CV is still being prepared. Start the match once it's ready.",
+  "jobMatchUntitledCv": "Untitled CV",
+  "jobMatchPaywallTitle": "Job Match is a Premium feature",
+  "jobMatchPaywallBody": "Subscribe to see how well your CV fits a job, which keywords are missing, and apply suggested edits to a new copy.",
+  "jobMatchPaywallTrial": "{days, plural, =1{Includes a 1-day free trial.} other{Includes a {days}-day free trial.}}",
+  "@jobMatchPaywallTrial": {
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "jobMatchPaywallRefresh": "I've subscribed - refresh",
+  "jobMatchQuotaTitle": "Today's Job Match limit is reached",
+  "jobMatchQuotaBody": "You've used all of today's matches. Your quota resets tomorrow.",
+  "jobMatchUnavailableTitle": "Job Match is unavailable right now",
+  "jobMatchUnavailableBody": "We couldn't confirm access to Job Match. Please try again later.",
+  "jobMatchEntitlementLoadFailed": "Couldn't check your subscription.",
+  "jobMatchErrorSubscription": "Job Match needs an active subscription.",
+  "jobMatchErrorLimit": "You've reached the Job Match limit for now. Try again later.",
+  "jobMatchErrorConflict": "This request changed while it was being sent. Tap Analyze again.",
+  "jobMatchErrorStale": "Your CV or these suggestions changed since this match. Create a new Job Match.",
+  "jobMatchErrorCvTooLong": "This CV is too long for Job Match. Shorten it and try again.",
+  "jobMatchErrorInvalidDescription": "The job description couldn't be used. Check it and try again.",
+  "jobMatchErrorInvalidSelection": "Some selected edits can't be applied automatically. Review your selection.",
+  "jobMatchErrorUnavailable": "Job Match is temporarily unavailable. Please try later.",
+  "jobMatchErrorNotFound": "This match or CV no longer exists.",
+  "jobMatchErrorNetwork": "Check your connection and try again.",
+  "jobMatchErrorUnknown": "Something went wrong. Please try again.",
+  "jobMatchResultTitle": "Match results",
+  "jobMatchScoreLabel": "Match score",
+  "jobMatchScoreSemantics": "Match score {score} out of 100",
+  "@jobMatchScoreSemantics": {
+    "placeholders": {
+      "score": {
+        "type": "int",
+        "example": "72"
+      }
+    }
+  },
+  "jobMatchCoverage": "Keyword coverage: {percent}%",
+  "@jobMatchCoverage": {
+    "placeholders": {
+      "percent": {
+        "type": "int",
+        "example": "64"
+      }
+    }
+  },
+  "jobMatchGrade": "Grade: {grade}",
+  "@jobMatchGrade": {
+    "placeholders": {
+      "grade": {
+        "type": "String",
+        "example": "B"
+      }
+    }
+  },
+  "jobMatchMatchedKeywords": "Matched keywords",
+  "jobMatchMissingKeywords": "Missing keywords",
+  "jobMatchNoKeywords": "None found",
+  "jobMatchStrengths": "Strengths",
+  "jobMatchGaps": "Gaps to close",
+  "jobMatchSummary": "Summary",
+  "jobMatchAiPreparing": "Preparing tailored suggestions... Your score is ready below.",
+  "jobMatchAiStillProcessing": "Suggestions are still being prepared. Your score is final; check again in a minute.",
+  "jobMatchCheckAgain": "Check again",
+  "jobMatchAiFailed": "Suggestions couldn't be generated this time. Your score and gaps are still accurate.",
+  "jobMatchAiNotConfigured": "Tailored suggestions aren't available right now.",
+  "jobMatchSuggestionsTitle": "Suggested edits",
+  "jobMatchSuggestionsHint": "Select the edits to apply. We'll save them to a new copy; your original CV stays unchanged.",
+  "jobMatchNoSuggestions": "No edits suggested - your CV already covers this job well.",
+  "jobMatchBefore": "Current",
+  "jobMatchAfter": "Suggested",
+  "jobMatchAddition": "Addition",
+  "jobMatchWhy": "Why it helps",
+  "jobMatchTargets": "Targets",
+  "jobMatchNeedsUserFact": "Needs a detail only you know (such as a date or number). Edit this part of your CV yourself.",
+  "jobMatchAppliedBadge": "Applied",
+  "jobMatchApplySelected": "{count, plural, =1{Apply 1 edit} other{Apply {count} edits}}",
+  "@jobMatchApplySelected": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "jobMatchSelectToApply": "Select suggestions to apply them to a new CV copy.",
+  "jobMatchApplying": "Applying...",
+  "jobMatchAppliedSuccess": "Your tailored CV copy is ready.",
+  "jobMatchOpenTailoredCv": "Open tailored CV",
+  "jobMatchNewMatch": "New match",
+  "jobMatchSectionName": "{section, select, summary{Summary} skills{Skills} experience{Experience} education{Education} certifications{Certifications} projects{Projects} languages{Languages} personal{Personal details} other{Other sections}}",
+  "@jobMatchSectionName": {
+    "placeholders": {
+      "section": {
+        "type": "String"
+      }
+    }
+  },
+  "jobMatchRetrySuggestions": "Retry suggestions",
+  "jobMatchLoading": "Loading...",
+  "sharedLoading": "Loading...",
+  "jm4ConfirmFact": "I confirm this is true for me",
+  "jm4HonestyHint": "Only confirm facts you can honestly support. This text will be added to your CV.",
+  "atsInputTitle": "ATS compatibility check",
+  "atsInputIntroduction": "Compare your CV with a job posting to find improvements and missing keywords.",
+  "atsInputCvSource": "CV source",
+  "atsInputSavedCv": "My saved CV",
+  "atsInputUploadFile": "Upload file",
+  "atsInputPasteText": "Paste text",
+  "atsInputNoSavedCvs": "No saved CV yet. Create a CV, upload a file, or paste text.",
+  "atsInputSavedCvsError": "Could not load saved CVs. Retry or choose another source.",
+  "atsInputSavedCvHint": "We will analyze the current text of your saved CV, with no upload needed.",
+  "atsInputSelectCv": "Select a CV",
+  "atsInputCvTextUnavailable": "This CV has no ready text yet. Choose another CV or paste text.",
+  "atsInputJobTitle": "Target job title",
+  "atsInputJobTitleHint": "e.g. Laravel Backend Developer",
+  "atsInputJobTitleRequired": "Please enter a target job title",
+  "atsInputJobDescription": "Job description (optional)",
+  "atsInputJobDescriptionHint": "Paste the full job posting here...",
+  "atsInputJobDescriptionTooLong": "Job description must be {max} characters or fewer.",
+  "atsInputResumeTextHint": "Paste the full resume text here...",
+  "atsInputResumeTextRequired": "Paste resume text or upload a PDF/TXT file.",
+  "atsInputAnalyze": "Analyze CV",
+  "atsInputAnalyzing": "Analyzing...",
+  "atsInputPrivacy": "Your CV and job description are used for this analysis.",
+  "atsResultPrioritizedImprovements": "Prioritized improvements",
+  "atsResultImprovementsAvailability": "Review the recommendations below. You can generate an improved copy; applying individual fixes and estimating their gains are unavailable.",
+  "atsResultHighPriority": "High priority",
+  "atsResultMediumPriority": "Medium priority",
+  "atsResultLowPriority": "Low priority",
+  "homeHeroFirstCvTitle": "Create your first CV",
+  "homeHeroFirstCvDescription": "Build your CV step by step, then check its fit for the job you want.",
+  "homeHeroCreateCv": "Create CV",
+  "homeHeroLatestCv": "Latest CV",
+  "homeHeroNextStep": "Your next step",
+  "homeHeroAnalyzeNextStep": "Compare your latest CV with a job posting for targeted recommendations.",
+  "homeHeroReviewNextStep": "Review your latest CV and confirm your information before applying.",
+  "homeHeroReviewCv": "Review CV",
+  "homeHeroAtsScore": "ATS score",
+  "homeHeroScoreUnavailable": "Score not available yet",
+  "homeToolsTitle": "Smart CV tools",
+  "homeToolsAtsDescription": "Check your CV and discover improvements",
+  "homeToolsJobMatchDescription": "Compare your CV with a specific role",
+  "homeActivityTitle": "Recent activity",
+  "homeHeroLatestCvError": "Could not load the latest CV. Retry or open your saved CVs.",
+  "homeHeroSavedCvs": "Saved CVs",
+  "savedCvsLoading": "Loading CVs…",
+  "homeActivityEmpty": "No recent activity yet. Create a CV or run an analysis to get started.",
+  "atsInputJobTitleTooLong": "Job title must be {max} characters or fewer.",
+  "atsInputSelectSourceRequired": "Choose a saved CV, upload a PDF/TXT file, or paste CV text.",
+  "@atsInputJobTitleTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "@atsInputJobDescriptionTooLong": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "homeHeroUpdatedAt": "Updated {time}",
+  "homeHeroBandExcellent": "Excellent",
+  "homeHeroBandVeryGood": "Very good",
+  "homeHeroBandFair": "Fair",
+  "homeHeroBandWeak": "Needs improvement",
+  "homeStatsCvs": "My CVs",
+  "homeStatsAnalyses": "Analyses",
+  "homeActivitySavedCv": "Saved CV",
+  "atsResultKeywordSummary": "{matched} matched · {missing} missing keywords",
+  "@homeHeroUpdatedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@atsResultKeywordSummary": {
+    "placeholders": {
+      "matched": {
+        "type": "int"
+      },
+      "missing": {
+        "type": "int"
+      }
+    }
+  },
+  "premiumGateAppBar": "Siratie Premium",
+  "premiumGateHeroTitle": "Unlock your full career toolkit",
+  "premiumGateHeroBody": "AI tools built for the applicant tracking systems (ATS) employers use to screen CVs.",
+  "premiumGateBenefitsTitle": "What you get",
+  "premiumGateBenefitPdf": "Watermark-free PDF downloads",
+  "premiumGateBenefitPdfBody": "Clean documents, ready to send to employers.",
+  "premiumGateBenefitAi": "AI writing enhancement",
+  "premiumGateBenefitAiBody": "Rewrite and polish your summary and achievements.",
+  "premiumGateBenefitAts": "Full ATS recommendations",
+  "premiumGateBenefitAtsBody": "Every recommendation from your analysis, not just the first.",
+  "premiumGateBenefitJobMatch": "Job Match",
+  "premiumGateBenefitJobMatchBody": "Compare your CV with any job ad and apply tailored edits to a new copy.",
+  "premiumGateBenefitLimits": "No daily CV or analysis limits",
+  "premiumGateBenefitLimitsBody": "Create and analyze as many CVs as you need.",
+  "premiumGatePlansTitle": "Plan information",
+  "premiumGatePrice": "{price} {currency}",
+  "@premiumGatePrice": {
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "99"
+      },
+      "currency": {
+        "type": "String",
+        "example": "SAR"
+      }
+    }
+  },
+  "premiumGateCurrencySar": "SAR",
+  "premiumGatePeriodYear": "per year",
+  "premiumGatePeriod": "{months, plural, =1{per month} other{every {months} months}}",
+  "@premiumGatePeriod": {
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+  "premiumGatePerMonth": "About {price} {currency} a month",
+  "@premiumGatePerMonth": {
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "16.50"
+      },
+      "currency": {
+        "type": "String",
+        "example": "SAR"
+      }
+    }
+  },
+  "premiumGatePriceNote": "Prices shown are indicative. The final price will be shown by the store when subscriptions open.",
+  "premiumGatePlansFailed": "Couldn't load the plans.",
+  "premiumGateNoPlans": "No plans are available right now.",
+  "premiumGateRetry": "Try again",
+  "premiumGateRefresh": "I already subscribed: refresh access",
+  "premiumGateRefreshing": "Checking your subscription...",
+  "premiumGateNotFound": "We couldn't find an active subscription on your account yet.",
+  "premiumGateRefreshFailed": "Couldn't check your subscription. Try again.",
+  "premiumGateActiveTitle": "Your Premium subscription is active",
+  "premiumGateActiveBody": "Your subscription is linked to this account.",
+  "premiumGateContinue": "Continue",
+  "premiumGateNotNow": "Not now",
+  "premiumGatePrivacy": "Privacy policy",
+  "premiumGateJobMatchSeePlans": "See Premium plans",
+  "premiumGateJobMatchBenefitScore": "A match score against the job ad",
+  "premiumGateJobMatchBenefitKeywords": "Matched and missing keywords",
+  "premiumGateJobMatchBenefitEdits": "Tailored edits saved to a new copy",
+  "jobMatchFailedTitle": "Suggestions aren't available right now",
+  "jobMatchFailedManualHint": "You can still add the missing keywords yourself in the CV editor.",
+  "cvHubTitle": "Your CV is ready",
+  "cvHubReady": "Ready to apply: structured for applicant tracking systems.",
+  "cvHubAtsLabel": "ATS compatibility",
+  "cvHubAtsScore": "{score}%",
+  "@cvHubAtsScore": {
+    "placeholders": {
+      "score": {
+        "type": "int",
+        "example": "88"
+      }
+    }
+  },
+  "cvHubGrade": "Grade {grade}",
+  "@cvHubGrade": {
+    "placeholders": {
+      "grade": {
+        "type": "String",
+        "example": "B"
+      }
+    }
+  },
+  "cvHubPreview": "Preview",
+  "cvHubShowFull": "Show full CV",
+  "cvHubShowLess": "Show less",
+  "cvHubDownload": "Download PDF",
+  "cvHubPreparing": "Preparing...",
+  "cvHubShare": "Share",
+  "cvHubNextSteps": "Next steps",
+  "cvHubCheckAts": "Check ATS in detail",
+  "cvHubCheckAtsBody": "Check this CV's ATS compatibility with its text already selected.",
+  "cvHubMatchJob": "Match to a job",
+  "cvHubMatchJobBody": "Compare this CV with a job ad and get tailored edits.",
+  "cvHubEdit": "Edit your CV",
+  "cvHubEditBody": "Update your experience, skills or summary any time.",
+  "cvHubEmpty": "No CV content is available yet.",
+  "cvHubAppBar": "Your CV",
+  "cvHubRecommended": "Recommended",
+  "premiumGateAvailabilityNote": "In-app subscriptions are opening soon. You cannot buy a subscription in this version.",
+  "registerInterest": "Register interest",
+  "noMatchingJobs": "No matching jobs",
+  "clearFilters": "Clear filters",
+  "compatibilityScoreLabel": "ATS compatibility score",
+  "compatibilityScoreValue": "{score} out of 100",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "@compatibilityScoreValue": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "atsCriterionFormat": "Format and readability",
+  "atsCriterionKeywords": "Keywords and match",
+  "atsCriterionStructure": "Structure and sections",
+  "atsCriterionExperience": "Experience and achievements",
+  "atsCriterionEducation": "Education and certificates",
+  "atsCriterionSummary": "Professional summary",
+  "atsCriterionContact": "Contact details",
+  "homeHeaderSubtitleNew": "Start with an ATS-ready CV",
+  "homeHeaderSubtitleReturning": "Improve your CV step by step",
+  "homeHeroStartTitle": "Start with a professional CV",
+  "homeHeroStartBody": "Build your CV with ATS-friendly templates, in Arabic and English.",
+  "homeHeroCreateYourCv": "Create your CV",
+  "homeHeroUploadOld": "Upload an existing CV",
+  "homeHeroScoreTitle": "ATS score: {score}",
+  "homeHeroScoreExcellent": "Your CV is excellent and ready to send",
+  "homeHeroScoreVeryGood": "Your CV is good; a few edits will make it stronger",
+  "homeHeroScoreFair": "Your CV is fair; improvements will raise your chances",
+  "homeHeroScoreWeak": "Your CV needs work before you apply",
+  "homeHeroNextStronger": "Your next step: a stronger CV",
+  "homeHeroImprove": "Improve your CV",
+  "homeHeroTargetJob": "Target a job",
+  "homeToolCreateTitle": "Create a CV",
+  "homeToolCreateBody": "An ATS-ready CV",
+  "homeToolAtsTitle": "ATS check",
+  "homeToolAtsBody": "Check your CV against screening systems",
+  "homeToolEducationTitle": "Learning & career development",
+  "homeToolEducationBody": "Coming soon",
+  "homeJobsTitle": "Jobs for you",
+  "homeJobsViewAll": "View all",
+  "homeJobsEmpty": "No matching jobs right now. New ones will show up here.",
+  "@homeHeroScoreTitle": {"placeholders": {"score": {"type": "String"}}}
+}
