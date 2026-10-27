@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             CvTemplateSeeder::class,
             JobTitleSeeder::class,
             JobNewsSeeder::class,
+            AppLocalizationSeeder::class,
         ]);
 
         // User::factory(10)->create();
