@@ -291,8 +291,8 @@
                             @php $coverage = ($localization['total_keys'] ?? 0) > 0 && $language['published'] !== null ? min(100, $language['published'] / $localization['total_keys'] * 100) : null; @endphp
                             <div>
                                 <div class="lang-row-head">
-                                    <span><span class="lang-code">{{ strtoupper($language['code']) }}</span><b>{{ $language['name'] }}</b>@if (! $language['enabled']) <span class="muted">(disabled)</span>@endif</span>
-                                    <span class="num">{{ $coverage === null ? '–' : number_format($coverage, 0).'%' }}</span>
+                                    <span><span class="lang-code">{{ strtoupper($language['code']) }}</span>@if (Route::has('admin.labels.index'))<a class="lang-link" href="{{ route('admin.labels.index', ['lang' => $language['code']]) }}"><b>{{ $language['name'] }}</b></a>@else<b>{{ $language['name'] }}</b>@endif @if (! $language['enabled']) <span class="muted">(disabled)</span>@endif</span>
+                                    <span class="num">{{ $coverage === null ? '–' : round($coverage, 1).'%' }}</span>
                                 </div>
                                 @if ($coverage !== null)
                                     <div class="bar-track"><span @class(['bar-fill', 'amber' => $coverage < 90]) style="width: {{ max(1, $coverage) }}%"></span></div>

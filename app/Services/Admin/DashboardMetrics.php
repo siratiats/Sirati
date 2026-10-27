@@ -430,19 +430,21 @@ class DashboardMetrics
         }
 
         try {
-            $languages = $languageClass::query()->orderBy('sort_order')->limit(6)->get();
+            $languages = $languageClass::query()->orderBy('sort_order')->orderBy('code')->limit(6)->get();
             $keyClass = 'App\\Models\\AppTranslationKey';
             $translationClass = 'App\\Models\\AppTranslation';
             $totalKeys = class_exists($keyClass) ? (int) $keyClass::query()->count() : null;
             $published = [];
 
             if ($totalKeys !== null && class_exists($translationClass)) {
+                // Same definition as the Languages page: published values of keys still in the catalog.
                 $published = $translationClass::query()
-                    ->selectRaw('language_code, count(*) as aggregate')
-                    ->whereNotNull('value')
-                    ->where('value', '!=', '')
-                    ->groupBy('language_code')
-                    ->pluck('aggregate', 'language_code')
+                    ->join('app_translation_keys', 'app_translation_keys.key', '=', 'app_translations.key')
+                    ->selectRaw('app_translations.language_code as code, count(*) as aggregate')
+                    ->whereNotNull('app_translations.value')
+                    ->where('app_translations.value', '!=', '')
+                    ->groupBy('app_translations.language_code')
+                    ->pluck('aggregate', 'code')
                     ->all();
             }
 

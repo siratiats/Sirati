@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\Admin\LabelController;
 use App\Models\AppLanguage;
 use App\Models\AppTranslation;
 use App\Models\AppTranslationKey;
@@ -357,5 +358,69 @@ class AppLocalizationAdminTest extends TestCase
         $clone = new AppLanguage(['code' => 'ar']);
         $clone->id = $ar->id + 1000;
         $this->assertNotSame(TranslationPublisher::cacheKey($ar, 1), TranslationPublisher::cacheKey($clone, 1));
+    }
+
+    public function test_filter_chip_counts_and_group_headers_match_what_the_list_shows(): void
+    {
+        $keys = AppTranslationKey::query()->orderBy('id')->pluck('key')->all();
+        AppTranslation::query()->where('language_code', 'en')->whereIn('key', array_slice($keys, 0, 9))->update(['value' => null]);
+        AppTranslation::query()->where('language_code', 'en')->whereIn('key', array_slice($keys, 5, 11))->update(['draft_value' => 'draft']);
+        AppTranslation::query()->where('language_code', 'en')->whereIn('key', array_slice($keys, 30, 4))->update(['updated_by' => $this->admin->id]);
+        // A row whose key left the catalog must not count anywhere.
+        AppTranslation::query()->create(['language_code' => 'en', 'key' => 'removedFromCatalog', 'value' => 'x', 'draft_value' => 'y']);
+
+        $view = null;
+        foreach (array_merge([''], array_keys(LabelController::FILTERS)) as $filter) {
+            foreach (['', 'retry', substr($keys[12], 0, 3)] as $q) {
+                $view = $this->actingAs($this->admin)
+                    ->get(route('admin.labels.index', array_filter(['lang' => 'en', 'filter' => $filter, 'q' => $q])))
+                    ->assertOk();
+                $this->assertSame($view->viewData('labels')->total(), $view->viewData('filterCounts')[$filter], "filter={$filter} q={$q}");
+            }
+        }
+
+        $groupStats = $view->viewData('groupStats');
+        $expectedGroups = AppTranslationKey::query()->get()->groupBy(fn ($key) => (string) $key->group);
+        $drafts = AppTranslation::query()->where('language_code', 'en')->whereNotNull('draft_value')->pluck('key')->all();
+        $this->assertEqualsCanonicalizing($expectedGroups->keys()->all(), array_map('strval', array_keys($groupStats)));
+        foreach ($expectedGroups as $group => $groupKeys) {
+            $this->assertSame($groupKeys->count(), $groupStats[$group]['keys']);
+            $this->assertSame($groupKeys->pluck('key')->intersect($drafts)->count(), $groupStats[$group]['drafts']);
+        }
+    }
+
+    public function test_base_language_can_be_chosen_but_never_equals_the_target(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.languages.store'), ['code' => 'fr', 'name' => 'French', 'native_name' => 'Français', 'direction' => 'ltr', 'fallback_code' => 'en']);
+        $default = fn (string $lang) => $this->actingAs($this->admin)->get(route('admin.labels.index', ['lang' => $lang]))->viewData('base')?->code;
+
+        foreach (AppLanguage::query()->pluck('code') as $target) {
+            foreach (AppLanguage::query()->pluck('code')->push('zz') as $requested) {
+                $response = $this->actingAs($this->admin)->get(route('admin.labels.index', ['lang' => $target, 'base' => $requested]))->assertOk();
+                $base = $response->viewData('base')?->code;
+                $this->assertNotSame($target, $base);
+                $this->assertSame($requested === $target || $requested === 'zz' ? $default($target) : $requested, $base);
+
+                $retry = $response->viewData('labels')->getCollection()->firstWhere('key', 'retry');
+                if ($retry !== null) {
+                    $this->assertSame(AppTranslation::query()->where('language_code', $base)->where('key', 'retry')->value('value'), $retry->base_value);
+                }
+            }
+        }
+    }
+
+    public function test_overview_localization_card_shows_catalog_coverage_and_links_to_labels(): void
+    {
+        AppTranslation::query()->create(['language_code' => 'en', 'key' => 'removedFromCatalog', 'value' => 'orphan']);
+        AppTranslation::query()->where('language_code', 'ar')->where('key', 'retry')->update(['value' => null]);
+        $total = AppTranslationKey::query()->count();
+
+        $html = $this->actingAs($this->admin)->get(route('admin.index'))->assertOk()->getContent();
+
+        $stats = \App\Http\Controllers\Admin\LanguageController::languageStats(AppLanguage::query()->pluck('code')->all());
+        foreach (AppLanguage::query()->orderBy('sort_order')->orderBy('code')->limit(6)->get() as $language) {
+            $this->assertStringContainsString(number_format($stats[$language->code]['translated']).' / '.number_format($total).' strings', $html);
+            $this->assertStringContainsString(e(route('admin.labels.index', ['lang' => $language->code])), $html);
+        }
     }
 }

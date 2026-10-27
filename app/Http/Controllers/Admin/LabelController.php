@@ -48,15 +48,29 @@ class LabelController extends Controller
             ?? $languages->firstWhere('is_default', true)
             ?? $languages->first();
 
-        $base = $target === null ? null : $this->baseLanguageFor($target, $languages);
+        $requestedBase = (string) $request->query('base', '');
+        $base = $target === null ? null : (
+            $requestedBase !== '' && $requestedBase !== $target->code
+                ? ($languages->firstWhere('code', $requestedBase) ?? $this->baseLanguageFor($target, $languages))
+                : $this->baseLanguageFor($target, $languages)
+        );
         $q = trim((string) $request->query('q', ''));
         $filter = array_key_exists((string) $request->query('filter'), self::FILTERS) ? (string) $request->query('filter') : '';
 
         $labels = null;
+        $filterCounts = [];
+        $groupStats = [];
         if ($target !== null) {
-            $labels = $this->labelQuery($target->code, $base?->code ?? $target->code, $q, $filter)
+            $baseCode = $base?->code ?? $target->code;
+            $labels = $this->labelQuery($target->code, $baseCode, $q, $filter)
                 ->paginate(50)
                 ->withQueryString();
+
+            // Chip counts use the same query as the list, so a chip's number is what clicking it shows.
+            foreach (['' => null] + self::FILTERS as $value => $unused) {
+                $filterCounts[$value] = $this->labelQuery($target->code, $baseCode, $q, (string) $value)->count();
+            }
+            $groupStats = $this->groupStats($target->code);
         }
 
         $stats = LanguageController::languageStats($languages->pluck('code')->all());
@@ -69,6 +83,8 @@ class LabelController extends Controller
             'q' => $q,
             'filter' => $filter,
             'filters' => self::FILTERS,
+            'filterCounts' => $filterCounts,
+            'groupStats' => $groupStats,
             'stats' => $stats,
             'totalKeys' => AppTranslationKey::query()->count(),
         ]);
@@ -308,6 +324,27 @@ class LabelController extends Controller
 
         return $languages->first(fn (AppLanguage $language) => $language->is_default && $language->code !== $target->code)
             ?? $languages->first(fn (AppLanguage $language) => $language->code !== $target->code);
+    }
+
+    /**
+     * Catalog-wide key and draft counts per key group for one language (for the group headers).
+     *
+     * @return array<string, array{keys: int, drafts: int}>
+     */
+    private function groupStats(string $targetCode): array
+    {
+        $query = AppTranslationKey::query()
+            ->leftJoin('app_translations as t', function ($join) use ($targetCode) {
+                $join->on('t.key', '=', 'app_translation_keys.key')->where('t.language_code', '=', $targetCode);
+            });
+        $group = $query->getQuery()->getGrammar()->wrap('app_translation_keys.group');
+
+        return $query
+            ->groupBy('app_translation_keys.group')
+            ->selectRaw($group.' as label_group, count(*) as keys_count, sum(case when t.draft_value is not null then 1 else 0 end) as drafts_count')
+            ->get()
+            ->mapWithKeys(fn ($row) => [(string) ($row->label_group ?? '') => ['keys' => (int) $row->keys_count, 'drafts' => (int) $row->drafts_count]])
+            ->all();
     }
 
     private function labelQuery(string $targetCode, string $baseCode, string $q, string $filter): Builder
