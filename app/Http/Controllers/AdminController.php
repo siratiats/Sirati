@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\AuthorizesAdmin;
 use App\Jobs\SendBulkNotificationJob;
 use App\Models\CvAnalysis;
 use App\Models\CvTemplate;
@@ -15,6 +16,7 @@ use App\Models\NotificationCampaign;
 use App\Models\SubscriptionAuditLog;
 use App\Models\User;
 use App\Models\UserFcmToken;
+use App\Services\Admin\DashboardMetrics;
 use App\Services\AtsScoringService;
 use App\Services\JobsGoogleSheetSyncService;
 use App\Services\JobsImportService;
@@ -31,15 +33,21 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class AdminController extends Controller
 {
-    public function index(Request $request)
+    use AuthorizesAdmin;
+
+    public function index(Request $request, DashboardMetrics $metrics)
     {
         $this->authorizeAdmin($request);
 
+        $range = DashboardMetrics::normalizeRange($request->query('range'));
+
+        if ($request->boolean('refresh')) {
+            Cache::forget("admin:dashboard-metrics:{$range}");
+        }
+
         return view('admin.index', [
-            'stats' => $this->dashboardStats(),
-            'recentActivity' => $this->dashboardRecentActivity(),
-            'jobNewsSummary' => $this->jobNewsSummary(),
-            'jobsSheetLastSync' => Cache::get('jobs_sheet_last_sync'),
+            'range' => $range,
+            'metrics' => $metrics->overview($range),
         ]);
     }
 
@@ -289,28 +297,6 @@ class AdminController extends Controller
         }
 
         return $query;
-    }
-
-    private function dashboardStats(): array
-    {
-        return [
-            'landing_leads' => LandingLead::count(),
-            'analyses' => CvAnalysis::count(),
-            'generated_cvs' => GeneratedCv::count(),
-            'average_analysis_score' => round((float) CvAnalysis::avg('score_total'), 1),
-            'average_generated_score' => round((float) GeneratedCv::avg('score_total'), 1),
-        ];
-    }
-
-    private function dashboardRecentActivity(): array
-    {
-        return [
-            'jobs' => JobNews::query()->latest()->limit(5)->get(),
-            'education' => EducationContent::query()->latest()->limit(5)->get(),
-            'templates' => CvTemplate::query()->latest()->limit(5)->get(),
-            'analyses' => CvAnalysis::query()->latest()->limit(5)->get(),
-            'generated_cvs' => GeneratedCv::query()->latest()->limit(5)->get(),
-        ];
     }
 
     private function cvTemplateAdminQuery(Request $request)
@@ -905,18 +891,5 @@ class AdminController extends Controller
         }
 
         return back()->with('status', "Premium revoked for user {$user->id}.");
-    }
-
-    private function authorizeAdmin(Request $request): void
-    {
-        $allowedEmails = config('services.admin.emails', []);
-
-        if ($allowedEmails !== [] && ! in_array($request->user()?->email, $allowedEmails, true)) {
-            throw new AccessDeniedHttpException('This account is not allowed to access the admin panel.');
-        }
-
-        if ($allowedEmails === [] && ! app()->environment(['local', 'testing'])) {
-            throw new AccessDeniedHttpException('Set ADMIN_EMAILS before enabling admin access outside local environments.');
-        }
     }
 }

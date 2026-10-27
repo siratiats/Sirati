@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\HealthController as AdminHealthController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CvAnalysisController;
@@ -69,4 +71,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/admin/job-news/{jobNews}', [AdminController::class, 'destroyJobNews'])->name('admin.job-news.destroy');
     Route::post('/admin/users/{user}/grant-premium', [AdminController::class, 'grantUserPremium'])->name('admin.users.grant-premium');
     Route::post('/admin/users/{user}/revoke-premium', [AdminController::class, 'revokeUserPremium'])->name('admin.users.revoke-premium');
+
+    // Admin monitoring
+    Route::get('/admin/health', [AdminHealthController::class, 'index'])->name('admin.health.index');
+    Route::post('/admin/health/failed-jobs/retry-all', [AdminHealthController::class, 'retryAll'])->name('admin.health.failed.retry-all');
+    Route::post('/admin/health/failed-jobs/{id}/retry', [AdminHealthController::class, 'retry'])->name('admin.health.failed.retry');
+    Route::post('/admin/health/failed-jobs/{id}/forget', [AdminHealthController::class, 'forget'])->name('admin.health.failed.forget');
+    Route::get('/admin/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::get('/admin/users/{user}', [AdminUserController::class, 'show'])->name('admin.users.show');
 });
