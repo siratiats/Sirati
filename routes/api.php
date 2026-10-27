@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\I18nController;
 use App\Http\Controllers\Api\SubscriptionPlanController;
 use App\Http\Controllers\Api\SubscriptionWebhookController;
 use App\Http\Controllers\CvAnalysisController;
@@ -24,6 +25,12 @@ Route::post('/auth/forgot-password', [MobileAuthController::class, 'forgotPasswo
     ->middleware('throttle:3,1');
 Route::post('/auth/reset-password', [MobileAuthController::class, 'resetPassword'])
     ->middleware('throttle:5,1');
+
+// Remote app labels (public, read-only, published values only).
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('/i18n/languages', [I18nController::class, 'languages'])->name('api.i18n.languages');
+    Route::get('/i18n/languages/{code}/strings', [I18nController::class, 'strings'])->name('api.i18n.strings');
+});
 
 Route::get('/mobile/subscription-plans', [SubscriptionPlanController::class, 'index']);
 Route::get('/mobile/education', [MobileContentController::class, 'education']);

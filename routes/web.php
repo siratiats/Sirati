@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\LabelController;
+use App\Http\Controllers\Admin\LanguageController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CvAnalysisController;
@@ -69,4 +71,18 @@ Route::middleware('auth')->group(function () {
     Route::delete('/admin/job-news/{jobNews}', [AdminController::class, 'destroyJobNews'])->name('admin.job-news.destroy');
     Route::post('/admin/users/{user}/grant-premium', [AdminController::class, 'grantUserPremium'])->name('admin.users.grant-premium');
     Route::post('/admin/users/{user}/revoke-premium', [AdminController::class, 'revokeUserPremium'])->name('admin.users.revoke-premium');
+
+    // Localization admin
+    Route::get('/admin/languages', [LanguageController::class, 'index'])->name('admin.languages.index');
+    Route::post('/admin/languages', [LanguageController::class, 'store'])->name('admin.languages.store');
+    Route::patch('/admin/languages/{code}', [LanguageController::class, 'update'])->name('admin.languages.update');
+    Route::post('/admin/languages/{code}/publish', [LanguageController::class, 'publish'])->name('admin.languages.publish');
+    Route::post('/admin/languages/{code}/rollback', [LanguageController::class, 'rollback'])->name('admin.languages.rollback');
+    Route::delete('/admin/languages/{code}', [LanguageController::class, 'destroy'])->name('admin.languages.destroy');
+    Route::get('/admin/labels', [LabelController::class, 'index'])->name('admin.labels.index');
+    Route::put('/admin/labels/{code}', [LabelController::class, 'update'])->name('admin.labels.update');
+    Route::post('/admin/labels/{code}/bulk', [LabelController::class, 'bulk'])->name('admin.labels.bulk');
+    Route::post('/admin/labels/{code}/discard', [LabelController::class, 'discard'])->name('admin.labels.discard');
+    Route::post('/admin/labels/{code}/import', [LabelController::class, 'import'])->name('admin.labels.import');
+    Route::get('/admin/labels/{code}/export', [LabelController::class, 'export'])->name('admin.labels.export');
 });
