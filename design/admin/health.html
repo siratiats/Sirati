@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>System health - Siratie Admin</title>
+<!-- Google Fonts: IBM Plex Sans & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary-fixed": "#8cf4e9",
+            "surface-dim": "#cbdbf6",
+            "on-secondary-fixed": "#101b33",
+            "on-error-container": "#93000a",
+            "surface": "#f8f9ff",
+            "on-primary-fixed": "#00201d",
+            "tertiary-fixed-dim": "#6fd8cd",
+            "secondary-fixed-dim": "#bbc6e6",
+            "surface-tint": "#006a62",
+            "primary": "#006a62",
+            "inverse-on-surface": "#eaf1ff",
+            "surface-bright": "#f8f9ff",
+            "secondary-fixed": "#d9e2ff",
+            "on-surface": "#0b1c30",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-fixed": "#00201d",
+            "primary-container": "#12b3a6",
+            "primary-fixed-dim": "#53dbcd",
+            "on-tertiary-container": "#003e39",
+            "on-secondary-container": "#56607c",
+            "error-container": "#ffdad6",
+            "on-surface-variant": "#3c4947",
+            "secondary": "#545e79",
+            "on-primary-fixed-variant": "#00504a",
+            "outline": "#6c7a77",
+            "background": "#f8f9ff",
+            "tertiary": "#006a63",
+            "on-secondary": "#ffffff",
+            "primary-fixed": "#74f7e9",
+            "surface-container-high": "#dce9ff",
+            "on-background": "#0b1c30",
+            "surface-container": "#e6eeff",
+            "tertiary-container": "#43b0a6",
+            "surface-container-low": "#eff4ff",
+            "inverse-primary": "#53dbcd",
+            "on-secondary-fixed-variant": "#3c4661",
+            "on-primary-container": "#003e39",
+            "outline-variant": "#bbc9c6",
+            "error": "#ba1a1a",
+            "surface-variant": "#d3e4ff",
+            "surface-container-highest": "#d3e4ff",
+            "on-tertiary": "#ffffff",
+            "on-primary": "#ffffff",
+            "on-error": "#ffffff",
+            "inverse-surface": "#213146",
+            "secondary-container": "#d2dcfd",
+            "on-tertiary-fixed-variant": "#00504b"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "space-lg": "1rem",
+            "space-xl": "1.5rem",
+            "space-md": "0.75rem",
+            "margin": "1.5rem",
+            "space-sm": "0.5rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "code-xs": ["JetBrains Mono"],
+            "display-kpi": ["IBM Plex Sans"],
+            "label-md": ["IBM Plex Sans"],
+            "headline-sm": ["IBM Plex Sans"],
+            "code-sm": ["JetBrains Mono"],
+            "body-md": ["IBM Plex Sans"],
+            "body-sm": ["IBM Plex Sans"],
+            "headline-md": ["IBM Plex Sans"],
+            "headline-lg": ["IBM Plex Sans"]
+          },
+          "fontSize": {
+            "code-xs": ["10px", { "lineHeight": "12px", "fontWeight": "400" }],
+            "display-kpi": ["32px", { "lineHeight": "38px", "fontWeight": "600" }],
+            "label-md": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "headline-sm": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "code-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "headline-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "headline-lg": ["22px", { "lineHeight": "28px", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      background-color: #F1F4F7;
+      color: #101B33;
+      font-family: 'IBM Plex Sans', sans-serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#F1F4F7] antialiased flex text-on-surface">
+<!-- ========================================================================= -->
+<!-- SIDEBAR: Fixed Left 240px Navy Shell (#101B33 / bg-on-secondary-fixed)     -->
+<!-- ========================================================================= -->
+<aside class="fixed top-0 left-0 w-60 h-screen flex flex-col justify-between p-3 select-none bg-on-secondary-fixed z-30 border-r border-outline-variant/20">
+<!-- Top Brand & Nav Stack -->
+<div class="flex flex-col space-y-4">
+<!-- Brand Anchor Header -->
+<div class="px-2 py-1.5 flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-tertiary-container shadow-sm">
+<span class="material-symbols-outlined text-[20px] text-surface-container-lowest font-bold">token</span>
+</div>
+<div class="flex flex-col">
+<span class="text-headline-sm font-headline-sm font-bold text-on-secondary tracking-tight">Siratie Admin</span>
+<span class="text-code-xs font-code-xs text-secondary-fixed-dim tracking-wider">GCC ATS Core Engine</span>
+</div>
+</div>
+<!-- Navigation Hierarchy Groups -->
+<nav class="flex flex-col space-y-3 overflow-y-auto max-h-[calc(100vh-170px)] pr-1">
+<!-- GROUP 1: MONITOR -->
+<div class="flex flex-col space-y-0.5">
+<span class="px-3 text-[10px] font-semibold text-secondary-fixed-dim/60 tracking-wider uppercase">MONITOR</span>
+<!-- Inactive: Overview -->
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">dashboard</span>
+<span>Overview</span>
+</a>
+<!-- ACTIVE: System health (Designated tab with primary-container border indicator) -->
+<a class="flex items-center gap-3 px-3 py-1.5 bg-on-secondary-fixed-variant text-primary-fixed font-medium rounded text-body-sm font-body-sm border-l-2 border-primary-container" href="#">
+<span class="material-symbols-outlined text-[17px] text-primary-fixed">monitor_heart</span>
+<span>System health</span>
+</a>
+<!-- Inactive: Users -->
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">group</span>
+<span>Users</span>
+</a>
+</div>
+<!-- GROUP 2: CONTENT -->
+<div class="flex flex-col space-y-0.5">
+<span class="px-3 pt-2 text-[10px] font-semibold text-secondary-fixed-dim/60 tracking-wider uppercase">CONTENT</span>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">description</span>
+<span>CV templates</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">school</span>
+<span>Education</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">work</span>
+<span>Jobs</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">notifications</span>
+<span>Notifications</span>
+</a>
+</div>
+<!-- GROUP 3: LOCALIZATION -->
+<div class="flex flex-col space-y-0.5">
+<span class="px-3 pt-2 text-[10px] font-semibold text-secondary-fixed-dim/60 tracking-wider uppercase">LOCALIZATION</span>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">translate</span>
+<span>Languages</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">label</span>
+<span>Labels</span>
+</a>
+</div>
+<!-- GROUP 4: GROWTH -->
+<div class="flex flex-col space-y-0.5">
+<span class="px-3 pt-2 text-[10px] font-semibold text-secondary-fixed-dim/60 tracking-wider uppercase">GROWTH</span>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">filter_alt</span>
+<span>Leads</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">analytics</span>
+<span>CV analyses</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px]">auto_awesome</span>
+<span>Generated CVs</span>
+</a>
+</div>
+</nav>
+</div>
+<!-- Sidebar Bottom Actions -->
+<div class="pt-2 border-t border-outline-variant/10 flex flex-col space-y-1">
+<a class="flex items-center justify-between px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/40 rounded text-body-sm font-body-sm transition-colors" href="https://siratie.ai" target="_blank">
+<span class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[16px]">open_in_new</span>
+<span>View site</span>
+</span>
+<span class="text-code-xs font-code-xs text-secondary-fixed-dim/70">siratie.ai</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/40 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE: Offset 240px with sticky Top Bar & Fluid 1600px Canvas   -->
+<!-- ========================================================================= -->
+<div class="ml-60 flex-1 flex flex-col min-w-0">
+<!-- Top Navigation Bar: Docked Operational Subheader -->
+<header class="h-12 border-b border-outline-variant/30 bg-surface-container-lowest sticky top-0 z-20 flex items-center justify-between px-6 select-none shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+<!-- Breadcrumb Context & Sub-badge -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5">
+<span class="text-headline-md font-headline-md font-semibold text-on-surface">System health</span>
+<span class="text-secondary/50 font-light">/</span>
+<span class="text-body-sm font-body-sm text-secondary font-medium">Infrastructure Telemetry</span>
+</div>
+<div class="flex items-center gap-1.5 bg-[#E6F7F5] border border-primary-container/30 px-2 py-0.5 rounded text-code-xs font-code-xs text-primary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span>
+<span>Production</span>
+</div>
+</div>
+<!-- Action Utilities & Operational Controls -->
+<div class="flex items-center gap-2.5">
+<!-- Interval Selector -->
+<div class="flex items-center bg-[#F1F4F7] rounded p-0.5 border border-outline-variant/30">
+<button class="bg-surface-container-lowest text-on-surface font-semibold px-2 py-0.5 rounded text-body-sm font-body-sm shadow-none">Live</button>
+<button class="text-secondary hover:text-on-surface px-2 py-0.5 rounded text-body-sm font-body-sm transition-colors">1h</button>
+<button class="text-secondary hover:text-on-surface px-2 py-0.5 rounded text-body-sm font-body-sm transition-colors">24h</button>
+<button class="text-secondary hover:text-on-surface px-2 py-0.5 rounded text-body-sm font-body-sm transition-colors">7d</button>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant/40 mx-0.5"></div>
+<!-- Auto-refresh Indicator Toggle -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-lowest border border-outline-variant/40 rounded text-code-xs font-code-xs text-secondary">
+<span class="material-symbols-outlined text-[14px] text-primary-container">sync</span>
+<span>Auto-refresh: <strong class="text-on-surface font-semibold">30s</strong></span>
+</div>
+<!-- Refresh Button -->
+<button class="h-8 px-3 bg-surface-container-lowest border border-outline-variant/40 hover:bg-[#F1F4F7] text-on-surface rounded text-body-sm font-body-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[15px]">refresh</span>
+<span>Refresh</span>
+</button>
+<div class="h-4 w-[1px] bg-outline-variant/40 mx-0.5"></div>
+<!-- Trailing System Actions -->
+<button class="w-7 h-7 flex items-center justify-center text-secondary hover:text-primary-container hover:bg-[#E6F7F5] rounded transition-colors" title="Tune Alerts">
+<span class="material-symbols-outlined text-[17px]">tune</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center text-secondary hover:text-primary-container hover:bg-[#E6F7F5] rounded transition-colors" title="Documentation">
+<span class="material-symbols-outlined text-[17px]">help_outline</span>
+</button>
+<!-- Profile Avatar -->
+<div class="flex items-center gap-2 pl-1.5">
+<img class="w-6 h-6 rounded-full border border-outline-variant/50 object-cover" data-alt="Close up photographic avatar of a professional GCC software engineer wearing glasses and a dark slate technical jacket in a server room ambient background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCD2IIChpNGY8lqIzgRbupgeF1JcGWu56C74k2HBIXG7H-OcVl6b2t-bSr5cgLBoNrXb3FvBaSsBm2PzyMKLh9dNzUy2xJCP9UkGCmQNF80SmUwb7hJxEu2PMlqatzeEg6ztGL4IWCxHKisHC2uEPIhQ_cTTXJ3YkH-LV460cWdXEZm3SRGIl2VUlfMTN8cjdGDUwJZDdoYRwva34o1XLRE7AhLc3ASQMPPC82AarsTx7wcOxl_hJuGXWBrDP1TZsIojyDmlidl2zI"/>
+</div>
+</div>
+</header>
+<!-- Scrollable Canvas Content -->
+<main class="p-6 max-w-[1600px] w-full mx-auto flex flex-col space-y-6">
+<!-- ===================================================================== -->
+<!-- TOP SUMMARY ROW: 4 HEALTH STATUS TILES                                -->
+<!-- ===================================================================== -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<!-- Tile 1: API Gateway & Ingestion -->
+<div class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-3.5 flex flex-col justify-between relative shadow-none">
+<div class="flex items-start justify-between mb-2">
+<div>
+<span class="text-label-md font-label-md text-secondary block">Ingestion Layer</span>
+<h3 class="text-headline-sm font-headline-sm font-semibold text-on-surface">API Gateway &amp; Ingestion</h3>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#E6F7F5] text-primary border border-primary-container/20 rounded text-code-xs font-code-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+              Operational
+            </span>
+</div>
+<div class="flex items-baseline justify-between mt-1 pt-2 border-t border-outline-variant/20">
+<div>
+<span class="text-display-kpi font-display-kpi font-bold text-on-surface tabular-nums">42<span class="text-body-md font-normal text-secondary ml-0.5">ms</span></span>
+<span class="text-code-xs font-code-xs text-secondary block">avg response latency</span>
+</div>
+<div class="text-right">
+<span class="text-code-sm font-code-sm font-semibold text-primary tabular-nums">99.98%</span>
+<span class="text-code-xs font-code-xs text-secondary block">uptime 30d (12 nodes)</span>
+</div>
+</div>
+</div>
+<!-- Tile 2: Queue Workers -->
+<div class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-3.5 flex flex-col justify-between relative shadow-none">
+<div class="flex items-start justify-between mb-2">
+<div>
+<span class="text-label-md font-label-md text-secondary block">Asynchronous Processing</span>
+<h3 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Queue Workers</h3>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#E6F7F5] text-primary border border-primary-container/20 rounded text-code-xs font-code-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+              Active (8/8 healthy)
+            </span>
+</div>
+<div class="flex items-baseline justify-between mt-1 pt-2 border-t border-outline-variant/20">
+<div>
+<span class="text-display-kpi font-display-kpi font-bold text-on-surface tabular-nums">38</span>
+<span class="text-code-xs font-code-xs text-secondary block">pending jobs (oldest: 12s)</span>
+</div>
+<div class="text-right">
+<span class="text-code-sm font-code-sm font-semibold text-on-surface tabular-nums">1,840</span>
+<span class="text-code-xs font-code-xs text-secondary block">throughput / hour</span>
+</div>
+</div>
+</div>
+<!-- Tile 3: AI LLM Providers (Degraded Warning) -->
+<div class="bg-surface-container-lowest border border-amber-300/80 bg-amber-50/10 rounded-lg p-3.5 flex flex-col justify-between relative shadow-none">
+<div class="flex items-start justify-between mb-2">
+<div>
+<span class="text-label-md font-label-md text-secondary block">Cognitive Inference</span>
+<h3 class="text-headline-sm font-headline-sm font-semibold text-on-surface">AI LLM Providers</h3>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-100 text-amber-800 border border-amber-300 rounded text-code-xs font-code-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+              Degraded
+            </span>
+</div>
+<div class="flex items-baseline justify-between mt-1 pt-2 border-t border-outline-variant/20">
+<div>
+<span class="text-display-kpi font-display-kpi font-bold text-amber-800 tabular-nums">1.42<span class="text-body-md font-normal text-amber-700 ml-0.5">%</span></span>
+<span class="text-code-xs font-code-xs text-amber-900/80 block font-medium">1 degraded provider (Claude 3.5)</span>
+</div>
+<div class="text-right">
+<span class="text-code-sm font-code-sm font-semibold text-on-surface tabular-nums">2 healthy</span>
+<span class="text-code-xs font-code-xs text-secondary block">OpenAI / DeepInfra</span>
+</div>
+</div>
+</div>
+<!-- Tile 4: PDF & TeX Renderer -->
+<div class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-3.5 flex flex-col justify-between relative shadow-none">
+<div class="flex items-start justify-between mb-2">
+<div>
+<span class="text-label-md font-label-md text-secondary block">Document Pipeline</span>
+<h3 class="text-headline-sm font-headline-sm font-semibold text-on-surface">PDF &amp; TeX Renderer</h3>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#E6F7F5] text-primary border border-primary-container/20 rounded text-code-xs font-code-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+              Operational
+            </span>
+</div>
+<div class="flex items-baseline justify-between mt-1 pt-2 border-t border-outline-variant/20">
+<div>
+<span class="text-display-kpi font-display-kpi font-bold text-on-surface tabular-nums">42<span class="text-body-md font-normal text-secondary ml-0.5">%</span></span>
+<span class="text-code-xs font-code-xs text-secondary block">memory headroom</span>
+</div>
+<div class="text-right">
+<span class="text-code-sm font-code-sm font-semibold text-primary tabular-nums">3 cluster pods</span>
+<span class="text-code-xs font-code-xs text-secondary block">0 backpressure</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ===================================================================== -->
+<!-- SECTION: QUEUE WORKERS & FAILURE MANAGEMENT (Split Layout)            -->
+<!-- ===================================================================== -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+<!-- SUB-CARD 1: Active Queues (5 cols) -->
+<div class="lg:col-span-5 bg-surface-container-lowest border border-outline-variant/40 rounded-lg flex flex-col overflow-hidden">
+<div class="px-4 py-2.5 border-b border-outline-variant/30 flex items-center justify-between bg-[#F8F9FF]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">alt_route</span>
+<h4 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Active Ingestion Queues</h4>
+</div>
+<span class="text-code-xs font-code-xs bg-surface-container text-secondary px-2 py-0.5 rounded">Redis 7.2 Cluster</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#F1F4F7] text-secondary text-label-md font-label-md border-b border-outline-variant/30 uppercase tracking-wider h-8">
+<th class="px-3.5 font-medium">Queue Name</th>
+<th class="px-2.5 font-medium">Status</th>
+<th class="px-2.5 font-medium text-right">Pending</th>
+<th class="px-2.5 font-medium">Oldest</th>
+<th class="px-3.5 font-medium text-right">1h Throughput</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20 text-body-sm font-body-sm text-on-surface">
+<!-- Row 1 -->
+<tr class="h-9 hover:bg-[#E6F7F5]/40 transition-colors">
+<td class="px-3.5 font-code-sm text-code-sm text-on-surface font-semibold flex items-center gap-1.5 py-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    cv-parsing
+                  </td>
+<td class="px-2.5">
+<span class="text-code-xs font-code-xs text-primary bg-[#E6F7F5] px-1.5 py-0.5 rounded">Active</span>
+</td>
+<td class="px-2.5 text-right font-code-sm text-code-sm tabular-nums">19</td>
+<td class="px-2.5 text-code-xs font-code-xs text-secondary tabular-nums">12s</td>
+<td class="px-3.5 text-right font-code-sm text-code-sm tabular-nums text-on-surface font-medium">784/h</td>
+</tr>
+<!-- Row 2 -->
+<tr class="h-9 hover:bg-[#E6F7F5]/40 transition-colors">
+<td class="px-3.5 font-code-sm text-code-sm text-on-surface font-semibold flex items-center gap-1.5 py-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    embeddings-calc
+                  </td>
+<td class="px-2.5">
+<span class="text-code-xs font-code-xs text-primary bg-[#E6F7F5] px-1.5 py-0.5 rounded">Active</span>
+</td>
+<td class="px-2.5 text-right font-code-sm text-code-sm tabular-nums">11</td>
+<td class="px-2.5 text-code-xs font-code-xs text-secondary tabular-nums">4s</td>
+<td class="px-3.5 text-right font-code-sm text-code-sm tabular-nums text-on-surface font-medium">492/h</td>
+</tr>
+<!-- Row 3 -->
+<tr class="h-9 hover:bg-[#E6F7F5]/40 transition-colors">
+<td class="px-3.5 font-code-sm text-code-sm text-on-surface font-semibold flex items-center gap-1.5 py-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    pdf-compilation
+                  </td>
+<td class="px-2.5">
+<span class="text-code-xs font-code-xs text-primary bg-[#E6F7F5] px-1.5 py-0.5 rounded">Active</span>
+</td>
+<td class="px-2.5 text-right font-code-sm text-code-sm tabular-nums">6</td>
+<td class="px-2.5 text-code-xs font-code-xs text-secondary tabular-nums">2s</td>
+<td class="px-3.5 text-right font-code-sm text-code-sm tabular-nums text-on-surface font-medium">340/h</td>
+</tr>
+<!-- Row 4 -->
+<tr class="h-9 hover:bg-[#E6F7F5]/40 transition-colors">
+<td class="px-3.5 font-code-sm text-code-sm text-on-surface font-semibold flex items-center gap-1.5 py-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    scoring-matcher
+                  </td>
+<td class="px-2.5">
+<span class="text-code-xs font-code-xs text-primary bg-[#E6F7F5] px-1.5 py-0.5 rounded">Active</span>
+</td>
+<td class="px-2.5 text-right font-code-sm text-code-sm tabular-nums">2</td>
+<td class="px-2.5 text-code-xs font-code-xs text-secondary tabular-nums">1s</td>
+<td class="px-3.5 text-right font-code-sm text-code-sm tabular-nums text-on-surface font-medium">224/h</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-2.5 bg-[#F8F9FF] border-t border-outline-variant/30 flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<span>Concurrency limit: 64 concurrent workers</span>
+<span class="text-primary font-semibold">Zero throttled jobs</span>
+</div>
+</div>
+<!-- SUB-CARD 2: Failed Jobs Management (7 cols) -->
+<div class="lg:col-span-7 bg-surface-container-lowest border border-outline-variant/40 rounded-lg flex flex-col overflow-hidden">
+<div class="px-4 py-2 border-b border-outline-variant/30 flex items-center justify-between bg-[#F8F9FF]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-error">error_outline</span>
+<h4 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Dead Letter &amp; Failed Jobs</h4>
+<span class="bg-error-container text-on-error-container text-code-xs font-code-xs px-2 py-0.5 rounded-full font-bold">5 unhandled</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-7 px-2.5 bg-surface-container-lowest text-error border border-error/30 hover:bg-[#FDF2F2] rounded text-body-sm font-body-sm font-medium flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">replay</span>
+<span>Retry all (5)</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#F1F4F7] text-secondary text-label-md font-label-md border-b border-outline-variant/30 uppercase tracking-wider h-8">
+<th class="px-3.5 font-medium">Job ID</th>
+<th class="px-2.5 font-medium">Worker Class</th>
+<th class="px-2.5 font-medium">Queue</th>
+<th class="px-3.5 font-medium">Exception Diagnostics</th>
+<th class="px-2.5 font-medium">Failed At</th>
+<th class="px-3 font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20 text-body-sm font-body-sm">
+<!-- Failed Job 1 -->
+<tr class="hover:bg-[#FDF2F2]/40 transition-colors">
+<td class="px-3.5 font-code-sm text-code-sm text-secondary font-semibold">#8491</td>
+<td class="px-2.5 font-body-sm text-body-sm text-on-surface font-medium truncate max-w-[130px]" title="GenerateCandidateSummaryJob">
+                    GenerateCandidateSummaryJob
+                  </td>
+<td class="px-2.5">
+<span class="text-code-xs font-code-xs bg-surface-container text-secondary px-1.5 py-0.5 rounded">cv-parsing</span>
+</td>
+<td class="px-3.5 py-1.5 max-w-[210px]">
+<div class="font-code-xs text-code-xs text-error bg-error-container/40 px-1.5 py-0.5 rounded truncate" title="ClaudeAPI::RateLimitError: 429 Too Many Requests (anthropic tier-3)">
+                      ClaudeAPI::RateLimitError: 429
+                    </div>
+</td>
+<td class="px-2.5 text-code-xs font-code-xs text-secondary whitespace-nowrap">2m ago</td>
+<td class="px-3 text-right whitespace-nowrap">
+<button class="text-primary hover:text-primary-container text-body-sm font-body-sm font-semibold mr-2 transition-colors">Retry</button>
+<button class="text-error hover:text-on-error-container text-body-sm font-body-sm transition-colors">Forget</button>
+</td>
+</tr>
+<!-- Failed Job 2 -->
+<tr class="hover:bg-[#FDF2F2]/40 transition-colors">
+<td class="px-3.5 font-code-sm text-code-sm text-secondary font-semibold">#8487</td>
+<td class="px-2.5 font-body-sm text-body-sm text-on-surface font-medium truncate max-w-[130px]" title="ParseArabicCVWorker">
+                    ParseArabicCVWorker
+                  </td>
+<td class="px-2.5">
+<span class="text-code-xs font-code-xs bg-surface-container text-secondary px-1.5 py-0.5 rounded">cv-parsing</span>
+</td>
+<td class="px-3.5 py-1.5 max-w-[210px]">
+<div class="font-code-xs text-code-xs text-error bg-error-container/40 px-1.5 py-0.5 rounded truncate" title="UnicodeDecodeError: 'utf-8' codec can't decode byte 0xbf">
+                      UnicodeDecodeError: utf-8
+                    </div>
+</td>
+<td class="px-2.5 text-code-xs font-code-xs text-secondary whitespace-nowrap">7m ago</td>
+<td class="px-3 text-right whitespace-nowrap">
+<button class="text-primary hover:text-primary-container text-body-sm font-body-sm font-semibold mr-2 transition-colors">Retry</button>
+<button class="text-error hover:text-on-error-container text-body-sm font-body-sm transition-colors">Forget</button>
+</td>
+</tr>
+<!-- Failed Job 3 -->
+<tr class="hover:bg-[#FDF2F2]/40 transition-colors">
+<td class="px-3.5 font-code-sm text-code-sm text-secondary font-semibold">#8482</td>
+<td class="px-2.5 font-body-sm text-body-sm text-on-surface font-medium truncate max-w-[130px]" title="CompileLatexTemplateJob">
+                    CompileLatexTemplateJob
+                  </td>
+<td class="px-2.5">
+<span class="text-code-xs font-code-xs bg-surface-container text-secondary px-1.5 py-0.5 rounded">pdf-compilation</span>
+</td>
+<td class="px-3.5 py-1.5 max-w-[210px]">
+<div class="font-code-xs text-code-xs text-error bg-error-container/40 px-1.5 py-0.5 rounded truncate" title="Gotenberg::Timeout: PDF engine exceeded 30s limit">
+                      Gotenberg::Timeout: &gt;30s
+                    </div>
+</td>
+<td class="px-2.5 text-code-xs font-code-xs text-secondary whitespace-nowrap">14m ago</td>
+<td class="px-3 text-right whitespace-nowrap">
+<button class="text-primary hover:text-primary-container text-body-sm font-body-sm font-semibold mr-2 transition-colors">Retry</button>
+<button class="text-error hover:text-on-error-container text-body-sm font-body-sm transition-colors">Forget</button>
+</td>
+</tr>
+<!-- Failed Job 4 -->
+<tr class="hover:bg-[#FDF2F2]/40 transition-colors">
+<td class="px-3.5 font-code-sm text-code-sm text-secondary font-semibold">#8479</td>
+<td class="px-2.5 font-body-sm text-body-sm text-on-surface font-medium truncate max-w-[130px]" title="GenerateCandidateSummaryJob">
+                    GenerateCandidateSummaryJob
+                  </td>
+<td class="px-2.5">
+<span class="text-code-xs font-code-xs bg-surface-container text-secondary px-1.5 py-0.5 rounded">cv-parsing</span>
+</td>
+<td class="px-3.5 py-1.5 max-w-[210px]">
+<div class="font-code-xs text-code-xs text-error bg-error-container/40 px-1.5 py-0.5 rounded truncate" title="Faraday::ConnectionFailed: Connection reset by peer">
+                      Faraday::ConnectionFailed
+                    </div>
+</td>
+<td class="px-2.5 text-code-xs font-code-xs text-secondary whitespace-nowrap">22m ago</td>
+<td class="px-3 text-right whitespace-nowrap">
+<button class="text-primary hover:text-primary-container text-body-sm font-body-sm font-semibold mr-2 transition-colors">Retry</button>
+<button class="text-error hover:text-on-error-container text-body-sm font-body-sm transition-colors">Forget</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- ===================================================================== -->
+<!-- SECTION: AI PROVIDERS TELEMETRY (3 Structured Grid Cards)             -->
+<!-- ===================================================================== -->
+<section class="flex flex-col space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">psychology</span>
+<h3 class="text-headline-md font-headline-md font-semibold text-on-surface">AI Providers Telemetry &amp; Gulf Latency Profiles</h3>
+</div>
+<span class="text-code-xs font-code-xs text-secondary">Aggregation: 24h rolling window</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- PROVIDER 1: Claude (Anthropic) - Degraded State -->
+<div class="bg-surface-container-lowest border border-amber-300 rounded-lg p-4 flex flex-col justify-between shadow-none relative">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<h4 class="text-headline-sm font-headline-sm font-bold text-on-surface">Claude</h4>
+<span class="text-code-xs font-code-xs bg-surface-container px-1.5 py-0.5 rounded text-secondary font-medium">Sonnet 3.5</span>
+</div>
+<span class="text-code-xs font-code-xs text-secondary">Anthropic Global API (us-east-1)</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-amber-100 text-amber-800 border border-amber-300 rounded text-code-xs font-code-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  Degraded
+                </span>
+</div>
+<!-- Metric Grid -->
+<div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-outline-variant/30">
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">Calls 24h</span>
+<span class="text-headline-md font-headline-md font-bold text-on-surface tabular-nums">437.2k</span>
+</div>
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">Error Rate</span>
+<span class="text-headline-md font-headline-md font-bold text-error tabular-nums flex items-center">
+                    2.18%
+                    <span class="text-code-xs font-code-xs text-error font-medium ml-1">↗ high</span>
+</span>
+</div>
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">p95 Latency</span>
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface tabular-nums">1.84s</span>
+</div>
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">Timeouts (429/504)</span>
+<span class="text-headline-sm font-headline-sm font-semibold text-error tabular-nums">38 events</span>
+</div>
+</div>
+</div>
+<!-- Mini 24h Hourly Histogram Latency Spikes -->
+<div class="mt-4 pt-3 border-t border-outline-variant/20">
+<div class="flex items-center justify-between text-code-xs font-code-xs mb-1.5">
+<span class="text-secondary">24h Latency &amp; Spike distribution</span>
+<span class="text-on-surface font-semibold tabular-nums">$1,142.30 est.</span>
+</div>
+<!-- CSS Histogram Bar Cluster -->
+<div class="h-9 flex items-end gap-1 px-1 bg-[#F8F9FF] border border-outline-variant/20 rounded py-1">
+<div class="flex-1 bg-primary-container h-4 rounded-xs"></div>
+<div class="flex-1 bg-primary-container h-4.5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container h-5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container h-4 rounded-xs"></div>
+<div class="flex-1 bg-primary-container h-5.5 rounded-xs"></div>
+<div class="flex-1 bg-amber-400 h-7 rounded-xs" title="Spike: Rate limits"></div>
+<div class="flex-1 bg-amber-500 h-8 rounded-xs" title="Spike: Rate limits"></div>
+<div class="flex-1 bg-error h-9 rounded-xs" title="Critical Timeout peak"></div>
+<div class="flex-1 bg-amber-500 h-7.5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container h-5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container h-4.5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container h-4 rounded-xs"></div>
+</div>
+</div>
+</div>
+<!-- PROVIDER 2: OpenAI - Operational State -->
+<div class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-4 flex flex-col justify-between shadow-none relative">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<h4 class="text-headline-sm font-headline-sm font-bold text-on-surface">OpenAI</h4>
+<span class="text-code-xs font-code-xs bg-surface-container px-1.5 py-0.5 rounded text-secondary font-medium">GPT-4o &amp; mini</span>
+</div>
+<span class="text-code-xs font-code-xs text-secondary">Microsoft Azure &amp; OpenAI Direct</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#E6F7F5] text-primary border border-primary-container/20 rounded text-code-xs font-code-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                  Operational
+                </span>
+</div>
+<!-- Metric Grid -->
+<div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-outline-variant/30">
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">Calls 24h</span>
+<span class="text-headline-md font-headline-md font-bold text-on-surface tabular-nums">303.1k</span>
+</div>
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">Error Rate</span>
+<span class="text-headline-md font-headline-md font-bold text-primary tabular-nums">0.08%</span>
+</div>
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">p95 Latency</span>
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface tabular-nums">940ms</span>
+</div>
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">Timeouts (429/504)</span>
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface tabular-nums">2 events</span>
+</div>
+</div>
+</div>
+<!-- Mini 24h Hourly Histogram (Uniform) -->
+<div class="mt-4 pt-3 border-t border-outline-variant/20">
+<div class="flex items-center justify-between text-code-xs font-code-xs mb-1.5">
+<span class="text-secondary">24h Latency profile</span>
+<span class="text-on-surface font-semibold tabular-nums">$548.10 est.</span>
+</div>
+<div class="h-9 flex items-end gap-1 px-1 bg-[#F8F9FF] border border-outline-variant/20 rounded py-1">
+<div class="flex-1 bg-primary-container/80 h-3 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/80 h-3.5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/80 h-3 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/80 h-4 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/80 h-3.5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/80 h-3 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/80 h-4.5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/80 h-3.5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/80 h-3 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/80 h-3 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/80 h-3.5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/80 h-3 rounded-xs"></div>
+</div>
+</div>
+</div>
+<!-- PROVIDER 3: DeepInfra - Operational Fast Embeddings -->
+<div class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-4 flex flex-col justify-between shadow-none relative">
+<div>
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<h4 class="text-headline-sm font-headline-sm font-bold text-on-surface">DeepInfra</h4>
+<span class="text-code-xs font-code-xs bg-surface-container px-1.5 py-0.5 rounded text-secondary font-medium">Llama 3 &amp; BGE</span>
+</div>
+<span class="text-code-xs font-code-xs text-secondary">Dedicated GPU Endpoints (A100 SXM)</span>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#E6F7F5] text-primary border border-primary-container/20 rounded text-code-xs font-code-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                  Operational
+                </span>
+</div>
+<!-- Metric Grid -->
+<div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-outline-variant/30">
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">Calls 24h</span>
+<span class="text-headline-md font-headline-md font-bold text-on-surface tabular-nums">101.8k</span>
+</div>
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">Error Rate</span>
+<span class="text-headline-md font-headline-md font-bold text-primary tabular-nums">0.12%</span>
+</div>
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">p95 Latency</span>
+<span class="text-headline-sm font-headline-sm font-semibold text-primary tabular-nums">320ms</span>
+</div>
+<div>
+<span class="text-code-xs font-code-xs text-secondary block">Timeouts (429/504)</span>
+<span class="text-headline-sm font-headline-sm font-semibold text-on-surface tabular-nums">0 events</span>
+</div>
+</div>
+</div>
+<!-- Mini 24h Hourly Histogram -->
+<div class="mt-4 pt-3 border-t border-outline-variant/20">
+<div class="flex items-center justify-between text-code-xs font-code-xs mb-1.5">
+<span class="text-secondary">24h Latency profile</span>
+<span class="text-on-surface font-semibold tabular-nums">$152.10 est.</span>
+</div>
+<div class="h-9 flex items-end gap-1 px-1 bg-[#F8F9FF] border border-outline-variant/20 rounded py-1">
+<div class="flex-1 bg-primary-container/60 h-2 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/60 h-2 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/60 h-2.5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/60 h-2 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/60 h-2.5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/60 h-2 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/60 h-2 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/60 h-2.5 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/60 h-2 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/60 h-2 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/60 h-2 rounded-xs"></div>
+<div class="flex-1 bg-primary-container/60 h-2.5 rounded-xs"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ===================================================================== -->
+<!-- SECTION: RECENT SYSTEM ERRORS & DIAGNOSTICS LOG                       -->
+<!-- ===================================================================== -->
+<section class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg flex flex-col overflow-hidden shadow-none">
+<!-- Header & Filter Controls Toolbar -->
+<div class="px-4 py-3 border-b border-outline-variant/30 flex flex-wrap items-center justify-between gap-3 bg-[#F8F9FF]">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[19px] text-on-surface">terminal</span>
+<h4 class="text-headline-sm font-headline-sm font-semibold text-on-surface">Live Incident Logs &amp; Parser Stacktraces</h4>
+<span class="text-code-xs font-code-xs bg-surface-container text-secondary px-2 py-0.5 rounded font-mono">STDOUT/STDERR</span>
+</div>
+<!-- Diagnostic Filters -->
+<div class="flex items-center gap-2 flex-wrap">
+<!-- Severity Filter -->
+<div class="flex items-center text-code-xs font-code-xs border border-outline-variant/30 rounded overflow-hidden bg-surface-container-lowest">
+<span class="px-2 py-1 bg-[#F1F4F7] text-secondary font-medium border-r border-outline-variant/20">Severity</span>
+<button class="px-2 py-1 bg-surface-container text-on-surface font-semibold">All (18)</button>
+<button class="px-2 py-1 text-secondary hover:text-on-surface transition-colors">Critical (2)</button>
+<button class="px-2 py-1 text-secondary hover:text-on-surface transition-colors">Warning (5)</button>
+<button class="px-2 py-1 text-secondary hover:text-on-surface transition-colors">Info</button>
+</div>
+<!-- Service Filter Select -->
+<div class="flex items-center text-code-xs font-code-xs border border-outline-variant/30 rounded px-2 py-1 bg-surface-container-lowest text-secondary">
+<span class="text-secondary/70 mr-1.5">Component:</span>
+<select class="bg-transparent text-on-surface font-medium focus:ring-0 border-none p-0 text-code-xs font-code-xs cursor-pointer">
+<option>All Services</option>
+<option>Anthropic API</option>
+<option>Gotenberg PDF</option>
+<option>Redis Queue</option>
+<option>Postgres Ingestion</option>
+</select>
+</div>
+<!-- Action: Clear / Export -->
+<button class="h-7 px-2.5 bg-surface-container-lowest border border-outline-variant/40 hover:bg-[#F1F4F7] text-secondary hover:text-on-surface rounded text-code-xs font-code-xs flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[13px]">file_download</span>
+<span>Export CSV</span>
+</button>
+</div>
+</div>
+<!-- High Density Data Table for Logs -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#F1F4F7] text-secondary text-label-md font-label-md border-b border-outline-variant/30 uppercase tracking-wider h-8">
+<th class="px-4 font-medium w-32">Timestamp</th>
+<th class="px-2.5 font-medium w-24">Severity</th>
+<th class="px-2.5 font-medium w-36">Service / Source</th>
+<th class="px-3.5 font-medium">Diagnostic Error Trace &amp; Monospace Context</th>
+<th class="px-4 font-medium text-right w-44">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20 text-body-sm font-body-sm text-on-surface">
+<!-- Log Item 1: CRITICAL -->
+<tr class="hover:bg-[#FDF2F2]/30 transition-colors">
+<td class="px-4 text-code-xs font-code-xs text-secondary whitespace-nowrap tabular-nums">
+                  14:38:12.804
+                </td>
+<td class="px-2.5 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold font-mono bg-error-container text-on-error-container border border-error/20">
+                    CRITICAL
+                  </span>
+</td>
+<td class="px-2.5 whitespace-nowrap">
+<span class="text-code-xs font-code-xs text-on-surface font-semibold bg-surface-container px-1.5 py-0.5 rounded">
+                    Anthropic API
+                  </span>
+</td>
+<td class="px-3.5 py-2">
+<div class="flex flex-col space-y-0.5">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">Rate limit breached: HTTP 429 Too Many Requests</span>
+<span class="text-code-xs font-code-xs text-error font-mono truncate max-w-[620px]">
+                      tokens_per_minute_exceeded (current: 184,200 TPM, tier limit: 160,000 TPM) in CV_Batch_Summarizer_Worker
+                    </span>
+</div>
+</td>
+<td class="px-4 text-right whitespace-nowrap text-code-xs font-code-xs">
+<a class="text-primary hover:text-primary-container font-semibold mr-2 transition-colors" href="#">Investigate trace</a>
+<button class="text-secondary hover:text-on-surface transition-colors" title="Copy Error ID #ERR-9941">Copy ID</button>
+</td>
+</tr>
+<!-- Log Item 2: WARNING -->
+<tr class="hover:bg-amber-50/30 transition-colors">
+<td class="px-4 text-code-xs font-code-xs text-secondary whitespace-nowrap tabular-nums">
+                  14:36:51.119
+                </td>
+<td class="px-2.5 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold font-mono bg-amber-100 text-amber-900 border border-amber-300">
+                    WARNING
+                  </span>
+</td>
+<td class="px-2.5 whitespace-nowrap">
+<span class="text-code-xs font-code-xs text-on-surface font-semibold bg-surface-container px-1.5 py-0.5 rounded">
+                    Gotenberg PDF
+                  </span>
+</td>
+<td class="px-3.5 py-2">
+<div class="flex flex-col space-y-0.5">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">High render latency: XeLaTeX execution threshold exceeded</span>
+<span class="text-code-xs font-code-xs text-amber-900 font-mono truncate max-w-[620px]">
+                      latexmk run duration 14.8s (p99 threshold is 8.0s) | template: 'dubai_executive_bilingual_v2.tex'
+                    </span>
+</div>
+</td>
+<td class="px-4 text-right whitespace-nowrap text-code-xs font-code-xs">
+<a class="text-primary hover:text-primary-container font-semibold mr-2 transition-colors" href="#">Investigate trace</a>
+<button class="text-secondary hover:text-on-surface transition-colors">Copy ID</button>
+</td>
+</tr>
+<!-- Log Item 3: CRITICAL -->
+<tr class="hover:bg-[#FDF2F2]/30 transition-colors">
+<td class="px-4 text-code-xs font-code-xs text-secondary whitespace-nowrap tabular-nums">
+                  14:31:04.492
+                </td>
+<td class="px-2.5 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold font-mono bg-error-container text-on-error-container border border-error/20">
+                    CRITICAL
+                  </span>
+</td>
+<td class="px-2.5 whitespace-nowrap">
+<span class="text-code-xs font-code-xs text-on-surface font-semibold bg-surface-container px-1.5 py-0.5 rounded">
+                    Redis Queue
+                  </span>
+</td>
+<td class="px-3.5 py-2">
+<div class="flex flex-col space-y-0.5">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">Dead letter overflow: Unhandled retry limits exhausted</span>
+<span class="text-code-xs font-code-xs text-error font-mono truncate max-w-[620px]">
+                      ParseArabicCVWorker failed after 5 max_retries. Payloads moved to queue:dead_letter_vault
+                    </span>
+</div>
+</td>
+<td class="px-4 text-right whitespace-nowrap text-code-xs font-code-xs">
+<a class="text-primary hover:text-primary-container font-semibold mr-2 transition-colors" href="#">Investigate trace</a>
+<button class="text-secondary hover:text-on-surface transition-colors">Copy ID</button>
+</td>
+</tr>
+<!-- Log Item 4: WARNING -->
+<tr class="hover:bg-amber-50/30 transition-colors">
+<td class="px-4 text-code-xs font-code-xs text-secondary whitespace-nowrap tabular-nums">
+                  14:28:44.208
+                </td>
+<td class="px-2.5 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold font-mono bg-amber-100 text-amber-900 border border-amber-300">
+                    WARNING
+                  </span>
+</td>
+<td class="px-2.5 whitespace-nowrap">
+<span class="text-code-xs font-code-xs text-on-surface font-semibold bg-surface-container px-1.5 py-0.5 rounded">
+                    Postgres Ingestion
+                  </span>
+</td>
+<td class="px-3.5 py-2">
+<div class="flex flex-col space-y-0.5">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">Connection pool utilization spike (88% of max pool)</span>
+<span class="text-code-xs font-code-xs text-amber-900 font-mono truncate max-w-[620px]">
+                      active_connections=176 / max_connections=200 | read_replica_lag=42ms
+                    </span>
+</div>
+</td>
+<td class="px-4 text-right whitespace-nowrap text-code-xs font-code-xs">
+<a class="text-primary hover:text-primary-container font-semibold mr-2 transition-colors" href="#">Investigate trace</a>
+<button class="text-secondary hover:text-on-surface transition-colors">Copy ID</button>
+</td>
+</tr>
+<!-- Log Item 5: INFO -->
+<tr class="hover:bg-[#E6F7F5]/20 transition-colors">
+<td class="px-4 text-code-xs font-code-xs text-secondary whitespace-nowrap tabular-nums">
+                  14:24:19.002
+                </td>
+<td class="px-2.5 whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-bold font-mono bg-[#EFF4FF] text-secondary border border-outline-variant/30">
+                    INFO
+                  </span>
+</td>
+<td class="px-2.5 whitespace-nowrap">
+<span class="text-code-xs font-code-xs text-on-surface font-semibold bg-surface-container px-1.5 py-0.5 rounded">
+                    Postgres Ingestion
+                  </span>
+</td>
+<td class="px-3.5 py-2">
+<div class="flex flex-col space-y-0.5">
+<span class="text-body-sm font-body-sm font-medium text-on-surface">Auto-vacuum completed on table `parsed_candidate_entities`</span>
+<span class="text-code-xs font-code-xs text-secondary font-mono truncate max-w-[620px]">
+                      reclaimed 42.1 MB in 890ms | zero lock contention on write pipeline
+                    </span>
+</div>
+</td>
+<td class="px-4 text-right whitespace-nowrap text-code-xs font-code-xs">
+<a class="text-primary hover:text-primary-container font-semibold mr-2 transition-colors" href="#">Investigate trace</a>
+<button class="text-secondary hover:text-on-surface transition-colors">Copy ID</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Terminal Log Footer -->
+<div class="p-3 bg-[#F8F9FF] border-t border-outline-variant/30 flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span>Telemetry buffer: 12,490 events buffered (retention 7d)</span>
+</div>
+<span class="font-mono">Cluster: me-central-1 (UAE North DC-2)</span>
+</div>
+</section>
+</main>
+</div>
+</body></html>

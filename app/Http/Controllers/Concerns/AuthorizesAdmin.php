@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
- * Same rule as AdminController::authorizeAdmin: the signed-in email must be in ADMIN_EMAILS, and an
- * empty ADMIN_EMAILS only opens the panel in local/testing (fails closed everywhere else).
+ * Admin gate shared by every admin controller.
+ *
+ * ADMIN_EMAILS lists the accounts allowed in. Outside local/testing an empty
+ * list fails closed (AGENTS.md rule 7): nobody gets in until it is set.
  */
 trait AuthorizesAdmin
 {

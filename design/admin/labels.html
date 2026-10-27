@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Siratie Admin - Labels Localization Editor</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: IBM Plex Sans & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-high": "#dce9ff",
+            "on-primary": "#ffffff",
+            "secondary-container": "#d2dcfd",
+            "on-error": "#ffffff",
+            "inverse-on-surface": "#eaf1ff",
+            "secondary-fixed-dim": "#bbc6e6",
+            "inverse-primary": "#53dbcd",
+            "surface-dim": "#cbdbf6",
+            "primary": "#006a62",
+            "on-tertiary": "#ffffff",
+            "error-container": "#ffdad6",
+            "surface-container-highest": "#d3e4ff",
+            "on-tertiary-container": "#003e3a",
+            "tertiary-fixed-dim": "#6fd8cd",
+            "on-secondary-fixed-variant": "#3c4661",
+            "on-primary-fixed": "#00201d",
+            "secondary": "#545e79",
+            "surface-variant": "#d3e4ff",
+            "tertiary": "#006a63",
+            "on-tertiary-fixed": "#00201d",
+            "on-secondary-fixed": "#101b33",
+            "background": "#f8f9ff",
+            "surface-tint": "#006a62",
+            "on-secondary": "#ffffff",
+            "tertiary-container": "#43b0a6",
+            "surface-bright": "#f8f9ff",
+            "inverse-surface": "#213146",
+            "secondary-fixed": "#d9e2ff",
+            "on-surface-variant": "#3c4947",
+            "surface-container": "#e6eeff",
+            "on-surface": "#0b1c30",
+            "primary-fixed-dim": "#53dbcd",
+            "primary-fixed": "#74f7e9",
+            "error": "#ba1a1a",
+            "surface-container-low": "#eff4ff",
+            "surface-container-lowest": "#ffffff",
+            "outline": "#6c7a77",
+            "outline-variant": "#bbc9c6",
+            "on-error-container": "#93000a",
+            "on-primary-fixed-variant": "#00504a",
+            "on-secondary-container": "#56607c",
+            "on-primary-container": "#003e39",
+            "on-tertiary-fixed-variant": "#00504b",
+            "on-background": "#0b1c30",
+            "primary-container": "#12b3a6",
+            "surface": "#f8f9ff",
+            "tertiary-fixed": "#8cf4e9"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "space-md": "0.75rem",
+            "space-sm": "0.5rem",
+            "margin": "1.5rem",
+            "space-xl": "1.5rem",
+            "space-lg": "1rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "headline-md": ["IBM Plex Sans", "sans-serif"],
+            "display-kpi": ["IBM Plex Sans", "sans-serif"],
+            "headline-sm": ["IBM Plex Sans", "sans-serif"],
+            "body-sm": ["IBM Plex Sans", "sans-serif"],
+            "body-md": ["IBM Plex Sans", "sans-serif"],
+            "label-md": ["IBM Plex Sans", "sans-serif"],
+            "code-xs": ["JetBrains Mono", "monospace"],
+            "code-sm": ["JetBrains Mono", "monospace"],
+            "headline-lg": ["IBM Plex Sans", "sans-serif"]
+          },
+          "fontSize": {
+            "headline-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "display-kpi": ["32px", { "lineHeight": "38px", "fontWeight": "600" }],
+            "headline-sm": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "label-md": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "code-xs": ["10px", { "lineHeight": "12px", "fontWeight": "400" }],
+            "code-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "headline-lg": ["22px", { "lineHeight": "28px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    /* Custom scrollbars for high-density terminal feel */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(16, 27, 51, 0.03);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #bbc9c6;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6c7a77;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-sm antialiased selection:bg-primary-container selection:text-on-primary min-h-screen flex">
+<!-- Left Sidebar (SideNavBar Anchor from Shared JSON) -->
+<aside class="fixed top-0 left-0 w-60 h-screen flex flex-col justify-between p-3 select-none bg-on-secondary-fixed z-30 border-r border-outline-variant/20">
+<!-- Top Brand & Nav Cluster -->
+<div class="flex flex-col gap-4">
+<!-- Header / Logo -->
+<div class="flex items-center gap-3 px-2 py-1.5 border-b border-outline-variant/10 pb-3">
+<div class="w-7 h-7 rounded bg-primary-container flex items-center justify-center text-on-primary shadow-sm font-code-sm text-code-sm font-bold">
+          S
+        </div>
+<div class="flex flex-col">
+<span class="text-headline-sm font-headline-sm text-on-secondary tracking-tight">Siratie Admin</span>
+<span class="text-code-xs font-code-xs text-secondary-fixed-dim/80">GCC ATS Core Engine</span>
+</div>
+</div>
+<!-- Navigation Hierarchy -->
+<nav class="flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-140px)] pr-1">
+<!-- Group: MONITOR -->
+<div class="flex flex-col gap-1">
+<span class="px-3 text-code-xs font-code-xs text-secondary-fixed-dim/50 tracking-wider">MONITOR</span>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">dashboard</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">monitor_heart</span>
+<span>System health</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">group</span>
+<span>Users</span>
+</a>
+</div>
+<!-- Group: CONTENT -->
+<div class="flex flex-col gap-1">
+<span class="px-3 text-code-xs font-code-xs text-secondary-fixed-dim/50 tracking-wider">CONTENT</span>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">description</span>
+<span>CV templates</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">school</span>
+<span>Education</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">work</span>
+<span>Jobs</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">notifications</span>
+<span>Notifications</span>
+</a>
+</div>
+<!-- Group: LOCALIZATION -->
+<div class="flex flex-col gap-1">
+<span class="px-3 text-code-xs font-code-xs text-secondary-fixed-dim/50 tracking-wider">LOCALIZATION</span>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">translate</span>
+<span>Languages</span>
+</a>
+<!-- ACTIVE TAB: Labels (Exact matching rule per JSON style_active_navigation) -->
+<a class="flex items-center gap-3 px-3 py-1.5 bg-on-secondary-fixed-variant text-primary-fixed font-medium rounded text-body-sm font-body-sm border-l-2 border-primary-container" href="#">
+<span class="material-symbols-outlined text-primary-container">label</span>
+<span>Labels</span>
+</a>
+</div>
+<!-- Group: GROWTH -->
+<div class="flex flex-col gap-1">
+<span class="px-3 text-code-xs font-code-xs text-secondary-fixed-dim/50 tracking-wider">GROWTH</span>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">filter_alt</span>
+<span>Leads</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">analytics</span>
+<span>CV analyses</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">auto_awesome</span>
+<span>Generated CVs</span>
+</a>
+</div>
+</nav>
+</div>
+<!-- Footer Controls -->
+<div class="pt-2 border-t border-outline-variant/10 flex flex-col gap-1">
+<a class="flex items-center justify-between px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/40" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-secondary-fixed-dim">open_in_new</span>
+<span>View site</span>
+</div>
+<span class="text-code-xs font-code-xs text-secondary-fixed-dim/40">siratie.ai</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/40" href="#">
+<span class="material-symbols-outlined text-secondary-fixed-dim">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Canvas Container -->
+<div class="ml-60 flex-1 flex flex-col min-w-0 bg-background">
+<!-- Top Operational Header Bar -->
+<header class="h-12 bg-surface-container-lowest border-b border-outline-variant/20 sticky top-0 z-20 flex items-center justify-between px-6">
+<!-- Left: Breadcrumb / Meta Context -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 text-secondary text-body-sm font-body-sm">
+<span>Localization</span>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface font-headline-sm text-headline-sm">Labels Editor</span>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant/30"></div>
+<!-- Target Badge Indicator -->
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container text-on-surface text-code-xs font-code-xs border border-outline-variant/20">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span>fr-FR / French</span>
+</div>
+<div class="flex items-center gap-1 text-secondary text-code-xs font-code-xs">
+<span class="material-symbols-outlined text-[13px] text-primary-container">sync</span>
+<span>Last auto-synced 3m ago</span>
+</div>
+</div>
+<!-- Right: Global Actions & Language Switchers -->
+<div class="flex items-center gap-2.5">
+<!-- Base Language Select Trigger -->
+<div class="flex items-center gap-1.5 px-2.5 h-8 bg-surface-container-low border border-outline-variant/30 rounded text-body-sm font-body-sm text-secondary cursor-pointer hover:bg-surface-container transition-colors">
+<span class="text-code-xs font-code-xs text-on-surface-variant font-medium">Base:</span>
+<span class="text-on-surface text-code-sm font-code-sm">English (en-US)</span>
+</div>
+<span class="material-symbols-outlined text-outline">swap_horiz</span>
+<!-- Target Language Dropdown Selector -->
+<div class="flex items-center gap-1.5 px-2.5 h-8 bg-surface-container-lowest border border-outline-variant rounded text-body-sm font-body-sm text-on-surface cursor-pointer hover:border-primary-container transition-colors shadow-sm">
+<span class="px-1 py-0.2 rounded bg-surface-container text-[10px] font-code-xs font-bold text-on-surface-variant">FR</span>
+<span class="font-medium text-code-sm font-code-sm">Target: Français (fr)</span>
+<span class="material-symbols-outlined text-[15px] text-secondary">arrow_drop_down</span>
+</div>
+<div class="h-4 w-[1px] bg-outline-variant/30 mx-1"></div>
+<!-- Import / Export Actions -->
+<button class="h-8 px-2.5 bg-surface-container-lowest border border-outline-variant rounded text-on-surface text-body-sm font-body-sm hover:bg-surface-container-low flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-secondary">file_download</span>
+<span>Import (ARB/CSV)</span>
+</button>
+<button class="h-8 px-2.5 bg-surface-container-lowest border border-outline-variant rounded text-on-surface text-body-sm font-body-sm hover:bg-surface-container-low flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-secondary">file_upload</span>
+<span>Export</span>
+<span class="material-symbols-outlined text-[15px] text-secondary">arrow_drop_down</span>
+</button>
+<!-- Publish Primary Action -->
+<button class="h-8 px-3.5 bg-primary-container hover:bg-primary text-on-primary rounded text-body-sm font-body-sm font-medium flex items-center gap-1.5 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-on-primary text-[15px]">cloud_upload</span>
+<span>Publish 14 changes</span>
+</button>
+</div>
+</header>
+<!-- Sub-Filter & Query Toolbar -->
+<div class="bg-surface-container-lowest border-b border-outline-variant/20 px-6 py-2 flex items-center justify-between gap-4">
+<!-- Search Input Field -->
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-secondary text-[16px]">search</span>
+<input class="w-full h-8 pl-8 pr-3 bg-surface-container-lowest border border-outline-variant rounded text-on-surface placeholder:text-secondary/60 text-body-sm font-body-sm focus:outline-none focus:ring-1 focus:ring-primary-container focus:border-primary-container" placeholder="Search key, string or placeholder..." type="text" value=""/>
+<span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-code-xs font-code-xs text-secondary/60 bg-surface-container px-1 rounded">⌘K</span>
+</div>
+<!-- Filter Chips -->
+<div class="flex items-center gap-1.5 overflow-x-auto">
+<button class="h-7 px-2.5 rounded bg-surface-container text-on-surface text-label-md font-label-md font-medium flex items-center gap-1 border border-outline-variant/30">
+<span>All</span>
+<span class="text-code-xs font-code-xs text-secondary font-semibold">580</span>
+</button>
+<button class="h-7 px-2.5 rounded bg-surface-container-lowest text-secondary hover:text-on-surface hover:bg-surface-container text-label-md font-label-md flex items-center gap-1 border border-outline-variant/30">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span>Missing</span>
+<span class="text-code-xs font-code-xs text-error font-medium">218</span>
+</button>
+<button class="h-7 px-2.5 rounded bg-surface-container-lowest text-secondary hover:text-on-surface hover:bg-surface-container text-label-md font-label-md flex items-center gap-1 border border-outline-variant/30">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+<span>Drafts</span>
+<span class="text-code-xs font-code-xs text-amber-700 font-medium">14</span>
+</button>
+<button class="h-7 px-2.5 rounded bg-surface-container-lowest text-secondary hover:text-on-surface hover:bg-surface-container text-label-md font-label-md flex items-center gap-1 border border-outline-variant/30">
+<span>With placeholders</span>
+<span class="text-code-xs font-code-xs text-secondary font-medium">36</span>
+</button>
+<button class="h-7 px-2.5 rounded bg-surface-container-lowest text-secondary hover:text-on-surface hover:bg-surface-container text-label-md font-label-md flex items-center gap-1 border border-outline-variant/30">
+<span>Needs review</span>
+<span class="text-code-xs font-code-xs text-primary-container font-medium">8</span>
+</button>
+</div>
+<!-- Quick Actions / Meta toggle -->
+<div class="flex items-center gap-2 text-secondary text-body-sm font-body-sm">
+<label class="flex items-center gap-1.5 cursor-pointer text-code-xs font-code-xs">
+<input checked="" class="rounded border-outline-variant text-primary-container focus:ring-0 w-3.5 h-3.5" type="checkbox"/>
+<span>Show ICU syntax</span>
+</label>
+<span class="text-outline-variant">|</span>
+<button class="hover:text-on-surface flex items-center gap-0.5 text-code-xs font-code-xs">
+<span class="material-symbols-outlined text-[15px]">unfold_less</span>
+<span>Collapse all</span>
+</button>
+</div>
+</div>
+<!-- Main Editor Content Workspace (70% Editor + 30% Sticky Preview / Health panel) -->
+<main class="flex-1 p-6 flex gap-6 max-w-[1600px] w-full mx-auto">
+<!-- Left Column: Translation Editor Canvas (70%) -->
+<div class="flex-1 flex flex-col gap-6 min-w-0">
+<!-- ================= Namespace Section 1: auth ================= -->
+<section class="bg-surface-container-lowest rounded-lg border border-outline-variant/30 overflow-hidden shadow-sm">
+<!-- Namespace Header -->
+<div class="px-4 py-2.5 bg-surface-container-low border-b border-outline-variant/20 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[16px]">folder_open</span>
+<span class="font-code-sm text-code-sm font-semibold text-on-surface tracking-tight">auth</span>
+<span class="text-code-xs font-code-xs text-secondary bg-surface-container px-2 py-0.5 rounded-full border border-outline-variant/20">
+                18 keys • 2 drafts
+              </span>
+</div>
+<div class="flex items-center gap-2">
+<button class="text-code-xs font-code-xs text-primary-container hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">auto_fix_high</span>
+<span>Batch translate namespace</span>
+</button>
+</div>
+</div>
+<!-- Entries Container -->
+<div class="divide-y divide-outline-variant/15">
+<!-- Row 1: auth.welcomeBack -->
+<div class="p-4 flex flex-col gap-2 hover:bg-surface-container-lowest/70 transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface">auth.welcomeBack</span>
+<span class="px-1.5 py-0.2 bg-amber-50 text-amber-700 border border-amber-200 rounded text-code-xs font-code-xs font-medium">Draft</span>
+</div>
+<div class="flex items-center gap-2 text-code-xs font-code-xs text-secondary">
+<span class="material-symbols-outlined text-[14px]">history</span>
+<span>Edited 12m ago</span>
+<button class="p-1 hover:text-on-surface"><span class="material-symbols-outlined text-[15px]">more_horiz</span></button>
+</div>
+</div>
+<p class="text-code-xs font-code-xs text-secondary -mt-1">Title on modal login screen for returning GCC candidates</p>
+<!-- Translation Split View Grid -->
+<div class="grid grid-cols-2 gap-3 mt-1">
+<!-- Base English -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<span>Base (en-US)</span>
+<button class="hover:text-primary-container flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">content_copy</span>
+<span>Copy</span>
+</button>
+</div>
+<div class="p-2.5 bg-surface-container-low rounded border border-outline-variant/20 text-body-sm font-body-sm text-on-surface-variant select-all">
+                    Welcome back! Enter your phone or email to continue.
+                  </div>
+</div>
+<!-- Target French (Draft) -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<span class="text-on-surface font-medium">Target (fr)</span>
+<span class="text-amber-700">Unsaved local draft</span>
+</div>
+<textarea class="w-full p-2.5 bg-surface-container-lowest rounded border border-outline-variant text-body-sm font-body-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-primary-container focus:border-primary-container resize-none" rows="2">Bon retour ! Entrez votre numéro ou e-mail pour continuer.</textarea>
+</div>
+</div>
+</div>
+<!-- Row 2: auth.otpResendNotice -->
+<div class="p-4 flex flex-col gap-2 hover:bg-surface-container-lowest/70 transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface">auth.otpResendNotice</span>
+<span class="px-1.5 py-0.2 bg-teal-50 text-teal-700 border border-teal-200 rounded text-code-xs font-code-xs font-medium">Live</span>
+</div>
+<div class="flex items-center gap-2 text-code-xs font-code-xs text-secondary">
+<span>Synced in v2.4.1</span>
+<button class="p-1 hover:text-on-surface"><span class="material-symbols-outlined text-[15px]">more_horiz</span></button>
+</div>
+</div>
+<p class="text-code-xs font-code-xs text-secondary -mt-1">SMS cooldown timer label</p>
+<!-- Translation Split View Grid -->
+<div class="grid grid-cols-2 gap-3 mt-1">
+<!-- Base English -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<span>Base (en-US)</span>
+</div>
+<div class="p-2.5 bg-surface-container-low rounded border border-outline-variant/20 text-body-sm font-body-sm text-on-surface-variant font-mono text-[11px]">
+                    Resend verification code in {seconds}s
+                  </div>
+</div>
+<!-- Target French -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<span class="text-on-surface font-medium">Target (fr)</span>
+<span class="text-teal-700">ICU Verified</span>
+</div>
+<textarea class="w-full p-2.5 bg-surface-container-lowest rounded border border-outline-variant text-body-sm font-body-sm text-on-surface font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-primary-container focus:border-primary-container resize-none" rows="2">Renvoyer le code dans {seconds}s</textarea>
+<!-- Placeholders chips -->
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="text-code-xs font-code-xs text-secondary">Placeholders:</span>
+<button class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200 text-code-xs font-code-xs font-mono hover:bg-teal-100">
+                      {seconds}
+                      <span class="material-symbols-outlined text-[11px] ml-1">check</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Row 3: auth.missingKeyError (Missing Translation) -->
+<div class="p-4 flex flex-col gap-2 bg-red-50/15 border-l-2 border-red-500">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface">auth.missingKeyError</span>
+<span class="px-1.5 py-0.2 bg-red-50 text-red-700 border border-red-200 rounded text-code-xs font-code-xs font-medium">Missing</span>
+</div>
+<div class="flex items-center gap-2 text-code-xs font-code-xs text-secondary">
+<span class="text-red-700 font-medium">Blocks Release</span>
+<button class="p-1 hover:text-on-surface"><span class="material-symbols-outlined text-[15px]">more_horiz</span></button>
+</div>
+</div>
+<p class="text-code-xs font-code-xs text-secondary -mt-1">Validation alert thrown on identity gateway rejection</p>
+<!-- Translation Split View Grid -->
+<div class="grid grid-cols-2 gap-3 mt-1">
+<!-- Base English -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<span>Base (en-US)</span>
+</div>
+<div class="p-2.5 bg-surface-container-low rounded border border-outline-variant/20 text-body-sm font-body-sm text-on-surface-variant">
+                    Invalid credentials. Please verify your national ID.
+                  </div>
+</div>
+<!-- Target French (Missing state) -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<span class="text-red-700 font-medium">Target (fr) - Action required</span>
+<button class="text-primary-container hover:text-primary flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-[13px]">bolt</span>
+<span>Auto-translate (Claude 3.5)</span>
+</button>
+</div>
+<div class="relative">
+<textarea class="w-full p-2.5 bg-surface-container-lowest rounded border border-red-200 text-body-sm font-body-sm text-red-700 placeholder:text-red-400 placeholder:italic focus:outline-none focus:ring-1 focus:ring-red-400 focus:border-red-400 resize-none" placeholder="[Missing translation - click to translate with AI]" rows="2"></textarea>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= Namespace Section 2: home ================= -->
+<section class="bg-surface-container-lowest rounded-lg border border-outline-variant/30 overflow-hidden shadow-sm">
+<!-- Namespace Header -->
+<div class="px-4 py-2.5 bg-surface-container-low border-b border-outline-variant/20 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[16px]">folder_open</span>
+<span class="font-code-sm text-code-sm font-semibold text-on-surface tracking-tight">home</span>
+<span class="text-code-xs font-code-xs text-secondary bg-surface-container px-2 py-0.5 rounded-full border border-outline-variant/20">
+                34 keys • 1 error, 5 drafts
+              </span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-code-xs font-code-xs text-red-700 font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">error</span>
+<span>1 syntax violation</span>
+</span>
+</div>
+</div>
+<!-- Entries Container -->
+<div class="divide-y divide-outline-variant/15">
+<!-- Row 4: home.greeting (ValidationError row) -->
+<div class="p-4 flex flex-col gap-2 bg-red-50/10 border-l-2 border-amber-500">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface">home.greeting</span>
+<span class="px-1.5 py-0.2 bg-amber-50 text-amber-800 border border-amber-200 rounded text-code-xs font-code-xs font-medium">Draft • Error</span>
+</div>
+<div class="flex items-center gap-2 text-code-xs font-code-xs text-secondary">
+<span>Candidate Portal Dashboard</span>
+<button class="p-1 hover:text-on-surface"><span class="material-symbols-outlined text-[15px]">more_horiz</span></button>
+</div>
+</div>
+<p class="text-code-xs font-code-xs text-secondary -mt-1">Primary hero greeting on jobseeker dashboard</p>
+<!-- Translation Split View Grid -->
+<div class="grid grid-cols-2 gap-3 mt-1">
+<!-- Base English -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<span>Base (en-US)</span>
+</div>
+<div class="p-2.5 bg-surface-container-low rounded border border-outline-variant/20 text-body-sm font-body-sm text-on-surface-variant font-mono text-[11px]">
+                    Hello, {name}! You have {count} GCC job recommendations today.
+                  </div>
+</div>
+<!-- Target French (Missing {count} placeholder error) -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<span class="text-on-surface font-medium">Target (fr)</span>
+<span class="text-red-700 font-code-xs">Missing token</span>
+</div>
+<textarea class="w-full p-2.5 bg-surface-container-lowest rounded border border-red-300 text-body-sm font-body-sm text-on-surface font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-red-400 focus:border-red-400 resize-none" rows="2">Bonjour {name} ! Vous avez de nouvelles offres aujourd'hui.</textarea>
+<!-- Placeholders chips -->
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="text-code-xs font-code-xs text-secondary">Tokens:</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200 text-code-xs font-code-xs font-mono">
+                      {name} <span class="material-symbols-outlined text-[11px] ml-0.5">check</span>
+</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-red-100 text-red-800 border border-red-300 text-code-xs font-code-xs font-mono">
+                      {count} <span class="material-symbols-outlined text-[11px] ml-0.5">close</span>
+</span>
+<button class="text-code-xs font-code-xs text-primary-container hover:underline ml-1">+ Insert {count}</button>
+</div>
+<!-- Inline Validation Alert Box -->
+<div class="mt-1 px-2.5 py-1.5 bg-red-50 border border-red-200 rounded flex items-center gap-2 text-code-xs font-code-xs text-red-700">
+<span class="material-symbols-outlined text-[15px] text-red-600">warning</span>
+<span>Validation Error: Missing required placeholder <code class="font-bold">{count}</code> in target string. ATS parser will fail on render.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Row 5: home.atsScoreBadge -->
+<div class="p-4 flex flex-col gap-2 hover:bg-surface-container-lowest/70 transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface">home.atsScoreBadge</span>
+<span class="px-1.5 py-0.2 bg-teal-50 text-teal-700 border border-teal-200 rounded text-code-xs font-code-xs font-medium">Live</span>
+</div>
+<div class="flex items-center gap-2 text-code-xs font-code-xs text-secondary">
+<span>Audit Pass</span>
+<button class="p-1 hover:text-on-surface"><span class="material-symbols-outlined text-[15px]">more_horiz</span></button>
+</div>
+</div>
+<p class="text-code-xs font-code-xs text-secondary -mt-1">Card label for resume parser match score</p>
+<!-- Translation Split View Grid -->
+<div class="grid grid-cols-2 gap-3 mt-1">
+<!-- Base English -->
+<div class="flex flex-col gap-1">
+<div class="p-2.5 bg-surface-container-low rounded border border-outline-variant/20 text-body-sm font-body-sm text-on-surface-variant font-mono text-[11px]">
+                    ATS Match: {score}% Gulf Compliant
+                  </div>
+</div>
+<!-- Target French -->
+<div class="flex flex-col gap-1">
+<textarea class="w-full p-2.5 bg-surface-container-lowest rounded border border-outline-variant text-body-sm font-body-sm text-on-surface font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-primary-container focus:border-primary-container resize-none" rows="2">Score ATS : {score}% Conforme Golfe</textarea>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="text-code-xs font-code-xs text-secondary">Placeholders:</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200 text-code-xs font-code-xs font-mono">
+                      {score} <span class="material-symbols-outlined text-[11px] ml-0.5">check</span>
+</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= Namespace Section 3: cv (RTL Demonstration) ================= -->
+<section class="bg-surface-container-lowest rounded-lg border border-outline-variant/30 overflow-hidden shadow-sm">
+<!-- Namespace Header -->
+<div class="px-4 py-2.5 bg-surface-container-low border-b border-outline-variant/20 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[16px]">folder_open</span>
+<span class="font-code-sm text-code-sm font-semibold text-on-surface tracking-tight">cv</span>
+<span class="text-code-xs font-code-xs text-secondary bg-surface-container px-2 py-0.5 rounded-full border border-outline-variant/20">
+                62 keys • 1 Arabic RTL sample
+              </span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-code-xs font-code-xs text-secondary">Includes KSA &amp; UAE Formats</span>
+</div>
+</div>
+<!-- Entries Container -->
+<div class="divide-y divide-outline-variant/15">
+<!-- Row 6: cv.exportSuccess -->
+<div class="p-4 flex flex-col gap-2 hover:bg-surface-container-lowest/70 transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface">cv.exportSuccess</span>
+<span class="px-1.5 py-0.2 bg-amber-50 text-amber-700 border border-amber-200 rounded text-code-xs font-code-xs font-medium">Draft</span>
+</div>
+<div class="flex items-center gap-2 text-code-xs font-code-xs text-secondary">
+<span>Toast alert notification</span>
+</div>
+</div>
+<p class="text-code-xs font-code-xs text-secondary -mt-1">Toast on PDF generation completion</p>
+<div class="grid grid-cols-2 gap-3 mt-1">
+<!-- Base English -->
+<div class="flex flex-col gap-1">
+<div class="p-2.5 bg-surface-container-low rounded border border-outline-variant/20 text-body-sm font-body-sm text-on-surface-variant font-mono text-[11px]">
+                    Your Gulf-format CV is ready for download in {format}.
+                  </div>
+</div>
+<!-- Target French -->
+<div class="flex flex-col gap-1">
+<textarea class="w-full p-2.5 bg-surface-container-lowest rounded border border-outline-variant text-body-sm font-body-sm text-on-surface font-mono text-[11px] focus:outline-none focus:ring-1 focus:ring-primary-container focus:border-primary-container resize-none" rows="2">Votre CV au format Golfe est prêt au téléchargement en {format}.</textarea>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="text-code-xs font-code-xs text-secondary">Placeholders:</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200 text-code-xs font-code-xs font-mono">
+                      {format} <span class="material-symbols-outlined text-[11px] ml-0.5">check</span>
+</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Row 7: cv.arabicHeaderSection (Bilingual Arabic RTL Demonstration) -->
+<div class="p-4 flex flex-col gap-2 hover:bg-surface-container-lowest/70 transition-colors bg-surface-container-low/20">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm font-semibold text-on-surface">cv.arabicHeaderSection</span>
+<span class="px-1.5 py-0.2 bg-teal-50 text-teal-700 border border-teal-200 rounded text-code-xs font-code-xs font-medium">Live</span>
+<span class="px-1.5 py-0.2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded text-code-xs font-code-xs font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">format_textdirection_r_to_l</span>
+<span>RTL - ar-SA</span>
+</span>
+</div>
+<div class="flex items-center gap-2 text-code-xs font-code-xs text-secondary">
+<span>Arabic Portal Alignment</span>
+</div>
+</div>
+<p class="text-code-xs font-code-xs text-secondary -mt-1">Bilingual ATS resume header block for KSA/UAE portals</p>
+<div class="grid grid-cols-2 gap-3 mt-1">
+<!-- Base English -->
+<div class="flex flex-col gap-1">
+<div class="text-code-xs font-code-xs text-secondary">Base (en-US)</div>
+<div class="p-2.5 bg-surface-container-low rounded border border-outline-variant/20 text-body-sm font-body-sm text-on-surface-variant font-medium">
+                    Experience &amp; GCC Certifications
+                  </div>
+</div>
+<!-- Target Arabic RTL Demonstration -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<span class="text-indigo-900 font-medium">Arabic Bilingual Target (ar)</span>
+<span class="text-code-xs font-code-xs text-secondary">BiDi Verified</span>
+</div>
+<textarea class="w-full p-2.5 bg-surface-container-lowest rounded border border-outline-variant text-body-sm font-body-sm text-on-surface text-right focus:outline-none focus:ring-1 focus:ring-primary-container focus:border-primary-container resize-none" dir="rtl" rows="2">الخبرات المهنية والشهادات المعتمدة في دول الخليج</textarea>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= Namespace Section 4: settings (Collapsed) ================= -->
+<section class="bg-surface-container-lowest rounded-lg border border-outline-variant/30 overflow-hidden shadow-sm">
+<div class="px-4 py-2.5 bg-surface-container-low flex items-center justify-between cursor-pointer hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[16px]">folder</span>
+<span class="font-code-sm text-code-sm font-semibold text-on-surface tracking-tight">settings</span>
+<span class="text-code-xs font-code-xs text-secondary bg-surface-container px-2 py-0.5 rounded-full border border-outline-variant/20">
+                22 keys • all in sync
+              </span>
+</div>
+<div class="flex items-center gap-2 text-secondary">
+<span class="text-code-xs font-code-xs">100% Translated</span>
+<span class="material-symbols-outlined text-[16px]">expand_more</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Sticky Localization Health & Live Preview Panel (30%) -->
+<aside class="w-[380px] shrink-0 flex flex-col gap-5 sticky top-16 self-start">
+<!-- Card 1: Language Health & Coverage -->
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/30 p-4 shadow-sm flex flex-col gap-3.5">
+<div class="flex items-center justify-between border-b border-outline-variant/15 pb-2.5">
+<div class="flex items-center gap-2">
+<span class="text-headline-sm font-headline-sm text-on-surface">French (fr) Status</span>
+<span class="px-1.5 py-0.5 bg-surface-container text-on-surface-variant rounded text-code-xs font-code-xs">v2.4</span>
+</div>
+<span class="text-headline-sm font-headline-sm text-primary-container font-mono">62.4%</span>
+</div>
+<!-- Progress Bar -->
+<div class="flex flex-col gap-1.5">
+<div class="flex justify-between text-code-xs font-code-xs text-secondary">
+<span>Coverage Progress</span>
+<span>362 / 580 keys</span>
+</div>
+<div class="w-full h-2 bg-surface-container-low rounded-full overflow-hidden flex">
+<div class="bg-primary-container h-full" style="width: 62.4%"></div>
+<div class="bg-amber-400 h-full" style="width: 2.4%"></div>
+<div class="bg-red-400 h-full" style="width: 35.2%"></div>
+</div>
+</div>
+<!-- Metric Breakdown Grid -->
+<div class="grid grid-cols-2 gap-2 text-code-xs font-code-xs">
+<div class="p-2 rounded bg-surface-container-low/70 border border-outline-variant/10 flex flex-col">
+<span class="text-secondary">Translated</span>
+<span class="text-headline-sm font-headline-sm text-on-surface">362 <span class="text-code-xs font-code-xs text-secondary font-normal">(62%)</span></span>
+</div>
+<div class="p-2 rounded bg-surface-container-low/70 border border-outline-variant/10 flex flex-col">
+<span class="text-amber-700">Drafts</span>
+<span class="text-headline-sm font-headline-sm text-amber-700">14 <span class="text-code-xs font-code-xs text-secondary font-normal">(2.4%)</span></span>
+</div>
+<div class="p-2 rounded bg-surface-container-low/70 border border-outline-variant/10 flex flex-col">
+<span class="text-red-700">Missing</span>
+<span class="text-headline-sm font-headline-sm text-red-700">218 <span class="text-code-xs font-code-xs text-secondary font-normal">(35.6%)</span></span>
+</div>
+<div class="p-2 rounded bg-surface-container-low/70 border border-outline-variant/10 flex flex-col">
+<span class="text-error font-medium">Syntax Issues</span>
+<span class="text-headline-sm font-headline-sm text-error">1 error</span>
+</div>
+</div>
+<!-- AI Auto-Fill Fast Action -->
+<button class="w-full h-9 bg-on-secondary-fixed hover:bg-on-secondary-fixed-variant text-on-secondary rounded text-body-sm font-body-sm font-medium flex items-center justify-between px-3 transition-colors shadow-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary-fixed text-[16px]">magic_button</span>
+<span>AI Auto-fill missing keys</span>
+</div>
+<span class="text-code-xs font-code-xs bg-on-secondary-fixed-variant/80 text-primary-fixed px-1.5 py-0.5 rounded">Claude 3.5</span>
+</button>
+</div>
+<!-- Card 2: Interactive Live Preview (Mobile Phone Frame Simulator) -->
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/30 p-4 shadow-sm flex flex-col gap-3">
+<div class="flex items-center justify-between border-b border-outline-variant/15 pb-2">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary-container text-[16px]">devices</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Live App Preview</span>
+</div>
+<!-- Device Switcher -->
+<div class="flex items-center gap-1 bg-surface-container p-0.5 rounded text-code-xs font-code-xs">
+<button class="px-1.5 py-0.5 rounded bg-surface-container-lowest font-medium text-on-surface shadow-xs">iPhone</button>
+<button class="px-1.5 py-0.5 rounded text-secondary hover:text-on-surface">Android</button>
+</div>
+</div>
+<!-- Mobile Simulator Chassis -->
+<div class="w-full bg-slate-900 rounded-[24px] p-2.5 shadow-md border-2 border-slate-700/50 flex flex-col items-center">
+<!-- Mobile Screen Window -->
+<div class="w-full bg-white rounded-[18px] overflow-hidden flex flex-col text-slate-900 border border-slate-200">
+<!-- Screen Notch / Status Bar -->
+<div class="h-6 bg-slate-900 text-white flex items-center justify-between px-4 text-[9px] font-mono">
+<span>09:41</span>
+<div class="w-12 h-3.5 bg-black rounded-full mx-auto"></div>
+<div class="flex items-center gap-1">
+<span>5G</span>
+<span class="material-symbols-outlined text-[10px]">battery_full</span>
+</div>
+</div>
+<!-- Siratie Mobile App Topbar -->
+<div class="px-3 py-2 bg-on-secondary-fixed text-white flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<div class="w-5 h-5 rounded bg-primary-container flex items-center justify-center text-[10px] font-bold">S</div>
+<span class="text-[11px] font-bold tracking-tight">Siratie</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-teal-300">notifications</span>
+<div class="w-4 h-4 rounded-full bg-slate-400"></div>
+</div>
+</div>
+<!-- App Canvas Mockup Area -->
+<div class="p-3 bg-slate-50 flex flex-col gap-2.5">
+<!-- Active Hero Preview (Mapping home.greeting with live edits) -->
+<div class="p-2.5 rounded-lg bg-white border border-teal-200/80 shadow-xs relative">
+<span class="absolute -top-2 right-2 px-1 bg-teal-500 text-white rounded text-[8px] font-mono font-bold tracking-wider">LIVE STRING</span>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+<span class="text-[9px] font-semibold text-slate-500">home.greeting</span>
+</div>
+<!-- Evaluated Live Text with dynamic variables substituted -->
+<p class="text-[11px] font-medium text-slate-800 leading-snug">
+                    Bonjour <strong class="text-teal-700 font-semibold">Sarah</strong> ! Vous avez de nouvelles offres aujourd'hui.
+                  </p>
+</div>
+<!-- Evaluated ATS Metric Badge Card (home.atsScoreBadge) -->
+<div class="p-2.5 rounded-lg bg-teal-50/50 border border-teal-100 flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-[9px] text-slate-500 uppercase tracking-wider font-mono">Conformité GCC</span>
+<span class="text-[11px] font-bold text-teal-800">Score ATS : 94% Conforme Golfe</span>
+</div>
+<div class="w-7 h-7 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-bold font-mono">
+                    94
+                  </div>
+</div>
+<!-- Candidate Recommended Card -->
+<div class="p-2.5 rounded-lg bg-white border border-slate-200 shadow-xs flex flex-col gap-1">
+<div class="flex justify-between items-start">
+<span class="text-[10px] font-bold text-slate-800">Senior ATS Systems Engineer</span>
+<span class="text-[8px] bg-slate-100 text-slate-600 px-1 py-0.5 rounded font-mono">Riyadh, KSA</span>
+</div>
+<span class="text-[9px] text-slate-500">Aramco Digital • Full-time</span>
+<div class="mt-1 flex items-center gap-1">
+<span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 text-[8px] rounded border border-emerald-200">GCC Verified</span>
+<span class="px-1.5 py-0.5 bg-sky-50 text-sky-700 text-[8px] rounded border border-sky-200">Iqama Transferable</span>
+</div>
+</div>
+</div>
+<!-- Bottom App Bar -->
+<div class="px-4 py-1.5 bg-white border-t border-slate-200 flex justify-between text-slate-400">
+<span class="material-symbols-outlined text-[16px] text-teal-600">home</span>
+<span class="material-symbols-outlined text-[16px]">work</span>
+<span class="material-symbols-outlined text-[16px]">description</span>
+<span class="material-symbols-outlined text-[16px]">person</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 3: Key Metadata & Activity -->
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/30 p-3.5 shadow-sm flex flex-col gap-2.5 text-code-xs font-code-xs">
+<div class="flex items-center justify-between border-b border-outline-variant/15 pb-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">Target File Specifications</span>
+<span class="text-teal-700 font-medium">ICU Standard</span>
+</div>
+<div class="flex flex-col gap-1.5 text-secondary">
+<div class="flex justify-between">
+<span>File Format:</span>
+<span class="text-on-surface font-mono">intl_messages_fr.arb</span>
+</div>
+<div class="flex justify-between">
+<span>Encoding:</span>
+<span class="text-on-surface font-mono">UTF-8 No BOM</span>
+</div>
+<div class="flex justify-between">
+<span>Last Modified By:</span>
+<span class="text-on-surface font-medium">Tariq Al-Mansoor (2m ago)</span>
+</div>
+<div class="flex justify-between">
+<span>Review Status:</span>
+<span class="text-amber-700 font-medium">Pending 14 approvals</span>
+</div>
+</div>
+<div class="pt-2 border-t border-outline-variant/15 flex items-center justify-between">
+<span class="text-secondary">Branch: <code class="text-on-surface">l10n/gcc-fr-preview</code></span>
+<a class="text-primary-container hover:underline" href="#">Diff view</a>
+</div>
+</div>
+</aside>
+</main>
+</div>
+</body></html>

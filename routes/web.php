@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\LabelController;
 use App\Http\Controllers\Admin\LanguageController;
+use App\Http\Controllers\Admin\HealthController as AdminHealthController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\CvAnalysisController;
@@ -85,4 +87,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/labels/{code}/discard', [LabelController::class, 'discard'])->name('admin.labels.discard');
     Route::post('/admin/labels/{code}/import', [LabelController::class, 'import'])->name('admin.labels.import');
     Route::get('/admin/labels/{code}/export', [LabelController::class, 'export'])->name('admin.labels.export');
+
+    // Admin monitoring
+    Route::get('/admin/health', [AdminHealthController::class, 'index'])->name('admin.health.index');
+    Route::post('/admin/health/failed-jobs/retry-all', [AdminHealthController::class, 'retryAll'])->name('admin.health.failed.retry-all');
+    Route::post('/admin/health/failed-jobs/{id}/retry', [AdminHealthController::class, 'retry'])->name('admin.health.failed.retry');
+    Route::post('/admin/health/failed-jobs/{id}/forget', [AdminHealthController::class, 'forget'])->name('admin.health.failed.forget');
+    Route::get('/admin/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::get('/admin/users/{user}', [AdminUserController::class, 'show'])->name('admin.users.show');
 });

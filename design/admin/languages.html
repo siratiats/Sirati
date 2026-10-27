@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Languages Administration — Siratie Admin</title>
+<!-- Google Fonts: IBM Plex Sans & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-dim": "#cbdbf6",
+            "outline": "#6c7a77",
+            "on-secondary": "#ffffff",
+            "on-secondary-fixed-variant": "#3c4661",
+            "on-error": "#ffffff",
+            "on-primary-fixed": "#00201d",
+            "surface-variant": "#d3e4ff",
+            "inverse-surface": "#213146",
+            "on-secondary-fixed": "#101b33",
+            "tertiary": "#006a63",
+            "error": "#ba1a1a",
+            "error-container": "#ffdad6",
+            "on-background": "#0b1c30",
+            "on-primary": "#ffffff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container": "#e6eeff",
+            "on-surface-variant": "#3c4947",
+            "tertiary-fixed-dim": "#6fd8cd",
+            "surface": "#f8f9ff",
+            "secondary": "#545e79",
+            "on-tertiary": "#ffffff",
+            "on-secondary-container": "#56607c",
+            "background": "#f8f9ff",
+            "secondary-fixed-dim": "#bbc6e6",
+            "surface-tint": "#006a62",
+            "inverse-primary": "#53dbcd",
+            "primary-fixed-dim": "#53dbcd",
+            "primary-fixed": "#74f7e9",
+            "on-primary-fixed-variant": "#00504a",
+            "tertiary-container": "#43b0a6",
+            "secondary-container": "#d2dcfd",
+            "primary-container": "#12b3a6",
+            "on-tertiary-container": "#003e3a",
+            "on-surface": "#0b1c30",
+            "inverse-on-surface": "#eaf1ff",
+            "on-primary-container": "#003e39",
+            "on-tertiary-fixed-variant": "#00504b",
+            "primary": "#006a62",
+            "surface-container-high": "#dce9ff",
+            "surface-bright": "#f8f9ff",
+            "outline-variant": "#bbc9c6",
+            "on-error-container": "#93000a",
+            "surface-container-low": "#eff4ff",
+            "surface-container-highest": "#d3e4ff",
+            "on-tertiary-fixed": "#00201d",
+            "tertiary-fixed": "#8cf4e9",
+            "secondary-fixed": "#d9e2ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "1.5rem",
+            "gutter": "1rem",
+            "space-sm": "0.5rem",
+            "space-md": "0.75rem",
+            "space-xs": "0.25rem",
+            "space-lg": "1rem",
+            "margin": "1.5rem"
+          },
+          "fontFamily": {
+            "label-md": ["IBM Plex Sans"],
+            "headline-md": ["IBM Plex Sans"],
+            "code-sm": ["JetBrains Mono"],
+            "headline-sm": ["IBM Plex Sans"],
+            "code-xs": ["JetBrains Mono"],
+            "display-kpi": ["IBM Plex Sans"],
+            "body-md": ["IBM Plex Sans"],
+            "body-sm": ["IBM Plex Sans"],
+            "headline-lg": ["IBM Plex Sans"]
+          },
+          "fontSize": {
+            "label-md": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "headline-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "code-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "headline-sm": ["14px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "code-xs": ["10px", { "lineHeight": "12px", "fontWeight": "400" }],
+            "display-kpi": ["32px", { "lineHeight": "38px", "fontWeight": "600" }],
+            "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "headline-lg": ["22px", { "lineHeight": "28px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface antialiased font-body-sm text-body-sm min-h-screen flex selection:bg-primary-container selection:text-on-primary">
+<!-- ========================================================================= -->
+<!-- LEFT FIXED NAVIGATION SIDEBAR (Shared Component: SideNavBar)             -->
+<!-- ========================================================================= -->
+<aside class="fixed top-0 left-0 w-60 h-screen flex flex-col justify-between p-3 select-none bg-on-secondary-fixed border-r border-outline-variant/20 z-30">
+<!-- Top Branding & Navigation Sections -->
+<div class="flex flex-col gap-4">
+<!-- App Header Anchor -->
+<div class="px-2 pt-1 pb-2 flex items-center justify-between border-b border-outline-variant/10">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded bg-primary-container flex items-center justify-center text-on-primary font-code-sm text-code-sm font-semibold tracking-tighter shadow-sm">
+            S
+          </div>
+<div class="flex flex-col">
+<span class="text-headline-sm font-headline-sm font-bold text-on-secondary tracking-tight">Siratie Admin</span>
+<span class="text-code-xs font-code-xs text-secondary-fixed-dim tracking-wide">GCC ATS Core Engine</span>
+</div>
+</div>
+<span class="px-1.5 py-0.5 rounded bg-on-secondary-fixed-variant text-primary-fixed text-code-xs font-code-xs font-medium">v2.8</span>
+</div>
+<!-- Navigation Tree Groupings -->
+<div class="flex flex-col gap-3 overflow-y-auto max-h-[calc(100vh-170px)] pr-1">
+<!-- GROUP 1: MONITOR -->
+<div>
+<span class="px-3 text-code-xs font-code-xs font-semibold text-secondary-fixed-dim/60 tracking-wider">MONITOR</span>
+<nav class="mt-1 flex flex-col gap-0.5">
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">dashboard</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">monitor_heart</span>
+<span>System health</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">group</span>
+<span>Users</span>
+</a>
+</nav>
+</div>
+<!-- GROUP 2: CONTENT -->
+<div>
+<span class="px-3 text-code-xs font-code-xs font-semibold text-secondary-fixed-dim/60 tracking-wider">CONTENT</span>
+<nav class="mt-1 flex flex-col gap-0.5">
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">description</span>
+<span>CV templates</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">school</span>
+<span>Education</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">work</span>
+<span>Jobs</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">notifications</span>
+<span>Notifications</span>
+</a>
+</nav>
+</div>
+<!-- GROUP 3: LOCALIZATION (ACTIVE GROUP) -->
+<div>
+<span class="px-3 text-code-xs font-code-xs font-semibold text-secondary-fixed-dim/60 tracking-wider">LOCALIZATION</span>
+<nav class="mt-1 flex flex-col gap-0.5">
+<!-- Active Tab: Languages (Mandatory Style: style_active_navigation) -->
+<a class="flex items-center gap-3 px-3 py-2 bg-on-secondary-fixed-variant text-primary-fixed font-medium rounded text-body-sm font-body-sm border-l-2 border-primary-container" href="#">
+<span class="material-symbols-outlined text-[17px]" style="font-variation-settings: 'FILL' 1;">translate</span>
+<span>Languages</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">label</span>
+<span>Labels</span>
+</a>
+</nav>
+</div>
+<!-- GROUP 4: GROWTH -->
+<div>
+<span class="px-3 text-code-xs font-code-xs font-semibold text-secondary-fixed-dim/60 tracking-wider">GROWTH</span>
+<nav class="mt-1 flex flex-col gap-0.5">
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">filter_alt</span>
+<span>Leads</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">analytics</span>
+<span>CV analyses</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">auto_awesome</span>
+<span>Generated CVs</span>
+</a>
+</nav>
+</div>
+</div>
+</div>
+<!-- Sidebar Footer Actions -->
+<div class="pt-3 border-t border-outline-variant/10 flex flex-col gap-1">
+<a class="flex items-center justify-between px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="https://siratie.ai" target="_blank">
+<span class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[17px]">open_in_new</span>
+<span>View site</span>
+</span>
+<span class="text-code-xs font-code-xs text-secondary-fixed-dim/70">siratie.ai</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary rounded text-body-sm font-body-sm transition-colors hover:bg-on-secondary-fixed-variant/50" href="#">
+<span class="material-symbols-outlined text-[17px]">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- MAIN WORKSPACE WRAPPER (Fluid Canvas with ml-60 alignment)               -->
+<!-- ========================================================================= -->
+<div class="ml-60 flex-1 flex flex-col min-w-0 bg-surface">
+<!-- TOP OPERATIONAL BAR (Shared Component: TopNavBar adapted) -->
+<header class="h-12 flex items-center justify-between px-6 border-b border-outline-variant/30 bg-surface-container-lowest sticky top-0 z-20">
+<!-- Breadcrumb and Context -->
+<div class="flex items-center gap-3">
+<span class="text-headline-md font-headline-md font-semibold text-on-surface">Languages</span>
+<span class="text-outline-variant">/</span>
+<span class="text-body-sm font-body-sm text-secondary">GCC Localization</span>
+<div class="h-4 w-px bg-outline-variant/40 ml-1"></div>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary-container/10 border border-primary-container/30 text-primary font-code-xs text-code-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-pulse"></span>
+          Production
+        </span>
+</div>
+<!-- Right Operational Controls -->
+<div class="flex items-center gap-3">
+<div class="flex items-center rounded border border-outline-variant/40 bg-surface-container-low p-0.5">
+<button class="bg-surface-container-lowest text-on-surface font-semibold px-2.5 py-0.5 rounded text-body-sm font-body-sm shadow-none">Today</button>
+<button class="text-secondary hover:text-on-surface px-2.5 py-0.5 rounded text-body-sm font-body-sm transition-colors">7d</button>
+<button class="text-secondary hover:text-on-surface px-2.5 py-0.5 rounded text-body-sm font-body-sm transition-colors">30d</button>
+</div>
+<button class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-surface-container-lowest border border-outline-variant/50 text-on-surface hover:bg-surface-container-low text-body-sm font-body-sm transition-colors">
+<span class="material-symbols-outlined text-[16px] text-secondary">sync</span>
+<span>Refresh</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded border border-outline-variant/40 text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[17px]">tune</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded border border-outline-variant/40 text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[17px]">help_outline</span>
+</button>
+<div class="h-4 w-px bg-outline-variant/40"></div>
+<!-- Operator Avatar -->
+<div class="flex items-center gap-2 pl-1 cursor-pointer">
+<div class="w-7 h-7 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface text-code-xs font-code-xs font-semibold ring-1 ring-outline-variant/50">
+            TK
+          </div>
+<span class="font-body-sm text-body-sm font-medium text-on-surface hidden lg:inline">Tariq K.</span>
+</div>
+</div>
+</header>
+<!-- MAIN INTERACTIVE CANVAS -->
+<main class="p-6 max-w-[1600px] w-full mx-auto flex flex-col gap-6">
+<!-- 1. PAGE HEADER & ACTIONS BAR -->
+<section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-outline-variant/20">
+<div>
+<div class="flex items-center gap-2">
+<h1 class="text-headline-lg font-headline-lg text-on-surface">Languages</h1>
+<span class="px-2 py-0.5 rounded text-code-xs font-code-xs bg-surface-container text-secondary font-medium">4 Configured</span>
+</div>
+<p class="text-body-sm font-body-sm text-secondary mt-0.5">
+            Languages shown in the app. Changes go live after Publish, no app release needed.
+          </p>
+</div>
+<div class="flex items-center gap-2.5">
+<!-- Quick Search -->
+<div class="relative w-56">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[16px] text-secondary">search</span>
+<input class="w-full h-8 pl-8 pr-3 bg-surface-container-lowest border border-outline-variant/60 rounded text-body-sm font-body-sm text-on-surface placeholder:text-outline-variant focus:outline-none focus:ring-1 focus:ring-primary-container" placeholder="Search languages..." type="text"/>
+</div>
+<!-- Status Filter -->
+<div class="inline-flex rounded border border-outline-variant/50 bg-surface-container-lowest p-0.5">
+<button class="px-2.5 py-1 text-label-md font-label-md rounded bg-surface-container text-on-surface font-semibold">All</button>
+<button class="px-2.5 py-1 text-label-md font-label-md rounded text-secondary hover:text-on-surface transition-colors">Enabled</button>
+<button class="px-2.5 py-1 text-label-md font-label-md rounded text-secondary hover:text-on-surface transition-colors flex items-center gap-1">
+<span>Drafts pending</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+</button>
+</div>
+<!-- Primary Trigger: Add language (opens right drawer) -->
+<button class="h-8 px-3 rounded bg-primary-container hover:bg-tertiary text-on-primary font-medium text-body-sm font-body-sm inline-flex items-center gap-1.5 transition-colors shadow-none" id="openDrawerBtn">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Add language</span>
+</button>
+</div>
+</section>
+<!-- 2. DENSE LANGUAGES MANAGEMENT TABLE CARD -->
+<section class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg overflow-hidden shadow-none">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-8 bg-surface-container-low/70 border-b border-outline-variant/30 text-secondary text-label-md font-label-md tracking-wider">
+<th class="px-4 font-semibold w-10 text-center"></th>
+<th class="px-4 font-semibold">Language</th>
+<th class="px-3 font-semibold w-24">Direction</th>
+<th class="px-3 font-semibold">Fallback</th>
+<th class="px-4 font-semibold w-48">String Coverage</th>
+<th class="px-3 font-semibold">Drafts</th>
+<th class="px-4 font-semibold">Live Version &amp; Published</th>
+<th class="px-3 font-semibold w-24">Status</th>
+<th class="px-4 font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20 font-body-sm text-body-sm text-on-surface">
+<!-- ROW 1: Arabic (ar) - DEFAULT SELECTION -->
+<tr class="h-11 bg-primary-container/5 border-l-2 border-l-primary-container hover:bg-primary-container/10 transition-colors">
+<td class="px-4 text-center">
+<span class="material-symbols-outlined text-[18px] text-amber-500" style="font-variation-settings: 'FILL' 1;" title="Default Base Locale">star</span>
+</td>
+<td class="px-4">
+<div class="flex items-center gap-2">
+<span class="px-1.5 py-0.5 rounded bg-on-secondary-fixed text-on-secondary font-code-xs text-code-xs font-semibold">AR</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-medium text-on-surface">Arabic</span>
+<span class="text-xs px-1.5 rounded bg-amber-50 text-amber-800 font-label-md text-label-md border border-amber-200">Default</span>
+</div>
+<span class="text-code-xs font-code-xs text-secondary font-arabic" dir="rtl">العربية</span>
+</div>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-code-xs text-code-xs font-medium">
+<span class="material-symbols-outlined text-[13px] rotate-180">arrow_right_alt</span>
+                    RTL
+                  </span>
+</td>
+<td class="px-3">
+<span class="text-secondary font-code-xs text-code-xs">None (Default)</span>
+</td>
+<td class="px-4">
+<div class="flex flex-col gap-1 w-full max-w-[180px]">
+<div class="flex items-center justify-between text-code-xs font-code-xs">
+<span class="font-semibold text-primary">100%</span>
+<span class="text-secondary">1,420 / 1,420</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 100%"></div>
+</div>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-code-xs font-code-xs font-medium bg-surface-container-low text-secondary border border-outline-variant/30">
+                    0 drafts
+                  </span>
+</td>
+<td class="px-4">
+<div class="flex flex-col">
+<span class="font-code-xs text-code-xs font-semibold text-on-surface">v14 Live</span>
+<span class="text-code-xs font-code-xs text-secondary">1h ago by Tariq K.</span>
+</div>
+</td>
+<td class="px-3">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-outline-variant/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</td>
+<td class="px-4 text-right">
+<div class="inline-flex items-center gap-1.5">
+<button class="h-7 px-2 text-label-md font-label-md rounded border border-outline-variant/50 hover:bg-surface-container text-on-surface transition-colors">
+                      Edit labels
+                    </button>
+<button class="h-7 px-2 text-label-md font-label-md rounded bg-surface-container-low hover:bg-surface-container text-primary font-medium transition-colors">
+                      History
+                    </button>
+<button class="w-7 h-7 flex items-center justify-center rounded text-secondary hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 2: English (en) -->
+<tr class="h-11 hover:bg-surface-container-low/40 transition-colors">
+<td class="px-4 text-center">
+<span class="material-symbols-outlined text-[18px] text-outline-variant hover:text-amber-500 cursor-pointer" title="Set as default">star</span>
+</td>
+<td class="px-4">
+<div class="flex items-center gap-2">
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-code-xs text-code-xs font-semibold">EN</span>
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">English</span>
+<span class="text-code-xs font-code-xs text-secondary">English</span>
+</div>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-code-xs text-code-xs font-medium">
+<span class="material-symbols-outlined text-[13px]">arrow_right_alt</span>
+                    LTR
+                  </span>
+</td>
+<td class="px-3">
+<span class="text-on-surface font-code-xs text-code-xs flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                    Arabic (ar)
+                  </span>
+</td>
+<td class="px-4">
+<div class="flex flex-col gap-1 w-full max-w-[180px]">
+<div class="flex items-center justify-between text-code-xs font-code-xs">
+<span class="font-semibold text-primary">100%</span>
+<span class="text-secondary">1,420 / 1,420</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 100%"></div>
+</div>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-code-xs font-code-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+<span class="w-1 h-1 rounded-full bg-amber-500"></span>
+                    2 drafts
+                  </span>
+</td>
+<td class="px-4">
+<div class="flex flex-col">
+<span class="font-code-xs text-code-xs font-semibold text-on-surface">v11 Live</span>
+<span class="text-code-xs font-code-xs text-secondary">2d ago by Alex R.</span>
+</div>
+</td>
+<td class="px-3">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-outline-variant/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</td>
+<td class="px-4 text-right">
+<div class="inline-flex items-center gap-1.5">
+<button class="h-7 px-2 text-label-md font-label-md rounded border border-outline-variant/50 hover:bg-surface-container text-on-surface transition-colors">
+                      Edit labels
+                    </button>
+<button class="h-7 px-2 text-label-md font-label-md rounded bg-primary-container hover:bg-tertiary text-on-primary font-medium transition-colors">
+                      Publish
+                    </button>
+<button class="w-7 h-7 flex items-center justify-center rounded text-secondary hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 3: French (fr) -->
+<tr class="h-11 hover:bg-surface-container-low/40 transition-colors">
+<td class="px-4 text-center">
+<span class="material-symbols-outlined text-[18px] text-outline-variant hover:text-amber-500 cursor-pointer" title="Set as default">star</span>
+</td>
+<td class="px-4">
+<div class="flex items-center gap-2">
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-code-xs text-code-xs font-semibold">FR</span>
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">French</span>
+<span class="text-code-xs font-code-xs text-secondary">Français</span>
+</div>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-code-xs text-code-xs font-medium">
+<span class="material-symbols-outlined text-[13px]">arrow_right_alt</span>
+                    LTR
+                  </span>
+</td>
+<td class="px-3">
+<span class="text-on-surface font-code-xs text-code-xs flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                    English (en)
+                  </span>
+</td>
+<td class="px-4">
+<div class="flex flex-col gap-1 w-full max-w-[180px]">
+<div class="flex items-center justify-between text-code-xs font-code-xs">
+<span class="font-semibold text-secondary">62.0%</span>
+<span class="text-secondary">880 / 1,420</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-container rounded-full" style="width: 62%"></div>
+</div>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-code-xs font-code-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+<span class="w-1 h-1 rounded-full bg-amber-500"></span>
+                    14 drafts
+                  </span>
+</td>
+<td class="px-4">
+<div class="flex flex-col">
+<span class="font-code-xs text-code-xs font-semibold text-on-surface">v4 Live</span>
+<span class="text-code-xs font-code-xs text-secondary">May 12 by Lina B.</span>
+</div>
+</td>
+<td class="px-3">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-outline-variant/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</td>
+<td class="px-4 text-right">
+<div class="inline-flex items-center gap-1.5">
+<button class="h-7 px-2 text-label-md font-label-md rounded border border-outline-variant/50 hover:bg-surface-container text-on-surface transition-colors">
+                      Edit labels
+                    </button>
+<button class="h-7 px-2 text-label-md font-label-md rounded bg-primary-container hover:bg-tertiary text-on-primary font-medium transition-colors">
+                      Publish
+                    </button>
+<button class="w-7 h-7 flex items-center justify-center rounded text-secondary hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- ROW 4: Urdu (ur) -->
+<tr class="h-11 hover:bg-surface-container-low/40 transition-colors opacity-85">
+<td class="px-4 text-center">
+<span class="material-symbols-outlined text-[18px] text-outline-variant hover:text-amber-500 cursor-pointer" title="Set as default">star</span>
+</td>
+<td class="px-4">
+<div class="flex items-center gap-2">
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-secondary font-code-xs text-code-xs font-semibold">UR</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-medium text-on-surface">Urdu</span>
+<span class="text-xs px-1 rounded bg-surface-container text-secondary font-code-xs text-code-xs">Draft Only</span>
+</div>
+<span class="text-code-xs font-code-xs text-secondary font-arabic" dir="rtl">اردو</span>
+</div>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-code-xs text-code-xs font-medium">
+<span class="material-symbols-outlined text-[13px] rotate-180">arrow_right_alt</span>
+                    RTL
+                  </span>
+</td>
+<td class="px-3">
+<span class="text-on-surface font-code-xs text-code-xs flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                    English (en)
+                  </span>
+</td>
+<td class="px-4">
+<div class="flex flex-col gap-1 w-full max-w-[180px]">
+<div class="flex items-center justify-between text-code-xs font-code-xs">
+<span class="font-semibold text-secondary">41.0%</span>
+<span class="text-secondary">582 / 1,420</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-outline rounded-full" style="width: 41%"></div>
+</div>
+</div>
+</td>
+<td class="px-3">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-code-xs font-code-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+<span class="w-1 h-1 rounded-full bg-amber-500"></span>
+                    28 drafts
+                  </span>
+</td>
+<td class="px-4">
+<div class="flex flex-col">
+<span class="font-code-xs text-code-xs font-medium text-secondary">v1 • In review</span>
+<span class="text-code-xs font-code-xs text-secondary">Unpublished</span>
+</div>
+</td>
+<td class="px-3">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-outline-variant/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</td>
+<td class="px-4 text-right">
+<div class="inline-flex items-center gap-1.5">
+<button class="h-7 px-2 text-label-md font-label-md rounded border border-outline-variant/50 hover:bg-surface-container text-on-surface transition-colors">
+                      Edit labels
+                    </button>
+<button class="h-7 px-2 text-label-md font-label-md rounded bg-surface-container-low text-secondary cursor-not-allowed">
+                      Publish
+                    </button>
+<button class="w-7 h-7 flex items-center justify-center rounded text-secondary hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- 3. BOTTOM SECTION: PUBLISH HISTORY CARD (ARABIC CURRENT FOCUS) -->
+<section class="bg-surface-container-lowest border border-outline-variant/40 rounded-lg p-5 flex flex-col gap-4">
+<!-- Section Header -->
+<div class="flex items-center justify-between pb-3 border-b border-outline-variant/20">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[20px] text-primary">history</span>
+<div class="flex items-center gap-2">
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Publish history — Arabic (ar)</h2>
+<span class="px-2 py-0.5 rounded bg-primary-container/10 border border-primary-container/30 text-primary font-code-xs text-code-xs font-semibold">
+                v14 Live
+              </span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-code-xs font-code-xs text-secondary">Showing 4 recorded production rollouts</span>
+<button class="w-6 h-6 flex items-center justify-center rounded text-secondary hover:text-on-surface">
+<span class="material-symbols-outlined text-[16px]">filter_list</span>
+</button>
+</div>
+</div>
+<!-- History Records Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-7 bg-surface-container-low/50 text-secondary text-label-md font-label-md">
+<th class="px-3 font-semibold w-24">Version</th>
+<th class="px-3 font-semibold w-56">Deployment Meta</th>
+<th class="px-3 font-semibold">Summary &amp; Scope of Changes</th>
+<th class="px-3 font-semibold text-right w-32">Status / Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20 text-body-sm font-body-sm text-on-surface">
+<!-- History Entry 1 -->
+<tr class="h-10 hover:bg-surface-container-low/30">
+<td class="px-3 font-code-sm text-code-sm font-semibold text-primary">v14</td>
+<td class="px-3 font-code-xs text-code-xs text-secondary">Published 1h ago by Tariq K.</td>
+<td class="px-3">
+<div class="flex items-center gap-2">
+<span class="text-on-surface">4 strings updated</span>
+<span class="text-secondary text-code-xs font-code-xs">(Job experience badges &amp; ATS parsing headers)</span>
+</div>
+</td>
+<td class="px-3 text-right">
+<span class="inline-flex items-center gap-1 text-code-xs font-code-xs font-semibold text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                    Current Live
+                  </span>
+</td>
+</tr>
+<!-- History Entry 2 -->
+<tr class="h-10 hover:bg-surface-container-low/30">
+<td class="px-3 font-code-sm text-code-sm font-medium text-on-surface">v13</td>
+<td class="px-3 font-code-xs text-code-xs text-secondary">Published 2d ago by Sara M.</td>
+<td class="px-3">
+<div class="flex items-center gap-2">
+<span class="text-on-surface">18 strings updated</span>
+<span class="text-secondary text-code-xs font-code-xs">(RTL layout direction fixes and punctuation markers)</span>
+</div>
+</td>
+<td class="px-3 text-right">
+<button class="h-6 px-2 text-label-md font-label-md rounded border border-outline-variant/50 hover:bg-surface-container text-secondary hover:text-on-surface transition-colors">
+                    Rollback
+                  </button>
+</td>
+</tr>
+<!-- History Entry 3 -->
+<tr class="h-10 hover:bg-surface-container-low/30">
+<td class="px-3 font-code-sm text-code-sm font-medium text-on-surface">v12</td>
+<td class="px-3 font-code-xs text-code-xs text-secondary">Published 7d ago by Automated Sync</td>
+<td class="px-3">
+<div class="flex items-center gap-2">
+<span class="text-on-surface">120 strings imported</span>
+<span class="text-secondary text-code-xs font-code-xs">(New GCC visa &amp; civil status validation taxonomy)</span>
+</div>
+</td>
+<td class="px-3 text-right">
+<button class="h-6 px-2 text-label-md font-label-md rounded border border-outline-variant/50 hover:bg-surface-container text-secondary hover:text-on-surface transition-colors">
+                    Rollback
+                  </button>
+</td>
+</tr>
+<!-- History Entry 4 -->
+<tr class="h-10 hover:bg-surface-container-low/30">
+<td class="px-3 font-code-sm text-code-sm font-medium text-on-surface">v11</td>
+<td class="px-3 font-code-xs text-code-xs text-secondary">Published 14d ago by Tariq K.</td>
+<td class="px-3">
+<div class="flex items-center gap-2">
+<span class="text-on-surface">Initial GCC v2 baseline strings</span>
+<span class="text-secondary text-code-xs font-code-xs">(Core translation foundation)</span>
+</div>
+</td>
+<td class="px-3 text-right">
+<button class="h-6 px-2 text-label-md font-label-md rounded border border-outline-variant/50 hover:bg-surface-container text-secondary hover:text-on-surface transition-colors">
+                    Rollback
+                  </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+</div>
+<!-- ========================================================================= -->
+<!-- 4. RIGHT-SIDE SLIDE-OVER DRAWER: "ADD LANGUAGE"                          -->
+<!-- ========================================================================= -->
+<div class="fixed inset-0 bg-inverse-surface/30 backdrop-blur-[1px] z-40 hidden transition-opacity" id="drawerOverlay"></div>
+<aside class="fixed top-0 right-0 h-screen w-full max-w-[400px] bg-surface-container-lowest border-l border-outline-variant/40 shadow-2xl z-50 transform translate-x-full transition-transform duration-200 ease-in-out flex flex-col justify-between" id="addLanguageDrawer">
+<!-- Drawer Header -->
+<div class="p-5 border-b border-outline-variant/30 flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">add_circle</span>
+<h3 class="text-headline-md font-headline-md text-on-surface">Add language</h3>
+</div>
+<p class="text-body-sm font-body-sm text-secondary mt-1">
+          Configure a new locale for GCC ATS applications.
+        </p>
+</div>
+<button class="w-7 h-7 flex items-center justify-center rounded text-secondary hover:text-on-surface hover:bg-surface-container transition-colors" id="closeDrawerBtn">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Drawer Body / Inputs -->
+<div class="p-5 overflow-y-auto flex-1 flex flex-col gap-4">
+<!-- ISO Code -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md font-label-md text-on-surface">ISO Language Code</label>
+<input class="h-8 px-2.5 bg-surface-container-lowest border border-outline-variant/60 rounded text-code-sm font-code-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-primary-container" placeholder="e.g. de, hi, fil" type="text"/>
+<span class="text-code-xs font-code-xs text-secondary">2-letter BCP 47 code (standardized parser token).</span>
+</div>
+<!-- English Name -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md font-label-md text-on-surface">English Name</label>
+<input class="h-8 px-2.5 bg-surface-container-lowest border border-outline-variant/60 rounded text-body-sm font-body-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-primary-container" placeholder="e.g. German" type="text"/>
+</div>
+<!-- Native Name -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md font-label-md text-on-surface">Native Name</label>
+<input class="h-8 px-2.5 bg-surface-container-lowest border border-outline-variant/60 rounded text-body-sm font-body-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-primary-container" placeholder="e.g. Deutsch" type="text"/>
+</div>
+<!-- Text Direction -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md font-label-md text-on-surface">Text Direction</label>
+<div class="grid grid-cols-2 gap-2">
+<label class="flex items-center justify-center gap-1.5 p-2 rounded border border-primary-container bg-primary-container/10 text-on-surface cursor-pointer text-body-sm font-body-sm font-medium">
+<input checked="" class="sr-only" name="direction" type="radio" value="ltr"/>
+<span class="material-symbols-outlined text-[16px]">arrow_right_alt</span>
+<span>LTR (Left-to-Right)</span>
+</label>
+<label class="flex items-center justify-center gap-1.5 p-2 rounded border border-outline-variant/50 hover:bg-surface-container-low text-secondary cursor-pointer text-body-sm font-body-sm">
+<input class="sr-only" name="direction" type="radio" value="rtl"/>
+<span class="material-symbols-outlined text-[16px] rotate-180">arrow_right_alt</span>
+<span>RTL (Right-to-Left)</span>
+</label>
+</div>
+</div>
+<!-- Fallback Language -->
+<div class="flex flex-col gap-1.5">
+<label class="text-label-md font-label-md text-on-surface">Fallback Language</label>
+<select class="h-8 px-2.5 bg-surface-container-lowest border border-outline-variant/60 rounded text-body-sm font-body-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-primary-container">
+<option value="ar">Arabic (ar) — Default Base</option>
+<option value="en">English (en)</option>
+</select>
+<span class="text-code-xs font-code-xs text-secondary">Strings without active translations will fall back to this language.</span>
+</div>
+<!-- Immediate Status Toggle -->
+<div class="pt-2 flex items-center justify-between border-t border-outline-variant/20">
+<div>
+<span class="block text-body-sm font-body-sm font-medium text-on-surface">Enable language immediately</span>
+<span class="text-code-xs font-code-xs text-secondary">Make available to production users once saved.</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-8 h-4 bg-outline-variant/40 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<!-- Info Diagnostic Hint -->
+<div class="p-3 rounded bg-surface-container-low border border-outline-variant/30 text-code-xs font-code-xs text-secondary flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-tertiary">info</span>
+<span>Once added, the system automatically initializes a translation template containing 1,420 GCC string keys.</span>
+</div>
+</div>
+<!-- Drawer Footer Actions -->
+<div class="p-4 border-t border-outline-variant/30 bg-surface-container-low/40 flex items-center justify-end gap-2.5">
+<button class="h-8 px-3 rounded border border-outline-variant/60 bg-surface-container-lowest text-on-surface hover:bg-surface-container text-body-sm font-body-sm transition-colors" id="cancelDrawerBtn">
+        Cancel
+      </button>
+<button class="h-8 px-4 rounded bg-primary-container hover:bg-tertiary text-on-primary font-medium text-body-sm font-body-sm transition-colors shadow-none">
+        Save language
+      </button>
+</div>
+</aside>
+<!-- ========================================================================= -->
+<!-- Micro-Interactions Script                                                -->
+<!-- ========================================================================= -->
+<script>
+    const openBtn = document.getElementById('openDrawerBtn');
+    const closeBtn = document.getElementById('closeDrawerBtn');
+    const cancelBtn = document.getElementById('cancelDrawerBtn');
+    const drawer = document.getElementById('addLanguageDrawer');
+    const overlay = document.getElementById('drawerOverlay');
+
+    function openDrawer() {
+      drawer.classList.remove('translate-x-full');
+      overlay.classList.remove('hidden');
+    }
+
+    function closeDrawer() {
+      drawer.classList.add('translate-x-full');
+      overlay.classList.add('hidden');
+    }
+
+    if (openBtn) openBtn.addEventListener('click', openDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeDrawer);
+    if (overlay) overlay.addEventListener('click', closeDrawer);
+  </script>
+</body></html>
