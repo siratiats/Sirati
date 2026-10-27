@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Siratie Admin - GCC ATS Core Engine Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-fixed": "#00201d",
+            "on-tertiary-container": "#003e3a",
+            "error-container": "#ffdad6",
+            "tertiary-fixed": "#8cf4e9",
+            "primary-container": "#12b3a6",
+            "secondary": "#545e79",
+            "on-secondary-fixed-variant": "#3c4661",
+            "on-secondary": "#ffffff",
+            "primary-fixed-dim": "#53dbcd",
+            "secondary-fixed-dim": "#bbc6e6",
+            "surface-bright": "#f8f9ff",
+            "on-primary": "#ffffff",
+            "primary-fixed": "#74f7e9",
+            "on-background": "#0b1c30",
+            "on-tertiary": "#ffffff",
+            "surface-container-highest": "#d3e4ff",
+            "on-primary-fixed": "#00201d",
+            "surface-container-high": "#dce9ff",
+            "secondary-fixed": "#d9e2ff",
+            "on-primary-container": "#003e39",
+            "tertiary-container": "#43b0a6",
+            "on-tertiary-fixed-variant": "#00504b",
+            "error": "#ba1a1a",
+            "tertiary": "#006a63",
+            "outline-variant": "#bbc9c6",
+            "surface-variant": "#d3e4ff",
+            "background": "#f8f9ff",
+            "on-secondary-container": "#56607c",
+            "on-surface-variant": "#3c4947",
+            "surface-tint": "#006a62",
+            "outline": "#6c7a77",
+            "on-primary-fixed-variant": "#00504a",
+            "inverse-surface": "#213146",
+            "surface": "#f8f9ff",
+            "on-error-container": "#93000a",
+            "on-secondary-fixed": "#101b33",
+            "on-error": "#ffffff",
+            "on-surface": "#0b1c30",
+            "tertiary-fixed-dim": "#6fd8cd",
+            "surface-container": "#e6eeff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#eff4ff",
+            "primary": "#006a62",
+            "inverse-primary": "#53dbcd",
+            "surface-dim": "#cbdbf6",
+            "secondary-container": "#d2dcfd",
+            "inverse-on-surface": "#eaf1ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "0.25rem",
+            "gutter": "1rem",
+            "space-sm": "0.5rem",
+            "margin": "1.5rem",
+            "space-lg": "1rem",
+            "space-md": "0.75rem",
+            "space-xl": "1.5rem"
+          },
+          "fontFamily": {
+            "code-sm": ["JetBrains Mono"],
+            "code-xs": ["JetBrains Mono"],
+            "headline-lg": ["IBM Plex Sans"],
+            "headline-md": ["IBM Plex Sans"],
+            "label-md": ["IBM Plex Sans"],
+            "display-kpi": ["IBM Plex Sans"],
+            "body-sm": ["IBM Plex Sans"],
+            "body-md": ["IBM Plex Sans"],
+            "headline-sm": ["IBM Plex Sans"]
+          },
+          "fontSize": {
+            "code-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "code-xs": ["10px", { "lineHeight": "12px", "fontWeight": "400" }],
+            "headline-lg": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "headline-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "label-md": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+            "display-kpi": ["32px", { "lineHeight": "38px", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "headline-sm": ["14px", { "lineHeight": "20px", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    body {
+      background-color: #F1F4F7;
+      font-family: 'IBM Plex Sans', sans-serif;
+      color: #101b33;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(16, 27, 51, 0.05);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(16, 27, 51, 0.2);
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#F1F4F7] text-on-surface antialiased flex">
+<!-- ==================== SIDEBAR ==================== -->
+<!-- Strict adherence to Shared Components JSON: SideNavBar -->
+<aside class="fixed top-0 left-0 w-60 h-screen flex flex-col justify-between p-3 select-none bg-on-secondary-fixed text-primary-container z-30 border-r border-outline-variant/20">
+<div class="flex flex-col h-full overflow-hidden">
+<!-- Header / Logo -->
+<div class="px-2 py-2 mb-3">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded bg-primary-container text-on-secondary flex items-center justify-center font-bold text-headline-sm shadow-sm">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+</div>
+<div class="flex flex-col">
+<span class="text-headline-md font-headline-md font-bold text-on-secondary tracking-tight">Siratie Admin</span>
+<span class="text-code-xs font-code-xs text-secondary-fixed-dim/70 tracking-wide">GCC ATS Core Engine</span>
+</div>
+</div>
+</div>
+<!-- Navigation Links Container -->
+<div class="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-1">
+<!-- Section: MONITOR -->
+<div>
+<div class="px-3 pb-1 text-code-xs font-code-xs text-secondary-fixed-dim/50 tracking-wider">MONITOR</div>
+<nav class="space-y-0.5">
+<!-- Overview (ACTIVE) -->
+<a class="flex items-center gap-3 px-3 py-2 bg-on-secondary-fixed-variant text-primary-fixed font-medium rounded text-body-sm font-body-sm border-l-2 border-primary-container" href="#">
+<span class="material-symbols-outlined text-primary-fixed" data-icon="dashboard">dashboard</span>
+<span>Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="monitor_heart">monitor_heart</span>
+<span>System health</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Users</span>
+</a>
+</nav>
+</div>
+<!-- Section: CONTENT -->
+<div>
+<div class="px-3 pb-1 text-code-xs font-code-xs text-secondary-fixed-dim/50 tracking-wider">CONTENT</div>
+<nav class="space-y-0.5">
+<a class="flex items-center gap-3 px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>CV templates</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+<span>Education</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+<span>Jobs</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span>Notifications</span>
+</a>
+</nav>
+</div>
+<!-- Section: LOCALIZATION -->
+<div>
+<div class="px-3 pb-1 text-code-xs font-code-xs text-secondary-fixed-dim/50 tracking-wider">LOCALIZATION</div>
+<nav class="space-y-0.5">
+<a class="flex items-center gap-3 px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="translate">translate</span>
+<span>Languages</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="label">label</span>
+<span>Labels</span>
+</a>
+</nav>
+</div>
+<!-- Section: GROWTH -->
+<div>
+<div class="px-3 pb-1 text-code-xs font-code-xs text-secondary-fixed-dim/50 tracking-wider">GROWTH</div>
+<nav class="space-y-0.5">
+<a class="flex items-center gap-3 px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="filter_alt">filter_alt</span>
+<span>Leads</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>CV analyses</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/50 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+<span>Generated CVs</span>
+</a>
+</nav>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="pt-3 border-t border-outline-variant/10 space-y-1">
+<a class="flex items-center justify-between px-3 py-1.5 text-secondary-fixed-dim hover:text-on-secondary hover:bg-on-secondary-fixed-variant/40 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[16px]" data-icon="open_in_new">open_in_new</span>
+<span>View site</span>
+</span>
+<span class="text-code-xs font-code-xs text-secondary-fixed-dim/60">siratie.ai</span>
+</a>
+<a class="flex items-center gap-2.5 px-3 py-1.5 text-secondary-fixed-dim hover:text-error hover:bg-error/10 rounded text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- ==================== MAIN WRAPPER ==================== -->
+<div class="ml-60 flex-1 flex flex-col min-w-0">
+<!-- TopNavBar -->
+<header class="h-12 flex items-center justify-between px-6 border-b border-[#D8DEE6] bg-surface-container-lowest sticky top-0 z-20">
+<!-- Left: Title, Breadcrumb & Environment Status -->
+<div class="flex items-center gap-3">
+<h1 class="text-headline-md font-headline-md font-semibold text-on-surface">Overview</h1>
+<span class="text-outline-variant text-body-sm">/</span>
+<span class="text-secondary text-body-sm font-body-sm">GCC Metrics</span>
+<!-- Live Production Badge -->
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 text-code-xs font-code-xs ml-2">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>Production</span>
+</div>
+</div>
+<!-- Right: Operational Controls -->
+<div class="flex items-center gap-3">
+<!-- Date Segmented Control -->
+<div class="flex items-center p-0.5 bg-[#EAEFF5] rounded border border-[#D8DEE6]">
+<button class="px-2.5 py-0.5 rounded text-body-sm font-body-sm text-secondary hover:text-on-surface transition-colors">Today</button>
+<button class="px-2.5 py-0.5 rounded text-body-sm font-body-sm text-secondary hover:text-on-surface transition-colors">7d</button>
+<button class="px-2.5 py-0.5 rounded text-body-sm font-body-sm bg-surface-container-lowest text-on-surface font-semibold shadow-xs">30d</button>
+</div>
+<span class="text-code-xs font-code-xs text-secondary">Updated 2m ago</span>
+<!-- Refresh Button -->
+<button class="flex items-center gap-1.5 px-2.5 py-1 text-body-sm font-body-sm font-medium bg-surface-container-lowest hover:bg-[#F1F4F7] text-on-surface border border-[#D8DEE6] rounded transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[15px]" data-icon="sync">sync</span>
+<span>Refresh</span>
+</button>
+<div class="h-4 w-[1px] bg-[#D8DEE6] mx-0.5"></div>
+<!-- Quick actions -->
+<button class="w-7 h-7 flex items-center justify-center rounded text-secondary hover:text-on-surface hover:bg-[#F1F4F7] transition-colors" title="Configuration">
+<span class="material-symbols-outlined text-[18px]" data-icon="tune">tune</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded text-secondary hover:text-on-surface hover:bg-[#F1F4F7] transition-colors" title="Documentation">
+<span class="material-symbols-outlined text-[18px]" data-icon="help_outline">help_outline</span>
+</button>
+<!-- Operator Avatar -->
+<div class="w-6 h-6 rounded-full bg-on-secondary-fixed text-on-secondary text-code-xs font-code-xs flex items-center justify-center ring-1 ring-[#D8DEE6]" title="Operator: root@siratie.internal">
+          SA
+        </div>
+</div>
+</header>
+<!-- Operational Main Content Canvas -->
+<main class="p-6 space-y-5 max-w-[1600px] w-full mx-auto">
+<!-- ==================== 1. ROW OF 6 KPI TILES ==================== -->
+<section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+<!-- Tile 1: New users -->
+<div class="bg-surface-container-lowest border border-[#D8DEE6] rounded-lg p-3 flex flex-col justify-between hover:border-primary-container/60 transition-colors">
+<div class="flex items-center justify-between">
+<span class="text-body-sm font-body-sm text-secondary">New users</span>
+<span class="text-code-xs font-code-xs font-medium text-emerald-600 flex items-center">
+              +12.4%
+              <span class="material-symbols-outlined text-[12px] ml-0.5">arrow_upward</span>
+</span>
+</div>
+<div class="flex items-baseline justify-between mt-1 mb-2">
+<span class="text-headline-lg font-headline-lg font-semibold text-on-surface">14,820</span>
+</div>
+<!-- Sparkline SVG -->
+<div class="h-6 w-full">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 24">
+<path d="M 0,18 Q 20,16 35,12 T 70,8 T 100,3" fill="none" stroke="#12b3a6" stroke-linecap="round" stroke-width="1.75"></path>
+<path d="M 0,18 Q 20,16 35,12 T 70,8 T 100,3 L 100,24 L 0,24 Z" fill="url(#teal-grad)" opacity="0.15"></path>
+<defs>
+<lineargradient id="teal-grad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#12b3a6" stop-opacity="0.8"></stop>
+<stop offset="100%" stop-color="#12b3a6" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+</svg>
+</div>
+</div>
+<!-- Tile 2: Active users -->
+<div class="bg-surface-container-lowest border border-[#D8DEE6] rounded-lg p-3 flex flex-col justify-between hover:border-primary-container/60 transition-colors">
+<div class="flex items-center justify-between">
+<span class="text-body-sm font-body-sm text-secondary">Active users</span>
+<span class="text-code-xs font-code-xs font-medium text-emerald-600 flex items-center">
+              +8.1%
+              <span class="material-symbols-outlined text-[12px] ml-0.5">arrow_upward</span>
+</span>
+</div>
+<div class="flex items-baseline justify-between mt-1 mb-2">
+<span class="text-headline-lg font-headline-lg font-semibold text-on-surface">48,290</span>
+</div>
+<div class="h-6 w-full">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 24">
+<path d="M 0,20 Q 25,17 50,11 T 85,9 T 100,4" fill="none" stroke="#12b3a6" stroke-linecap="round" stroke-width="1.75"></path>
+<path d="M 0,20 Q 25,17 50,11 T 85,9 T 100,4 L 100,24 L 0,24 Z" fill="url(#teal-grad)" opacity="0.15"></path>
+</svg>
+</div>
+</div>
+<!-- Tile 3: CV analyses -->
+<div class="bg-surface-container-lowest border border-[#D8DEE6] rounded-lg p-3 flex flex-col justify-between hover:border-primary-container/60 transition-colors">
+<div class="flex items-center justify-between">
+<span class="text-body-sm font-body-sm text-secondary">CV analyses</span>
+<span class="text-code-xs font-code-xs font-medium text-emerald-600 flex items-center">
+              +24.8%
+              <span class="material-symbols-outlined text-[12px] ml-0.5">arrow_upward</span>
+</span>
+</div>
+<div class="flex items-baseline justify-between mt-1 mb-2">
+<span class="text-headline-lg font-headline-lg font-semibold text-on-surface">124,530</span>
+</div>
+<div class="h-6 w-full">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 24">
+<path d="M 0,21 Q 30,19 45,10 T 80,6 T 100,2" fill="none" stroke="#12b3a6" stroke-linecap="round" stroke-width="1.75"></path>
+<path d="M 0,21 Q 30,19 45,10 T 80,6 T 100,2 L 100,24 L 0,24 Z" fill="url(#teal-grad)" opacity="0.15"></path>
+</svg>
+</div>
+</div>
+<!-- Tile 4: Generated CVs -->
+<div class="bg-surface-container-lowest border border-[#D8DEE6] rounded-lg p-3 flex flex-col justify-between hover:border-primary-container/60 transition-colors">
+<div class="flex items-center justify-between">
+<span class="text-body-sm font-body-sm text-secondary">Generated CVs</span>
+<span class="text-code-xs font-code-xs font-medium text-emerald-600 flex items-center">
+              +18.2%
+              <span class="material-symbols-outlined text-[12px] ml-0.5">arrow_upward</span>
+</span>
+</div>
+<div class="flex items-baseline justify-between mt-1 mb-2">
+<span class="text-headline-lg font-headline-lg font-semibold text-on-surface">63,140</span>
+</div>
+<div class="h-6 w-full">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 24">
+<path d="M 0,19 Q 20,17 40,14 T 75,7 T 100,3" fill="none" stroke="#12b3a6" stroke-linecap="round" stroke-width="1.75"></path>
+<path d="M 0,19 Q 20,17 40,14 T 75,7 T 100,3 L 100,24 L 0,24 Z" fill="url(#teal-grad)" opacity="0.15"></path>
+</svg>
+</div>
+</div>
+<!-- Tile 5: Job matches -->
+<div class="bg-surface-container-lowest border border-[#D8DEE6] rounded-lg p-3 flex flex-col justify-between hover:border-primary-container/60 transition-colors">
+<div class="flex items-center justify-between">
+<span class="text-body-sm font-body-sm text-secondary">Job matches</span>
+<span class="text-code-xs font-code-xs font-medium text-emerald-600 flex items-center">
+              +15.0%
+              <span class="material-symbols-outlined text-[12px] ml-0.5">arrow_upward</span>
+</span>
+</div>
+<div class="flex items-baseline justify-between mt-1 mb-2">
+<span class="text-headline-lg font-headline-lg font-semibold text-on-surface">89,400</span>
+</div>
+<div class="h-6 w-full">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 24">
+<path d="M 0,18 Q 30,16 60,11 T 85,7 T 100,4" fill="none" stroke="#12b3a6" stroke-linecap="round" stroke-width="1.75"></path>
+<path d="M 0,18 Q 30,16 60,11 T 85,7 T 100,4 L 100,24 L 0,24 Z" fill="url(#teal-grad)" opacity="0.15"></path>
+</svg>
+</div>
+</div>
+<!-- Tile 6: Premium users -->
+<div class="bg-surface-container-lowest border border-[#D8DEE6] rounded-lg p-3 flex flex-col justify-between hover:border-primary-container/60 transition-colors">
+<div class="flex items-center justify-between">
+<span class="text-body-sm font-body-sm text-secondary">Premium users</span>
+<span class="text-code-xs font-code-xs font-medium text-emerald-600 flex items-center">
+              +6.7%
+              <span class="material-symbols-outlined text-[12px] ml-0.5">arrow_upward</span>
+</span>
+</div>
+<div class="flex items-baseline justify-between mt-1 mb-2">
+<span class="text-headline-lg font-headline-lg font-semibold text-on-surface">3,920</span>
+</div>
+<div class="h-6 w-full">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 100 24">
+<path d="M 0,17 Q 35,16 55,12 T 85,8 T 100,5" fill="none" stroke="#12b3a6" stroke-linecap="round" stroke-width="1.75"></path>
+<path d="M 0,17 Q 35,16 55,12 T 85,8 T 100,5 L 100,24 L 0,24 Z" fill="url(#teal-grad)" opacity="0.15"></path>
+</svg>
+</div>
+</div>
+</section>
+<!-- ==================== 2. MAIN 2-COLUMN GRID ==================== -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+<!-- LEFT COLUMN (~65% - 8 cols) -->
+<div class="lg:col-span-8 space-y-5">
+<!-- Large Card: Activity Multi-Line Graph -->
+<div class="bg-surface-container-lowest border border-[#D8DEE6] rounded-lg p-5">
+<!-- Header with Legend -->
+<div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+<div>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Activity Trends</h2>
+<p class="text-body-sm font-body-sm text-secondary">Telemetry of ingestion, compilation, and embedding operations across GCC zones</p>
+</div>
+<!-- Legend Pills -->
+<div class="flex items-center gap-3 text-body-sm font-body-sm">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#E6F7F5] border border-primary-container/20 text-[#0E8F86]">
+<span class="w-2 h-2 rounded-full bg-[#12B3A6]"></span>
+<span class="font-medium">CV analyses</span>
+</span>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#F1F4F7] border border-[#D8DEE6] text-on-surface">
+<span class="w-2 h-2 rounded-full bg-[#101B33]"></span>
+<span class="font-medium">Generated CVs</span>
+</span>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#EFF4FF] border border-[#BBC6E6] text-[#3c4661]">
+<span class="w-2 h-2 rounded-full bg-[#545E79]"></span>
+<span class="font-medium">Job matches</span>
+</span>
+</div>
+</div>
+<!-- SVG Multi-Line Chart Canvas -->
+<div class="relative w-full h-72">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 800 240">
+<defs>
+<lineargradient id="analyses-area" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#12B3A6" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#12B3A6" stop-opacity="0.0"></stop>
+</lineargradient>
+<lineargradient id="cvs-area" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#101B33" stop-opacity="0.10"></stop>
+<stop offset="100%" stop-color="#101B33" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Gridlines -->
+<line stroke="#EAEFF5" stroke-dasharray="3,3" stroke-width="1" x1="40" x2="780" y1="20" y2="20"></line>
+<line stroke="#EAEFF5" stroke-dasharray="3,3" stroke-width="1" x1="40" x2="780" y1="70" y2="70"></line>
+<line stroke="#EAEFF5" stroke-dasharray="3,3" stroke-width="1" x1="40" x2="780" y1="120" y2="120"></line>
+<line stroke="#EAEFF5" stroke-dasharray="3,3" stroke-width="1" x1="40" x2="780" y1="170" y2="170"></line>
+<line stroke="#D8DEE6" stroke-width="1" x1="40" x2="780" y1="210" y2="210"></line>
+<!-- Y-Axis labels (tabular) -->
+<text class="text-[10px] font-code-xs" fill="#8A99AD" text-anchor="end" x="32" y="24">6k</text>
+<text class="text-[10px] font-code-xs" fill="#8A99AD" text-anchor="end" x="32" y="74">4.5k</text>
+<text class="text-[10px] font-code-xs" fill="#8A99AD" text-anchor="end" x="32" y="124">3k</text>
+<text class="text-[10px] font-code-xs" fill="#8A99AD" text-anchor="end" x="32" y="174">1.5k</text>
+<text class="text-[10px] font-code-xs" fill="#8A99AD" text-anchor="end" x="32" y="214">0</text>
+<!-- Area Fill: CV Analyses (Teal) -->
+<path d="M 50,160 C 130,150 180,110 240,120 C 310,130 380,85 450,75 C 520,65 590,90 660,50 C 710,25 740,35 770,22 L 770,210 L 50,210 Z" fill="url(#analyses-area)"></path>
+<!-- Area Fill: Generated CVs (Navy) -->
+<path d="M 50,185 C 130,180 200,165 270,160 C 340,155 420,140 490,130 C 570,120 650,110 710,95 C 740,88 760,82 770,78 L 770,210 L 50,210 Z" fill="url(#cvs-area)"></path>
+<!-- Line 3: Job Matches (Secondary Slate) -->
+<path d="M 50,195 C 140,192 210,175 300,172 C 380,170 460,155 540,145 C 610,138 690,128 770,115" fill="none" stroke="#545E79" stroke-dasharray="4,2" stroke-width="1.8"></path>
+<!-- Line 2: Generated CVs (Deep Navy) -->
+<path d="M 50,185 C 130,180 200,165 270,160 C 340,155 420,140 490,130 C 570,120 650,110 710,95 C 740,88 760,82 770,78" fill="none" stroke="#101B33" stroke-linecap="round" stroke-width="2.2"></path>
+<!-- Line 1: CV Analyses (Surgical Teal) -->
+<path d="M 50,160 C 130,150 180,110 240,120 C 310,130 380,85 450,75 C 520,65 590,90 660,50 C 710,25 740,35 770,22" fill="none" stroke="#12B3A6" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Key Telemetry Inspection Marker -->
+<line stroke="#12B3A6" stroke-dasharray="2,2" stroke-width="1" x1="660" x2="660" y1="20" y2="210"></line>
+<circle cx="660" cy="50" fill="#12B3A6" r="4" stroke="#FFFFFF" stroke-width="2"></circle>
+<circle cx="660" cy="105" fill="#101B33" r="3.5" stroke="#FFFFFF" stroke-width="2"></circle>
+<circle cx="660" cy="132" fill="#545E79" r="3" stroke="#FFFFFF" stroke-width="1.5"></circle>
+<!-- X-Axis Dates -->
+<text class="text-[10px] font-code-xs" fill="#8A99AD" x="50" y="228">Day 1</text>
+<text class="text-[10px] font-code-xs" fill="#8A99AD" x="180" y="228">Day 7</text>
+<text class="text-[10px] font-code-xs" fill="#8A99AD" x="340" y="228">Day 14</text>
+<text class="text-[10px] font-code-xs" fill="#8A99AD" x="500" y="228">Day 21</text>
+<text class="text-[10px] font-code-xs font-medium" fill="#12B3A6" x="660" y="228">Day 26 (Peak)</text>
+<text class="text-[10px] font-code-xs" fill="#8A99AD" x="760" y="228">Day 30</text>
+</svg>
+<!-- Interactive Simulated Callout Badge -->
+<div class="absolute top-7 right-32 bg-on-secondary-fixed/95 text-on-secondary rounded p-2 text-code-xs font-code-xs shadow-md border border-white/10 pointer-events-none">
+<div class="text-secondary-fixed-dim border-b border-white/10 pb-1 mb-1 font-semibold">Day 26 Telemetry Snapshot</div>
+<div class="flex justify-between gap-4"><span class="text-[#74F7E9]">CV analyses:</span> <span class="font-bold">5,214</span></div>
+<div class="flex justify-between gap-4"><span class="text-white">Generated:</span> <span class="font-bold">2,680</span></div>
+<div class="flex justify-between gap-4"><span class="text-secondary-fixed-dim">Job matches:</span> <span class="font-bold">3,892</span></div>
+</div>
+</div>
+<!-- Footer summary row for Activity Card -->
+<div class="mt-4 pt-3 border-t border-[#D8DEE6] grid grid-cols-3 gap-2 text-body-sm font-body-sm text-secondary">
+<div>
+<span class="text-code-xs font-code-xs block text-secondary">Daily Average Ingestion</span>
+<span class="text-on-surface font-semibold text-headline-sm">4,151 ops/day</span>
+</div>
+<div>
+<span class="text-code-xs font-code-xs block text-secondary">ATS Optimization Ratio</span>
+<span class="text-on-surface font-semibold text-headline-sm">94.8% Gulf compliant</span>
+</div>
+<div>
+<span class="text-code-xs font-code-xs block text-secondary">Parser Success SLA</span>
+<span class="text-emerald-700 font-semibold text-headline-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 99.86%
+                </span>
+</div>
+</div>
+</div>
+<!-- Table Card: Recent Failures -->
+<div class="bg-surface-container-lowest border border-[#D8DEE6] rounded-lg overflow-hidden">
+<!-- Table Header Bar -->
+<div class="px-5 py-3 border-b border-[#D8DEE6] flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Recent failures</h3>
+<span class="px-2 py-0.5 rounded-full bg-error-container text-error text-code-xs font-code-xs font-semibold">4 in last 24h</span>
+</div>
+<!-- Filter Selector -->
+<div class="flex items-center gap-2">
+<div class="flex items-center border border-[#D8DEE6] rounded px-2.5 py-1 text-code-sm font-code-sm bg-surface-container-lowest">
+<span class="text-secondary mr-1.5">Filter:</span>
+<span class="text-on-surface font-medium">All providers</span>
+<span class="material-symbols-outlined text-[14px] text-secondary ml-1" data-icon="tune">tune</span>
+</div>
+</div>
+</div>
+<!-- Table content -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-[#F1F4F7] border-b border-[#D8DEE6] text-secondary uppercase text-[11px] font-label-md tracking-wider h-8">
+<th class="py-1 px-4 font-semibold w-24">Time</th>
+<th class="py-1 px-4 font-semibold">Operation</th>
+<th class="py-1 px-4 font-semibold">Provider</th>
+<th class="py-1 px-4 font-semibold">Error Diagnostic</th>
+<th class="py-1 px-4 font-semibold text-right w-24">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#D8DEE6] text-body-sm font-body-sm">
+<!-- Row 1 -->
+<tr class="hover:bg-[#E6F7F5]/40 transition-colors h-10 group">
+<td class="py-2 px-4 font-code-sm text-code-sm text-secondary">14:22:08</td>
+<td class="py-2 px-4 font-medium text-on-surface">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-error">error</span>
+<span>ATS Score Parser (Arabic)</span>
+</div>
+</td>
+<td class="py-2 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs bg-[#F5F0FF] text-[#5925DC] border border-[#D8B4FE]">
+                        Claude 3.5 Sonnet
+                      </span>
+</td>
+<td class="py-2 px-4">
+<span class="font-code-xs text-code-xs text-error bg-error-container/30 px-1.5 py-0.5 rounded">
+                        504 Gateway Timeout
+                      </span>
+</td>
+<td class="py-2 px-4 text-right">
+<button class="text-code-sm font-code-sm font-medium text-primary hover:text-primary-container underline underline-offset-2">Investigate</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-[#E6F7F5]/40 transition-colors h-10 group">
+<td class="py-2 px-4 font-code-sm text-code-sm text-secondary">13:50:12</td>
+<td class="py-2 px-4 font-medium text-on-surface">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-error">error</span>
+<span>PDF Template Compile</span>
+</div>
+</td>
+<td class="py-2 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs bg-[#EFF4FF] text-[#1E40AF] border border-[#BFDBFE]">
+                        Gotenberg PDF
+                      </span>
+</td>
+<td class="py-2 px-4">
+<span class="font-code-xs text-code-xs text-error bg-error-container/30 px-1.5 py-0.5 rounded">
+                        Font subsetting memory limit
+                      </span>
+</td>
+<td class="py-2 px-4 text-right">
+<button class="text-code-sm font-code-sm font-medium text-primary hover:text-primary-container underline underline-offset-2">Investigate</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-[#E6F7F5]/40 transition-colors h-10 group">
+<td class="py-2 px-4 font-code-sm text-code-sm text-secondary">11:15:40</td>
+<td class="py-2 px-4 font-medium text-on-surface">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-error">error</span>
+<span>DeepInfra Embeddings</span>
+</div>
+</td>
+<td class="py-2 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs bg-[#F0FDF4] text-[#166534] border border-[#BBF7D0]">
+                        DeepInfra
+                      </span>
+</td>
+<td class="py-2 px-4">
+<span class="font-code-xs text-code-xs text-error bg-error-container/30 px-1.5 py-0.5 rounded">
+                        Rate limit exceeded (rpm: 120)
+                      </span>
+</td>
+<td class="py-2 px-4 text-right">
+<button class="text-code-sm font-code-sm font-medium text-primary hover:text-primary-container underline underline-offset-2">Investigate</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-[#E6F7F5]/40 transition-colors h-10 group">
+<td class="py-2 px-4 font-code-sm text-code-sm text-secondary">09:04:19</td>
+<td class="py-2 px-4 font-medium text-on-surface">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-error">error</span>
+<span>OpenAI Keyword Match</span>
+</div>
+</td>
+<td class="py-2 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-code-xs font-code-xs bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]">
+                        OpenAI GPT-4o
+                      </span>
+</td>
+<td class="py-2 px-4">
+<span class="font-code-xs text-code-xs text-error bg-error-container/30 px-1.5 py-0.5 rounded">
+                        Schema validation mismatch on section [Work]
+                      </span>
+</td>
+<td class="py-2 px-4 text-right">
+<button class="text-code-sm font-code-sm font-medium text-primary hover:text-primary-container underline underline-offset-2">Investigate</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer -->
+<div class="px-5 py-2.5 bg-[#F1F4F7]/60 border-t border-[#D8DEE6] flex items-center justify-between text-code-xs font-code-xs text-secondary">
+<span>Showing 4 events logged in circular buffer</span>
+<a class="text-primary hover:text-primary-container font-medium flex items-center gap-1" href="#">
+                View all failure logs
+                <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN (~35% - 4 cols) -->
+<div class="lg:col-span-4 space-y-5">
+<!-- Card 1: AI Usage -->
+<div class="bg-surface-container-lowest border border-[#D8DEE6] rounded-lg p-5">
+<div class="flex items-center justify-between pb-3 border-b border-[#D8DEE6]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[18px]">psychology</span>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">AI usage</h3>
+</div>
+<span class="text-code-xs font-code-xs text-secondary">Current cycle</span>
+</div>
+<!-- Metrics Row (4 stats) -->
+<div class="grid grid-cols-2 gap-3 py-3 border-b border-[#D8DEE6]">
+<div class="bg-[#F8F9FF] p-2 rounded border border-[#E6EEFF]">
+<div class="text-code-xs font-code-xs text-secondary">Total calls</div>
+<div class="text-headline-md font-headline-md font-semibold text-on-surface mt-0.5">842.1k</div>
+</div>
+<div class="bg-[#F8F9FF] p-2 rounded border border-[#E6EEFF]">
+<div class="text-code-xs font-code-xs text-secondary">Error rate</div>
+<div class="text-headline-md font-headline-md font-semibold text-emerald-700 mt-0.5">0.14%</div>
+</div>
+<div class="bg-[#F8F9FF] p-2 rounded border border-[#E6EEFF]">
+<div class="text-code-xs font-code-xs text-secondary">p95 latency</div>
+<div class="text-headline-md font-headline-md font-semibold text-on-surface mt-0.5">1.42s</div>
+</div>
+<div class="bg-[#F8F9FF] p-2 rounded border border-[#E6EEFF]">
+<div class="text-code-xs font-code-xs text-secondary">Est. cost</div>
+<div class="text-headline-md font-headline-md font-semibold text-on-surface mt-0.5">$1,842.50</div>
+</div>
+</div>
+<!-- Provider Breakdown Bars -->
+<div class="pt-3 space-y-3.5">
+<!-- Anthropic -->
+<div>
+<div class="flex justify-between items-center text-body-sm font-body-sm mb-1">
+<span class="font-medium text-on-surface">Anthropic (Claude 3.5 Sonnet)</span>
+<span class="font-code-sm text-code-sm font-semibold text-on-surface">52%</span>
+</div>
+<div class="w-full bg-[#EAEFF5] h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 52%"></div>
+</div>
+<div class="flex justify-between items-center text-code-xs font-code-xs text-secondary mt-1">
+<span>437k calls</span>
+<span>avg 1.2s</span>
+</div>
+</div>
+<!-- OpenAI -->
+<div>
+<div class="flex justify-between items-center text-body-sm font-body-sm mb-1">
+<span class="font-medium text-on-surface">OpenAI (GPT-4o / mini)</span>
+<span class="font-code-sm text-code-sm font-semibold text-on-surface">36%</span>
+</div>
+<div class="w-full bg-[#EAEFF5] h-1.5 rounded-full overflow-hidden">
+<div class="bg-on-secondary-fixed h-full rounded-full" style="width: 36%"></div>
+</div>
+<div class="flex justify-between items-center text-code-xs font-code-xs text-secondary mt-1">
+<span>303k calls</span>
+<span>avg 940ms</span>
+</div>
+</div>
+<!-- DeepInfra -->
+<div>
+<div class="flex justify-between items-center text-body-sm font-body-sm mb-1">
+<span class="font-medium text-on-surface">DeepInfra (Llama 3 / Embeddings)</span>
+<span class="font-code-sm text-code-sm font-semibold text-on-surface">12%</span>
+</div>
+<div class="w-full bg-[#EAEFF5] h-1.5 rounded-full overflow-hidden">
+<div class="bg-[#545E79] h-full rounded-full" style="width: 12%"></div>
+</div>
+<div class="flex justify-between items-center text-code-xs font-code-xs text-secondary mt-1">
+<span>101k calls</span>
+<span>avg 320ms</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Queue (Async Processing) -->
+<div class="bg-surface-container-lowest border border-[#D8DEE6] rounded-lg p-5">
+<div class="flex items-center justify-between pb-3 border-b border-[#D8DEE6]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]">splitscreen</span>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Queue engine</h3>
+</div>
+<span class="inline-flex items-center gap-1 text-code-xs font-code-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span>Workers: 8/8 healthy</span>
+</span>
+</div>
+<!-- Queue KPIs -->
+<div class="grid grid-cols-3 gap-2 py-3 border-b border-[#D8DEE6] text-center">
+<div class="p-2 bg-[#FFFBEB] rounded border border-[#FDE68A]">
+<div class="text-code-xs font-code-xs text-amber-800">Pending</div>
+<div class="text-headline-md font-headline-md font-bold text-amber-900 flex items-center justify-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
+<span>42</span>
+</div>
+</div>
+<div class="p-2 bg-[#F8F9FF] rounded border border-[#E6EEFF]">
+<div class="text-code-xs font-code-xs text-secondary">Oldest job</div>
+<div class="text-headline-md font-headline-md font-bold text-on-surface">14s</div>
+<div class="text-[9px] font-code-xs text-emerald-700">&lt; 30s SLA</div>
+</div>
+<div class="p-2 bg-error-container/30 rounded border border-error/20">
+<div class="text-code-xs font-code-xs text-error">Failed</div>
+<div class="text-headline-md font-headline-md font-bold text-error">3</div>
+</div>
+</div>
+<!-- Action footer for Queue -->
+<div class="mt-3 flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-code-xs font-code-xs text-secondary">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span>Auto-scaler: idle (20% headroom)</span>
+</div>
+<button class="px-2.5 py-1 text-code-sm font-code-sm font-medium bg-error/10 hover:bg-error/20 text-error rounded border border-error/30 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">refresh</span>
+<span>Retry all (3)</span>
+</button>
+</div>
+</div>
+<!-- Card 3: Localization (Gulf ATS Focus) -->
+<div class="bg-surface-container-lowest border border-[#D8DEE6] rounded-lg p-5">
+<div class="flex items-center justify-between pb-3 border-b border-[#D8DEE6]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#12b3a6] text-[18px]">translate</span>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Gulf localization</h3>
+</div>
+<span class="text-code-xs font-code-xs text-secondary">ATS Lexicon v3.2</span>
+</div>
+<!-- Language Progress Bars -->
+<div class="pt-3 space-y-3.5">
+<!-- Arabic -->
+<div>
+<div class="flex justify-between items-center text-body-sm font-body-sm mb-1">
+<span class="font-medium text-on-surface flex items-center gap-1.5">
+<span class="text-code-xs font-code-xs px-1 py-0.2 rounded bg-surface-container text-on-surface">SA / AE</span>
+<span>Arabic (ar-SA &amp; ar-AE)</span>
+</span>
+<span class="font-code-sm text-code-sm text-emerald-700 font-semibold">100% verified</span>
+</div>
+<div class="w-full bg-[#EAEFF5] h-1.5 rounded-full overflow-hidden">
+<div class="bg-emerald-500 h-full rounded-full" style="width: 100%"></div>
+</div>
+<div class="text-code-xs font-code-xs text-secondary mt-1 flex justify-between">
+<span>1,420 / 1,420 strings</span>
+<span class="text-emerald-700">RTL validated</span>
+</div>
+</div>
+<!-- English (GCC) -->
+<div>
+<div class="flex justify-between items-center text-body-sm font-body-sm mb-1">
+<span class="font-medium text-on-surface flex items-center gap-1.5">
+<span class="text-code-xs font-code-xs px-1 py-0.2 rounded bg-surface-container text-on-surface">GCC</span>
+<span>English (en-GCC)</span>
+</span>
+<span class="font-code-sm text-code-sm text-emerald-700 font-semibold">100%</span>
+</div>
+<div class="w-full bg-[#EAEFF5] h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 100%"></div>
+</div>
+<div class="text-code-xs font-code-xs text-secondary mt-1">
+<span>1,420 / 1,420 strings</span>
+</div>
+</div>
+<!-- French -->
+<div>
+<div class="flex justify-between items-center text-body-sm font-body-sm mb-1">
+<span class="font-medium text-on-surface flex items-center gap-1.5">
+<span class="text-code-xs font-code-xs px-1 py-0.2 rounded bg-surface-container text-on-surface">MA</span>
+<span>French (fr-MA/GCC)</span>
+</span>
+<span class="font-code-sm text-code-sm text-amber-700 font-semibold">62%</span>
+</div>
+<div class="w-full bg-[#EAEFF5] h-1.5 rounded-full overflow-hidden">
+<div class="bg-amber-500 h-full rounded-full" style="width: 62%"></div>
+</div>
+<div class="flex justify-between items-center text-code-xs font-code-xs mt-1">
+<span class="text-secondary">880 / 1,420 strings</span>
+<span class="text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded">14 unpublished drafts</span>
+</div>
+</div>
+</div>
+<!-- Manage action button -->
+<div class="mt-4 pt-3 border-t border-[#D8DEE6]">
+<a class="w-full flex items-center justify-between px-3 py-1.5 bg-[#F1F4F7] hover:bg-[#E6F7F5] text-on-surface hover:text-[#006a62] rounded border border-[#D8DEE6] text-body-sm font-body-sm transition-colors" href="#">
+<span class="font-medium">Manage strings &amp; labels</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
