@@ -109,7 +109,7 @@
                 <p class="card-note">The {{ $queue['driver'] }} driver runs jobs inline; there is no backlog to show.</p>
             @else
                 <div class="table-wrap flush">
-                    <table>
+                    <table class="table-compact">
                         <thead><tr><th>Queue</th><th>Status</th><th class="num">Pending</th><th class="num">Delayed</th><th class="num">Running</th><th class="num">Oldest</th></tr></thead>
                         <tbody>
                             @foreach ($queue['queues'] as $row)
@@ -159,7 +159,7 @@
                                     <td><span class="cell-strong">{{ class_basename($job['job']) }}</span><span class="cell-sub td-mono">#{{ $job['numeric_id'] }}</span></td>
                                     <td><span class="badge badge-info badge-square">{{ $job['queue'] }}</span></td>
                                     <td class="td-error">{{ $job['exception'] }}</td>
-                                    <td class="td-mono" title="{{ $job['failed_at']?->toDateTimeString() }}">{{ $job['failed_at']?->diffForHumans(null, true, true) }}{{ $job['failed_at'] ? ' ago' : '–' }}</td>
+                                    <td class="td-mono" title="{{ $job['failed_at']?->toDateTimeString() }}">{{ $job['failed_at']?->locale('en')->diffForHumans(null, true, true) }}{{ $job['failed_at'] ? ' ago' : '–' }}</td>
                                     <td class="num">
                                         <div class="table-actions" style="justify-content: flex-end;">
                                             <form method="POST" action="{{ route('admin.health.failed.retry', $job['id']) }}">

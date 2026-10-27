@@ -25,7 +25,7 @@
             <a href="{{ route('admin.index', ['range' => $key]) }}" @if ($range === $key) aria-current="true" @endif>{{ $label }}</a>
         @endforeach
     </nav>
-    <span class="admin-updated">Updated {{ $metrics['generated_at']->diffForHumans(null, true, true) }} ago</span>
+    <span class="admin-updated">Updated {{ $metrics['generated_at']->locale('en')->diffForHumans(null, true, true) }} ago</span>
     <a class="button button-secondary" href="{{ route('admin.index', ['range' => $range, 'refresh' => 1]) }}">
         @include('admin.partials.icon', ['name' => 'refresh', 'class' => 'icon-sm']) Refresh
     </a>

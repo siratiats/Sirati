@@ -444,7 +444,7 @@ class AdminMonitoringTest extends TestCase
     public function test_user_detail_shows_activity_counts_and_premium_actions(): void
     {
         $admin = User::factory()->create(['email' => self::ADMIN_EMAIL]);
-        $user = User::factory()->create(['name' => 'Huda Detail']);
+        $user = User::factory()->create(['name' => 'Huda <b>Detail</b> & Co']);
         $this->insertAnalysis($user->id, now());
         $this->insertAnalysis($user->id, now());
         $this->insertGeneratedCv($user->id, now());
@@ -454,7 +454,9 @@ class AdminMonitoringTest extends TestCase
         $response = $this->actingAs($admin)->get(route('admin.users.show', $user));
 
         $response->assertOk()
-            ->assertSee('Huda Detail')
+            ->assertSee('Huda <b>Detail</b> & Co')
+            ->assertDontSee('<b>Detail</b>', false)
+            ->assertDontSee('&amp;amp;', false)
             ->assertSee(route('admin.users.grant-premium', $user))
             ->assertDontSee(route('admin.users.revoke-premium', $user));
 

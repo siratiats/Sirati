@@ -94,10 +94,10 @@
                     <button class="icon-button admin-menu-button" type="button" data-admin-menu-toggle aria-controls="admin-sidebar" aria-expanded="false" aria-label="Open navigation">
                         @include('admin.partials.icon', ['name' => 'menu', 'class' => 'icon-lg'])
                     </button>
-                    <h1>{{ $heading }}</h1>
+                    <h1>{!! $heading !!}</h1>
                     @if ($crumb !== '')
                         <span class="admin-crumb-sep" aria-hidden="true">/</span>
-                        <span class="admin-crumb">{{ $crumb }}</span>
+                        <span class="admin-crumb">{!! $crumb !!}</span>
                     @endif
                     <span class="env-badge {{ $environmentClass }}" title="Application environment">{{ ucfirst($environment) }}</span>
                 </div>

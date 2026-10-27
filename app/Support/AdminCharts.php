@@ -79,16 +79,18 @@ final class AdminCharts
         ];
     }
 
+    /**
+     * Smallest "nice" axis maximum >= $value that splits into 4 whole-number ticks.
+     */
     public static function niceMax(int|float $value): int
     {
-        if ($value <= 4) {
-            return 4;
-        }
+        $rawStep = max(1, $value / 4);
+        $magnitude = 10 ** floor(log10($rawStep));
+        $steps = $magnitude >= 10 ? [1, 2, 2.5, 5, 10] : [1, 2, 5, 10];
 
-        $magnitude = 10 ** floor(log10($value));
-        foreach ([1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10] as $step) {
-            if ($step * $magnitude >= $value) {
-                return (int) ceil($step * $magnitude);
+        foreach ($steps as $step) {
+            if ($step * $magnitude >= $rawStep) {
+                return (int) round($step * $magnitude * 4);
             }
         }
 
