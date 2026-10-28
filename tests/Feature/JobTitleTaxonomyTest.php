@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\CvAnalysis;
 use App\Models\JobTitle;
 use App\Models\User;
 use App\Services\AtsScoringService;
@@ -152,8 +153,7 @@ class JobTitleTaxonomyTest extends TestCase
     {
         $this->seed(JobTitleSeeder::class);
         $firstCount = JobTitle::query()->count();
-        $this->assertGreaterThanOrEqual(60, $firstCount);
-        $this->assertLessThanOrEqual(80, $firstCount);
+        $this->assertGreaterThanOrEqual(100, $firstCount);
 
         $this->seed(JobTitleSeeder::class);
         $this->assertSame($firstCount, JobTitle::query()->count());
@@ -175,6 +175,82 @@ class JobTitleTaxonomyTest extends TestCase
             'name_en' => 'Other',
             'sort_order' => 999,
         ]);
+    }
+
+    public function test_every_scorer_category_has_labels_and_sector_categories_are_populated(): void
+    {
+        $this->seed(JobTitleSeeder::class);
+
+        $fallbackAr = AtsScoringService::categoryLabel('__none__');
+        $fallbackAnalysis = (new CvAnalysis)->forceFill(['category' => '__none__']);
+
+        foreach (array_keys(AtsScoringService::jobKeywords()) as $category) {
+            if ($category === 'general') {
+                continue;
+            }
+            $analysis = (new CvAnalysis)->forceFill(['category' => $category]);
+            $this->assertNotSame($fallbackAr, AtsScoringService::categoryLabel($category), "No scorer label for [{$category}].");
+            $this->assertNotSame($fallbackAnalysis->category_label, $analysis->category_label, "No Arabic analysis label for [{$category}].");
+            $this->assertNotSame($fallbackAnalysis->category_label_en, $analysis->category_label_en, "No English analysis label for [{$category}].");
+        }
+
+        foreach (['pharmacy', 'healthcare', 'engineering'] as $category) {
+            $this->assertGreaterThanOrEqual(
+                10,
+                JobTitle::query()->active()->where('category', $category)->count(),
+                "Category [{$category}] should offer at least 10 titles.",
+            );
+        }
+
+        $slugs = JobTitle::query()->pluck('slug');
+        $this->assertSame($slugs->count(), $slugs->unique()->count());
+        $this->assertSame('other', JobTitle::query()->orderByDesc('sort_order')->value('slug'));
+    }
+
+    public function test_scorer_infers_sector_category_from_every_seeded_sector_title(): void
+    {
+        $this->seed(JobTitleSeeder::class);
+        $scorer = new AtsScoringService;
+        $sectors = ['pharmacy', 'healthcare', 'engineering'];
+        // Categories whose own titles must always be recognised from the headline.
+        $selfInferring = [...$sectors, 'software', 'data'];
+
+        foreach (JobTitle::query()->where('slug', '!=', 'other')->get() as $title) {
+            foreach ([$title->name_en, $title->name_ar, mb_strtoupper($title->name_en)] as $headline) {
+                $inferred = $scorer->score("Summary\n{$headline}", $headline)['category'];
+                $this->assertSame($inferred, AtsScoringService::inferCategory($headline));
+
+                if (in_array($title->category, $selfInferring, true)) {
+                    $this->assertSame($title->category, $inferred, "Headline [{$headline}] should infer [{$title->category}].");
+                } else {
+                    $this->assertNotContains($inferred, $sectors, "Headline [{$headline}] ({$title->category}) was pulled into [{$inferred}].");
+                }
+            }
+        }
+    }
+
+    public function test_sector_cv_scores_better_against_its_own_keywords_than_another_sector(): void
+    {
+        $scorer = new AtsScoringService;
+        $keywords = AtsScoringService::jobKeywords();
+        unset($keywords['general']);
+
+        foreach ($keywords as $category => $terms) {
+            $cv = "Summary\nProfessional experienced in ".implode(', ', $terms).'.';
+            $own = $scorer->score($cv, 'Specialist', $category)['job_match'];
+
+            foreach (array_keys($keywords) as $other) {
+                $otherTerms = $keywords[$other];
+                if ($other === $category || array_diff($otherTerms, $terms) === []) {
+                    continue;
+                }
+                $this->assertGreaterThan(
+                    $scorer->score($cv, 'Specialist', $other)['job_match'],
+                    $own,
+                    "A [{$category}] CV should match its own keyword bank better than [{$other}].",
+                );
+            }
+        }
     }
 
     public function test_update_profile_can_set_job_title(): void

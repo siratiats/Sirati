@@ -3,8 +3,8 @@
 namespace App\Services\Jobs;
 
 use App\Models\JobTitle;
+use App\Services\AtsScoringService;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class JobTaxonomyMatcher
 {
@@ -34,7 +34,7 @@ class JobTaxonomyMatcher
     ];
 
     /**
-     * Match a job posting's title and text against the 73 JobTitle taxonomy.
+     * Match a job posting's title and text against the active JobTitle taxonomy.
      *
      * @return array{job_title_id: ?int, category: string, city: ?string, is_remote: bool}
      */
@@ -45,7 +45,7 @@ class JobTaxonomyMatcher
 
         return [
             'job_title_id' => $jobTitle?->id,
-            'category' => $jobTitle?->category ?? $this->inferGeneralCategory($title.' '.$body),
+            'category' => $jobTitle?->category ?? AtsScoringService::inferCategory($title),
             'city' => $cityInfo['city'],
             'is_remote' => $cityInfo['is_remote'],
         ];
@@ -60,45 +60,70 @@ class JobTaxonomyMatcher
 
         $bestMatch = null;
         $highestScore = 0;
+        $bestNameLength = 0;
 
         foreach ($taxonomy as $job) {
-            $score = 0;
-
-            // Direct exact name match
-            $nameAr = $this->normalizeText($job->name_ar);
-            $nameEn = $this->normalizeText($job->name_en);
-
-            if ($nameAr !== '' && str_contains($cleanTitle, $nameAr)) {
-                $score += 20;
-            } elseif ($nameEn !== '' && str_contains($cleanTitle, $nameEn)) {
-                $score += 20;
-            } elseif ($nameAr !== '' && str_contains($combinedText, $nameAr)) {
-                $score += 10;
-            } elseif ($nameEn !== '' && str_contains($combinedText, $nameEn)) {
-                $score += 10;
+            // "Other" is a user choice, never an automatic match.
+            if ($job->slug === 'other') {
+                continue;
             }
 
-            // Keyword hits
+            $score = 0;
+            $nameLength = 0;
+
+            // Exact name beats containment; a longer contained name is more specific.
+            foreach ([$this->normalizeText($job->name_ar), $this->normalizeText($job->name_en)] as $name) {
+                if ($name === '') {
+                    continue;
+                }
+                if ($cleanTitle === $name) {
+                    $score = max($score, 100);
+                } elseif ($this->containsPhrase($cleanTitle, $name)) {
+                    $score = max($score, 20);
+                } elseif ($this->containsPhrase($combinedText, $name)) {
+                    $score = max($score, 10);
+                } else {
+                    continue;
+                }
+                $nameLength = max($nameLength, mb_strlen($name, 'UTF-8'));
+            }
+
+            // Keyword hits; a multi-word phrase in the title counts per word.
             $keywords = $job->keywords ?: [];
             foreach ($keywords as $kw) {
                 $kwClean = $this->normalizeText($kw);
                 if ($kwClean === '' || mb_strlen($kwClean) < 2) continue;
 
-                if (str_contains($cleanTitle, $kwClean)) {
-                    $score += 8;
-                } elseif (str_contains($combinedText, $kwClean)) {
+                if ($this->containsPhrase($cleanTitle, $kwClean)) {
+                    $score += 8 * count(preg_split('/\s+/u', $kwClean) ?: [$kwClean]);
+                } elseif ($this->containsPhrase($combinedText, $kwClean)) {
                     $score += 3;
                 }
             }
 
-            if ($score > $highestScore) {
+            // Ties keep the earlier title (taxonomy is ordered by sort_order, id).
+            if ($score > $highestScore || ($score === $highestScore && $score > 0 && $nameLength > $bestNameLength)) {
                 $highestScore = $score;
+                $bestNameLength = $nameLength;
                 $bestMatch = $job;
             }
         }
 
         // Require a minimum confidence score of 3
         return $highestScore >= 3 ? $bestMatch : null;
+    }
+
+    /**
+     * Whole-word/phrase match on normalized text. Allows Arabic attached prefixes
+     * (ال، و، ب، ل) and common suffixes (ه، ات، ين، ون) so "الصيدلي" matches "صيدلي".
+     */
+    private function containsPhrase(string $haystack, string $phrase): bool
+    {
+        $pattern = '/(?<![\p{L}\p{N}])(?:وال|بال|لل|ال|و|ب|ل)?'
+            .preg_quote($phrase, '/')
+            .'(?:ه|ات|ين|ون)?(?![\p{L}\p{N}])/u';
+
+        return (bool) preg_match($pattern, $haystack);
     }
 
     public function detectCity(?string $location, string $fallbackText = ''): array
@@ -139,28 +164,8 @@ class JobTaxonomyMatcher
         return (string) $text;
     }
 
-    private function inferGeneralCategory(string $text): string
-    {
-        $lower = $this->normalizeText($text);
-
-        if (Str::contains($lower, ['developer', 'software', 'engineer', 'it', 'برمجه', 'تقنيه', 'مطور', 'مهندس', 'flutter', 'laravel', 'sql', 'qa', 'ux', 'ui'])) {
-            return 'tech';
-        }
-        if (Str::contains($lower, ['accountant', 'finance', 'audit', 'tax', 'محاسب', 'ماليه', 'تدقيق', 'مبيعات', 'sales'])) {
-            return 'finance';
-        }
-        if (Str::contains($lower, ['hr', 'recruitment', 'recruiter', 'موارد بشريه', 'توظيف'])) {
-            return 'hr';
-        }
-        if (Str::contains($lower, ['ecommerce', 'marketing', 'تسويق', 'تجاره الكترونيه', 'سوشيال'])) {
-            return 'ecommerce';
-        }
-
-        return 'management';
-    }
-
     private function getTaxonomy(): Collection
     {
-        return JobTitle::query()->active()->get();
+        return JobTitle::query()->active()->orderBy('sort_order')->orderBy('id')->get();
     }
 }
