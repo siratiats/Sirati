@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+
+<html class="light" dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Siratie - Sign in</title>
+<!-- IBM Plex Sans Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-lowest": "#ffffff",
+            "on-primary-fixed": "#001e2b",
+            "surface-container-highest": "#e5e2dd",
+            "on-tertiary": "#ffffff",
+            "surface-variant": "#e5e2dd",
+            "error-container": "#ffdad6",
+            "on-tertiary-container": "#4fb3a0",
+            "surface-bright": "#fcf9f4",
+            "tertiary-fixed-dim": "#76d8c3",
+            "inverse-on-surface": "#f3f0eb",
+            "primary": "#002736",
+            "primary-fixed-dim": "#a3cce4",
+            "secondary": "#006b5e",
+            "secondary-fixed": "#8ff4e1",
+            "on-error-container": "#93000a",
+            "surface-dim": "#dcdad5",
+            "tertiary-container": "#004138",
+            "on-secondary": "#ffffff",
+            "on-secondary-fixed-variant": "#005046",
+            "on-primary-container": "#7fa8be",
+            "on-tertiary-fixed-variant": "#005045",
+            "on-surface": "#1c1c19",
+            "secondary-container": "#8cf2de",
+            "outline-variant": "#c1c7cc",
+            "primary-fixed": "#c1e8ff",
+            "on-secondary-container": "#006f62",
+            "secondary-fixed-dim": "#72d8c5",
+            "error": "#ba1a1a",
+            "outline": "#71787c",
+            "tertiary-fixed": "#92f4df",
+            "surface-container-low": "#f6f3ee",
+            "surface": "#fcf9f4",
+            "inverse-primary": "#a3cce4",
+            "background": "#fcf9f4",
+            "on-background": "#1c1c19",
+            "on-tertiary-fixed": "#00201b",
+            "surface-tint": "#3b6378",
+            "surface-container-high": "#ebe8e3",
+            "on-primary": "#ffffff",
+            "inverse-surface": "#31302d",
+            "on-error": "#ffffff",
+            "tertiary": "#002922",
+            "primary-container": "#0f3d50",
+            "on-primary-fixed-variant": "#214b5f",
+            "surface-container": "#f0ede9",
+            "on-surface-variant": "#41484c",
+            "on-secondary-fixed": "#00201b"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "space-xs": "0.25rem",
+            "gutter-sm": "0.75rem",
+            "space-xl": "2rem",
+            "space-sm": "0.5rem",
+            "margin": "1.25rem",
+            "gutter": "1rem",
+            "margin-tablet": "2rem"
+          },
+          "fontFamily": {
+            "label-md": ["IBM Plex Sans"],
+            "headline-lg-mobile": ["IBM Plex Sans"],
+            "body-md": ["IBM Plex Sans"],
+            "display": ["IBM Plex Sans"],
+            "headline-md": ["IBM Plex Sans"],
+            "body-lg": ["IBM Plex Sans"],
+            "body-sm": ["IBM Plex Sans"],
+            "headline-lg": ["IBM Plex Sans"],
+            "headline-sm": ["IBM Plex Sans"],
+            "title-md": ["IBM Plex Sans"],
+            "caption": ["IBM Plex Sans"],
+            "label-sm": ["IBM Plex Sans"]
+          },
+          "fontSize": {
+            "label-md": ["13px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+            "headline-lg-mobile": ["26px", {"lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "body-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400"}],
+            "display": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+            "headline-md": ["22px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400"}],
+            "body-sm": ["12px", {"lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "400"}],
+            "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+            "headline-sm": ["18px", {"lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "600"}],
+            "title-md": ["16px", {"lineHeight": "22px", "letterSpacing": "0.005em", "fontWeight": "500"}],
+            "caption": ["10px", {"lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+            "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background-color: #F8F5F0;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Blueprint ledger grid pattern */
+    .blueprint-grid {
+      background-size: 24px 24px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 40%, rgba(0, 0, 0, 0) 100%);
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 40%, rgba(0, 0, 0, 0) 100%);
+    }
+    .hero-gradient {
+      background: linear-gradient(135deg, #0F3D50 0%, #085558 50%, #0F8A7A 100%);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col justify-between antialiased selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- Mobile Viewport Wrapper (Max 440px centered for optimal mobile preview & desktop balance) -->
+<div class="w-full max-w-md mx-auto min-h-screen flex flex-col relative pb-6 bg-surface-container-low shadow-2xl md:my-4 md:rounded-[36px] overflow-hidden">
+<!-- HERO SECTION (Top ~38% full bleed with blueprint grid overlay) -->
+<header class="relative hero-gradient text-on-primary pt-4 pb-14 px-5 rounded-b-[36px] overflow-hidden select-none">
+<!-- Architectural blueprint sub-grid overlay -->
+<div aria-hidden="true" class="absolute inset-0 blueprint-grid pointer-events-none"></div>
+<!-- Subtle ambient glowing orb -->
+<div aria-hidden="true" class="absolute -top-16 -right-16 w-52 h-52 bg-secondary/30 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Top Utility / Shared Navigation Bar Container -->
+<nav aria-label="Quick Actions" class="relative z-10 flex justify-between items-center w-full px-5 py-3">
+<!-- Brand / Leading Icon -->
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-lowest/15 backdrop-blur-md flex items-center justify-center border border-surface-container-lowest/20 shadow-sm">
+<span class="material-symbols-outlined text-surface-container-lowest text-lg" data-icon="description">description</span>
+</div>
+<span class="font-headline-sm text-headline-sm font-bold text-surface-container-lowest tracking-tight">Siratie</span>
+</div>
+<!-- Language Switcher Pill (Bilingual EN/AR toggle) -->
+<button aria-label="Switch language to Arabic" class="bg-surface-container-lowest/15 hover:bg-surface-container-lowest/25 backdrop-blur-md border border-surface-container-lowest/25 text-surface-container-lowest font-label-md text-label-md px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all duration-150 active:scale-95 shadow-sm" id="lang-toggle" type="button">
+<span class="font-semibold tracking-wide">AR</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed"></span>
+<span class="text-caption font-caption text-surface-container-lowest/80">العربية</span>
+</button>
+</nav>
+<!-- Centered Emblem & Hero Headlines -->
+<div class="relative z-10 flex flex-col items-center mt-3 text-center">
+<!-- Logo Emblem in Frosted Glass Plinth -->
+<div class="p-1.5 bg-surface-container-lowest/20 backdrop-blur-xl border border-surface-container-lowest/30 rounded-2xl shadow-xl shadow-primary-container/30 transition-transform hover:scale-105 duration-200">
+<img alt="Siratie Logo Icon" class="w-16 h-16 rounded-xl object-cover shadow-sm block" height="64" src="https://lh3.googleusercontent.com/aida/AEtjO1WH8Dqko8XXx4_LnayAkHMWNNo1eNMZ1Q6D1kBZncMQQfPWc7w7cSvFaClTQX5166Sz2n_COXA23P15eXkcJi4bgSk5Uat4zArqH6Y_7CqQkY6FsN-1YQ799Ce1ltQBi_XKmc17tpJMlo0NbdGZHvbu590OU-ATxZMi6pC9k1owgj9tZO9t71Io9XyhuijFQErRctgtSErzfqKplI0buJsNCbosaYOavOcA6fhRoEiQ_SsudFNKTM1SLVg" width="64"/>
+</div>
+<!-- Headline Typography -->
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-surface-container-lowest mt-4 tracking-tight">
+          Welcome to Siratie
+        </h1>
+<p class="font-body-md text-body-md text-surface-container-lowest/80 mt-1">
+          Sign in to continue
+        </p>
+</div>
+</header>
+<!-- FORM CARD (Elevated white paper card overlapping hero by ~24px) -->
+<main class="relative z-20 -mt-6 mx-4 px-space-md py-6 bg-surface-container-lowest rounded-3xl shadow-xl border border-surface-container-highest/80 flex-1 flex flex-col justify-between">
+<!-- Primary Form Elements -->
+<form class="space-y-4" id="signin-form" onsubmit="event.preventDefault();">
+<!-- Email Input Field -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1.5 font-medium" for="email-input">
+            Email address
+          </label>
+<div class="relative rounded-lg focus-within:ring-2 focus-within:ring-secondary/20 transition-all">
+<div class="absolute inset-y-0 start-0 ps-3.5 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[20px]" data-icon="mail">mail</span>
+</div>
+<input autocomplete="email" class="w-full h-12 ps-11 pe-4 bg-surface-container-lowest text-on-surface placeholder:text-outline-variant font-body-md text-body-md rounded-lg border border-surface-variant focus:border-secondary focus:outline-none transition-colors" id="email-input" name="email" placeholder="name@example.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Input Field -->
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1.5 font-medium" for="password-input">
+            Password
+          </label>
+<div class="relative rounded-lg focus-within:ring-2 focus-within:ring-secondary/20 transition-all">
+<div class="absolute inset-y-0 start-0 ps-3.5 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[20px]" data-icon="lock">lock</span>
+</div>
+<input autocomplete="current-password" class="w-full h-12 ps-11 pe-11 bg-surface-container-lowest text-on-surface placeholder:text-outline-variant font-body-md text-body-md rounded-lg border border-surface-variant focus:border-secondary focus:outline-none transition-colors" id="password-input" name="password" placeholder="••••••••" required="" type="password"/>
+<button aria-label="Toggle password visibility" class="absolute inset-y-0 end-0 pe-3.5 flex items-center text-outline hover:text-on-surface transition-colors cursor-pointer" id="toggle-password" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility" id="eye-icon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Action Row: Remember Me & Forgot Password -->
+<div class="flex items-center justify-between pt-1">
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<input class="w-4 h-4 rounded text-secondary border-surface-variant focus:ring-secondary/30 accent-[#00806F]" name="remember" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Remember me</span>
+</label>
+<a class="font-label-md text-label-md text-secondary hover:text-on-secondary-container hover:underline transition-colors" href="#">
+            Forgot password?
+          </a>
+</div>
+<!-- Primary Sign In CTA Button -->
+<button class="w-full h-12 mt-2 bg-secondary hover:bg-on-secondary-container text-on-secondary font-label-md text-label-md font-medium rounded-2xl flex items-center justify-center gap-2 shadow-md shadow-secondary/20 transition-all duration-150 active:scale-[0.98]" type="submit">
+<span>Sign in</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</form>
+<!-- Mid-Card Divider -->
+<div class="relative my-5">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-surface-container-highest"></div>
+</div>
+<div class="relative flex justify-center text-caption font-caption">
+<span class="bg-surface-container-lowest px-3 text-outline tracking-wider uppercase">Or continue with</span>
+</div>
+</div>
+<!-- Social Authentication Buttons -->
+<div class="grid grid-cols-2 gap-3">
+<!-- Google -->
+<button aria-label="Sign in with Google" class="h-11 flex items-center justify-center gap-2.5 px-3 rounded-xl border border-surface-variant hover:bg-surface-container-high transition-colors active:scale-95 bg-surface-container-lowest text-on-surface text-label-md font-label-md" type="button">
+<svg aria-hidden="true" class="w-4 h-4 shrink-0" viewbox="0 0 24 24">
+<path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.67v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.16z" fill="#4285F4"></path>
+<path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z" fill="#34A853"></path>
+<path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.14-1.55.38-2.27V6.58H1.25C.45 8.16 0 9.94 0 12s.45 3.84 1.25 5.42l4.03-3.15z" fill="#FBBC05"></path>
+<path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" fill="#EA4335"></path>
+</svg>
+<span>Google</span>
+</button>
+<!-- Apple -->
+<button aria-label="Sign in with Apple" class="h-11 flex items-center justify-center gap-2 px-3 rounded-xl border border-surface-variant hover:bg-surface-container-high transition-colors active:scale-95 bg-surface-container-lowest text-on-surface text-label-md font-label-md" type="button">
+<svg aria-hidden="true" class="w-4 h-4 shrink-0 fill-current" viewbox="0 0 24 24">
+<path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.98.6-2.62 1.35-.57.65-1.06 1.72-.93 2.74 1 .08 2.01-.49 2.62-1.24z"></path>
+</svg>
+<span>Apple</span>
+</button>
+</div>
+<!-- Registration Footnote Navigation -->
+<div class="mt-6 text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Don't have an account? 
+          <a class="font-label-md text-label-md text-secondary hover:text-on-secondary-container font-semibold transition-colors underline-offset-2 hover:underline ms-1" href="#">
+            Create account
+          </a>
+</p>
+</div>
+</main>
+<!-- Bottom Editorial Trust & Guarantee Badge -->
+<footer class="pt-4 pb-2 px-6 text-center">
+<div class="inline-flex items-center justify-center gap-2 py-1 px-3 rounded-full bg-surface-container-high/60 border border-surface-container-highest">
+<span class="material-symbols-outlined text-[14px] text-secondary" data-icon="verified_user">verified_user</span>
+<p class="font-caption text-caption text-on-surface-variant font-medium tracking-tight">
+          Bilingual CVs in minutes • ATS-Friendly Templates
+        </p>
+</div>
+<p class="font-caption text-caption text-outline mt-2">
+        © 2025 Siratie AI. Precision Career Architecture.
+      </p>
+</footer>
+</div>
+<!-- Micro-Interactions Script (Password reveal & Bilingual Direction toggle) -->
+<script>
+    // Password toggle
+    const togglePasswordBtn = document.getElementById('toggle-password');
+    const passwordInput = document.getElementById('password-input');
+    const eyeIcon = document.getElementById('eye-icon');
+
+    if (togglePasswordBtn && passwordInput && eyeIcon) {
+      togglePasswordBtn.addEventListener('click', () => {
+        const isPassword = passwordInput.getAttribute('type') === 'password';
+        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        eyeIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
+        eyeIcon.setAttribute('data-icon', isPassword ? 'visibility_off' : 'visibility');
+      });
+    }
+
+    // Bilingual RTL / LTR toggle demonstration
+    const langToggleBtn = document.getElementById('lang-toggle');
+    const htmlRoot = document.documentElement;
+
+    if (langToggleBtn) {
+      langToggleBtn.addEventListener('click', () => {
+        const isRtl = htmlRoot.getAttribute('dir') === 'rtl';
+        if (isRtl) {
+          htmlRoot.setAttribute('dir', 'ltr');
+          htmlRoot.setAttribute('lang', 'en');
+          langToggleBtn.querySelector('span:first-child').textContent = 'AR';
+          langToggleBtn.querySelector('span:last-child').textContent = 'العربية';
+        } else {
+          htmlRoot.setAttribute('dir', 'rtl');
+          htmlRoot.setAttribute('lang', 'ar');
+          langToggleBtn.querySelector('span:first-child').textContent = 'EN';
+          langToggleBtn.querySelector('span:last-child').textContent = 'English';
+        }
+      });
+    }
+  </script>
+</body></html>
