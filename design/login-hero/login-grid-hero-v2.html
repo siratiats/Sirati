@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Siratie - Sign In</title>
+  <!-- Google Fonts: IBM Plex Sans Arabic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Heroicons / Lucide style SVG icons inline -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"IBM Plex Sans Arabic"', 'sans-serif'],
+          },
+          colors: {
+            petrol: '#0F3D50',
+            tealBrand: '#0F8A7A',
+            primaryTeal: '#00806F',
+            warmCream: '#F8F5F0',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * {
+      font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif !important;
+      box-sizing: border-box;
+    }
+    
+    /* Subtle grid pattern overlay */
+    .hero-grid-pattern {
+      background-size: 24px 24px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.09) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+    }
+
+    /* Soft realistic shadows */
+    .card-shadow {
+      box-shadow: 0 12px 36px -4px rgba(15, 61, 80, 0.08), 0 4px 16px -2px rgba(15, 61, 80, 0.04);
+    }
+    
+    .btn-shadow {
+      box-shadow: 0 8px 20px -2px rgba(0, 128, 111, 0.35);
+    }
+
+    /* Frosted glass backdrop */
+    .glass-tile {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 8px 32px 0 rgba(10, 40, 52, 0.25);
+    }
+  </style>
+</head>
+<body class="bg-[#F8F5F0] text-[#1E293B] min-h-screen flex justify-center items-start antialiased selection:bg-[#00806F]/20 selection:text-[#0F3D50]">
+
+  <!-- Mobile screen container (390px viewport baseline) -->
+  <div class="w-full max-w-[420px] min-h-screen flex flex-col justify-between relative overflow-hidden bg-[#F8F5F0]">
+
+    <!-- Main Content Area -->
+    <div class="w-full flex flex-col flex-1">
+      
+      <!-- HERO: full-bleed ~36% screen height, petrol to teal diagonal, 32px rounded bottom -->
+      <section class="relative w-full h-[320px] bg-gradient-to-br from-[#0F3D50] to-[#0F8A7A] rounded-b-[36px] overflow-hidden flex flex-col justify-between pt-4 pb-12 px-6 shadow-md z-0">
+        
+        <!-- Grid pattern overlay -->
+        <div class="absolute inset-0 hero-grid-pattern pointer-events-none"></div>
+
+        <!-- Top Header row: ONLY top-right "AR" pill (No top-left logo or title) -->
+        <header class="relative z-10 w-full flex justify-end items-center pt-2">
+          <button type="button" aria-label="Switch Language to Arabic" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all text-white text-xs font-semibold tracking-wide backdrop-blur-md border border-white/20 shadow-sm">
+            <span>AR</span>
+            <span class="text-white/60 text-[11px] font-normal">| العربية</span>
+          </button>
+        </header>
+
+        <!-- Centered Hero Branding: Frosted glass tile with app logo & headings -->
+        <div class="relative z-10 flex flex-col items-center text-center mt-1">
+          <!-- Frosted white glass tile container with app logo inside -->
+          <div class="glass-tile w-20 h-20 rounded-[22px] p-2 flex items-center justify-center mb-3.5 transition-transform hover:scale-105 duration-200">
+            <!-- App Icon with exact petrol-to-teal gradient and crisp checkmark -->
+            <svg class="w-full h-full rounded-[16px] shadow-sm drop-shadow-md" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="heroLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#0F3D50" />
+                  <stop offset="100%" stop-color="#0F8A7A" />
+                </linearGradient>
+              </defs>
+              <rect width="80" height="80" rx="16" fill="url(#heroLogoGrad)" />
+              <path d="M24 40.5L34.5 51L56 28" stroke="#FFFFFF" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+
+          <h1 class="text-white font-bold text-[26px] leading-tight tracking-tight drop-shadow-sm mb-1">
+            Welcome to Siratie
+          </h1>
+          <p class="text-white/80 text-[14px] font-normal leading-relaxed">
+            Sign in to continue
+          </p>
+        </div>
+
+      </section>
+
+      <!-- FORM CARD: White card with 24px radius overlapping hero by ~28px -->
+      <main class="relative z-10 -mt-7 px-5 w-full">
+        <div class="bg-white rounded-[24px] card-shadow border border-stone-200/50 p-6 sm:p-7">
+          <form class="space-y-4" onsubmit="event.preventDefault();">
+            
+            <!-- Email Field -->
+            <div class="space-y-1.5">
+              <label for="email" class="block text-[13px] font-medium text-slate-700">
+                Email
+              </label>
+              <div class="relative rounded-xl shadow-xs transition-all focus-within:ring-2 focus-within:ring-[#00806F]/30 focus-within:border-[#00806F]">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <!-- Mail Icon -->
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                    <rect width="20" height="16" x="2" y="4" rx="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <input 
+                  type="email" 
+                  id="email" 
+                  name="email" 
+                  placeholder="name@example.com" 
+                  autocomplete="email"
+                  required
+                  class="w-full pl-11 pr-4 py-3.5 bg-stone-50/60 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white transition-colors"
+                />
+              </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="space-y-1.5 pt-1">
+              <label for="password" class="block text-[13px] font-medium text-slate-700">
+                Password
+              </label>
+              <div class="relative rounded-xl shadow-xs transition-all focus-within:ring-2 focus-within:ring-[#00806F]/30 focus-within:border-[#00806F]">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <!-- Lock Icon -->
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <input 
+                  type="password" 
+                  id="password" 
+                  name="password" 
+                  placeholder="••••••••" 
+                  autocomplete="current-password"
+                  required
+                  class="w-full pl-11 pr-11 py-3.5 bg-stone-50/60 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white tracking-widest transition-colors"
+                />
+                <!-- Eye Toggle Button -->
+                <button 
+                  type="button" 
+                  id="togglePassword"
+                  aria-label="Toggle password visibility" 
+                  onclick="const input = document.getElementById('password'); const isPass = input.type === 'password'; input.type = isPass ? 'text' : 'password'; input.classList.toggle('tracking-widest', !isPass);"
+                  class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <!-- Eye Icon -->
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Forgot Password Link (aligned to end) -->
+            <div class="flex justify-end pt-0.5">
+              <a href="#forgot" class="text-[13px] font-medium text-[#00806F] hover:text-[#0F3D50] hover:underline transition-colors py-0.5">
+                Forgot password?
+              </a>
+            </div>
+
+            <!-- Submit Button (Full-width, teal #00806F, 16px radius, right arrow) -->
+            <div class="pt-2">
+              <button 
+                type="submit" 
+                class="w-full py-3.5 px-5 bg-[#00806F] hover:bg-[#007061] active:bg-[#0F3D50] active:scale-[0.99] text-white font-semibold text-[15px] rounded-[16px] btn-shadow flex items-center justify-center gap-2 transition-all duration-150 cursor-pointer"
+              >
+                <span>Sign in</span>
+                <!-- Right arrow icon -->
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.3">
+                  <path d="M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="m12 5 7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Create Account Link -->
+            <div class="pt-3 text-center">
+              <p class="text-[13.5px] text-slate-500 font-normal">
+                Don't have an account? 
+                <a href="#create" class="font-semibold text-[#00806F] hover:text-[#0F3D50] hover:underline transition-colors ml-1">
+                  Create account
+                </a>
+              </p>
+            </div>
+
+          </form>
+        </div>
+      </main>
+
+    </div>
+
+    <!-- FOOTER below the card -->
+    <footer class="w-full px-5 pt-4 pb-6 flex flex-col items-center text-center gap-2.5 z-10">
+      
+      <!-- Soft Pill Badge: Shield-check icon + text -->
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EAE5DC]/70 border border-[#DDD7CD] text-[#0F3D50] text-[12px] font-medium shadow-2xs">
+        <!-- Shield-check icon -->
+        <svg class="w-4 h-4 text-[#00806F] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="m9 12 2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="tracking-tight text-slate-700 font-normal">
+          Bilingual CVs in minutes <span class="text-slate-400 mx-0.5">•</span> ATS-Friendly Templates
+        </span>
+      </div>
+
+      <!-- Copyright / Subtitle note -->
+      <p class="text-[11.5px] text-slate-500 font-normal tracking-normal">
+        © 2026 Siratie AI. Precision Career Architecture.
+      </p>
+
+    </footer>
+
+  </div>
+
+</body>
+</html>
