@@ -82,6 +82,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/languages/{code}/rollback', [LanguageController::class, 'rollback'])->name('admin.languages.rollback');
     Route::delete('/admin/languages/{code}', [LanguageController::class, 'destroy'])->name('admin.languages.destroy');
     Route::get('/admin/labels', [LabelController::class, 'index'])->name('admin.labels.index');
+    Route::get('/admin/labels/screens/{screen}/{locale}', [LabelController::class, 'screenImage'])
+        ->where(['screen' => '[A-Za-z0-9][A-Za-z0-9_-]*', 'locale' => '[A-Za-z0-9_-]+'])
+        ->name('admin.labels.screens.image');
     Route::put('/admin/labels/{code}', [LabelController::class, 'update'])->name('admin.labels.update');
     Route::post('/admin/labels/{code}/bulk', [LabelController::class, 'bulk'])->name('admin.labels.bulk');
     Route::post('/admin/labels/{code}/discard', [LabelController::class, 'discard'])->name('admin.labels.discard');

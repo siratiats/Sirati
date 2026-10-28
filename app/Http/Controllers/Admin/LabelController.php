@@ -9,6 +9,7 @@ use App\Models\AppTranslation;
 use App\Models\AppTranslationKey;
 use App\Services\I18n\ArbFile;
 use App\Services\I18n\ArbImporter;
+use App\Services\I18n\LabelScreenCatalog;
 use App\Services\I18n\TranslationPublisher;
 use App\Services\I18n\TranslationValidator;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 use InvalidArgumentException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class LabelController extends Controller
 {
@@ -32,10 +34,16 @@ class LabelController extends Controller
         'placeholders' => 'Has placeholders',
     ];
 
+    /** `?screen=` value for labels that are on no captured app screen. */
+    public const SCREEN_NONE = '__none';
+
+    public const PER_PAGE = 50;
+
     public function __construct(
         private readonly TranslationValidator $validator,
         private readonly TranslationPublisher $publisher,
         private readonly ArbImporter $importer,
+        private readonly LabelScreenCatalog $screens,
     ) {
     }
 
@@ -60,15 +68,24 @@ class LabelController extends Controller
         $labels = null;
         $filterCounts = [];
         $groupStats = [];
+        $screenView = null;
         if ($target !== null) {
             $baseCode = $base?->code ?? $target->code;
-            $labels = $this->labelQuery($target->code, $baseCode, $q, $filter)
-                ->paginate(50)
+            $screenView = $this->screenView($request, $target);
+            $scope = $screenView['scope'];
+
+            $page = null;
+            if ($screenView['selectedKey'] !== null && ! $request->has('page')) {
+                $page = $this->pageOfKey($this->labelQuery($target->code, $baseCode, $q, $filter, $scope), $screenView['selectedKey']);
+            }
+
+            $labels = $this->labelQuery($target->code, $baseCode, $q, $filter, $scope)
+                ->paginate(self::PER_PAGE, ['*'], 'page', $page)
                 ->withQueryString();
 
             // Chip counts use the same query as the list, so a chip's number is what clicking it shows.
             foreach (['' => null] + self::FILTERS as $value => $unused) {
-                $filterCounts[$value] = $this->labelQuery($target->code, $baseCode, $q, (string) $value)->count();
+                $filterCounts[$value] = $this->labelQuery($target->code, $baseCode, $q, (string) $value, $scope)->count();
             }
             $groupStats = $this->groupStats($target->code);
         }
@@ -87,7 +104,117 @@ class LabelController extends Controller
             'groupStats' => $groupStats,
             'stats' => $stats,
             'totalKeys' => AppTranslationKey::query()->count(),
+            'screenView' => $screenView,
         ]);
+    }
+
+    /** Serves one app screenshot listed in the screens manifest; anything else is a 404. */
+    public function screenImage(Request $request, string $screen, string $locale): BinaryFileResponse
+    {
+        $this->authorizeAdmin($request);
+
+        $path = $this->screens->imagePath($screen, $locale);
+        abort_if($path === null, 404);
+
+        $response = new BinaryFileResponse($path, 200, ['Content-Type' => 'image/png', 'X-Content-Type-Options' => 'nosniff']);
+        $response->setEtag(sha1($screen.'|'.$locale.'|'.(string) sha1_file($path)));
+        $response->setLastModified((new \DateTimeImmutable)->setTimestamp((int) filemtime($path)));
+        $response->setPrivate();
+        $response->setMaxAge(300);
+        $response->isNotModified($request);
+
+        return $response;
+    }
+
+    /**
+     * Screen filter, selected label and the phone preview (screenshot + label boxes) for the page.
+     *
+     * @return array<string, mixed>
+     */
+    private function screenView(Request $request, AppLanguage $target): array
+    {
+        $catalog = $this->screens;
+        $screens = $catalog->screens();
+        $known = $screens === [] ? [] : array_flip(AppTranslationKey::query()->pluck('key')->all());
+        $knownOnly = fn (array $keys) => array_values(array_filter($keys, fn (string $key) => isset($known[$key])));
+
+        $counts = [];
+        foreach ($screens as $id => $screen) {
+            $counts[$id] = count($knownOnly($catalog->keysOnScreen($id)));
+        }
+        $capturedKeys = $knownOnly($catalog->allKeys());
+
+        $requested = (string) $request->query('screen', '');
+        $screenFilter = $screens === [] ? '' : ($requested === self::SCREEN_NONE || isset($screens[$requested]) ? $requested : '');
+        $scope = match (true) {
+            $screenFilter === self::SCREEN_NONE => ['except' => $capturedKeys],
+            $screenFilter !== '' => ['only' => $knownOnly($catalog->keysOnScreen($screenFilter))],
+            default => null,
+        };
+
+        $requestedKey = (string) $request->query('key', '');
+        $selectedKey = $requestedKey !== '' && AppTranslationKey::query()->where('key', $requestedKey)->exists() ? $requestedKey : null;
+        $keyScreens = $selectedKey === null ? [] : $catalog->screensForKey($selectedKey);
+
+        // The phone follows the selected label: its first screen, unless the filtered screen shows it too.
+        $phoneScreen = match (true) {
+            $keyScreens !== [] => in_array($screenFilter, $keyScreens, true) ? $screenFilter : $keyScreens[0],
+            $screenFilter !== '' && $screenFilter !== self::SCREEN_NONE => $screenFilter,
+            default => array_key_first($screens),
+        };
+
+        $requestedShot = (string) $request->query('shot', '');
+        $shot = preg_match(LabelScreenCatalog::LOCALE_PATTERN, $requestedShot) === 1 ? $requestedShot : null;
+        $meta = $catalog->meta();
+        $phone = null;
+        if ($phoneScreen !== null) {
+            $phoneLocale = (string) $catalog->resolveLocale($phoneScreen, [$shot, $target->code, $target->effectiveFallback(), 'en']);
+            $ids = $catalog->screenIds();
+            $position = (int) array_search($phoneScreen, $ids, true);
+            $phone = [
+                'screen' => $screens[$phoneScreen],
+                'locale' => $phoneLocale,
+                'locales' => $catalog->localesFor($phoneScreen),
+                'capture' => $catalog->capture($phoneScreen, $phoneLocale),
+                'imageUrl' => route('admin.labels.screens.image', [
+                    'screen' => $phoneScreen,
+                    'locale' => $phoneLocale,
+                    'v' => substr(sha1(($meta['generated_at'] ?? '').'|'.($meta['app_commit'] ?? '')), 0, 10),
+                ]),
+                'boxes' => array_values(array_filter($catalog->boxesFor($phoneScreen, $phoneLocale), fn (array $box) => isset($known[$box['key']]))),
+                'position' => $position + 1,
+                'count' => count($ids),
+                'previous' => $ids[$position - 1] ?? null,
+                'next' => $ids[$position + 1] ?? null,
+                'selectedOnPhone' => $selectedKey !== null && in_array($selectedKey, array_column($catalog->labelsFor($phoneScreen, $phoneLocale), 'key'), true),
+            ];
+        }
+
+        return [
+            'hasScreens' => $screens !== [],
+            'screens' => $screens,
+            'counts' => $counts,
+            'noneCount' => max(0, AppTranslationKey::query()->count() - count($capturedKeys)),
+            'filter' => $screenFilter,
+            'scope' => $scope,
+            'shot' => $shot,
+            'selectedKey' => $selectedKey,
+            'keyScreens' => $keyScreens,
+            'phone' => $phone,
+            'meta' => $meta,
+            'screensForKey' => fn (string $key) => $catalog->screensForKey($key),
+        ];
+    }
+
+    /** Page of the (already filtered) list that holds the key, or null when the list does not hold it. */
+    private function pageOfKey(Builder $query, string $key): ?int
+    {
+        $id = AppTranslationKey::query()->where('key', $key)->value('id');
+        if ($id === null || ! (clone $query)->where('app_translation_keys.key', $key)->exists()) {
+            return null;
+        }
+
+        return intdiv((clone $query)->where('app_translation_keys.id', '<', $id)->count(), self::PER_PAGE) + 1;
     }
 
     /** Saves the draft of one key. Always answers JSON; invalid values get 422 with errors.value. */
@@ -347,7 +474,8 @@ class LabelController extends Controller
             ->all();
     }
 
-    private function labelQuery(string $targetCode, string $baseCode, string $q, string $filter): Builder
+    /** @param  array{only?: list<string>, except?: list<string>}|null  $scope  keys allowed by the screen filter */
+    private function labelQuery(string $targetCode, string $baseCode, string $q, string $filter, ?array $scope = null): Builder
     {
         $query = AppTranslationKey::query()
             ->leftJoin('app_translations as t', function ($join) use ($targetCode) {
@@ -382,6 +510,13 @@ class LabelController extends Controller
             'placeholders' => $query->whereNotNull('app_translation_keys.placeholders'),
             default => null,
         };
+
+        if (isset($scope['only'])) {
+            $query->whereIn('app_translation_keys.key', $scope['only']);
+        }
+        if (isset($scope['except']) && $scope['except'] !== []) {
+            $query->whereNotIn('app_translation_keys.key', $scope['except']);
+        }
 
         return $query;
     }
