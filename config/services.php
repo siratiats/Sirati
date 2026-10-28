@@ -18,6 +18,12 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    // Sign in with Google: every OAuth client ID (web, Android, iOS) whose
+    // ID tokens the API accepts. Empty = the endpoint fails closed (503).
+    'google' => [
+        'client_ids' => array_values(array_filter(array_map('trim', explode(',', (string) env('GOOGLE_CLIENT_IDS', ''))))),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],
