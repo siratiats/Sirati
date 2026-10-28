@@ -116,6 +116,17 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(UserFcmToken::class);
     }
 
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
+    /** False for accounts created through Google/Apple that never set one. */
+    public function hasPassword(): bool
+    {
+        return $this->password !== null && $this->password !== '';
+    }
+
     public function notificationPreference(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(NotificationPreference::class);

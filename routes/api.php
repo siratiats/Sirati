@@ -11,7 +11,9 @@ use App\Http\Controllers\MobileAuthController;
 use App\Http\Controllers\MobileContentController;
 use App\Http\Controllers\NotificationEngagementController;
 use App\Http\Controllers\NotificationPreferenceController;
+use App\Http\Controllers\SocialAuthController;
 use App\Http\Middleware\EnsureEmailIsVerified;
+use App\Services\SocialAuth\SocialAuthProviders;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/webhooks/revenuecat', [SubscriptionWebhookController::class, 'handleRevenueCat'])
@@ -21,6 +23,11 @@ Route::post('/auth/register', [MobileAuthController::class, 'register'])
     ->middleware('throttle:5,1');
 Route::post('/auth/login', [MobileAuthController::class, 'login'])
     ->middleware('throttle:5,1');
+Route::post('/auth/social/{provider}', [SocialAuthController::class, 'signIn'])
+    ->whereIn('provider', SocialAuthProviders::names())
+    ->middleware('throttle:10,1');
+Route::post('/auth/apple/callback', [SocialAuthController::class, 'appleCallback'])
+    ->middleware('throttle:30,1');
 Route::post('/auth/forgot-password', [MobileAuthController::class, 'forgotPassword'])
     ->middleware('throttle:3,1');
 Route::post('/auth/reset-password', [MobileAuthController::class, 'resetPassword'])

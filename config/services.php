@@ -18,6 +18,24 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    // Sign in with Google: every OAuth client ID (web, Android, iOS) whose
+    // ID tokens the API accepts. Empty = the endpoint fails closed (503).
+    'google' => [
+        'client_ids' => array_values(array_filter(array_map('trim', explode(',', (string) env('GOOGLE_CLIENT_IDS', ''))))),
+    ],
+
+    // Sign in with Apple: the iOS bundle id and the Services ID (Android
+    // web flow) accepted as the ID token audience, plus the Sign in with
+    // Apple key used to exchange and revoke tokens. Any missing = 503.
+    'apple' => [
+        'client_ids' => array_values(array_filter(array_map('trim', explode(',', (string) env('APPLE_CLIENT_IDS', ''))))),
+        'team_id' => env('APPLE_TEAM_ID'),
+        'key_id' => env('APPLE_KEY_ID'),
+        'private_key' => env('APPLE_PRIVATE_KEY'),
+        'private_key_path' => env('APPLE_PRIVATE_KEY_PATH'),
+        'android_package' => env('APPLE_ANDROID_PACKAGE', 'com.sirati.sirati'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],

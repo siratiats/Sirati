@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\BuildsMobileAuthPayload;
 use App\Models\JobTitle;
 use App\Models\User;
 use App\Services\CvTemplateRenderer;
 use App\Services\EmailVerificationService;
 use App\Services\PasswordResetService;
-use App\Services\Subscriptions\SubscriptionGate;
+use App\Services\SocialAuth\AppleTokenService;
+use App\Services\SocialAuth\SocialAccountLinker;
+use App\Services\SocialAuth\SocialAuthProviders;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,6 +22,8 @@ use Illuminate\Validation\ValidationException;
 
 class MobileAuthController extends Controller
 {
+    use BuildsMobileAuthPayload;
+
     public function __construct(
         private readonly EmailVerificationService $emailVerification,
         private readonly PasswordResetService $passwordReset,
@@ -308,19 +313,37 @@ class MobileAuthController extends Controller
         ]);
     }
 
-    public function deleteAccount(Request $request): JsonResponse
+    public function deleteAccount(Request $request, SocialAuthProviders $providers, SocialAccountLinker $linker): JsonResponse
     {
-        $validated = $request->validate([
-            'password' => ['required', 'string'],
-        ]);
-
         /** @var User $user */
         $user = $request->user();
 
-        if (! Hash::check($validated['password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'password' => 'كلمة المرور غير صحيحة.',
+        if ($user->hasPassword()) {
+            $validated = $request->validate([
+                'password' => ['required', 'string'],
             ]);
+
+            if (! Hash::check($validated['password'], $user->password)) {
+                throw ValidationException::withMessages([
+                    'password' => 'كلمة المرور غير صحيحة.',
+                ]);
+            }
+        } else {
+            // Google/Apple-only accounts confirm by signing in with the provider again.
+            $validated = $request->validate([
+                'provider' => ['required', 'string', Rule::in(SocialAuthProviders::names())],
+                'id_token' => ['required', 'string', 'max:8192'],
+                'nonce' => ['nullable', 'string', 'max:255'],
+            ]);
+
+            $identity = $providers->verifier($validated['provider'])
+                ->verify($validated['id_token'], ['nonce' => $validated['nonce'] ?? null]);
+
+            if ($linker->linkedUser($identity)?->is($user) !== true) {
+                throw ValidationException::withMessages([
+                    'id_token' => 'هذا الحساب غير مرتبط بحسابك في سيرتي.',
+                ]);
+            }
         }
 
         // Hard-delete owned content first. CV tables use nullOnDelete FKs, so
@@ -343,6 +366,11 @@ class MobileAuthController extends Controller
         $user->mobileNotifications()->delete();
         $user->fcmTokens()->delete();
         $user->tokens()->delete();
+        // App Store 5.1.1(v): deleting the account revokes Sign in with Apple.
+        $apple = app(AppleTokenService::class);
+        foreach ($user->socialAccounts()->where('provider', 'apple')->whereNotNull('refresh_token')->get() as $account) {
+            $apple->revoke($account->refresh_token, (string) $account->client_id);
+        }
         $user->delete();
 
         return response()->json([
@@ -413,46 +441,5 @@ class MobileAuthController extends Controller
         }
 
         return [$jobTitleId, $jobTitleOther];
-    }
-
-    private function tokenPayload(User $user, ?string $deviceName): array
-    {
-        $token = $user->createToken($deviceName ?: 'sirati-mobile')->plainTextToken;
-
-        return [
-            'data' => [
-                'token' => $token,
-                'token_type' => 'Bearer',
-                'user' => $this->userPayload($user),
-            ],
-        ];
-    }
-
-    private function userPayload(User $user): array
-    {
-        $jobTitle = $user->relationLoaded('jobTitle') ? $user->jobTitle : $user->jobTitle()->first();
-
-        return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'location' => $user->location,
-            'avatar_url' => $user->avatar_path ? asset('storage/'.$user->avatar_path) : null,
-            'job_title_id' => $user->job_title_id,
-            'job_title_other' => $user->job_title_other,
-            'job_title' => $jobTitle ? [
-                'id' => $jobTitle->id,
-                'slug' => $jobTitle->slug,
-                'name_ar' => $jobTitle->name_ar,
-                'name_en' => $jobTitle->name_en,
-                'category' => $jobTitle->category,
-            ] : null,
-            'email_verified' => $user->hasVerifiedEmail(),
-            'email_verified_at' => $user->email_verified_at?->toISOString(),
-            // Lets the app draw locked/unlocked buttons without first hitting a 402.
-            'subscription' => app(SubscriptionGate::class)->stateFor($user),
-            'created_at' => $user->created_at?->toISOString(),
-        ];
     }
 }
