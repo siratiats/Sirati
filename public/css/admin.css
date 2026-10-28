@@ -632,9 +632,10 @@ dialog.l10n-modal { width: min(520px, calc(100vw - 24px)); overflow: hidden; }
 .l10n-phone__image { display: block; width: 100%; height: auto; border-radius: 28px; background: var(--navy-2); }
 .l10n-preview__mode { display: inline-flex; justify-self: center; padding: 2px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
 .l10n-preview__mode .l10n-preview__locale { font-family: inherit; }
-/* Current text painted over the captured one: same rect width, at least the rect height, grows if longer. */
+/* Current text painted over the captured one. The patch is the room the text may grow into (its layout width in
+   the app); the text covers at least the captured rect and widens like the app's text before it wraps. */
 .l10n-patch { position: absolute; z-index: 0; display: flex; align-items: center; box-sizing: border-box; min-height: calc(var(--h) * 100cqw / var(--shot-w)); font-size: calc(var(--fs) * 100cqw / var(--shot-w)); line-height: calc(var(--lh) * 100cqw / var(--shot-w)); pointer-events: none; }
-.l10n-patch__text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--max-lines, none); width: 100%; overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere; }
+.l10n-patch__text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--max-lines, none); box-sizing: border-box; min-width: calc(var(--w, 0) * 100cqw / var(--shot-w)); max-width: 100%; min-height: calc(var(--h) * 100cqw / var(--shot-w)); background: var(--bg); overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere; }
 .l10n-patch__warn, .l10n-patch-note { font: 600 10px/14px var(--font); letter-spacing: 0; text-align: left; }
 .l10n-patch__warn { position: absolute; top: calc(100% + 2px); left: 0; padding: 1px 6px; border: 1px solid var(--warn-border); border-radius: 4px; background: var(--warn-bg); color: var(--warn-ink); white-space: nowrap; }
 .l10n-patch__warn[hidden] { display: none; }

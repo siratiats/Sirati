@@ -164,10 +164,12 @@ class LabelScreenPreview
         if ($previewable) {
             $fontSize = $style['font_size'];
             $lineHeight = $style['line_height'] ?? $fontSize * self::DEFAULT_LINE_HEIGHT;
-            $css = $boxCss
+            [$slotLeft, $slotWidth, $justify] = self::slot($label, $capture['width'], $style['align'] ?? 'start', $dir);
+            $css = 'left: '.self::num($slotLeft).'%; top: '.self::num($top).'%; width: '.self::num($slotWidth).'%;'
+                .' --h: '.self::num($label['h']).'; --w: '.self::num($label['w']).'; justify-content: '.$justify.';'
                 .' --fs: '.self::num($fontSize).'; --lh: '.self::num($lineHeight).';'
                 .' --max-lines: '.(isset($style['max_lines']) ? $style['max_lines'] : 'none').';'
-                .' background: '.$label['bg'].';'
+                .' --bg: '.$label['bg'].';'
                 .' color: '.self::rgba($style['color'] ?? '#000000', $style['opacity'] ?? 1.0).';'
                 .' font-family: '.implode(', ', array_map(fn (string $family) => "'{$family}'", array_unique(array_filter([$style['font_family'] ?? null, 'IBM Plex Sans Arabic', 'IBM Plex Sans'])))).', sans-serif;'
                 .' font-weight: '.($style['font_weight'] ?? 400).';'
@@ -205,6 +207,40 @@ class LabelScreenPreview
                 'bundled' => $bundled,
             ],
         ];
+    }
+
+    /**
+     * The room the edited text may grow into: the label's layout width
+     * (style.max_width) anchored where the app anchors it, so a longer text
+     * widens like it would in the app before it wraps. Returns left and width
+     * in percent of the capture, and the flex justify for the text inside.
+     *
+     * @return array{0: float, 1: float, 2: string}
+     */
+    private static function slot(array $label, float $shotWidth, string $align, string $dir): array
+    {
+        $rtl = $dir === 'rtl';
+        $room = min($shotWidth, max($label['w'], $label['style']['max_width'] ?? $label['w']));
+        $side = match ($align) {
+            'center' => 'center',
+            'left', 'right' => $align,
+            'end' => $rtl ? 'left' : 'right',
+            default => $rtl ? 'right' : 'left', // start, justify
+        };
+        $left = match ($side) {
+            'left' => $label['x'],
+            'right' => $label['x'] + $label['w'] - $room,
+            default => $label['x'] + ($label['w'] - $room) / 2,
+        };
+        $left = max(0.0, min($shotWidth - $room, $left));
+        // Flex start follows the patch's own dir attribute.
+        $justify = match ($side) {
+            'center' => 'center',
+            'right' => $rtl ? 'flex-start' : 'flex-end',
+            default => $rtl ? 'flex-end' : 'flex-start',
+        };
+
+        return [$left / $shotWidth * 100, $room / $shotWidth * 100, $justify];
     }
 
     private static function replaceFirst(string $haystack, string $needle, string $replacement): string

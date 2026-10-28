@@ -155,13 +155,51 @@ class AppLabelLivePreviewAdminTest extends TestCase
         return rtrim(rtrim(number_format($value, 4, '.', ''), '0'), '.');
     }
 
+    /**
+     * The patch is the room the text may grow into: as wide as the label's
+     * layout width (never narrower than the captured text), inside the
+     * screenshot, holding the captured rect, and anchored like the app's text.
+     */
+    private function assertSlot(string $style, array $label, array $capture, string $where): void
+    {
+        $this->assertMatchesRegularExpression('/(?:^|; )left: ([\d.]+)%; top: [\d.]+%; width: ([\d.]+)%;/', $style, $where);
+        preg_match('/(?:^|; )left: ([\d.]+)%; top: [\d.]+%; width: ([\d.]+)%;/', $style, $m);
+        [$left, $width] = [(float) $m[1], (float) $m[2]];
+        $shot = $capture['width'];
+        $eps = 0.001;
+        $room = min($shot, max($label['w'], $label['style']['max_width'] ?? $label['w']));
+        $this->assertEqualsWithDelta($room / $shot * 100, $width, $eps, $where);
+        $this->assertGreaterThanOrEqual(-$eps, $left, $where);
+        $this->assertLessThanOrEqual(100 + $eps, $left + $width, $where);
+        $this->assertLessThanOrEqual($label['x'] / $shot * 100 + $eps, $left, $where);
+        $this->assertGreaterThanOrEqual(($label['x'] + $label['w']) / $shot * 100 - $eps, $left + $width, $where);
+
+        $rtl = ($label['style']['direction'] ?? 'ltr') === 'rtl';
+        $align = $label['style']['align'] ?? 'start';
+        $side = match ($align) {
+            'center' => 'center',
+            'left', 'right' => $align,
+            'end' => $rtl ? 'left' : 'right',
+            default => $rtl ? 'right' : 'left',
+        };
+        $unclamped = $room < $shot && $label['x'] + ($label['w'] - $room) / 2 >= 0 && $label['x'] + ($label['w'] + $room) / 2 <= $shot;
+        match ($side) {
+            'left' => $this->assertEqualsWithDelta(min($label['x'], $shot - $room) / $shot * 100, $left, $eps, $where),
+            'right' => $this->assertEqualsWithDelta(max(0, $label['x'] + $label['w'] - $room) / $shot * 100, $left, $eps, $where),
+            default => $unclamped
+                ? $this->assertEqualsWithDelta(($label['x'] + $label['w'] / 2) / $shot * 100, $left + $width / 2, $eps, $where)
+                : null,
+        };
+    }
+
     private function assertPatchStyle(DOMElement $patch, array $label, array $capture, string $where): void
     {
         $style = $patch->getAttribute('style');
         $this->assertStringContainsString('--fs: '.self::num($label['style']['font_size']).';', $style, $where);
         $this->assertStringContainsString('--h: '.self::num($label['h']).';', $style, $where);
-        $this->assertStringContainsString('background: '.strtoupper($label['bg']).';', $style, $where);
-        $this->assertStringContainsString('left: '.self::num(max(0, min(100, $label['x'] / $capture['width'] * 100))).'%;', $style, $where);
+        $this->assertStringContainsString('--bg: '.strtoupper($label['bg']).';', $style, $where);
+        $this->assertStringContainsString('--w: '.self::num($label['w']).';', $style, $where);
+        $this->assertSlot($style, $label, $capture, $where);
         if (isset($label['style']['line_height'])) {
             $this->assertStringContainsString('--lh: '.self::num($label['style']['line_height']).';', $style, $where);
         }

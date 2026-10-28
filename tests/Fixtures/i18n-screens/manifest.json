@@ -86,9 +86,9 @@
             },
             {
               "key": "createAccount",
-              "x": 24.0,
+              "x": 135.0,
               "y": 700.5,
-              "w": 342.0,
+              "w": 120.0,
               "h": 48.0,
               "text": "إنشاء حساب جديد",
               "value": "إنشاء حساب جديد",
@@ -102,7 +102,8 @@
                 "lines": 1,
                 "opacity": 1.0,
                 "align": "center",
-                "direction": "rtl"
+                "direction": "rtl",
+                "max_width": 342.0
               },
               "bg": "#101B33"
             },
@@ -203,9 +204,9 @@
             },
             {
               "key": "createAccount",
-              "x": 24.0,
+              "x": 135.0,
               "y": 700.5,
-              "w": 342.0,
+              "w": 120.0,
               "h": 48.0,
               "text": "Create New Account",
               "value": "Create New Account",
@@ -219,7 +220,8 @@
                 "lines": 1,
                 "opacity": 1.0,
                 "align": "center",
-                "direction": "ltr"
+                "direction": "ltr",
+                "max_width": 342.0
               },
               "bg": "#101B33"
             },
@@ -277,7 +279,8 @@
                 "lines": 1,
                 "opacity": 1.0,
                 "align": "start",
-                "direction": "rtl"
+                "direction": "rtl",
+                "max_width": 350.0
               },
               "bg": "#F4F6F9"
             },
@@ -321,7 +324,8 @@
                 "lines": 1,
                 "opacity": 1.0,
                 "align": "start",
-                "direction": "rtl"
+                "direction": "rtl",
+                "max_width": 350.0
               },
               "bg": "#F4F6F9"
             },
@@ -385,7 +389,8 @@
                 "lines": 1,
                 "opacity": 1.0,
                 "align": "start",
-                "direction": "rtl"
+                "direction": "rtl",
+                "max_width": 350.0
               },
               "bg": "#F4F6F9"
             }
@@ -414,7 +419,8 @@
                 "lines": 1,
                 "opacity": 1.0,
                 "align": "start",
-                "direction": "ltr"
+                "direction": "ltr",
+                "max_width": 350.0
               },
               "bg": "#F4F6F9"
             },
@@ -458,7 +464,8 @@
                 "lines": 1,
                 "opacity": 1.0,
                 "align": "start",
-                "direction": "ltr"
+                "direction": "ltr",
+                "max_width": 350.0
               },
               "bg": "#F4F6F9"
             },
@@ -522,7 +529,8 @@
                 "lines": 1,
                 "opacity": 1.0,
                 "align": "start",
-                "direction": "ltr"
+                "direction": "ltr",
+                "max_width": 350.0
               },
               "bg": "#F4F6F9"
             }

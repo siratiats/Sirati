@@ -444,7 +444,7 @@ class LabelScreenCatalog
 
     /**
      * @param  callable(string): void  $drop
-     * @return array{font_family?: string, font_size?: float, font_weight?: int, color?: string, opacity?: float, align?: string, direction?: string, line_height?: float, max_lines?: int, lines?: int}
+     * @return array{font_family?: string, font_size?: float, font_weight?: int, color?: string, opacity?: float, align?: string, direction?: string, line_height?: float, max_lines?: int, lines?: int, max_width?: float}
      */
     private function parseStyle(array $style, callable $drop): array
     {
@@ -459,6 +459,7 @@ class LabelScreenCatalog
             'line_height' => fn ($v) => self::isPositive($v) && $v <= 800 ? (float) $v : null,
             'max_lines' => fn ($v) => is_int($v) && $v >= 1 && $v <= 1000 ? $v : null,
             'lines' => fn ($v) => is_int($v) && $v >= 1 && $v <= 1000 ? $v : null,
+            'max_width' => fn ($v) => self::isPositive($v) && $v <= 10000 ? (float) $v : null,
         ];
 
         $out = [];

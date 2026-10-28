@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-10-28T09:21:08.996090Z",
+  "generated_at": "2026-10-28T09:48:10.813962Z",
   "app_commit": "bcc65fd",
   "device": {
     "width": 390,
@@ -58,7 +58,8 @@
                 "direction": "rtl",
                 "line_height": 49.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 334.0
               },
               "bg": "#FAF7F2"
             },
@@ -80,7 +81,8 @@
                 "direction": "rtl",
                 "line_height": 24.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 334.0
               },
               "bg": "#FAF7F2"
             },
@@ -102,7 +104,8 @@
                 "direction": "rtl",
                 "line_height": 26.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FFFFFF"
             },
@@ -124,7 +127,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 260.0
               },
               "bg": "#FFFFFF"
             },
@@ -146,7 +150,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 260.0
               },
               "bg": "#FFFFFF"
             },
@@ -168,7 +173,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 260.0
               },
               "bg": "#FFFFFF"
             },
@@ -190,7 +196,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 260.0
               },
               "bg": "#FFFFFF"
             },
@@ -212,7 +219,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 260.0
               },
               "bg": "#FFFFFF"
             },
@@ -234,7 +242,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 302.0
               },
               "bg": "#007F73"
             },
@@ -256,7 +265,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 302.0
               },
               "bg": "#FAF7F2"
             },
@@ -278,7 +288,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 310.0
               },
               "bg": "#FAF7F2"
             }
@@ -329,7 +340,8 @@
                 "direction": "ltr",
                 "line_height": 43.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 334.0
               },
               "bg": "#FAF7F2"
             },
@@ -351,7 +363,8 @@
                 "direction": "ltr",
                 "line_height": 24.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 334.0
               },
               "bg": "#FAF7F2"
             },
@@ -373,7 +386,8 @@
                 "direction": "ltr",
                 "line_height": 26.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FFFFFF"
             },
@@ -395,7 +409,8 @@
                 "direction": "ltr",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 260.0
               },
               "bg": "#FFFFFF"
             },
@@ -417,7 +432,8 @@
                 "direction": "ltr",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 260.0
               },
               "bg": "#FFFFFF"
             },
@@ -439,7 +455,8 @@
                 "direction": "ltr",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 260.0
               },
               "bg": "#FFFFFF"
             },
@@ -461,7 +478,8 @@
                 "direction": "ltr",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 260.0
               },
               "bg": "#FFFFFF"
             },
@@ -483,7 +501,8 @@
                 "direction": "ltr",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 260.0
               },
               "bg": "#FFFFFF"
             },
@@ -505,7 +524,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 302.0
               },
               "bg": "#007F73"
             },
@@ -527,7 +547,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 302.0
               },
               "bg": "#FAF7F2"
             },
@@ -549,7 +570,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 310.0
               },
               "bg": "#FAF7F2"
             }
@@ -607,7 +629,8 @@
                 "direction": "rtl",
                 "line_height": 30.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -629,7 +652,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -651,7 +675,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -673,7 +698,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -695,7 +721,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#FAF7F2"
             },
@@ -717,7 +744,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#007F73"
             },
@@ -739,7 +767,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -761,7 +790,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#FAF7F2"
             }
@@ -812,7 +842,8 @@
                 "direction": "ltr",
                 "line_height": 26.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -834,7 +865,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -856,7 +888,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -878,7 +911,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -900,7 +934,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#FAF7F2"
             },
@@ -922,7 +957,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#007F73"
             },
@@ -944,7 +980,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -966,7 +1003,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#FAF7F2"
             }
@@ -1024,7 +1062,8 @@
                 "direction": "rtl",
                 "line_height": 33.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 342.0
               },
               "bg": "#FAF7F2"
             },
@@ -1046,7 +1085,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 342.0
               },
               "bg": "#FAF7F2"
             },
@@ -1068,7 +1108,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1090,7 +1131,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 272.0
               },
               "bg": "#FFFFFF"
             },
@@ -1112,7 +1154,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1134,7 +1177,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1156,7 +1200,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1178,7 +1223,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 272.0
               },
               "bg": "#FFFFFF"
             },
@@ -1200,7 +1246,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1222,7 +1269,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 238.0
               },
               "bg": "#FFFFFF"
             },
@@ -1244,7 +1292,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1266,7 +1315,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 294.0
               },
               "bg": "#FAF7F2"
             },
@@ -1288,7 +1338,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 294.0
               },
               "bg": "#FAF7F2"
             },
@@ -1310,7 +1361,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 284.0
               },
               "bg": "#007F73"
             },
@@ -1332,7 +1384,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 342.0
               },
               "bg": "#FAF7F2"
             },
@@ -1354,7 +1407,8 @@
                 "direction": "rtl",
                 "line_height": 13.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 330.0
               },
               "bg": "#FAF7F2"
             },
@@ -1376,7 +1430,8 @@
                 "direction": "rtl",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FAF7F2"
             }
@@ -1427,7 +1482,8 @@
                 "direction": "ltr",
                 "line_height": 29.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 342.0
               },
               "bg": "#FAF7F2"
             },
@@ -1449,7 +1505,8 @@
                 "direction": "ltr",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 342.0
               },
               "bg": "#FAF7F2"
             },
@@ -1471,7 +1528,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1493,7 +1551,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 272.0
               },
               "bg": "#FFFFFF"
             },
@@ -1515,7 +1574,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1537,7 +1597,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1559,7 +1620,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1581,7 +1643,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 272.0
               },
               "bg": "#FFFFFF"
             },
@@ -1603,7 +1666,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1625,7 +1689,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 238.0
               },
               "bg": "#FFFFFF"
             },
@@ -1647,7 +1712,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 338.0
               },
               "bg": "#FAF7F2"
             },
@@ -1669,7 +1735,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 294.0
               },
               "bg": "#FAF7F2"
             },
@@ -1691,7 +1758,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 294.0
               },
               "bg": "#FAF7F2"
             },
@@ -1713,7 +1781,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 284.0
               },
               "bg": "#007F73"
             },
@@ -1735,7 +1804,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 342.0
               },
               "bg": "#FAF7F2"
             },
@@ -1757,7 +1827,8 @@
                 "direction": "ltr",
                 "line_height": 13.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 330.0
               },
               "bg": "#FAF7F2"
             },
@@ -1779,7 +1850,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FAF7F2"
             }
@@ -1818,7 +1890,8 @@
                 "direction": "rtl",
                 "line_height": 33.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 226.0
               },
               "bg": "#00574F"
             },
@@ -1840,7 +1913,8 @@
                 "direction": "rtl",
                 "line_height": 33.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 308.0
               },
               "bg": "#FFFFFF"
             },
@@ -1862,7 +1936,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 308.0
               },
               "bg": "#FFFFFF"
             },
@@ -1884,7 +1959,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 276.0
               },
               "bg": "#007F73"
             },
@@ -1906,7 +1982,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 276.0
               },
               "bg": "#FFFFFF"
             },
@@ -1928,7 +2005,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 141.0
               },
               "bg": "#FFFFFF"
             },
@@ -1950,7 +2028,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 141.0
               },
               "bg": "#FFFFFF"
             },
@@ -1972,7 +2051,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 141.0
               },
               "bg": "#FFFFFF"
             },
@@ -1994,7 +2074,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 141.0
               },
               "bg": "#FFFFFF"
             },
@@ -2016,7 +2097,8 @@
                 "direction": "rtl",
                 "line_height": 28.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 276.4
               },
               "bg": "#FAF7F2"
             },
@@ -2082,7 +2164,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 300.0
               },
               "bg": "#DDF6F3"
             },
@@ -2104,7 +2187,8 @@
                 "direction": "rtl",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2126,7 +2210,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2148,7 +2233,8 @@
                 "direction": "rtl",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2170,7 +2256,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2192,7 +2279,8 @@
                 "direction": "rtl",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2214,7 +2302,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2236,7 +2325,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -2258,7 +2348,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 334.0
               },
               "bg": "#FAF7F2"
             },
@@ -2280,7 +2371,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 334.0
               },
               "bg": "#FAF7F2"
             },
@@ -2302,7 +2394,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 310.0
               },
               "bg": "#FAF7F2"
             },
@@ -2324,7 +2417,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -2346,7 +2440,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 97.5
               },
               "bg": "#FFFFFF"
             },
@@ -2368,7 +2463,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 97.5
               },
               "bg": "#FFFFFF"
             },
@@ -2390,7 +2486,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 97.5
               },
               "bg": "#FFFFFF"
             },
@@ -2412,7 +2509,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 97.5
               },
               "bg": "#FFFFFF"
             },
@@ -2434,7 +2532,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 97.5
               },
               "bg": "#FFFFFF"
             }
@@ -2466,7 +2565,8 @@
                 "direction": "ltr",
                 "line_height": 29.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 226.0
               },
               "bg": "#005149"
             },
@@ -2488,7 +2588,8 @@
                 "direction": "ltr",
                 "line_height": 29.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 308.0
               },
               "bg": "#FFFFFF"
             },
@@ -2510,7 +2611,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 308.0
               },
               "bg": "#FFFFFF"
             },
@@ -2532,7 +2634,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 276.0
               },
               "bg": "#007F73"
             },
@@ -2554,7 +2657,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 276.0
               },
               "bg": "#FFFFFF"
             },
@@ -2576,7 +2680,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 141.0
               },
               "bg": "#FFFFFF"
             },
@@ -2598,7 +2703,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 141.0
               },
               "bg": "#FFFFFF"
             },
@@ -2620,7 +2726,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 141.0
               },
               "bg": "#FFFFFF"
             },
@@ -2642,7 +2749,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 141.0
               },
               "bg": "#FFFFFF"
             },
@@ -2664,7 +2772,8 @@
                 "direction": "ltr",
                 "line_height": 25.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 282.1
               },
               "bg": "#FAF7F2"
             },
@@ -2708,7 +2817,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 300.0
               },
               "bg": "#DDF6F3"
             },
@@ -2730,7 +2840,8 @@
                 "direction": "ltr",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2752,7 +2863,8 @@
                 "direction": "ltr",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2774,7 +2886,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2796,7 +2909,8 @@
                 "direction": "ltr",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2818,7 +2932,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2840,7 +2955,8 @@
                 "direction": "ltr",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2862,7 +2978,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -2884,7 +3001,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -2906,7 +3024,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 310.0
               },
               "bg": "#FAF7F2"
             },
@@ -2928,7 +3047,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 334.0
               },
               "bg": "#FAF7F2"
             },
@@ -2950,7 +3070,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -2972,7 +3093,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 97.5
               },
               "bg": "#FFFFFF"
             },
@@ -2994,7 +3116,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 97.5
               },
               "bg": "#FFFFFF"
             },
@@ -3016,7 +3139,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 97.5
               },
               "bg": "#FFFFFF"
             },
@@ -3038,7 +3162,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 97.5
               },
               "bg": "#FFFFFF"
             },
@@ -3060,7 +3185,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 97.5
               },
               "bg": "#FFFFFF"
             }
@@ -3096,7 +3222,8 @@
                 "direction": "rtl",
                 "line_height": 27.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 298.0
               },
               "bg": "#FAF7F2"
             },
@@ -3144,7 +3271,8 @@
                 "direction": "rtl",
                 "line_height": 30.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 175.0
               },
               "bg": "#FAF7F2"
             },
@@ -3166,7 +3294,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 175.0
               },
               "bg": "#FAF7F2"
             },
@@ -3188,7 +3317,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -3210,7 +3340,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -3232,7 +3363,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -3254,7 +3386,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -3276,7 +3409,8 @@
                 "direction": "rtl",
                 "line_height": 28.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 306.0
               },
               "bg": "#FAF7F2"
             },
@@ -3298,7 +3432,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3320,7 +3455,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 280.0
               },
               "bg": "#FFFFFF"
             },
@@ -3342,7 +3478,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3364,7 +3501,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3386,7 +3524,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3408,7 +3547,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3430,7 +3570,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 280.0
               },
               "bg": "#FFFFFF"
             },
@@ -3452,7 +3593,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3474,7 +3616,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": 5,
-                "lines": 2
+                "lines": 2,
+                "max_width": 280.0
               },
               "bg": "#FFFFFF"
             },
@@ -3496,7 +3639,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FAF7F2"
             },
@@ -3518,7 +3662,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3540,7 +3685,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#007F73"
             }
@@ -3569,7 +3715,8 @@
                 "direction": "ltr",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 298.0
               },
               "bg": "#FAF7F2"
             },
@@ -3617,7 +3764,8 @@
                 "direction": "ltr",
                 "line_height": 26.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 175.0
               },
               "bg": "#FAF7F2"
             },
@@ -3639,7 +3787,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 175.0
               },
               "bg": "#FAF7F2"
             },
@@ -3661,7 +3810,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -3683,7 +3833,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -3705,7 +3856,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -3727,7 +3879,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -3749,7 +3902,8 @@
                 "direction": "ltr",
                 "line_height": 25.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 306.0
               },
               "bg": "#FAF7F2"
             },
@@ -3771,7 +3925,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3793,7 +3948,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 280.0
               },
               "bg": "#FFFFFF"
             },
@@ -3815,7 +3971,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3837,7 +3994,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3859,7 +4017,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3881,7 +4040,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3903,7 +4063,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 280.0
               },
               "bg": "#FFFFFF"
             },
@@ -3925,7 +4086,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -3947,7 +4109,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": 5,
-                "lines": 2
+                "lines": 2,
+                "max_width": 280.0
               },
               "bg": "#FFFFFF"
             },
@@ -3969,7 +4132,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FAF7F2"
             },
@@ -3991,7 +4155,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -4013,7 +4178,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#007F73"
             }
@@ -4049,7 +4215,8 @@
                 "direction": "rtl",
                 "line_height": 27.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 298.0
               },
               "bg": "#FAF7F2"
             },
@@ -4097,7 +4264,8 @@
                 "direction": "rtl",
                 "line_height": 30.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 175.0
               },
               "bg": "#FAF7F2"
             },
@@ -4119,7 +4287,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 175.0
               },
               "bg": "#FAF7F2"
             },
@@ -4141,7 +4310,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -4163,7 +4333,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -4185,7 +4356,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -4207,7 +4379,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -4229,7 +4402,8 @@
                 "direction": "rtl",
                 "line_height": 28.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 306.0
               },
               "bg": "#FAF7F2"
             },
@@ -4251,7 +4425,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -4298,7 +4473,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 324.0
               },
               "bg": "#FFFFFF"
             },
@@ -4342,7 +4518,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 203.6
               },
               "bg": "#F2F1EC"
             },
@@ -4386,7 +4563,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -4408,7 +4586,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FAF7F2"
             },
@@ -4430,7 +4609,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FAF7F2"
             },
@@ -4455,7 +4635,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 333.0
               },
               "bg": "#FAF7F2"
             },
@@ -4477,7 +4658,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -4499,7 +4681,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": 4,
-                "lines": 1
+                "lines": 1,
+                "max_width": 314.0
               },
               "bg": "#FFFFFF"
             },
@@ -4521,7 +4704,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FAF7F2"
             },
@@ -4543,7 +4727,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FAF7F2"
             },
@@ -4568,7 +4753,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 333.0
               },
               "bg": "#FAF7F2"
             },
@@ -4590,7 +4776,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 167.3
               },
               "bg": "#007F73"
             },
@@ -4612,7 +4799,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 46.7
               },
               "bg": "#FFFFFF"
             }
@@ -4641,7 +4829,8 @@
                 "direction": "ltr",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 298.0
               },
               "bg": "#FAF7F2"
             },
@@ -4689,7 +4878,8 @@
                 "direction": "ltr",
                 "line_height": 26.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 175.0
               },
               "bg": "#FAF7F2"
             },
@@ -4711,7 +4901,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 175.0
               },
               "bg": "#FAF7F2"
             },
@@ -4733,7 +4924,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -4755,7 +4947,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -4777,7 +4970,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -4799,7 +4993,8 @@
                 "direction": "ltr",
                 "line_height": 15.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 87.5
               },
               "bg": "#FAF7F2"
             },
@@ -4821,7 +5016,8 @@
                 "direction": "ltr",
                 "line_height": 25.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 306.0
               },
               "bg": "#FAF7F2"
             },
@@ -4843,7 +5039,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -4890,7 +5087,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 325.2
               },
               "bg": "#FFFFFF"
             },
@@ -4934,7 +5132,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 209.9
               },
               "bg": "#F2F1EC"
             },
@@ -4978,7 +5177,8 @@
                 "direction": "ltr",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -5000,7 +5200,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FAF7F2"
             },
@@ -5022,7 +5223,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FAF7F2"
             },
@@ -5047,7 +5249,8 @@
                 "direction": "ltr",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 333.0
               },
               "bg": "#FAF7F2"
             },
@@ -5069,7 +5272,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -5091,7 +5295,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": 4,
-                "lines": 2
+                "lines": 2,
+                "max_width": 314.0
               },
               "bg": "#FFFFFF"
             },
@@ -5113,7 +5318,8 @@
                 "direction": "ltr",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -5135,7 +5341,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FAF7F2"
             },
@@ -5157,7 +5364,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 292.0
               },
               "bg": "#FAF7F2"
             },
@@ -5182,7 +5390,8 @@
                 "direction": "ltr",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 333.0
               },
               "bg": "#FAF7F2"
             },
@@ -5204,7 +5413,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 46.7
               },
               "bg": "#FFFFFF"
             },
@@ -5226,7 +5436,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 167.3
               },
               "bg": "#007F73"
             }
@@ -5262,7 +5473,8 @@
                 "direction": "rtl",
                 "line_height": 27.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -5284,7 +5496,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -5306,7 +5519,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 324.0
               },
               "bg": "#FFFFFF"
             },
@@ -5328,7 +5542,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 143.0
               },
               "bg": "#FFFFFF"
             },
@@ -5350,7 +5565,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 143.0
               },
               "bg": "#DDF6F3"
             },
@@ -5372,7 +5588,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 324.0
               },
               "bg": "#FFFFFF"
             },
@@ -5394,7 +5611,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 324.0
               },
               "bg": "#FFFFFF"
             },
@@ -5416,7 +5634,8 @@
                 "direction": "rtl",
                 "line_height": 26.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 284.0
               },
               "bg": "#FFFFFF"
             },
@@ -5438,7 +5657,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 324.0
               },
               "bg": "#FFFFFF"
             },
@@ -5460,7 +5680,8 @@
                 "direction": "rtl",
                 "line_height": 26.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 284.0
               },
               "bg": "#FFFFFF"
             },
@@ -5482,7 +5703,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -5504,7 +5726,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 300.0
               },
               "bg": "#007F73"
             }
@@ -5533,7 +5756,8 @@
                 "direction": "ltr",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -5555,7 +5779,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -5577,7 +5802,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 324.0
               },
               "bg": "#FFFFFF"
             },
@@ -5599,7 +5825,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 143.0
               },
               "bg": "#DDF6F3"
             },
@@ -5621,7 +5848,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 143.0
               },
               "bg": "#FFFFFF"
             },
@@ -5643,7 +5871,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 324.0
               },
               "bg": "#FFFFFF"
             },
@@ -5665,7 +5894,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 324.0
               },
               "bg": "#FFFFFF"
             },
@@ -5687,7 +5917,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 284.0
               },
               "bg": "#FFFFFF"
             },
@@ -5709,7 +5940,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 324.0
               },
               "bg": "#FFFFFF"
             },
@@ -5731,7 +5963,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 284.0
               },
               "bg": "#FFFFFF"
             },
@@ -5753,7 +5986,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -5775,7 +6009,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 300.0
               },
               "bg": "#007F73"
             }
@@ -5811,7 +6046,8 @@
                 "direction": "rtl",
                 "line_height": 27.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 310.0
               },
               "bg": "#FAF7F2"
             },
@@ -5902,7 +6138,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 284.0
               },
               "bg": "#DDF6F3"
             },
@@ -5924,7 +6161,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#FFFFFF"
             },
@@ -5946,7 +6184,8 @@
                 "direction": "rtl",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#FFFFFF"
             },
@@ -5971,7 +6210,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 272.0
               },
               "bg": "#FAF7F2"
             },
@@ -5993,7 +6233,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 274.0
               },
               "bg": "#FDE9C7"
             },
@@ -6019,7 +6260,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -6041,7 +6283,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -6063,7 +6306,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -6135,7 +6379,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 300.0
               },
               "bg": "#007F73"
             }
@@ -6164,7 +6409,8 @@
                 "direction": "ltr",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 310.0
               },
               "bg": "#FAF7F2"
             },
@@ -6255,7 +6501,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 284.0
               },
               "bg": "#DDF6F3"
             },
@@ -6277,7 +6524,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#FFFFFF"
             },
@@ -6299,7 +6547,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#FFFFFF"
             },
@@ -6324,7 +6573,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 272.0
               },
               "bg": "#FAF7F2"
             },
@@ -6346,7 +6596,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 275.0
               },
               "bg": "#FDE9C7"
             },
@@ -6372,7 +6623,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -6394,7 +6646,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -6416,7 +6669,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 324.0
               },
               "bg": "#FFFFFF"
             },
@@ -6438,7 +6692,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -6510,7 +6765,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 300.0
               },
               "bg": "#007F73"
             }
@@ -6546,7 +6802,8 @@
                 "direction": "rtl",
                 "line_height": 27.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -6568,7 +6825,8 @@
                 "direction": "rtl",
                 "line_height": 30.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6590,7 +6848,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6615,7 +6874,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6637,7 +6897,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6659,7 +6920,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 278.0
               },
               "bg": "#FFFFFF"
             },
@@ -6685,7 +6947,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6707,7 +6970,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6729,7 +6993,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": 14,
-                "lines": 1
+                "lines": 1,
+                "max_width": 278.0
               },
               "bg": "#FFFFFF"
             },
@@ -6755,7 +7020,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6777,7 +7043,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6799,7 +7066,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 264.0
               },
               "bg": "#FFFFFF"
             },
@@ -6821,7 +7089,8 @@
                 "direction": "rtl",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 302.0
               },
               "bg": "#007F73"
             }
@@ -6850,7 +7119,8 @@
                 "direction": "ltr",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -6872,7 +7142,8 @@
                 "direction": "ltr",
                 "line_height": 26.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6894,7 +7165,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 2
+                "lines": 2,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6919,7 +7191,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6941,7 +7214,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -6963,7 +7237,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 278.0
               },
               "bg": "#FFFFFF"
             },
@@ -6989,7 +7264,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -7011,7 +7287,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -7033,7 +7310,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": 14,
-                "lines": 1
+                "lines": 1,
+                "max_width": 278.0
               },
               "bg": "#FFFFFF"
             },
@@ -7059,7 +7337,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -7081,7 +7360,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 318.0
               },
               "bg": "#FFFFFF"
             },
@@ -7103,7 +7383,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 264.0
               },
               "bg": "#FFFFFF"
             },
@@ -7125,7 +7406,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 302.0
               },
               "bg": "#007F73"
             }
@@ -7161,7 +7443,8 @@
                 "direction": "rtl",
                 "line_height": 23.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 280.0
               },
               "bg": "#FFFFFF"
             },
@@ -7183,7 +7466,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 64.6
               },
               "bg": "#FFFFFF"
             },
@@ -7205,7 +7489,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 77.5
               },
               "bg": "#FFFFFF"
             },
@@ -7227,7 +7512,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 55.5
               },
               "bg": "#FFFFFF"
             },
@@ -7249,7 +7535,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 22.8
               },
               "bg": "#007F73"
             },
@@ -7271,7 +7558,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#DDF6F3"
             },
@@ -7293,7 +7581,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#DDF6F3"
             },
@@ -7315,7 +7604,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#DDF6F3"
             },
@@ -7337,7 +7627,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#007F73"
             },
@@ -7359,7 +7650,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 32.4
               },
               "bg": "#FFFFFF"
             },
@@ -7381,7 +7673,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 22.1
               },
               "bg": "#FFFFFF"
             },
@@ -7403,7 +7696,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 36.6
               },
               "bg": "#FFFFFF"
             },
@@ -7425,7 +7719,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 58.1
               },
               "bg": "#DDF6F3"
             },
@@ -7447,7 +7742,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 290.0
               },
               "bg": "#DDF6F3"
             },
@@ -7469,7 +7765,8 @@
                 "direction": "rtl",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 310.0
               },
               "bg": "#005149"
             },
@@ -7491,7 +7788,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 274.0
               },
               "bg": "#FFFFFF"
             },
@@ -7513,7 +7811,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FFFFFF"
             },
@@ -7535,7 +7834,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 300.0
               },
               "bg": "#DDF6F3"
             },
@@ -7557,7 +7857,8 @@
                 "direction": "rtl",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -7579,7 +7880,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -7601,7 +7903,8 @@
                 "direction": "rtl",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -7623,7 +7926,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             }
@@ -7652,7 +7956,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 280.0
               },
               "bg": "#FFFFFF"
             },
@@ -7674,7 +7979,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 16.7
               },
               "bg": "#007F73"
             },
@@ -7696,7 +8002,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 65.4
               },
               "bg": "#FFFFFF"
             },
@@ -7718,7 +8025,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 72.2
               },
               "bg": "#FFFFFF"
             },
@@ -7740,7 +8048,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 60.4
               },
               "bg": "#FFFFFF"
             },
@@ -7762,7 +8071,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#007F73"
             },
@@ -7784,7 +8094,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#DDF6F3"
             },
@@ -7806,7 +8117,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#DDF6F3"
             },
@@ -7828,7 +8140,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 326.0
               },
               "bg": "#DDF6F3"
             },
@@ -7850,7 +8163,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 77.1
               },
               "bg": "#DDF6F3"
             },
@@ -7872,7 +8186,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 41.6
               },
               "bg": "#FFFFFF"
             },
@@ -7894,7 +8209,8 @@
                 "direction": "ltr",
                 "line_height": 17.0,
                 "max_lines": 1,
-                "lines": 1
+                "lines": 1,
+                "max_width": 44.9
               },
               "bg": "#FFFFFF"
             },
@@ -7916,7 +8232,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 290.0
               },
               "bg": "#DDF6F3"
             },
@@ -7938,7 +8255,8 @@
                 "direction": "ltr",
                 "line_height": 20.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 310.0
               },
               "bg": "#00635A"
             },
@@ -7960,7 +8278,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 310.0
               },
               "bg": "#006158"
             },
@@ -7982,7 +8301,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 274.0
               },
               "bg": "#FFFFFF"
             },
@@ -8004,7 +8324,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FFFFFF"
             },
@@ -8026,7 +8347,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 300.0
               },
               "bg": "#DDF6F3"
             },
@@ -8048,7 +8370,8 @@
                 "direction": "ltr",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -8070,7 +8393,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -8092,7 +8416,8 @@
                 "direction": "ltr",
                 "line_height": 18.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             },
@@ -8114,7 +8439,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 316.0
               },
               "bg": "#F2F2F2"
             }
@@ -8150,7 +8476,8 @@
                 "direction": "rtl",
                 "line_height": 27.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -8172,7 +8499,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -8194,7 +8522,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             },
@@ -8216,7 +8545,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             },
@@ -8238,7 +8568,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -8260,7 +8591,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             },
@@ -8282,7 +8614,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 268.0
               },
               "bg": "#FFFFFF"
             },
@@ -8304,7 +8637,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 268.0
               },
               "bg": "#FFFFFF"
             },
@@ -8326,7 +8660,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 110.7
               },
               "bg": "#F2F1EC"
             },
@@ -8348,7 +8683,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 110.7
               },
               "bg": "#F2F1EC"
             },
@@ -8370,7 +8706,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 110.7
               },
               "bg": "#DDF6F3"
             },
@@ -8392,7 +8729,8 @@
                 "direction": "rtl",
                 "line_height": 26.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 194.0
               },
               "bg": "#FFFFFF"
             },
@@ -8414,7 +8752,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -8436,7 +8775,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             },
@@ -8458,7 +8798,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             },
@@ -8480,7 +8821,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 268.0
               },
               "bg": "#FFFFFF"
             },
@@ -8502,7 +8844,8 @@
                 "direction": "rtl",
                 "line_height": 17.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -8524,7 +8867,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 268.0
               },
               "bg": "#FFFFFF"
             },
@@ -8546,7 +8890,8 @@
                 "direction": "rtl",
                 "line_height": 25.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             }
@@ -8575,7 +8920,8 @@
                 "direction": "ltr",
                 "line_height": 23.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 358.0
               },
               "bg": "#FAF7F2"
             },
@@ -8597,7 +8943,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -8619,7 +8966,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             },
@@ -8641,7 +8989,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             },
@@ -8663,7 +9012,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -8685,7 +9035,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             },
@@ -8707,7 +9058,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 268.0
               },
               "bg": "#FFFFFF"
             },
@@ -8729,7 +9081,8 @@
                 "direction": "ltr",
                 "line_height": 18.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 268.0
               },
               "bg": "#FFFFFF"
             },
@@ -8751,7 +9104,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 110.7
               },
               "bg": "#DDF6F3"
             },
@@ -8773,7 +9127,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 110.7
               },
               "bg": "#F2F1EC"
             },
@@ -8795,7 +9150,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 110.7
               },
               "bg": "#F2F1EC"
             },
@@ -8817,7 +9173,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 194.0
               },
               "bg": "#FFFFFF"
             },
@@ -8839,7 +9196,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -8861,7 +9219,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             },
@@ -8883,7 +9242,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             },
@@ -8905,7 +9265,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 268.0
               },
               "bg": "#FFFFFF"
             },
@@ -8927,7 +9288,8 @@
                 "direction": "ltr",
                 "line_height": 16.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FAF7F2"
             },
@@ -8949,7 +9311,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 268.0
               },
               "bg": "#FFFFFF"
             },
@@ -8971,7 +9334,8 @@
                 "direction": "ltr",
                 "line_height": 22.0,
                 "max_lines": 2,
-                "lines": 1
+                "lines": 1,
+                "max_width": 246.0
               },
               "bg": "#FFFFFF"
             }
@@ -9007,7 +9371,8 @@
                 "direction": "rtl",
                 "line_height": 21.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FFFFFF"
             }
@@ -9036,7 +9401,8 @@
                 "direction": "ltr",
                 "line_height": 19.0,
                 "max_lines": null,
-                "lines": 1
+                "lines": 1,
+                "max_width": 350.0
               },
               "bg": "#FFFFFF"
             }
