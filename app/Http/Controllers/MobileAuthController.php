@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\CvTemplateRenderer;
 use App\Services\EmailVerificationService;
 use App\Services\PasswordResetService;
+use App\Services\SocialAuth\AppleTokenService;
 use App\Services\SocialAuth\SocialAccountLinker;
 use App\Services\SocialAuth\SocialAuthProviders;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -365,6 +366,11 @@ class MobileAuthController extends Controller
         $user->mobileNotifications()->delete();
         $user->fcmTokens()->delete();
         $user->tokens()->delete();
+        // App Store 5.1.1(v): deleting the account revokes Sign in with Apple.
+        $apple = app(AppleTokenService::class);
+        foreach ($user->socialAccounts()->where('provider', 'apple')->whereNotNull('refresh_token')->get() as $account) {
+            $apple->revoke($account->refresh_token, (string) $account->client_id);
+        }
         $user->delete();
 
         return response()->json([

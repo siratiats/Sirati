@@ -10,6 +10,7 @@ class SocialAuthProviders
     /** @var array<string, class-string<IdTokenVerifier>> */
     private const VERIFIERS = [
         'google' => GoogleIdTokenVerifier::class,
+        'apple' => AppleIdTokenVerifier::class,
     ];
 
     public function __construct(private readonly Container $container) {}

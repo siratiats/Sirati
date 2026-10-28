@@ -15,7 +15,20 @@ class SocialAccount extends Model
         'provider',
         'provider_subject',
         'email',
+        'refresh_token',
+        'client_id',
     ];
+
+    protected $hidden = [
+        'refresh_token',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'refresh_token' => 'encrypted',
+        ];
+    }
 
     public function user(): BelongsTo
     {

@@ -34,6 +34,17 @@ class SocialAccountLinker
             ?->user;
     }
 
+    /** Keeps the provider refresh token (Apple) so account deletion can revoke it. */
+    public function rememberRefreshToken(VerifiedIdentity $identity, string $refreshToken): void
+    {
+        SocialAccount::query()
+            ->where('provider', $identity->provider)
+            ->where('provider_subject', $identity->subject)
+            ->first()
+            ?->forceFill(['refresh_token' => $refreshToken, 'client_id' => $identity->audience])
+            ->save();
+    }
+
     private function resolve(VerifiedIdentity $identity): User
     {
         return DB::transaction(function () use ($identity): User {

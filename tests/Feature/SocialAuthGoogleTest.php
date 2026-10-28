@@ -12,11 +12,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\SocialAuthKeys;
 use Tests\TestCase;
 
 class SocialAuthGoogleTest extends TestCase
 {
     use RefreshDatabase;
+    use SocialAuthKeys;
 
     private const CERTS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
 
@@ -24,10 +26,10 @@ class SocialAuthGoogleTest extends TestCase
 
     private const ANDROID_CLIENT = 'android-client.apps.googleusercontent.com';
 
-    /** @var array{private: string, n: string, e: string} */
+    /** @var array{private: string, public: string, n: string, e: string} */
     private static array $signingKey;
 
-    /** @var array{private: string, n: string, e: string} */
+    /** @var array{private: string, public: string, n: string, e: string} */
     private static array $otherKey;
 
     /** Answers the faked Google certs URL; tests swap it to simulate rotation or outages. */
@@ -346,7 +348,7 @@ class SocialAuthGoogleTest extends TestCase
 
     public function test_unsupported_provider_is_not_routed(): void
     {
-        foreach (['facebook', 'apple', 'GOOGLE', 'google2'] as $provider) {
+        foreach (['facebook', 'twitter', 'GOOGLE', 'Apple', 'google2'] as $provider) {
             $this->postJson("/api/auth/social/$provider", ['id_token' => $this->idToken()])->assertNotFound();
         }
     }
@@ -430,35 +432,8 @@ class SocialAuthGoogleTest extends TestCase
     /** @param array<string, array{n: string, e: string}>|null $keys */
     private function fakeCerts(?array $keys = null): void
     {
-        $keys ??= ['kid-1' => self::$signingKey];
-        $jwks = ['keys' => []];
-        foreach ($keys as $kid => $key) {
-            $jwks['keys'][] = ['kty' => 'RSA', 'alg' => 'RS256', 'use' => 'sig', 'kid' => $kid, 'n' => $key['n'], 'e' => $key['e']];
-        }
-
+        $jwks = self::jwks($keys ?? ['kid-1' => self::$signingKey]);
         $this->certs = fn () => Http::response($jwks, 200, ['Cache-Control' => 'public, max-age=21600']);
-    }
-
-    /** @return array{private: string, n: string, e: string} */
-    private static function rsaKey(): array
-    {
-        $options = ['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA];
-        // Windows PHP builds (XAMPP) ship openssl.cnf next to php.exe but don't point OpenSSL at it.
-        $bundledConfig = dirname(PHP_BINARY).'/extras/ssl/openssl.cnf';
-        if (getenv('OPENSSL_CONF') === false && is_file($bundledConfig)) {
-            $options['config'] = $bundledConfig;
-        }
-        $resource = openssl_pkey_new($options);
-        openssl_pkey_export($resource, $private, null, $options);
-        $rsa = openssl_pkey_get_details($resource)['rsa'];
-
-        return ['private' => $private, 'n' => JWT::urlsafeB64Encode($rsa['n']), 'e' => JWT::urlsafeB64Encode($rsa['e'])];
-    }
-
-    /** @param array<string, mixed> $data */
-    private static function b64(array $data): string
-    {
-        return JWT::urlsafeB64Encode(json_encode($data));
     }
 
     /** @return list<string> */

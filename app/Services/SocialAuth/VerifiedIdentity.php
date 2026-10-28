@@ -11,5 +11,7 @@ final class VerifiedIdentity
         public readonly ?string $email,
         public readonly bool $emailVerified,
         public readonly ?string $name = null,
+        /** The client id the token was issued to (Apple: bundle id or Services ID). */
+        public readonly ?string $audience = null,
     ) {}
 }

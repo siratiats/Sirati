@@ -26,6 +26,8 @@ Route::post('/auth/login', [MobileAuthController::class, 'login'])
 Route::post('/auth/social/{provider}', [SocialAuthController::class, 'signIn'])
     ->whereIn('provider', SocialAuthProviders::names())
     ->middleware('throttle:10,1');
+Route::post('/auth/apple/callback', [SocialAuthController::class, 'appleCallback'])
+    ->middleware('throttle:30,1');
 Route::post('/auth/forgot-password', [MobileAuthController::class, 'forgotPassword'])
     ->middleware('throttle:3,1');
 Route::post('/auth/reset-password', [MobileAuthController::class, 'resetPassword'])
