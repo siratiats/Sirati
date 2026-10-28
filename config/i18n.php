@@ -4,6 +4,10 @@ return [
     // Directory that holds the bundled app_*.arb files (copied from flutter_app/lib/l10n).
     'arb_path' => resource_path('i18n'),
 
+    // App screenshots + label boxes from the Flutter capture tool (manifest.json + <screen>.<locale>.png).
+    // Read by App\Services\I18n\LabelScreenCatalog for the admin Labels page.
+    'screens_path' => env('I18N_SCREENS_PATH', resource_path('i18n/screens')),
+
     // Locale of the template ARB (flutter_app/l10n.yaml: template-arb-file). It defines the key catalog.
     'template_locale' => 'ar',
 

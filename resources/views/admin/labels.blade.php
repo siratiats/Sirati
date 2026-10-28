@@ -26,7 +26,15 @@
             $missingCount = max(0, $totalKeys - $targetStat['translated']);
             $missingPercent = $totalKeys > 0 ? round($missingCount * 100 / $totalKeys, 1) : 0;
             $baseCode = $base?->code;
-            $filterQuery = fn (string $value) => array_filter(['lang' => $target->code, 'base' => request()->query('base') ? $baseCode : null, 'q' => $q !== '' ? $q : null, 'filter' => $value !== '' ? $value : null]);
+            $sv = $screenView;
+            $phone = $sv['phone'];
+            $selectedKey = $sv['selectedKey'];
+            // Page state carried by every link; `key` and `page` are added only where a link needs them.
+            $pageState = ['lang' => $target->code, 'base' => request()->query('base') ? $baseCode : null, 'q' => $q, 'filter' => $filter, 'screen' => $sv['filter'], 'shot' => $sv['shot']];
+            $labelsUrl = fn (array $changes = [], ?string $fragment = null) => route('admin.labels.index', array_filter(array_merge($pageState, $changes), fn ($v) => $v !== null && $v !== '')).($fragment ? '#'.$fragment : '');
+            $percent = fn (float $value) => rtrim(rtrim(number_format($value, 4, '.', ''), '0'), '.').'%';
+            $screenName = fn (string $id) => $sv['screens'][$id]['name'] ?? $id;
+            $languageFor = fn (string $code) => $languages->firstWhere('code', $code);
             $chipLabels = ['' => 'All', 'missing' => 'Missing', 'draft' => 'Drafts', 'changed' => 'Edited', 'placeholders' => 'With placeholders'];
             $placeholderPresent = fn (string $value, string $name) => preg_match('/\{\s*'.preg_quote($name, '/').'\s*[,}]/u', $value) === 1;
         @endphp
@@ -36,6 +44,8 @@
             <div class="l10n-toolbar__row">
                 <form method="GET" action="{{ route('admin.labels.index') }}" class="l10n-toolbar__form" data-autosubmit>
                     @if ($filter !== '')<input type="hidden" name="filter" value="{{ $filter }}">@endif
+                    @if ($sv['filter'] !== '')<input type="hidden" name="screen" value="{{ $sv['filter'] }}">@endif
+                    @if ($sv['shot'] !== null)<input type="hidden" name="shot" value="{{ $sv['shot'] }}">@endif
                     <label class="l10n-select">Target
                         <select name="lang" data-autosubmit-field>
                             @foreach ($languages as $language)
@@ -79,12 +89,12 @@
 
             <nav class="l10n-chips" aria-label="Filter labels">
                 @foreach ($chipLabels as $value => $chipLabel)
-                    <a href="{{ route('admin.labels.index', $filterQuery($value)) }}" @class(['chip', 'chip-active' => $filter === $value, 'l10n-chip--missing' => $value === 'missing', 'l10n-chip--draft' => $value === 'draft']) @if ($filter === $value) aria-current="true" @endif title="{{ $value === '' ? 'All labels' : $filters[$value] }}">
+                    <a href="{{ $labelsUrl(['filter' => $value]) }}"@class(['chip', 'chip-active' => $filter === $value, 'l10n-chip--missing' => $value === 'missing', 'l10n-chip--draft' => $value === 'draft']) @if ($filter === $value) aria-current="true" @endif title="{{ $value === '' ? 'All labels' : $filters[$value] }}">
                         {{ $chipLabel }} <span class="num l10n-chip__count">{{ number_format($filterCounts[$value] ?? 0) }}</span>
                     </a>
                 @endforeach
                 @if ($q !== '' || $filter !== '')
-                    <a class="button-link l10n-chips__clear" href="{{ route('admin.labels.index', array_filter(['lang' => $target->code, 'base' => request()->query('base') ? $baseCode : null])) }}">Clear</a>
+                    <a class="button-link l10n-chips__clear" href="{{ $labelsUrl(['q' => null, 'filter' => null]) }}">Clear</a>
                 @endif
             </nav>
         </section>
@@ -95,6 +105,35 @@
             data-bulk-url="{{ route('admin.labels.bulk', $target->code) }}"
             data-discard-url="{{ route('admin.labels.discard', $target->code) }}"
             data-csrf="{{ csrf_token() }}">
+
+            <div class="l10n-editor__rail">
+                <nav class="card l10n-screens" aria-labelledby="l10n-screens-title">
+                    <h2 class="l10n-screens__title" id="l10n-screens-title">Filter by app screen</h2>
+                    @if ($sv['hasScreens'])
+                        <ul class="l10n-screens__list">
+                            <li>
+                                <a @class(['l10n-screens__item', 'is-active' => $sv['filter'] === '']) href="{{ $labelsUrl(['screen' => null]) }}" @if ($sv['filter'] === '') aria-current="true" @endif>
+                                    <span>All screens</span><span class="num l10n-screens__count">{{ number_format($totalKeys) }}</span>
+                                </a>
+                            </li>
+                            @foreach ($sv['screens'] as $screenId => $screen)
+                                <li>
+                                    <a @class(['l10n-screens__item', 'is-active' => $sv['filter'] === $screenId, 'is-on-phone' => ($phone['screen']['id'] ?? null) === $screenId]) href="{{ $labelsUrl(['screen' => $screenId]) }}" data-screen-link="{{ $screenId }}" @if ($sv['filter'] === $screenId) aria-current="true" @endif>
+                                        <span>{{ $screen['name'] }}</span><span class="num l10n-screens__count">{{ number_format($sv['counts'][$screenId] ?? 0) }}</span>
+                                    </a>
+                                </li>
+                            @endforeach
+                            <li>
+                                <a @class(['l10n-screens__item', 'l10n-screens__item--none', 'is-active' => $sv['filter'] === \App\Http\Controllers\Admin\LabelController::SCREEN_NONE]) href="{{ $labelsUrl(['screen' => \App\Http\Controllers\Admin\LabelController::SCREEN_NONE]) }}" @if ($sv['filter'] === \App\Http\Controllers\Admin\LabelController::SCREEN_NONE) aria-current="true" @endif>
+                                    <span>Not on a captured screen</span><span class="num l10n-screens__count">{{ number_format($sv['noneCount']) }}</span>
+                                </a>
+                            </li>
+                        </ul>
+                    @else
+                        <p class="l10n-screens__empty">No app screenshots yet.</p>
+                    @endif
+                </nav>
+            </div>
 
             <div class="l10n-editor__main">
                 @php $currentGroup = null; @endphp
@@ -125,9 +164,18 @@
                             <div class="l10n-group__rows">
                     @endif
 
-                    <article class="l10n-row i18n-label {{ $hasDraft ? 'is-draft' : '' }} {{ $isMissing ? 'is-missing' : '' }}" data-label-key="{{ $label->key }}">
+                    @php
+                        $rowScreens = $sv['hasScreens'] ? ($sv['screensForKey'])($label->key) : [];
+                        $isSelected = $selectedKey === $label->key;
+                    @endphp
+                    <article id="label-{{ $label->key }}" class="l10n-row i18n-label {{ $hasDraft ? 'is-draft' : '' }} {{ $isMissing ? 'is-missing' : '' }} {{ $isSelected ? 'is-selected' : '' }}" data-label-key="{{ $label->key }}" @if ($isSelected) aria-current="true" @endif>
                         <header class="l10n-row__head">
                             <code class="l10n-key">{{ $label->key }}</code>
+                            @if ($rowScreens !== [])
+                                <a class="l10n-used-on" href="{{ $labelsUrl(['key' => $label->key, 'page' => $labels->currentPage() > 1 ? $labels->currentPage() : null], 'label-'.$label->key) }}" title="Show on the phone: {{ implode(', ', array_map($screenName, $rowScreens)) }}" data-used-on="{{ count($rowScreens) }}">
+                                    @include('admin.partials.icon', ['name' => 'layers', 'class' => 'icon-sm'])Used on {{ count($rowScreens) }} screen{{ count($rowScreens) === 1 ? '' : 's' }}
+                                </a>
+                            @endif
                             <span @class(['badge', 'badge-square', 'l10n-status', 'badge-warning' => $status === 'draft', 'badge-danger' => $status === 'missing', 'badge-success' => $status === 'published']) data-status-chip>{{ ['draft' => 'Draft', 'missing' => 'Missing', 'published' => 'Live'][$status] }}</span>
                             @if ($label->is_icu)<span class="badge badge-info badge-square">plural/select</span>@endif
                             @if ($label->target_updated_by !== null && ! $isMissing)<span class="badge badge-neutral badge-square">Edited</span>@endif
@@ -221,6 +269,76 @@
                     </form>
                 </section>
             </aside>
+
+            <aside class="l10n-editor__phone" aria-label="Where labels appear in the app">
+                <section class="card l10n-preview" data-screen-preview>
+                    @if ($phone === null)
+                        <div class="empty-state l10n-preview__empty">
+                            <h3>No app screenshots yet</h3>
+                            <p>Run the Flutter screen capture tool and commit <code>resources/i18n/screens/manifest.json</code> with its PNGs to see where each label appears.</p>
+                        </div>
+                    @else
+                        @php
+                            $phoneScreenId = $phone['screen']['id'];
+                            $capture = $phone['capture'];
+                            $phoneLanguage = $languageFor($phone['locale']);
+                        @endphp
+                        <header class="l10n-preview__head">
+                            <div class="l10n-preview__locales" role="group" aria-label="Screenshot language">
+                                @foreach ($phone['locales'] as $locale)
+                                    @php $localeLanguage = $languageFor($locale); @endphp
+                                    <a @class(['l10n-preview__locale', 'is-active' => $locale === $phone['locale']]) href="{{ $labelsUrl(['shot' => $locale, 'key' => $selectedKey, 'page' => request()->query('page')], $selectedKey ? 'label-'.$selectedKey : null) }}" data-shot-locale="{{ $locale }}" @if ($locale === $phone['locale']) aria-current="true" @endif>
+                                        {{ strtoupper($locale) }}@if ($localeLanguage) <span class="l10n-preview__dir">{{ strtoupper($localeLanguage->direction) }}</span>@endif
+                                    </a>
+                                @endforeach
+                            </div>
+                            <div class="l10n-preview__pager">
+                                @if ($phone['previous'])
+                                    <a class="icon-button" href="{{ $labelsUrl(['screen' => $phone['previous']]) }}" aria-label="Previous screen: {{ $screenName($phone['previous']) }}" data-screen-prev>‹</a>
+                                @else
+                                    <span class="icon-button is-disabled" aria-hidden="true">‹</span>
+                                @endif
+                                <span class="num">Screen {{ $phone['position'] }} of {{ $phone['count'] }}</span>
+                                @if ($phone['next'])
+                                    <a class="icon-button" href="{{ $labelsUrl(['screen' => $phone['next']]) }}" aria-label="Next screen: {{ $screenName($phone['next']) }}" data-screen-next>›</a>
+                                @else
+                                    <span class="icon-button is-disabled" aria-hidden="true">›</span>
+                                @endif
+                            </div>
+                        </header>
+
+                        <h2 class="l10n-preview__title">{{ $phone['screen']['name'] }} <span class="mono">{{ $phoneScreenId }}</span></h2>
+                        @if ($phone['locale'] !== $target->code)
+                            <p class="l10n-preview__note">No {{ $target->name }} ({{ $target->code }}) capture for this screen; showing <span class="mono">{{ $phone['locale'] }}</span>.</p>
+                        @endif
+                        @if ($selectedKey !== null && ! $phone['selectedOnPhone'])
+                            <p class="l10n-preview__note"><code>{{ $selectedKey }}</code> {{ $sv['keyScreens'] === [] ? 'is not on a captured screen.' : 'is not captured on this screen in '.$phone['locale'].'.' }}</p>
+                        @endif
+
+                        <figure class="l10n-phone">
+                            <div class="l10n-phone__screen" data-phone-screen dir="ltr">
+                                <img class="l10n-phone__image" src="{{ $phone['imageUrl'] }}" width="{{ (int) round($capture['width']) }}" height="{{ (int) round($capture['height']) }}" alt="The {{ $phone['screen']['name'] }} screen in {{ $phoneLanguage?->name ?? $phone['locale'] }}" @if ($phoneLanguage) lang="{{ $phone['locale'] }}" @endif>
+                                @foreach ($phone['boxes'] as $box)
+                                    @php $boxSelected = $box['key'] === $selectedKey; @endphp
+                                    <a @class(['l10n-hotspot', 'is-selected' => $boxSelected, 'is-below' => $box['top'] < 6, 'is-end' => $box['left'] > 50])
+                                        href="{{ $labelsUrl(['q' => null, 'filter' => null, 'screen' => $phoneScreenId, 'key' => $box['key']], 'label-'.$box['key']) }}"
+                                        style="left: {{ $percent($box['left']) }}; top: {{ $percent($box['top']) }}; width: {{ $percent($box['width']) }}; height: {{ $percent($box['height']) }};"
+                                        data-hotspot-key="{{ $box['key'] }}"
+                                        aria-label="Select label {{ $box['key'] }}"
+                                        @if ($boxSelected) aria-current="true" @endif>
+                                        @if ($boxSelected)<span class="l10n-hotspot__tag">{{ $box['key'] }}</span>@endif
+                                    </a>
+                                @endforeach
+                            </div>
+                        </figure>
+
+                        <p class="l10n-preview__hint">@include('admin.partials.icon', ['name' => 'help', 'class' => 'icon-sm'])Click a highlighted text on the phone to jump to its label.</p>
+                        @if ($sv['meta']['app_commit'] || $sv['meta']['generated_at'])
+                            <p class="l10n-preview__meta">Captured{{ $sv['meta']['app_commit'] ? ' from app '.$sv['meta']['app_commit'] : '' }}{{ $sv['meta']['generated_at'] ? ' · '.$sv['meta']['generated_at'] : '' }}</p>
+                        @endif
+                    @endif
+                </section>
+            </aside>
         </div>
 
         <dialog class="admin-drawer l10n-modal" id="labels-import" aria-labelledby="labels-import-title">
@@ -245,6 +363,28 @@
     @endif
 
     <script>
+        (() => {
+            // Hovering or focusing a label row outlines the same label on the phone preview.
+            // Without a #label-… fragment (e.g. a pasted ?key= link), bring the selected row into view.
+            const selectedRow = document.querySelector('[data-label-key].is-selected');
+            if (selectedRow && !window.location.hash) selectedRow.scrollIntoView({ block: 'center' });
+
+            const phoneScreen = document.querySelector('[data-phone-screen]');
+            if (phoneScreen) {
+                const hint = (key, on) => phoneScreen.querySelectorAll('[data-hotspot-key]').forEach((box) => {
+                    if (box.dataset.hotspotKey === key) box.classList.toggle('is-hinted', on);
+                });
+                ['mouseover', 'focusin'].forEach((type) => document.addEventListener(type, (event) => {
+                    const row = event.target.closest?.('[data-label-key]');
+                    if (row) hint(row.dataset.labelKey, true);
+                }));
+                ['mouseout', 'focusout'].forEach((type) => document.addEventListener(type, (event) => {
+                    const row = event.target.closest?.('[data-label-key]');
+                    if (row && !row.contains(event.relatedTarget)) hint(row.dataset.labelKey, false);
+                }));
+            }
+        })();
+
         (() => {
             document.addEventListener('click', (event) => {
                 const opener = event.target.closest('[data-open-dialog]');

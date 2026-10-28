@@ -1,0 +1,250 @@
+{
+  "version": 1,
+  "generated_at": "2026-10-27T18:00:00Z",
+  "app_commit": "abc1234",
+  "device": {
+    "width": 390,
+    "height": 844,
+    "pixel_ratio": 2
+  },
+  "screens": [
+    {
+      "id": "welcome",
+      "name": "Welcome",
+      "order": 1,
+      "locales": {
+        "ar": {
+          "image": "welcome.ar.png",
+          "width": 390,
+          "height": 844,
+          "labels": [
+            {
+              "key": "welcomeToSirati",
+              "x": 24.0,
+              "y": 360.0,
+              "w": 342.0,
+              "h": 40.0
+            },
+            {
+              "key": "buildCvProfessionally",
+              "x": 40.0,
+              "y": 410.5,
+              "w": 310.0,
+              "h": 24.0
+            },
+            {
+              "key": "getStarted",
+              "x": 24.0,
+              "y": 640.0,
+              "w": 342.0,
+              "h": 48.0
+            },
+            {
+              "key": "createAccount",
+              "x": 24.0,
+              "y": 700.5,
+              "w": 342.0,
+              "h": 48.0
+            },
+            {
+              "key": "signIn",
+              "x": 140.0,
+              "y": 764.0,
+              "w": 110.0,
+              "h": 22.0
+            }
+          ]
+        },
+        "en": {
+          "image": "welcome.en.png",
+          "width": 390,
+          "height": 844,
+          "labels": [
+            {
+              "key": "welcomeToSirati",
+              "x": 24.0,
+              "y": 360.0,
+              "w": 342.0,
+              "h": 40.0
+            },
+            {
+              "key": "buildCvProfessionally",
+              "x": 40.0,
+              "y": 410.5,
+              "w": 310.0,
+              "h": 24.0
+            },
+            {
+              "key": "getStarted",
+              "x": 24.0,
+              "y": 640.0,
+              "w": 342.0,
+              "h": 48.0
+            },
+            {
+              "key": "createAccount",
+              "x": 24.0,
+              "y": 700.5,
+              "w": 342.0,
+              "h": 48.0
+            },
+            {
+              "key": "signIn",
+              "x": 140.0,
+              "y": 764.0,
+              "w": 110.0,
+              "h": 22.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "home",
+      "name": "Home dashboard",
+      "order": 2,
+      "locales": {
+        "ar": {
+          "image": "home.ar.png",
+          "width": 390,
+          "height": 844,
+          "labels": [
+            {
+              "key": "myCvs",
+              "x": 250.0,
+              "y": 96.0,
+              "w": 120.0,
+              "h": 30.0
+            },
+            {
+              "key": "createCv",
+              "x": 20.0,
+              "y": 150.0,
+              "w": 350.0,
+              "h": 52.0
+            },
+            {
+              "key": "analyses",
+              "x": 230.0,
+              "y": 236.0,
+              "w": 140.0,
+              "h": 26.0
+            },
+            {
+              "key": "settings",
+              "x": 20.0,
+              "y": 54.0,
+              "w": 77.5,
+              "h": 22.0
+            },
+            {
+              "key": "legacyPromoBanner",
+              "x": 20.0,
+              "y": 600.0,
+              "w": 350.0,
+              "h": 80.0
+            }
+          ]
+        },
+        "en": {
+          "image": "home.en.png",
+          "width": 390,
+          "height": 844,
+          "labels": [
+            {
+              "key": "myCvs",
+              "x": 20.0,
+              "y": 96.0,
+              "w": 120.0,
+              "h": 30.0
+            },
+            {
+              "key": "createCv",
+              "x": 20.0,
+              "y": 150.0,
+              "w": 350.0,
+              "h": 52.0
+            },
+            {
+              "key": "analyses",
+              "x": 20.0,
+              "y": 236.0,
+              "w": 140.0,
+              "h": 26.0
+            },
+            {
+              "key": "settings",
+              "x": 292.5,
+              "y": 54.0,
+              "w": 77.5,
+              "h": 22.0
+            },
+            {
+              "key": "legacyPromoBanner",
+              "x": 20.0,
+              "y": 600.0,
+              "w": 350.0,
+              "h": 80.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "personal_details",
+      "name": "CV wizard - Personal",
+      "order": 3,
+      "locales": {
+        "ar": {
+          "image": "personal_details.ar.png",
+          "width": 390,
+          "height": 844,
+          "labels": [
+            {
+              "key": "personalDetailsTitle",
+              "x": 24.0,
+              "y": 88.0,
+              "w": 342.0,
+              "h": 34.0
+            },
+            {
+              "key": "personalDetailsSubtitle",
+              "x": 24.0,
+              "y": 128.0,
+              "w": 342.0,
+              "h": 40.0
+            },
+            {
+              "key": "fullNameAr",
+              "x": 24.0,
+              "y": 196.0,
+              "w": 342.0,
+              "h": 56.0
+            },
+            {
+              "key": "fullNameEn",
+              "x": 24.0,
+              "y": 268.0,
+              "w": 342.0,
+              "h": 56.0
+            },
+            {
+              "key": "next",
+              "x": 206.0,
+              "y": 770.0,
+              "w": 160.0,
+              "h": 48.0
+            },
+            {
+              "key": "back",
+              "x": 24.0,
+              "y": 770.0,
+              "w": 160.0,
+              "h": 48.0
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -40,7 +40,7 @@ class AppLocalizationAdminTest extends TestCase
     private function callRoute(Route $route): \Illuminate\Testing\TestResponse
     {
         $method = collect($route->methods())->first(fn ($m) => $m !== 'HEAD');
-        $uri = '/'.str_replace('{code}', 'en', $route->uri());
+        $uri = '/'.str_replace(['{code}', '{screen}', '{locale}'], ['en', 'welcome', 'en'], $route->uri());
 
         return $this->json($method, $uri, ['key' => 'retry', 'value' => 'x', 'values' => ['retry' => 'x'], 'revision' => 1, 'all' => 1]);
     }
@@ -56,7 +56,7 @@ class AppLocalizationAdminTest extends TestCase
         $names = array_map(fn (Route $route) => $route->getName(), $routes);
         sort($names);
         $this->assertSame([
-            'admin.labels.bulk', 'admin.labels.discard', 'admin.labels.export', 'admin.labels.import', 'admin.labels.index', 'admin.labels.update',
+            'admin.labels.bulk', 'admin.labels.discard', 'admin.labels.export', 'admin.labels.import', 'admin.labels.index', 'admin.labels.screens.image', 'admin.labels.update',
             'admin.languages.destroy', 'admin.languages.index', 'admin.languages.publish', 'admin.languages.rollback', 'admin.languages.store', 'admin.languages.update',
         ], $names);
 
