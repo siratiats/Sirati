@@ -8,7 +8,7 @@
     <title>@yield('title', 'Siratie Admin')</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
     @php($adminCss = public_path('css/admin.css'))
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ file_exists($adminCss) ? filemtime($adminCss) : '1' }}">
 </head>

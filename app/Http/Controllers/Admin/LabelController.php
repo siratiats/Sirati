@@ -10,6 +10,7 @@ use App\Models\AppTranslationKey;
 use App\Services\I18n\ArbFile;
 use App\Services\I18n\ArbImporter;
 use App\Services\I18n\LabelScreenCatalog;
+use App\Services\I18n\LabelScreenPreview;
 use App\Services\I18n\TranslationPublisher;
 use App\Services\I18n\TranslationValidator;
 use Illuminate\Database\Eloquent\Builder;
@@ -39,11 +40,15 @@ class LabelController extends Controller
 
     public const PER_PAGE = 50;
 
+    /** `?preview=` value that shows the bare screenshot, without the current text painted over it. */
+    public const PREVIEW_ORIGINAL = 'original';
+
     public function __construct(
         private readonly TranslationValidator $validator,
         private readonly TranslationPublisher $publisher,
         private readonly ArbImporter $importer,
         private readonly LabelScreenCatalog $screens,
+        private readonly LabelScreenPreview $preview,
     ) {
     }
 
@@ -166,16 +171,33 @@ class LabelController extends Controller
         $requestedShot = (string) $request->query('shot', '');
         $shot = preg_match(LabelScreenCatalog::LOCALE_PATTERN, $requestedShot) === 1 ? $requestedShot : null;
         $meta = $catalog->meta();
+        $previewMode = $request->query('preview') === self::PREVIEW_ORIGINAL ? self::PREVIEW_ORIGINAL : null;
         $phone = null;
         if ($phoneScreen !== null) {
             $phoneLocale = (string) $catalog->resolveLocale($phoneScreen, [$shot, $target->code, $target->effectiveFallback(), 'en']);
             $ids = $catalog->screenIds();
             $position = (int) array_search($phoneScreen, $ids, true);
+            $capture = $catalog->capture($phoneScreen, $phoneLocale);
+            $phoneKeys = array_values(array_unique(array_filter(array_column($capture['labels'], 'key'), fn (string $key) => isset($known[$key]))));
+            $phoneLanguage = AppLanguage::query()->where('code', $phoneLocale)->first();
+            $overlays = $this->preview->overlays(
+                $capture,
+                $this->preview->currentValues($phoneLocale, $phoneKeys),
+                $this->preview->bundledMessages($phoneLocale),
+                $phoneLanguage?->direction ?? 'ltr',
+                fn (string $key) => isset($known[$key]),
+            );
             $phone = [
                 'screen' => $screens[$phoneScreen],
                 'locale' => $phoneLocale,
                 'locales' => $catalog->localesFor($phoneScreen),
-                'capture' => $catalog->capture($phoneScreen, $phoneLocale),
+                'capture' => $capture,
+                // Logical width the manifest coordinates and font sizes are measured in.
+                'unitWidth' => (float) ($meta['device']['width'] ?? $capture['width']),
+                'overlays' => $overlays,
+                'editedKeys' => array_values(array_unique(array_column(array_filter($overlays, fn (array $o) => $o['edited']), 'key'))),
+                // Typing in a row repaints the phone only when the phone shows the language being edited.
+                'live' => $previewMode === null && $phoneLocale === $target->code,
                 'imageUrl' => route('admin.labels.screens.image', [
                     'screen' => $phoneScreen,
                     'locale' => $phoneLocale,
@@ -198,6 +220,7 @@ class LabelController extends Controller
             'filter' => $screenFilter,
             'scope' => $scope,
             'shot' => $shot,
+            'preview' => $previewMode,
             'selectedKey' => $selectedKey,
             'keyScreens' => $keyScreens,
             'phone' => $phone,

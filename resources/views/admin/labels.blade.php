@@ -30,7 +30,7 @@
             $phone = $sv['phone'];
             $selectedKey = $sv['selectedKey'];
             // Page state carried by every link; `key` and `page` are added only where a link needs them.
-            $pageState = ['lang' => $target->code, 'base' => request()->query('base') ? $baseCode : null, 'q' => $q, 'filter' => $filter, 'screen' => $sv['filter'], 'shot' => $sv['shot']];
+            $pageState = ['lang' => $target->code, 'base' => request()->query('base') ? $baseCode : null, 'q' => $q, 'filter' => $filter, 'screen' => $sv['filter'], 'shot' => $sv['shot'], 'preview' => $sv['preview']];
             $labelsUrl = fn (array $changes = [], ?string $fragment = null) => route('admin.labels.index', array_filter(array_merge($pageState, $changes), fn ($v) => $v !== null && $v !== '')).($fragment ? '#'.$fragment : '');
             $percent = fn (float $value) => rtrim(rtrim(number_format($value, 4, '.', ''), '0'), '.').'%';
             $screenName = fn (string $id) => $sv['screens'][$id]['name'] ?? $id;
@@ -315,22 +315,51 @@
                             <p class="l10n-preview__note"><code>{{ $selectedKey }}</code> {{ $sv['keyScreens'] === [] ? 'is not on a captured screen.' : 'is not captured on this screen in '.$phone['locale'].'.' }}</p>
                         @endif
 
+                        @php
+                            $showEdits = $sv['preview'] === null;
+                            $editedOnPhone = array_flip($phone['editedKeys']);
+                        @endphp
+                        <div class="l10n-preview__mode" role="group" aria-label="Phone preview">
+                            <a @class(['l10n-preview__locale', 'is-active' => ! $showEdits]) href="{{ $labelsUrl(['preview' => \App\Http\Controllers\Admin\LabelController::PREVIEW_ORIGINAL, 'key' => $selectedKey, 'page' => request()->query('page')], $selectedKey ? 'label-'.$selectedKey : null) }}" data-preview-mode="original" @if (! $showEdits) aria-current="true" @endif>Original screenshot</a>
+                            <a @class(['l10n-preview__locale', 'is-active' => $showEdits]) href="{{ $labelsUrl(['preview' => null, 'key' => $selectedKey, 'page' => request()->query('page')], $selectedKey ? 'label-'.$selectedKey : null) }}" data-preview-mode="edits" @if ($showEdits) aria-current="true" @endif>With edits</a>
+                        </div>
+
                         <figure class="l10n-phone">
-                            <div class="l10n-phone__screen" data-phone-screen dir="ltr">
+                            <div class="l10n-phone__screen" data-phone-screen dir="ltr" style="--shot-w: {{ rtrim($percent($phone['unitWidth']), '%') }};"
+                                @if ($phone['live']) data-live-lang="{{ $phone['locale'] }}" data-icu-escaping="{{ config('i18n.icu_escaping') ? '1' : '0' }}" @endif>
                                 <img class="l10n-phone__image" src="{{ $phone['imageUrl'] }}" width="{{ (int) round($capture['width']) }}" height="{{ (int) round($capture['height']) }}" alt="The {{ $phone['screen']['name'] }} screen in {{ $phoneLanguage?->name ?? $phone['locale'] }}" @if ($phoneLanguage) lang="{{ $phone['locale'] }}" @endif>
+                                @if ($showEdits)
+                                    @foreach ($phone['overlays'] as $overlay)
+                                        @if ($overlay['mode'] === 'patch')
+                                            <div class="l10n-patch" data-patch-key="{{ $overlay['key'] }}" data-patch-index="{{ $overlay['index'] }}" data-lines="{{ $overlay['lines'] }}" style="{{ $overlay['css'] }}" dir="{{ $overlay['dir'] }}" lang="{{ $phone['locale'] }}" aria-hidden="true">
+                                                <span class="l10n-patch__text">{{ $overlay['text'] }}</span>
+                                                <span class="l10n-patch__warn" hidden>Text may not fit</span>
+                                            </div>
+                                        @elseif ($overlay['mode'] === 'note')
+                                            <div class="l10n-patch-note" data-note-key="{{ $overlay['key'] }}" data-note-index="{{ $overlay['index'] }}" style="{{ $overlay['boxCss'] }}">{{ \App\Services\I18n\LabelScreenPreview::NOTE }}</div>
+                                        @endif
+                                    @endforeach
+                                @endif
                                 @foreach ($phone['boxes'] as $box)
-                                    @php $boxSelected = $box['key'] === $selectedKey; @endphp
-                                    <a @class(['l10n-hotspot', 'is-selected' => $boxSelected, 'is-below' => $box['top'] < 6, 'is-end' => $box['left'] > 50])
+                                    @php
+                                        $boxSelected = $box['key'] === $selectedKey;
+                                        $boxEdited = isset($editedOnPhone[$box['key']]);
+                                    @endphp
+                                    <a @class(['l10n-hotspot', 'is-selected' => $boxSelected, 'is-edited' => $boxEdited, 'is-below' => $box['top'] < 6, 'is-end' => $box['left'] > 50])
                                         href="{{ $labelsUrl(['q' => null, 'filter' => null, 'screen' => $phoneScreenId, 'key' => $box['key']], 'label-'.$box['key']) }}"
                                         style="left: {{ $percent($box['left']) }}; top: {{ $percent($box['top']) }}; width: {{ $percent($box['width']) }}; height: {{ $percent($box['height']) }};"
                                         data-hotspot-key="{{ $box['key'] }}"
-                                        aria-label="Select label {{ $box['key'] }}"
+                                        aria-label="Select label {{ $box['key'] }}{{ $boxEdited ? ' (edited)' : '' }}"
                                         @if ($boxSelected) aria-current="true" @endif>
                                         @if ($boxSelected)<span class="l10n-hotspot__tag">{{ $box['key'] }}</span>@endif
+                                        <span class="l10n-hotspot__dot" aria-hidden="true"></span>
                                     </a>
                                 @endforeach
                             </div>
                         </figure>
+                        @if ($phone['live'])
+                            <script type="application/json" data-phone-labels>{!! json_encode(array_column($phone['overlays'], 'live'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) !!}</script>
+                        @endif
 
                         <p class="l10n-preview__hint">@include('admin.partials.icon', ['name' => 'help', 'class' => 'icon-sm'])Click a highlighted text on the phone to jump to its label.</p>
                         @if ($sv['meta']['app_commit'] || $sv['meta']['generated_at'])
@@ -383,6 +412,139 @@
                     if (row && !row.contains(event.relatedTarget)) hint(row.dataset.labelKey, false);
                 }));
             }
+        })();
+
+        (() => {
+            // Phone preview with edits: the server paints saved drafts/published text over the screenshot;
+            // here the patches are measured ("Text may not fit") and repainted live while a row is edited.
+            const screen = document.querySelector('[data-phone-screen]');
+            if (!screen) return;
+
+            const checkFit = (patch) => {
+                const text = patch.querySelector('.l10n-patch__text');
+                const lineHeight = text ? parseFloat(getComputedStyle(text).lineHeight) : 0;
+                if (!lineHeight) return;
+                const needed = Math.round(text.scrollHeight / lineHeight);
+                const over = needed > (parseInt(patch.dataset.lines, 10) || 1);
+                patch.querySelector('.l10n-patch__warn').hidden = !over;
+                patch.classList.toggle('is-overflowing', over);
+            };
+            const checkAll = () => screen.querySelectorAll('.l10n-patch').forEach(checkFit);
+            checkAll();
+            document.fonts?.ready.then(checkAll);
+
+            const data = document.querySelector('[data-phone-labels]');
+            const liveLang = screen.dataset.liveLang;
+            if (!data || !liveLang) return;
+            let entries = [];
+            try { entries = JSON.parse(data.textContent) || []; } catch (error) { return; }
+            const escaping = screen.dataset.icuEscaping === '1';
+            const NOTE = @json(\App\Services\I18n\LabelScreenPreview::NOTE);
+
+            // Same rule as IcuMessageParser::formatSimple: literal text and simple {name} placeholders are
+            // formatted with the capture's args; plural/select, a missing arg or invalid syntax give null.
+            const formatSimple = (message, args) => {
+                const chars = Array.from(message);
+                const isSpace = (c) => c !== undefined && /\s/u.test(c);
+                let out = '';
+                let i = 0;
+                while (i < chars.length) {
+                    const c = chars[i];
+                    if (escaping && c === "'") {
+                        if (chars[i + 1] === "'") { out += "'"; i += 2; continue; }
+                        const end = chars.indexOf("'", i + 1);
+                        if (end === -1) return null;
+                        out += chars.slice(i + 1, end).join('');
+                        i = end + 1;
+                        continue;
+                    }
+                    if (c === '}') return null;
+                    if (c !== '{') { out += c; i++; continue; }
+                    i++;
+                    while (isSpace(chars[i])) i++;
+                    let name = '';
+                    while (i < chars.length && (/^[A-Za-z_]$/.test(chars[i]) || (name !== '' && /^[0-9]$/.test(chars[i])))) name += chars[i++];
+                    while (isSpace(chars[i])) i++;
+                    if (name === '' || chars[i] !== '}') return null;
+                    if (!Object.prototype.hasOwnProperty.call(args, name)) return null;
+                    out += String(args[name]);
+                    i++;
+                }
+                return out;
+            };
+
+            const isBlank = (value) => value === null || value === undefined || /^[\s​-‏⁠﻿]*$/u.test(value);
+            const firstHotspot = () => screen.querySelector('[data-hotspot-key]');
+
+            const buildPatch = (entry) => {
+                const patch = document.createElement('div');
+                patch.className = 'l10n-patch';
+                patch.dataset.patchKey = entry.key;
+                patch.dataset.patchIndex = entry.index;
+                patch.dataset.lines = entry.lines;
+                patch.setAttribute('style', entry.css);
+                patch.setAttribute('aria-hidden', 'true');
+                patch.dir = entry.dir;
+                patch.lang = liveLang;
+                patch.innerHTML = '<span class="l10n-patch__text"></span><span class="l10n-patch__warn" hidden>Text may not fit</span>';
+                return screen.insertBefore(patch, firstHotspot());
+            };
+            const buildNote = (entry) => {
+                const note = document.createElement('div');
+                note.className = 'l10n-patch-note';
+                note.dataset.noteKey = entry.key;
+                note.dataset.noteIndex = entry.index;
+                note.setAttribute('style', entry.boxCss);
+                note.textContent = NOTE;
+                return screen.insertBefore(note, firstHotspot());
+            };
+
+            // Mirrors LabelScreenPreview::overlay(); returns whether the label differs from the capture.
+            const repaint = (entry, current) => {
+                const formatted = current === null ? null : formatSimple(current, entry.args || {});
+                let edited = false;
+                if (current !== null && formatted !== null && entry.value != null) edited = formatted !== entry.value;
+                else if (current !== null && entry.bundled != null) edited = current !== entry.bundled;
+                const mode = edited && entry.css ? (formatted !== null ? 'patch' : 'note') : null;
+
+                let patch = screen.querySelector(`[data-patch-index="${entry.index}"]`);
+                if (mode === 'patch') {
+                    patch ??= buildPatch(entry);
+                    const at = entry.text.indexOf(entry.value);
+                    patch.querySelector('.l10n-patch__text').textContent = at === -1
+                        ? formatted
+                        : entry.text.slice(0, at) + formatted + entry.text.slice(at + entry.value.length);
+                    checkFit(patch);
+                } else {
+                    patch?.remove();
+                }
+
+                const note = screen.querySelector(`[data-note-index="${entry.index}"]`);
+                if (mode === 'note') { if (!note) buildNote(entry); } else note?.remove();
+
+                return edited;
+            };
+
+            const onChange = (event) => {
+                const article = event.target.closest?.('[data-label-key]');
+                const input = article?.querySelector('textarea');
+                if (!input) return;
+                const key = article.dataset.labelKey;
+                const own = entries.filter((entry) => entry.key === key);
+                if (own.length === 0) return;
+                // What the app would show: the typed text, else the published value, else the bundled one.
+                const typed = [input.value, input.dataset.published].find((value) => !isBlank(value));
+                let edited = false;
+                own.forEach((entry) => {
+                    const current = typed ?? (isBlank(entry.bundled) ? null : entry.bundled);
+                    edited = repaint(entry, current) || edited;
+                });
+                screen.querySelectorAll('[data-hotspot-key]').forEach((box) => {
+                    if (box.dataset.hotspotKey === key) box.classList.toggle('is-edited', edited);
+                });
+            };
+            document.addEventListener('input', onChange);
+            document.addEventListener('l10n:value', onChange);
         })();
 
         (() => {
@@ -470,6 +632,8 @@
                 showError(article, []);
                 refreshTokens(article);
                 refreshDirty();
+                // The value changed without an input event (save/discard): let the phone preview repaint.
+                article.dispatchEvent(new CustomEvent('l10n:value', { bubbles: true }));
             };
 
             const dirtyArticles = () => [...editor.querySelectorAll('[data-label-key]')].filter((article) => {

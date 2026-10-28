@@ -626,8 +626,23 @@ dialog.l10n-modal { width: min(520px, calc(100vw - 24px)); overflow: hidden; }
 .l10n-preview__empty { padding: 28px 8px; }
 
 .l10n-phone { margin: 4px auto 0; width: 100%; max-width: 290px; padding: 10px; border-radius: 38px; background: var(--navy); box-shadow: 0 0 0 2px var(--navy-3), 0 18px 40px rgba(16, 27, 51, .22); }
-.l10n-phone__screen { position: relative; }
+/* The screen is a size container so painted text scales with the screenshot: manifest sizes are logical px
+   of a --shot-w wide device, 1 logical px = 100cqw / --shot-w. */
+.l10n-phone__screen { position: relative; container-type: inline-size; --shot-w: 390; }
 .l10n-phone__image { display: block; width: 100%; height: auto; border-radius: 28px; background: var(--navy-2); }
+.l10n-preview__mode { display: inline-flex; justify-self: center; padding: 2px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+.l10n-preview__mode .l10n-preview__locale { font-family: inherit; }
+/* Current text painted over the captured one: same rect width, at least the rect height, grows if longer. */
+.l10n-patch { position: absolute; z-index: 0; display: flex; align-items: center; box-sizing: border-box; min-height: calc(var(--h) * 100cqw / var(--shot-w)); font-size: calc(var(--fs) * 100cqw / var(--shot-w)); line-height: calc(var(--lh) * 100cqw / var(--shot-w)); pointer-events: none; }
+.l10n-patch__text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--max-lines, none); width: 100%; overflow: hidden; white-space: pre-wrap; overflow-wrap: anywhere; }
+.l10n-patch__warn, .l10n-patch-note { font: 600 10px/14px var(--font); letter-spacing: 0; text-align: left; }
+.l10n-patch__warn { position: absolute; top: calc(100% + 2px); left: 0; padding: 1px 6px; border: 1px solid var(--warn-border); border-radius: 4px; background: var(--warn-bg); color: var(--warn-ink); white-space: nowrap; }
+.l10n-patch__warn[hidden] { display: none; }
+.l10n-patch-note { position: absolute; z-index: 0; box-sizing: border-box; min-height: calc(var(--h) * 100cqw / var(--shot-w)); padding: 2px 6px; border: 1px dashed var(--warn-fill); border-radius: 4px; background: var(--warn-bg); color: var(--warn-ink); pointer-events: none; }
+.l10n-patch.is-overflowing { outline: 1.5px dashed var(--warn-fill); outline-offset: 1px; }
+/* Edited labels: a small dot at the box corner. */
+.l10n-hotspot__dot { display: none; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; border: 1.5px solid #fff; border-radius: 50%; background: var(--warn-fill); pointer-events: none; }
+.l10n-hotspot.is-edited .l10n-hotspot__dot { display: block; }
 .l10n-hotspot { position: absolute; z-index: 1; border: 1.5px solid transparent; border-radius: 4px; transition: border-color .15s ease, background-color .15s ease; }
 .l10n-phone__screen:hover .l10n-hotspot, .l10n-phone__screen:focus-within .l10n-hotspot { border-color: rgba(18, 179, 166, .55); background: rgba(18, 179, 166, .08); }
 .l10n-hotspot:hover, .l10n-hotspot:focus-visible, .l10n-hotspot.is-hinted { z-index: 2; border-color: var(--teal); background: rgba(18, 179, 166, .16); outline: none; }

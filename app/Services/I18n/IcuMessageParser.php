@@ -33,6 +33,11 @@ final class IcuMessageParser
 
     private bool $hasIcu = false;
 
+    /** @var list<array{text: string}|array{arg: string}> top-level text and simple arguments, in order */
+    private array $segments = [];
+
+    private string $text = '';
+
     private readonly bool $useEscaping;
 
     /** @param bool|null $useEscaping null reads config('i18n.icu_escaping') */
@@ -47,8 +52,10 @@ final class IcuMessageParser
     }
 
     /**
-     * @return array{arguments: array<string, list<string>>, is_icu: bool}
+     * @return array{arguments: array<string, list<string>>, is_icu: bool, segments: list<array{text: string}|array{arg: string}>|null}
      *               arguments maps each argument name to the kinds it is used as (simple|plural|select).
+     *               segments is the message as literal text (escapes resolved) and simple `{name}` arguments,
+     *               in order; null when the message has a plural/select (it cannot be formatted by substitution).
      *
      * @throws IcuSyntaxException
      */
@@ -64,15 +71,58 @@ final class IcuMessageParser
         $this->pos = 0;
         $this->arguments = [];
         $this->hasIcu = false;
+        $this->segments = [];
+        $this->text = '';
 
         $this->parseMessage(0, false);
+        $this->flushText();
 
         $arguments = [];
         foreach ($this->arguments as $name => $kinds) {
             $arguments[$name] = array_keys($kinds);
         }
 
-        return ['arguments' => $arguments, 'is_icu' => $this->hasIcu];
+        return ['arguments' => $arguments, 'is_icu' => $this->hasIcu, 'segments' => $this->hasIcu ? null : $this->segments];
+    }
+
+    /**
+     * Formats a message without plural/select by substituting `$args` for its placeholders.
+     * Null when the message is invalid, has a plural/select, or uses a placeholder missing from `$args`.
+     *
+     * @param  array<string, string>  $args
+     */
+    public function formatSimple(string $message, array $args): ?string
+    {
+        try {
+            $segments = $this->parse($message)['segments'];
+        } catch (IcuSyntaxException) {
+            return null;
+        }
+        if ($segments === null) {
+            return null;
+        }
+
+        $out = '';
+        foreach ($segments as $segment) {
+            if (isset($segment['arg'])) {
+                if (! array_key_exists($segment['arg'], $args)) {
+                    return null;
+                }
+                $out .= $args[$segment['arg']];
+            } else {
+                $out .= $segment['text'];
+            }
+        }
+
+        return $out;
+    }
+
+    private function flushText(): void
+    {
+        if ($this->text !== '') {
+            $this->segments[] = ['text' => $this->text];
+            $this->text = '';
+        }
     }
 
     private function parseMessage(int $depth, bool $insideBranch): void
@@ -81,13 +131,22 @@ final class IcuMessageParser
             $char = $this->chars[$this->pos];
 
             if ($this->useEscaping && $char === "'") {
-                $this->skipQuoted();
+                $literal = $this->skipQuoted();
+                if ($depth === 0) {
+                    $this->text .= $literal;
+                }
 
                 continue;
             }
 
             if ($char === '{') {
-                $this->parseArgument($depth);
+                if ($depth === 0) {
+                    $this->flushText();
+                }
+                $simple = $this->parseArgument($depth);
+                if ($depth === 0 && $simple !== null) {
+                    $this->segments[] = ['arg' => $simple];
+                }
 
                 continue;
             }
@@ -100,6 +159,9 @@ final class IcuMessageParser
                 throw new IcuSyntaxException("Unexpected '}' without a matching '{'.", $this->pos + 1);
             }
 
+            if ($depth === 0) {
+                $this->text .= $char;
+            }
             $this->pos++;
         }
 
@@ -108,13 +170,14 @@ final class IcuMessageParser
         }
     }
 
-    private function skipQuoted(): void
+    /** Skips an escape at the cursor and returns the literal text it stands for. */
+    private function skipQuoted(): string
     {
         $next = $this->chars[$this->pos + 1] ?? null;
         if ($next === "'") {
             $this->pos += 2;
 
-            return;
+            return "'";
         }
 
         $start = $this->pos;
@@ -128,9 +191,12 @@ final class IcuMessageParser
         }
 
         $this->pos++;
+
+        return implode('', array_slice($this->chars, $start + 1, $this->pos - $start - 2));
     }
 
-    private function parseArgument(int $depth): void
+    /** @return string|null the name when the argument is a simple `{name}`, null for plural/select */
+    private function parseArgument(int $depth): ?string
     {
         if ($depth >= self::MAX_DEPTH) {
             throw new IcuSyntaxException('Plural/select messages are nested too deeply.', $this->pos + 1);
@@ -152,7 +218,7 @@ final class IcuMessageParser
             $this->pos++;
             $this->record($name, 'simple');
 
-            return;
+            return $name;
         }
 
         if ($char !== ',') {
@@ -228,6 +294,8 @@ final class IcuMessageParser
         if (! isset($selectors['other'])) {
             throw new IcuSyntaxException("The {$type} for {$name} must have an 'other' case.", $open + 1);
         }
+
+        return null;
     }
 
     private function assertSelector(string $type, string $name, string $selector, int $start): void
