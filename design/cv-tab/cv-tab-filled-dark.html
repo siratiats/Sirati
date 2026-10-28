@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سيرتي - شاشة السير الذاتية والأدوات</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"IBM Plex Sans Arabic"', 'sans-serif'],
+          },
+          colors: {
+            pageBg: '#0F1A1C',
+            cardBg: '#16242A',
+            cardBorder: '#23363C',
+            brandPrimary: '#0E6B5C',
+            brandGradientStart: '#0B3D36',
+            brandMint: '#2BD4A8',
+            brandMintLight: '#E8FAF4',
+            mintMuted: '#1A4D43',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background-color: #0F1A1C;
+      color: #E2ECE9;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .material-symbols-rounded {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined-custom {
+      font-family: 'Material Symbols Rounded';
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    /* Subtle checkmark watermark background pattern for top header */
+    .header-pattern {
+      background-image: radial-gradient(circle at 10px 10px, rgba(43, 212, 168, 0.08) 2px, transparent 0),
+                        radial-gradient(circle at 30px 30px, rgba(255, 255, 255, 0.03) 2px, transparent 0);
+      background-size: 40px 40px;
+    }
+    /* Custom scrollbar hiding for clean app experience */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    * {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-pageBg min-h-screen flex justify-center text-slate-100 antialiased selection:bg-brandMint selection:text-slate-900">
+  <!-- Mobile Screen Frame Container -->
+  <div class="w-full max-w-[420px] bg-pageBg min-h-screen relative flex flex-col pb-28 shadow-2xl overflow-x-hidden border-x border-[#1a2d33]">
+
+    <!-- Top Gradient Header Area -->
+    <header class="relative bg-gradient-to-b from-brandGradientStart to-brandPrimary pt-10 pb-16 px-5 header-pattern">
+      <!-- Top Action Bar -->
+      <div class="flex items-center justify-between mb-4">
+        <!-- Brand Title with AI Tag -->
+        <div class="flex items-center gap-2">
+          <h1 class="text-2xl font-bold tracking-tight text-white">سيرتي</h1>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-brandMint/20 text-brandMint border border-brandMint/30">
+            الذكاء الاصطناعي
+          </span>
+        </div>
+
+        <!-- Notification Bell -->
+        <button class="relative w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 flex items-center justify-center text-white transition active:scale-95 shadow-sm" aria-label="الإشعارات">
+          <span class="material-symbols-rounded text-[21px]">notifications</span>
+          <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-brandMint ring-2 ring-brandPrimary animate-pulse"></span>
+        </button>
+      </div>
+
+      <!-- Subtitle -->
+      <p class="text-white/85 text-[13.5px] leading-relaxed max-w-[320px] font-normal">
+        أنشئ سيرتك، وافحصها، وأدر نسخك من مكان واحد
+      </p>
+    </header>
+
+    <!-- Floating White Rounded Card: الأدوات (Tools Section) Overlapping Header -->
+    <section class="relative px-4 -mt-10 z-10">
+      <div class="bg-white rounded-2xl p-4 shadow-xl border border-slate-100 text-slate-800">
+        <!-- Tools Header with count badge -->
+        <div class="flex items-center justify-between mb-3 px-1">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-4 rounded-full bg-brandPrimary"></span>
+            <h2 class="text-base font-bold text-slate-900 tracking-tight">الأدوات الذكية</h2>
+          </div>
+          <span class="text-[11.5px] text-slate-500 font-medium bg-slate-100 px-2 py-0.5 rounded-md">
+            ٤ أدوات متكاملة
+          </span>
+        </div>
+
+        <!-- 2x2 Grid of Tool Tiles -->
+        <div class="grid grid-cols-2 gap-2.5">
+          
+          <!-- Tile 1: إنشاء السيرة (Primary solid teal card) -->
+          <div class="relative bg-brandPrimary text-white rounded-xl p-3 flex flex-col justify-between min-h-[118px] shadow-sm hover:brightness-105 active:scale-[0.98] transition cursor-pointer group">
+            <div class="flex items-center justify-between w-full">
+              <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white">
+                <span class="material-symbols-rounded text-lg">add_circle</span>
+              </div>
+              <span class="material-symbols-rounded text-white/70 text-base rotate-180 group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+            </div>
+            <div class="mt-2.5">
+              <div class="flex items-center gap-1.5 mb-0.5">
+                <h3 class="text-[13.5px] font-bold text-white leading-tight">إنشاء السيرة</h3>
+                <span class="text-[9px] bg-brandMint text-slate-900 font-bold px-1.5 py-0.2 rounded">الأساسي</span>
+              </div>
+              <p class="text-[10.5px] text-white/80 leading-snug line-clamp-2">
+                متوافقة مع أنظمة الفرز الآلي ATS
+              </p>
+            </div>
+          </div>
+
+          <!-- Tile 2: فحص -->
+          <div class="relative bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl p-3 flex flex-col justify-between min-h-[118px] active:scale-[0.98] transition cursor-pointer group">
+            <div class="flex items-center justify-between w-full">
+              <div class="w-8 h-8 rounded-lg bg-emerald-100 text-brandPrimary flex items-center justify-center">
+                <span class="material-symbols-rounded text-lg">verified</span>
+              </div>
+              <span class="material-symbols-rounded text-slate-400 text-base rotate-180 group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+            </div>
+            <div class="mt-2.5">
+              <h3 class="text-[13.5px] font-bold text-slate-800 leading-tight mb-0.5">فحص</h3>
+              <p class="text-[10.5px] text-slate-500 leading-snug line-clamp-2">
+                فحص السيرة بنظام (ATS) بدقة
+              </p>
+            </div>
+          </div>
+
+          <!-- Tile 3: رفع سيرة خارجية -->
+          <div class="relative bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl p-3 flex flex-col justify-between min-h-[118px] active:scale-[0.98] transition cursor-pointer group">
+            <div class="flex items-center justify-between w-full">
+              <div class="w-8 h-8 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center">
+                <span class="material-symbols-rounded text-lg">upload_file</span>
+              </div>
+              <span class="material-symbols-rounded text-slate-400 text-base rotate-180 group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+            </div>
+            <div class="mt-2.5">
+              <h3 class="text-[13.5px] font-bold text-slate-800 leading-tight mb-0.5">رفع سيرة خارجية</h3>
+              <p class="text-[10.5px] text-slate-500 leading-snug line-clamp-2">
+                ارفع سيرتك الذاتية PDF، وحوّلها لسيرة مطابقة
+              </p>
+            </div>
+          </div>
+
+          <!-- Tile 4: استهداف وظيفة -->
+          <div class="relative bg-slate-50 hover:bg-slate-100/80 border border-slate-200/80 rounded-xl p-3 flex flex-col justify-between min-h-[118px] active:scale-[0.98] transition cursor-pointer group">
+            <div class="flex items-center justify-between w-full">
+              <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+                <span class="material-symbols-rounded text-lg">work_outline</span>
+              </div>
+              <span class="material-symbols-rounded text-slate-400 text-base rotate-180 group-hover:translate-x-0.5 transition-transform">chevron_right</span>
+            </div>
+            <div class="mt-2.5">
+              <h3 class="text-[13.5px] font-bold text-slate-800 leading-tight mb-0.5">استهداف وظيفة</h3>
+              <p class="text-[10.5px] text-slate-500 leading-snug line-clamp-2">
+                إنشاء سيرة مطابقة لوصف وظيفي معين
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- My CVs Section (سيري الذاتية) -->
+    <section class="mt-7 px-4 flex-1">
+      <!-- Section Title & Filter Row -->
+      <div class="flex items-center justify-between mb-3.5 px-1">
+        <div class="flex items-center gap-2">
+          <h2 class="text-[17px] font-bold text-slate-100 tracking-tight">سيري الذاتية</h2>
+          <span class="w-5 h-5 rounded-full bg-cardBg border border-cardBorder text-slate-300 text-[11px] font-medium flex items-center justify-center">
+            3
+          </span>
+        </div>
+        <button class="inline-flex items-center gap-1 text-[12px] font-medium text-brandMint hover:text-emerald-300 transition active:opacity-80">
+          <span class="material-symbols-rounded text-sm">swap_vert</span>
+          الأحدث أولاً
+        </button>
+      </div>
+
+      <!-- CV Cards List -->
+      <div class="space-y-3.5">
+
+        <!-- Card 1: سيرة مدير مبيعات (High ATS Score: 78) -->
+        <article class="bg-cardBg border border-cardBorder rounded-[16px] p-4 shadow-sm hover:border-[#324f58] transition">
+          <!-- Top Row: Icon, Title, Date, Origin Chip, Overflow Menu -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <!-- Mint Square Document Icon -->
+              <div class="w-11 h-11 rounded-xl bg-brandMint/15 border border-brandMint/30 flex items-center justify-center text-brandMint shrink-0">
+                <span class="material-symbols-rounded text-2xl">description</span>
+              </div>
+              <div>
+                <h3 class="text-[15px] font-bold text-slate-100 leading-snug">سيرة مدير مبيعات</h3>
+                <div class="flex items-center flex-wrap gap-2 mt-1.5">
+                  <span class="text-[11.5px] text-slate-400 font-normal">26 أكتوبر 2026</span>
+                  <span class="text-slate-600">•</span>
+                  <!-- Origin Chip (أُنشئت بالتطبيق - Teal chip) -->
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-brandPrimary/30 text-emerald-300 border border-brandPrimary/40">
+                    <span class="material-symbols-rounded text-[11px]">auto_awesome</span>
+                    أُنشئت بالتطبيق
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Overflow Button -->
+            <button class="text-slate-400 hover:text-slate-200 p-1 -ml-1 rounded-lg hover:bg-slate-800/40 transition" aria-label="خيارات إضافية">
+              <span class="material-symbols-rounded text-xl">more_horiz</span>
+            </button>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-cardBorder/90 my-3.5"></div>
+
+          <!-- Bottom Row: Circular ATS Score Ring & Outlined Pill Button -->
+          <div class="flex items-center justify-between">
+            <!-- Left Side: Outlined Pill Button "فتح" (RTL: appears on visual left) -->
+            <div class="flex items-center gap-2.5">
+              <!-- Circular ATS Score Ring (Score 78 - High Green) -->
+              <div class="relative w-9 h-9 flex items-center justify-center">
+                <svg class="w-9 h-9 transform -rotate-90" viewBox="0 0 36 36">
+                  <path class="text-slate-800" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                  <path class="text-brandMint" stroke-dasharray="78, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                </svg>
+                <span class="absolute text-[11px] font-bold text-brandMint">78</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[12px] font-semibold text-slate-200">نتيجة الفرز الآلي: 78</span>
+                <span class="text-[10px] text-emerald-400/90 font-medium">توافق ممتاز مع معايير الشركات</span>
+              </div>
+            </div>
+
+            <!-- "فتح" Pill Button -->
+            <button class="px-4 py-1.5 rounded-full border border-brandMint/60 text-brandMint hover:bg-brandMint hover:text-slate-900 text-xs font-semibold transition active:scale-95 flex items-center gap-1">
+              <span>فتح</span>
+              <span class="material-symbols-rounded text-sm rotate-180">arrow_forward</span>
+            </button>
+          </div>
+        </article>
+
+        <!-- Card 2: سيرتي القديمة.pdf (Uploaded, Not scanned yet) -->
+        <article class="bg-cardBg border border-cardBorder rounded-[16px] p-4 shadow-sm hover:border-[#324f58] transition">
+          <!-- Top Row: Icon, Title, Date, Origin Chip, Overflow Menu -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <!-- Mint Square Document Icon -->
+              <div class="w-11 h-11 rounded-xl bg-brandMint/15 border border-brandMint/30 flex items-center justify-center text-brandMint shrink-0">
+                <span class="material-symbols-rounded text-2xl">picture_as_pdf</span>
+              </div>
+              <div>
+                <h3 class="text-[15px] font-bold text-slate-100 leading-snug">سيرتي القديمة.pdf</h3>
+                <div class="flex items-center flex-wrap gap-2 mt-1.5">
+                  <span class="text-[11.5px] text-slate-400 font-normal">24 أكتوبر 2026</span>
+                  <span class="text-slate-600">•</span>
+                  <!-- Origin Chip ("مرفوعة" Grey chip with upload icon) -->
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                    <span class="material-symbols-rounded text-[11px]">file_upload</span>
+                    مرفوعة
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Overflow Button -->
+            <button class="text-slate-400 hover:text-slate-200 p-1 -ml-1 rounded-lg hover:bg-slate-800/40 transition" aria-label="خيارات إضافية">
+              <span class="material-symbols-rounded text-xl">more_horiz</span>
+            </button>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-cardBorder/90 my-3.5"></div>
+
+          <!-- Bottom Row: Not Scanned chip + Underlined teal link "افحص الآن" instead of ring -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium bg-slate-800 text-slate-400 border border-slate-700">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                لم تُفحص بعد
+              </span>
+              <button class="text-[12px] font-bold text-brandMint hover:text-emerald-300 underline underline-offset-4 decoration-brandMint/50 hover:decoration-brandMint transition flex items-center gap-0.5">
+                افحص الآن
+                <span class="material-symbols-rounded text-sm rotate-180 inline">trending_flat</span>
+              </button>
+            </div>
+
+            <!-- "فتح" Pill Button -->
+            <button class="px-4 py-1.5 rounded-full border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white text-xs font-semibold transition active:scale-95 flex items-center gap-1">
+              <span>فتح</span>
+              <span class="material-symbols-rounded text-sm rotate-180">arrow_forward</span>
+            </button>
+          </div>
+        </article>
+
+        <!-- Card 3: سيرة أخصائي موارد بشرية (Score 54 Orange Ring + Warning Line) -->
+        <article class="bg-cardBg border border-cardBorder rounded-[16px] p-4 shadow-sm hover:border-[#324f58] transition">
+          <!-- Top Row: Icon, Title, Date, Origin Chip, Overflow Menu -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <!-- Mint Square Document Icon -->
+              <div class="w-11 h-11 rounded-xl bg-brandMint/15 border border-brandMint/30 flex items-center justify-center text-brandMint shrink-0">
+                <span class="material-symbols-rounded text-2xl">description</span>
+              </div>
+              <div>
+                <h3 class="text-[15px] font-bold text-slate-100 leading-snug">سيرة أخصائي موارد بشرية</h3>
+                <div class="flex items-center flex-wrap gap-2 mt-1.5">
+                  <span class="text-[11.5px] text-slate-400 font-normal">18 أكتوبر 2026</span>
+                  <span class="text-slate-600">•</span>
+                  <!-- Origin Chip (أُنشئت بالتطبيق) -->
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-brandPrimary/30 text-emerald-300 border border-brandPrimary/40">
+                    <span class="material-symbols-rounded text-[11px]">auto_awesome</span>
+                    أُنشئت بالتطبيق
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Overflow Button -->
+            <button class="text-slate-400 hover:text-slate-200 p-1 -ml-1 rounded-lg hover:bg-slate-800/40 transition" aria-label="خيارات إضافية">
+              <span class="material-symbols-rounded text-xl">more_horiz</span>
+            </button>
+          </div>
+
+          <!-- Notice Warning Line (تحتاج سيرتك إلى تحسينات مهمة، ابدأ بها الآن) -->
+          <div class="mt-3 bg-amber-500/10 border border-amber-500/25 rounded-xl px-2.5 py-1.5 flex items-center gap-1.5">
+            <span class="material-symbols-rounded text-amber-400 text-sm shrink-0">warning</span>
+            <p class="text-[11px] text-amber-200/90 font-medium leading-tight">
+              تحتاج سيرتك إلى تحسينات مهمة، ابدأ بها الآن
+            </p>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-cardBorder/90 my-3"></div>
+
+          <!-- Bottom Row: Orange ATS Ring (54) + Outlined Pill Button -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <!-- Circular ATS Score Ring (Score 54 - Orange Low) -->
+              <div class="relative w-9 h-9 flex items-center justify-center">
+                <svg class="w-9 h-9 transform -rotate-90" viewBox="0 0 36 36">
+                  <path class="text-slate-800" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                  <path class="text-amber-500" stroke-dasharray="54, 100" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                </svg>
+                <span class="absolute text-[11px] font-bold text-amber-400">54</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[12px] font-semibold text-slate-200">نتيجة الفرز الآلي: 54</span>
+                <span class="text-[10px] text-amber-400/90 font-medium">فرص القبول منخفضة (يتطلب تعديل)</span>
+              </div>
+            </div>
+
+            <!-- "فتح" Pill Button -->
+            <button class="px-4 py-1.5 rounded-full border border-amber-500/50 text-amber-400 hover:bg-amber-500 hover:text-slate-900 text-xs font-semibold transition active:scale-95 flex items-center gap-1">
+              <span>فتح</span>
+              <span class="material-symbols-rounded text-sm rotate-180">arrow_forward</span>
+            </button>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- Bottom Navigation Bar (4 Items RTL: الرئيسية، سيرتي، الوظائف، التعليم) -->
+    <!-- سيرتي is active with mint pill styling -->
+    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[420px] bg-[#121E22]/95 backdrop-blur-md border-t border-cardBorder px-3 py-2 z-50 shadow-[0_-8px_20px_rgba(0,0,0,0.35)]">
+      <div class="flex items-center justify-around">
+        
+        <!-- Tab 1: الرئيسية (Home) -->
+        <button class="flex flex-col items-center justify-center py-1 px-3 text-slate-400 hover:text-slate-200 transition group active:scale-95">
+          <span class="material-symbols-rounded text-[22px] group-hover:-translate-y-0.5 transition-transform">home</span>
+          <span class="text-[10.5px] mt-1 font-medium">الرئيسية</span>
+        </button>
+
+        <!-- Tab 2: سيرتي (Document, Active with mint pill) -->
+        <button class="flex flex-col items-center justify-center py-1 px-4 text-slate-900 font-bold transition active:scale-95">
+          <div class="bg-brandMint px-3.5 py-1 rounded-full flex items-center justify-center shadow-md shadow-brandMint/20">
+            <span class="material-symbols-rounded text-[20px] text-slate-900">description</span>
+          </div>
+          <span class="text-[10.5px] mt-0.5 font-bold text-brandMint">سيرتي</span>
+        </button>
+
+        <!-- Tab 3: الوظائف (Briefcase) -->
+        <button class="flex flex-col items-center justify-center py-1 px-3 text-slate-400 hover:text-slate-200 transition group active:scale-95">
+          <span class="material-symbols-rounded text-[22px] group-hover:-translate-y-0.5 transition-transform">work</span>
+          <span class="text-[10.5px] mt-1 font-medium">الوظائف</span>
+        </button>
+
+        <!-- Tab 4: التعليم (Graduation cap) -->
+        <button class="flex flex-col items-center justify-center py-1 px-3 text-slate-400 hover:text-slate-200 transition group active:scale-95">
+          <span class="material-symbols-rounded text-[22px] group-hover:-translate-y-0.5 transition-transform">school</span>
+          <span class="text-[10.5px] mt-1 font-medium">التعليم</span>
+        </button>
+
+      </div>
+    </nav>
+
+  </div>
+</body>
+</html>

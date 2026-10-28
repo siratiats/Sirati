@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\UserFcmToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -67,6 +68,60 @@ class FcmTokenControllerTest extends TestCase
             UserFcmToken::query()->where('token', 'first-token')->value('token_hash'),
             UserFcmToken::query()->where('token', 'second-token')->value('token_hash'),
         );
+    }
+
+    public function test_one_install_keeps_exactly_one_active_token_across_rotations_and_accounts(): void
+    {
+        $install = (string) Str::uuid();
+        $users = User::factory()->count(2)->create();
+
+        foreach (range(1, 6) as $rotation) {
+            Sanctum::actingAs($users[$rotation % 2]);
+            $this->postJson('/api/fcm-tokens', [
+                'token' => "rotated-token-{$rotation}",
+                'device_id' => $install,
+            ])->assertOk();
+
+            $active = UserFcmToken::query()
+                ->where('device_id', $install)
+                ->where('is_active', true)
+                ->get();
+
+            $this->assertCount(1, $active);
+            $this->assertSame("rotated-token-{$rotation}", $active->first()->token);
+            $this->assertSame($users[$rotation % 2]->id, $active->first()->user_id);
+        }
+    }
+
+    public function test_separate_installs_of_one_user_stay_active(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        foreach (range(1, 3) as $i) {
+            $this->postJson('/api/fcm-tokens', [
+                'token' => "phone-{$i}-token",
+                'device_id' => (string) Str::uuid(),
+            ])->assertOk();
+        }
+
+        $this->assertSame(3, $user->fcmTokens()->where('is_active', true)->count());
+    }
+
+    public function test_shared_legacy_device_ids_never_deactivate_other_phones(): void
+    {
+        // Older builds sent the Android build id, which many phones share.
+        $users = User::factory()->count(3)->create();
+
+        foreach ($users as $i => $user) {
+            Sanctum::actingAs($user);
+            $this->postJson('/api/fcm-tokens', [
+                'token' => "legacy-token-{$i}",
+                'device_id' => 'TP1A.220624.014',
+            ])->assertOk();
+        }
+
+        $this->assertSame(3, UserFcmToken::query()->where('is_active', true)->count());
     }
 
     public function test_token_longer_than_512_characters_is_rejected(): void

@@ -37,3 +37,4 @@ __pycache__/
 .agents/logs/
 .env.local
 *.stackdump
+/flutter_app.agents-wt
