@@ -23,35 +23,110 @@
               "x": 24.0,
               "y": 360.0,
               "w": 342.0,
-              "h": 40.0
+              "h": 40.0,
+              "text": "مرحباً بك في سيرتي",
+              "value": "مرحباً بك في سيرتي",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 24.0,
+                "font_weight": 700,
+                "color": "#101B33",
+                "line_height": 32.0,
+                "max_lines": 2,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "rtl"
+              },
+              "bg": "#FFFFFF"
             },
             {
               "key": "buildCvProfessionally",
               "x": 40.0,
               "y": 410.5,
               "w": 310.0,
-              "h": 24.0
+              "h": 24.0,
+              "text": "اصنع سيرتك الذاتية باحترافية",
+              "value": "اصنع سيرتك الذاتية باحترافية",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 15.0,
+                "font_weight": 400,
+                "color": "#5B6475",
+                "line_height": 22.0,
+                "max_lines": 2,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "rtl"
+              },
+              "bg": "#FFFFFF"
             },
             {
               "key": "getStarted",
               "x": 24.0,
               "y": 640.0,
               "w": 342.0,
-              "h": 48.0
+              "h": 48.0,
+              "text": "ابدأ الآن",
+              "value": "ابدأ الآن",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 16.0,
+                "font_weight": 600,
+                "color": "#FFFFFF",
+                "line_height": 24.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "rtl"
+              },
+              "bg": "#0E7C74"
             },
             {
               "key": "createAccount",
               "x": 24.0,
               "y": 700.5,
               "w": 342.0,
-              "h": 48.0
+              "h": 48.0,
+              "text": "إنشاء حساب جديد",
+              "value": "إنشاء حساب جديد",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 16.0,
+                "font_weight": 600,
+                "color": "#FFFFFF",
+                "line_height": 24.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "rtl"
+              },
+              "bg": "#101B33"
             },
             {
               "key": "signIn",
-              "x": 140.0,
+              "x": 40.0,
               "y": 764.0,
-              "w": 110.0,
-              "h": 22.0
+              "w": 310.0,
+              "h": 22.0,
+              "text": "لديك حساب بالفعل؟ تسجيل الدخول",
+              "value": "تسجيل الدخول",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 14.0,
+                "font_weight": 500,
+                "color": "#0E7C74",
+                "line_height": 21.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "rtl"
+              },
+              "bg": "#FFFFFF"
             }
           ]
         },
@@ -65,35 +140,110 @@
               "x": 24.0,
               "y": 360.0,
               "w": 342.0,
-              "h": 40.0
+              "h": 40.0,
+              "text": "Welcome to Siratie",
+              "value": "Welcome to Siratie",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 24.0,
+                "font_weight": 700,
+                "color": "#101B33",
+                "line_height": 32.0,
+                "max_lines": 2,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "ltr"
+              },
+              "bg": "#FFFFFF"
             },
             {
               "key": "buildCvProfessionally",
               "x": 40.0,
               "y": 410.5,
               "w": 310.0,
-              "h": 24.0
+              "h": 24.0,
+              "text": "Build your CV professionally",
+              "value": "Build your CV professionally",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 15.0,
+                "font_weight": 400,
+                "color": "#5B6475",
+                "line_height": 22.0,
+                "max_lines": 2,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "ltr"
+              },
+              "bg": "#FFFFFF"
             },
             {
               "key": "getStarted",
               "x": 24.0,
               "y": 640.0,
               "w": 342.0,
-              "h": 48.0
+              "h": 48.0,
+              "text": "Get started",
+              "value": "Get started",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 16.0,
+                "font_weight": 600,
+                "color": "#FFFFFF",
+                "line_height": 24.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "ltr"
+              },
+              "bg": "#0E7C74"
             },
             {
               "key": "createAccount",
               "x": 24.0,
               "y": 700.5,
               "w": 342.0,
-              "h": 48.0
+              "h": 48.0,
+              "text": "Create New Account",
+              "value": "Create New Account",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 16.0,
+                "font_weight": 600,
+                "color": "#FFFFFF",
+                "line_height": 24.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "ltr"
+              },
+              "bg": "#101B33"
             },
             {
               "key": "signIn",
-              "x": 140.0,
+              "x": 40.0,
               "y": 764.0,
-              "w": 110.0,
-              "h": 22.0
+              "w": 310.0,
+              "h": 22.0,
+              "text": "Already have an account? Sign In",
+              "value": "Sign In",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 14.0,
+                "font_weight": 500,
+                "color": "#0E7C74",
+                "line_height": 21.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "ltr"
+              },
+              "bg": "#FFFFFF"
             }
           ]
         }
@@ -114,21 +264,66 @@
               "x": 250.0,
               "y": 96.0,
               "w": 120.0,
-              "h": 30.0
+              "h": 30.0,
+              "text": "السير الذاتية",
+              "value": "السير الذاتية",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 24.0,
+                "font_weight": 700,
+                "color": "#101B33",
+                "line_height": 32.0,
+                "max_lines": 2,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "rtl"
+              },
+              "bg": "#F4F6F9"
             },
             {
               "key": "createCv",
               "x": 20.0,
               "y": 150.0,
               "w": 350.0,
-              "h": 52.0
+              "h": 52.0,
+              "text": "إنشاء سيرة جديدة",
+              "value": "إنشاء سيرة جديدة",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 16.0,
+                "font_weight": 600,
+                "color": "#FFFFFF",
+                "line_height": 24.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "rtl"
+              },
+              "bg": "#0E7C74"
             },
             {
               "key": "analyses",
               "x": 230.0,
               "y": 236.0,
               "w": 140.0,
-              "h": 26.0
+              "h": 26.0,
+              "text": "التحليلات",
+              "value": "التحليلات",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 14.0,
+                "font_weight": 500,
+                "color": "#101B33",
+                "line_height": 20.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "rtl"
+              },
+              "bg": "#F4F6F9"
             },
             {
               "key": "settings",
@@ -143,6 +338,56 @@
               "y": 600.0,
               "w": 350.0,
               "h": 80.0
+            },
+            {
+              "key": "greetingName",
+              "x": 20.0,
+              "y": 280.0,
+              "w": 350.0,
+              "h": 24.0,
+              "text": "مرحباً أحمد",
+              "value": "مرحباً أحمد",
+              "args": {
+                "name": "أحمد"
+              },
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 15.0,
+                "font_weight": 400,
+                "color": "#5B6475",
+                "line_height": 22.0,
+                "max_lines": 2,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "rtl"
+              },
+              "bg": "#F4F6F9"
+            },
+            {
+              "key": "cvCount",
+              "x": 20.0,
+              "y": 316.0,
+              "w": 200.0,
+              "h": 22.0,
+              "text": "3 سير ذاتية",
+              "value": "3 سير ذاتية",
+              "args": {
+                "count": 3
+              },
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 14.0,
+                "font_weight": 500,
+                "color": "#101B33",
+                "line_height": 20.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "rtl"
+              },
+              "bg": "#F4F6F9"
             }
           ]
         },
@@ -156,21 +401,66 @@
               "x": 20.0,
               "y": 96.0,
               "w": 120.0,
-              "h": 30.0
+              "h": 30.0,
+              "text": "My CVs",
+              "value": "My CVs",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 24.0,
+                "font_weight": 700,
+                "color": "#101B33",
+                "line_height": 32.0,
+                "max_lines": 2,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "ltr"
+              },
+              "bg": "#F4F6F9"
             },
             {
               "key": "createCv",
               "x": 20.0,
               "y": 150.0,
               "w": 350.0,
-              "h": 52.0
+              "h": 52.0,
+              "text": "Create a new CV",
+              "value": "Create a new CV",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 16.0,
+                "font_weight": 600,
+                "color": "#FFFFFF",
+                "line_height": 24.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "ltr"
+              },
+              "bg": "#0E7C74"
             },
             {
               "key": "analyses",
               "x": 20.0,
               "y": 236.0,
               "w": 140.0,
-              "h": 26.0
+              "h": 26.0,
+              "text": "Analyses",
+              "value": "Analyses",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 14.0,
+                "font_weight": 500,
+                "color": "#101B33",
+                "line_height": 20.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "ltr"
+              },
+              "bg": "#F4F6F9"
             },
             {
               "key": "settings",
@@ -185,6 +475,56 @@
               "y": 600.0,
               "w": 350.0,
               "h": 80.0
+            },
+            {
+              "key": "greetingName",
+              "x": 20.0,
+              "y": 280.0,
+              "w": 350.0,
+              "h": 24.0,
+              "text": "Hello Ahmed",
+              "value": "Hello Ahmed",
+              "args": {
+                "name": "Ahmed"
+              },
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 15.0,
+                "font_weight": 400,
+                "color": "#5B6475",
+                "line_height": 22.0,
+                "max_lines": 2,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "ltr"
+              },
+              "bg": "#F4F6F9"
+            },
+            {
+              "key": "cvCount",
+              "x": 20.0,
+              "y": 316.0,
+              "w": 200.0,
+              "h": 22.0,
+              "text": "3 CVs",
+              "value": "3 CVs",
+              "args": {
+                "count": 3
+              },
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 14.0,
+                "font_weight": 500,
+                "color": "#101B33",
+                "line_height": 20.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "ltr"
+              },
+              "bg": "#F4F6F9"
             }
           ]
         }
@@ -205,42 +545,132 @@
               "x": 24.0,
               "y": 88.0,
               "w": 342.0,
-              "h": 34.0
+              "h": 34.0,
+              "text": "البيانات الشخصية ومعلومات الاتصال",
+              "value": "البيانات الشخصية ومعلومات الاتصال",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 24.0,
+                "font_weight": 700,
+                "color": "#101B33",
+                "line_height": 32.0,
+                "max_lines": 2,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "rtl"
+              },
+              "bg": "#FFFFFF"
             },
             {
               "key": "personalDetailsSubtitle",
               "x": 24.0,
               "y": 128.0,
               "w": 342.0,
-              "h": 40.0
+              "h": 40.0,
+              "text": "الاسم، المسمى الوظيفي، وبيانات التواصل المباشر",
+              "value": "الاسم، المسمى الوظيفي، وبيانات التواصل المباشر",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 15.0,
+                "font_weight": 400,
+                "color": "#5B6475",
+                "line_height": 22.0,
+                "max_lines": 2,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "rtl"
+              },
+              "bg": "#FFFFFF"
             },
             {
               "key": "fullNameAr",
               "x": 24.0,
               "y": 196.0,
               "w": 342.0,
-              "h": 56.0
+              "h": 56.0,
+              "text": "الاسم الكامل (بالعربية)",
+              "value": "الاسم الكامل (بالعربية)",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 14.0,
+                "font_weight": 500,
+                "color": "#101B33",
+                "line_height": 20.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "rtl"
+              },
+              "bg": "#FFFFFF"
             },
             {
               "key": "fullNameEn",
               "x": 24.0,
               "y": 268.0,
               "w": 342.0,
-              "h": 56.0
+              "h": 56.0,
+              "text": "Full Name (English)",
+              "value": "Full Name (English)",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 14.0,
+                "font_weight": 500,
+                "color": "#101B33",
+                "line_height": 20.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "start",
+                "direction": "rtl"
+              },
+              "bg": "#FFFFFF"
             },
             {
               "key": "next",
               "x": 206.0,
               "y": 770.0,
               "w": 160.0,
-              "h": 48.0
+              "h": 48.0,
+              "text": "التالي",
+              "value": "التالي",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 16.0,
+                "font_weight": 600,
+                "color": "#FFFFFF",
+                "line_height": 24.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "rtl"
+              },
+              "bg": "#0E7C74"
             },
             {
               "key": "back",
               "x": 24.0,
               "y": 770.0,
               "w": 160.0,
-              "h": 48.0
+              "h": 48.0,
+              "text": "السابق",
+              "value": "السابق",
+              "style": {
+                "font_family": "IBM Plex Sans Arabic",
+                "font_size": 16.0,
+                "font_weight": 600,
+                "color": "#FFFFFF",
+                "line_height": 24.0,
+                "max_lines": 1,
+                "lines": 1,
+                "opacity": 1.0,
+                "align": "center",
+                "direction": "rtl"
+              },
+              "bg": "#E7EBF0"
             }
           ]
         }
