@@ -529,12 +529,6 @@ class SaudiJobAggregatorService
 
             // 7. Idempotency per user per job
             $idempotencyKey = "realtime_job:{$user->id}:{$job->id}";
-            if (NotificationDecision::query()->where('idempotency_key', $idempotencyKey)->exists()) {
-                continue;
-            }
-
-            // Mark user notified in this batch
-            $this->notifiedUsersInBatch[$user->id] = true;
 
             $isEnglish = ($preference->language ?? 'ar') === 'en';
             $locationNote = $job->city ? ($isEnglish ? " in {$job->city}" : " في {$job->location}") : '';
@@ -543,7 +537,10 @@ class SaudiJobAggregatorService
                 ? "New role: {$job->title}{$locationNote} at {$job->company}"
                 : "تم نشر وظيفة جديدة: {$job->title}{$locationNote} لدى {$job->company}";
 
-            $decision = NotificationDecision::query()->create([
+            // The unique idempotency_key makes this atomic across concurrent runs.
+            $decision = NotificationDecision::query()->createOrFirst([
+                'idempotency_key' => $idempotencyKey,
+            ], [
                 'user_id' => $user->id,
                 'rule_key' => 'matching_job',
                 'template_key' => 'matching_job',
@@ -556,11 +553,17 @@ class SaudiJobAggregatorService
                     'action_url' => 'job-news/'.$job->id,
                     'language' => $preference->language ?? 'ar',
                 ],
-                'idempotency_key' => $idempotencyKey,
                 'scheduled_for' => $now,
                 'status' => 'queued',
                 'queued_at' => $now,
             ]);
+
+            if (! $decision->wasRecentlyCreated) {
+                continue;
+            }
+
+            // Mark user notified in this batch
+            $this->notifiedUsersInBatch[$user->id] = true;
 
             SendPushNotificationJob::dispatch(
                 userId: $user->id,

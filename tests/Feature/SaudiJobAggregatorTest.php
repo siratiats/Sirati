@@ -407,4 +407,69 @@ XML;
         // Count should still be 1!
         \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\SendPushNotificationJob::class, 1);
     }
+
+    public function test_an_existing_decision_for_the_same_user_and_job_is_never_resent(): void
+    {
+        \Illuminate\Support\Facades\Queue::fake();
+        config(['smart_notifications.enabled' => true]);
+
+        $devTitle = JobTitle::where('slug', 'software-engineer')->firstOrFail();
+        $user = User::factory()->create([
+            'job_title_id' => $devTitle->id,
+            'email_verified_at' => now(),
+        ]);
+        $user->fcmTokens()->create(['token' => 'tok-'.$user->id, 'is_active' => true]);
+        app(\App\Services\Notifications\NotificationPreferenceService::class)->forUser($user)->update([
+            'enabled' => true,
+            'quiet_hours_start' => '01:00',
+            'quiet_hours_end' => '02:00',
+            'timezone_offset_minutes' => 0,
+        ]);
+
+        // Inactive statuses pass the gap/cap checks, so only idempotency can stop a resend.
+        foreach (['failed', 'skipped'] as $status) {
+            $job = JobNews::create([
+                'language' => 'ar',
+                'title' => 'مطور برمجيات '.$status,
+                'company' => 'شركة',
+                'body' => 'تفاصيل',
+                'job_title_id' => $devTitle->id,
+                'is_published' => true,
+                'published_at' => now(),
+            ]);
+            \App\Models\NotificationDecision::query()->create([
+                'user_id' => $user->id,
+                'rule_key' => 'matching_job',
+                'template_key' => 'matching_job',
+                'context' => [],
+                'idempotency_key' => "realtime_job:{$user->id}:{$job->id}",
+                'scheduled_for' => now(),
+                'status' => $status,
+            ]);
+
+            // A fresh service instance has no in-memory batch guard, like a second worker.
+            app()->forgetInstance(SaudiJobAggregatorService::class);
+            app(SaudiJobAggregatorService::class)->notifyInterestedCandidates($job);
+
+            $this->assertSame(1, \App\Models\NotificationDecision::query()
+                ->where('idempotency_key', "realtime_job:{$user->id}:{$job->id}")
+                ->count());
+        }
+
+        \Illuminate\Support\Facades\Queue::assertNotPushed(\App\Jobs\SendPushNotificationJob::class);
+
+        // Control: without a prior decision the same user is notified.
+        $fresh = JobNews::create([
+            'language' => 'ar',
+            'title' => 'مطور برمجيات جديد',
+            'company' => 'شركة',
+            'body' => 'تفاصيل',
+            'job_title_id' => $devTitle->id,
+            'is_published' => true,
+            'published_at' => now(),
+        ]);
+        app()->forgetInstance(SaudiJobAggregatorService::class);
+        app(SaudiJobAggregatorService::class)->notifyInterestedCandidates($fresh);
+        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\SendPushNotificationJob::class, 1);
+    }
 }
