@@ -451,11 +451,11 @@
   "atsInputSavedCv": "My saved CV",
   "atsInputUploadFile": "Upload file",
   "atsInputPasteText": "Paste text",
-  "atsInputNoSavedCvs": "No saved CV yet. Create a CV, upload a file, or paste text.",
+  "atsInputNoSavedCvs": "No saved CV yet. Create a CV or upload a file.",
   "atsInputSavedCvsError": "Could not load saved CVs. Retry or choose another source.",
   "atsInputSavedCvHint": "We will analyze the current text of your saved CV, with no upload needed.",
   "atsInputSelectCv": "Select a CV",
-  "atsInputCvTextUnavailable": "This CV has no ready text yet. Choose another CV or paste text.",
+  "atsInputCvTextUnavailable": "This CV has no ready text yet. Choose another CV or upload a file.",
   "atsInputJobTitle": "Target job title",
   "atsInputJobTitleHint": "e.g. Laravel Backend Developer",
   "atsInputJobTitleRequired": "Please enter a target job title",
@@ -491,7 +491,7 @@
   "savedCvsLoading": "Loading CVs…",
   "homeActivityEmpty": "No recent activity yet. Create a CV or run an analysis to get started.",
   "atsInputJobTitleTooLong": "Job title must be {max} characters or fewer.",
-  "atsInputSelectSourceRequired": "Choose a saved CV, upload a PDF/TXT file, or paste CV text.",
+  "atsInputSelectSourceRequired": "Choose a saved CV or upload a PDF/TXT file.",
   "@atsInputJobTitleTooLong": {
     "placeholders": {
       "max": {
@@ -1142,7 +1142,7 @@
   "jobsApplyNow": "Apply Now",
   "atsFileTooLarge": "File must be {size} MB or smaller.",
   "atsUnsupportedFileType": "Only PDF or TXT files are supported.",
-  "atsResumeRequired": "Paste resume text or upload a PDF/TXT file to start.",
+  "atsResumeRequired": "Choose a saved CV or upload a PDF/TXT file to start.",
   "atsCancelled": "Cancelled",
   "atsAiStillWorkingAnalysis": "AI is still working. Your ATS score is ready, and you can retry the AI suggestions later.",
   "atsAnalyzeUnexpectedError": "An unexpected error occurred while analyzing the CV.",

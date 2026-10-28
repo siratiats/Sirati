@@ -458,11 +458,11 @@
   "atsInputSavedCv": "سيرتي المحفوظة",
   "atsInputUploadFile": "رفع ملف",
   "atsInputPasteText": "لصق النص",
-  "atsInputNoSavedCvs": "لا توجد سيرة محفوظة بعد. أنشئ سيرة أو اختر رفع ملف أو لصق النص.",
+  "atsInputNoSavedCvs": "لا توجد سيرة محفوظة بعد. أنشئ سيرة أو اختر رفع ملف.",
   "atsInputSavedCvsError": "تعذر تحميل السير المحفوظة. أعد المحاولة أو اختر مصدراً آخر.",
   "atsInputSavedCvHint": "سنحلل النص الحالي لسيرتك المحفوظة، دون الحاجة لرفع ملف.",
   "atsInputSelectCv": "اختر سيرة ذاتية",
-  "atsInputCvTextUnavailable": "نص هذه السيرة غير جاهز بعد. اختر سيرة أخرى أو الصق النص.",
+  "atsInputCvTextUnavailable": "نص هذه السيرة غير جاهز بعد. اختر سيرة أخرى أو ارفع ملفاً.",
   "atsInputJobTitle": "المسمى الوظيفي المستهدف",
   "atsInputJobTitleHint": "مثال: مطوّر Laravel Backend",
   "atsInputJobTitleRequired": "يرجى إدخال المسمى الوظيفي المستهدف",
@@ -498,7 +498,7 @@
   "savedCvsLoading": "جارٍ تحميل السير…",
   "homeActivityEmpty": "لا يوجد نشاط أخير بعد. أنشئ سيرة أو نفّذ تحليلاً للبدء.",
   "atsInputJobTitleTooLong": "يجب ألا يزيد المسمى الوظيفي عن {max} حرفاً.",
-  "atsInputSelectSourceRequired": "اختر سيرة محفوظة أو ارفع ملف PDF/TXT أو الصق نص السيرة.",
+  "atsInputSelectSourceRequired": "اختر سيرة محفوظة أو ارفع ملف PDF/TXT.",
   "@atsInputJobTitleTooLong": {
     "placeholders": {
       "max": {
@@ -2613,7 +2613,7 @@
   "@atsUnsupportedFileType": {
     "description": "Error when the picked CV file is not PDF or TXT."
   },
-  "atsResumeRequired": "الصق نص السيرة أو ارفع ملف PDF/TXT للبدء.",
+  "atsResumeRequired": "اختر سيرة محفوظة أو ارفع ملف PDF/TXT للبدء.",
   "@atsResumeRequired": {
     "description": "Error when the ATS scan is started without a CV."
   },
