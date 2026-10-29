@@ -61,7 +61,8 @@ class SocialAuthGoogleTest extends TestCase
             ->assertJsonPath('data.user.email', $email)
             ->assertJsonPath('data.user.name', 'سالم Sayer')
             ->assertJsonPath('data.user.email_verified', true)
-            ->assertJsonPath('data.user.has_password', false);
+            ->assertJsonPath('data.user.has_password', false)
+            ->assertJsonPath('data.user.social_providers', ['google']);
 
         $user = User::where('email', $email)->sole();
         $this->assertFalse($user->hasPassword());
@@ -443,7 +444,8 @@ class SocialAuthGoogleTest extends TestCase
         foreach ($json as $key => $value) {
             $path = $prefix.$key;
             $paths[] = $path;
-            if (is_array($value) && $key !== 'subscription') {
+            // Lists (e.g. social_providers) differ by account, not by shape.
+            if (is_array($value) && ! array_is_list($value) && $key !== 'subscription') {
                 array_push($paths, ...$this->keyPaths($value, $path.'.'));
             }
         }

@@ -44,6 +44,8 @@ trait BuildsMobileAuthPayload
             'email_verified' => $user->hasVerifiedEmail(),
             // False for Google/Apple accounts that never set a password.
             'has_password' => $user->hasPassword(),
+            // Lets the app offer re-authentication with the right provider (e.g. to delete the account).
+            'social_providers' => $user->socialAccounts()->distinct()->orderBy('provider')->pluck('provider')->values()->all(),
             'email_verified_at' => $user->email_verified_at?->toISOString(),
             // Lets the app draw locked/unlocked buttons without first hitting a 402.
             'subscription' => app(SubscriptionGate::class)->stateFor($user),

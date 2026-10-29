@@ -210,7 +210,23 @@ class SocialAuthAppleTest extends TestCase
         $this->signIn($this->idToken($nonce, ['email' => 'salem@example.com']), ['nonce' => $nonce, 'name' => 'Ignored'])
             ->assertOk()
             ->assertJsonPath('data.user.id', $user->id)
-            ->assertJsonPath('data.user.name', $user->name);
+            ->assertJsonPath('data.user.name', $user->name)
+            ->assertJsonPath('data.user.has_password', true)
+            ->assertJsonPath('data.user.social_providers', ['apple']);
+    }
+
+    public function test_the_user_payload_lists_each_linked_provider_once(): void
+    {
+        $user = User::factory()->create(['email' => 'both@example.com']);
+        $session = $user->createToken('t')->plainTextToken;
+        $this->withToken($session)->getJson('/api/auth/me')->assertJsonPath('data.social_providers', []);
+
+        $user->socialAccounts()->create(['provider' => 'google', 'provider_subject' => 'g-1']);
+        $user->socialAccounts()->create(['provider' => 'google', 'provider_subject' => 'g-2']);
+        $nonce = Str::random(20);
+        $this->signIn($this->idToken($nonce, ['email' => 'both@example.com']), ['nonce' => $nonce])
+            ->assertOk()
+            ->assertJsonPath('data.user.social_providers', ['apple', 'google']);
     }
 
     public function test_authorization_code_is_required(): void
