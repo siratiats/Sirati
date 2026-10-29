@@ -6,6 +6,7 @@ use App\Models\UserFcmToken;
 use App\Services\Notifications\NotificationPreferenceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class FcmTokenController extends Controller
@@ -27,10 +28,14 @@ class FcmTokenController extends Controller
         $user = $request->user();
         $token = $validated['token'];
         $tokenHash = UserFcmToken::hashToken($token);
+        $deviceId = $validated['device_id'] ?? null;
 
-        if (($validated['device_id'] ?? null) !== null) {
-            UserFcmToken::where('device_id', $validated['device_id'])
-                ->where('user_id', '!=', $user->id)
+        // Only per-install UUIDs identify one device; older app builds sent the
+        // Android build id, which many phones share.
+        if ($deviceId !== null && Str::isUuid($deviceId)) {
+            UserFcmToken::where('device_id', $deviceId)
+                ->where('token_hash', '!=', $tokenHash)
+                ->where('is_active', true)
                 ->update([
                     'is_active' => false,
                     'last_seen_at' => now(),

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>الإشعارات - سيرتي</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary-fixed": "#9ff2e4",
+            "on-background": "#0e1e24",
+            "on-secondary-fixed": "#001e2f",
+            "primary-fixed-dim": "#84d5c8",
+            "error": "#ba1a1a",
+            "tertiary": "#673c00",
+            "outline-variant": "#bec9c6",
+            "inverse-on-surface": "#e2f3fd",
+            "on-tertiary-fixed-variant": "#673d00",
+            "on-secondary-container": "#43647d",
+            "on-tertiary-container": "#ffcf9e",
+            "on-secondary": "#ffffff",
+            "secondary": "#40627b",
+            "surface-variant": "#d4e5ee",
+            "outline": "#6e7977",
+            "on-primary": "#ffffff",
+            "tertiary-fixed": "#ffdcbb",
+            "on-error": "#ffffff",
+            "on-surface": "#0e1e24",
+            "primary-container": "#006a60",
+            "surface": "#f3faff",
+            "tertiary-fixed-dim": "#ffb869",
+            "on-primary-fixed-variant": "#005048",
+            "inverse-surface": "#23333a",
+            "surface-container-highest": "#d4e5ee",
+            "surface-dim": "#ccdde6",
+            "secondary-fixed": "#c9e6ff",
+            "inverse-primary": "#84d5c8",
+            "surface-tint": "#016a60",
+            "surface-bright": "#f3faff",
+            "surface-container-high": "#daebf4",
+            "surface-container": "#dff0fa",
+            "on-tertiary": "#ffffff",
+            "background": "#f3faff",
+            "tertiary-container": "#875100",
+            "on-primary-container": "#95e7da",
+            "surface-container-low": "#e6f6ff",
+            "on-surface-variant": "#3e4947",
+            "on-secondary-fixed-variant": "#274a62",
+            "on-tertiary-fixed": "#2b1700",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#a8cbe7",
+            "on-primary-fixed": "#00201c",
+            "error-container": "#ffdad6",
+            "primary": "#005048",
+            "secondary-container": "#bee1fe",
+            "on-error-container": "#93000a"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "margin-desktop": "2.5rem",
+            "space-xs": "0.25rem",
+            "space-md": "1rem",
+            "space-xl": "2rem",
+            "space-lg": "1.5rem",
+            "margin": "1rem",
+            "margin-tablet": "1.5rem",
+            "gutter-desktop": "1.5rem",
+            "gutter": "1rem",
+            "space-sm": "0.5rem"
+          },
+          fontFamily: {
+            "body-md": ["IBM Plex Sans Arabic", "sans-serif"],
+            "label-md": ["IBM Plex Sans Arabic", "sans-serif"],
+            "headline-xl-mobile": ["IBM Plex Sans Arabic", "sans-serif"],
+            "body-sm": ["IBM Plex Sans Arabic", "sans-serif"],
+            "headline-sm": ["IBM Plex Sans Arabic", "sans-serif"],
+            "label-lg": ["IBM Plex Sans Arabic", "sans-serif"],
+            "headline-lg": ["IBM Plex Sans Arabic", "sans-serif"],
+            "body-lg": ["IBM Plex Sans Arabic", "sans-serif"],
+            "label-sm": ["IBM Plex Sans Arabic", "sans-serif"],
+            "headline-xl": ["IBM Plex Sans Arabic", "sans-serif"],
+            "headline-md": ["IBM Plex Sans Arabic", "sans-serif"]
+          },
+          fontSize: {
+            "body-md": ["15px", { "lineHeight": "26px", "fontWeight": "400" }],
+            "label-md": ["13px", { "lineHeight": "20px", "fontWeight": "600" }],
+            "headline-xl-mobile": ["26px", { "lineHeight": "38px", "fontWeight": "700" }],
+            "body-sm": ["14px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "headline-lg": ["24px", { "lineHeight": "36px", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "28px", "fontWeight": "400" }],
+            "label-sm": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-xl": ["32px", { "lineHeight": "48px", "fontWeight": "700" }],
+            "headline-md": ["20px", { "lineHeight": "32px", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background-color: #FAF7F2;
+      color: #0E1E24;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen bg-[#FAF7F2] text-[#0E1E24] flex justify-center selection:bg-[#DDF6F3] selection:text-[#005048]">
+<!-- Mobile Viewport Container -->
+<div class="w-full max-w-md min-h-screen flex flex-col bg-[#FAF7F2] relative shadow-lg">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-30 bg-[#FAF7F2]/95 backdrop-blur-md px-4 h-16 flex items-center justify-between border-b border-[#E2DDD5]/60 transition-colors">
+<!-- Right Side: Back Action Icon Button (RTL Forward Arrow) -->
+<button aria-label="الرجوع" class="w-11 h-11 flex items-center justify-center rounded-full text-[#0E1E24] hover:bg-[#EAE5DC]/60 active:scale-95 transition-all -mr-1" onclick="window.history.back()" type="button">
+<span class="material-symbols-outlined text-[24px]">arrow_forward</span>
+</button>
+<!-- Center Title -->
+<h1 class="font-headline-sm text-headline-sm text-[#0E1E24] font-bold text-center tracking-tight">
+        الإشعارات
+      </h1>
+<!-- Left Placeholder for Visual Balance -->
+<div aria-hidden="true" class="w-11 h-11 flex items-center justify-center opacity-0 pointer-events-none">
+<span class="material-symbols-outlined text-[24px]">arrow_forward</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col px-4 pt-6 pb-8 overflow-y-auto">
+<!-- Hero Empty State Area -->
+<section class="flex flex-col items-center text-center mt-2 mb-7">
+<!-- Concentric Radial Decorative Rings with Bell Icon -->
+<div class="relative flex items-center justify-center w-28 h-28 mb-5">
+<!-- Outer Ring -->
+<div class="absolute inset-0 rounded-full bg-[#DDF6F3]/50 animate-pulse duration-1000"></div>
+<!-- Middle Ring -->
+<div class="absolute inset-2 rounded-full bg-[#DDF6F3] flex items-center justify-center border border-[#9FF2E4]/40"></div>
+<!-- Inner Core Badge -->
+<div class="relative z-10 w-16 h-16 rounded-full bg-gradient-to-tr from-[#006A60] to-[#007F73] flex items-center justify-center shadow-md shadow-[#007F73]/20">
+<span class="material-symbols-outlined material-symbols-fill text-[#FFFFFF] text-[32px]">notifications</span>
+<!-- Subtle floating accent sparkle -->
+<span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#FAF7F2] flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined material-symbols-fill text-[#C97F1B] text-[13px]">arrow_back_ios_new</span>
+</span>
+</div>
+<!-- Subtle peripheral decorative dots -->
+<div class="absolute -bottom-1 -left-1 w-2.5 h-2.5 rounded-full bg-[#84D5C8]/70"></div>
+<div class="absolute top-2 -left-2 w-1.5 h-1.5 rounded-full bg-[#007F73]/30"></div>
+</div>
+<!-- Headline & Subtitle -->
+<h2 class="font-headline-lg text-headline-lg text-[#0E1E24] font-bold mb-2 tracking-tight">
+          لا توجد إشعارات حالياً
+        </h2>
+<p class="font-body-md text-body-md text-[#5A6A72] max-w-xs leading-relaxed">
+          ستظهر هنا جميع التحديثات الذكية حول سيرتك الذاتية وفرصك المهنية.
+        </p>
+</section>
+<!-- Preview / Ghost Card Container -->
+<section class="bg-[#FFFFFF] rounded-2xl p-5 border border-[#E2DDD5] shadow-[0_2px_8px_-2px_rgba(18,56,79,0.04),0_1px_3px_0_rgba(18,56,79,0.02)] mb-8">
+<!-- Header Section with Info Icon -->
+<div class="flex items-center gap-2 pb-4 mb-4 border-b border-[#E2DDD5]/70">
+<div class="w-6 h-6 rounded-md bg-[#FAF7F2] flex items-center justify-center text-[#006A60]">
+<span class="material-symbols-outlined text-[18px]">info</span>
+</div>
+<h3 class="font-label-lg text-label-lg font-bold text-[#0E1E24]">
+            ماذا ستصلك هنا؟
+          </h3>
+</div>
+<!-- Notification Rows Preview List -->
+<div class="flex flex-col gap-4">
+<!-- Row 1: CV Ready -->
+<div class="flex items-start gap-3.5 group">
+<div class="w-11 h-11 shrink-0 rounded-xl bg-[#DDF6F3] flex items-center justify-center text-[#007F73] mt-0.5 shadow-sm shadow-[#007F73]/5">
+<span class="material-symbols-outlined material-symbols-fill text-[22px]">description</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="font-label-md text-label-md font-semibold text-[#0E1E24]">
+                  سيرتك جاهزة للتحميل
+                </h4>
+<span class="w-1.5 h-1.5 rounded-full bg-[#007F73]/40"></span>
+</div>
+<p class="font-body-sm text-body-sm text-[#5A6A72] leading-snug">
+                تنبيه فوري عند اكتمال صياغة وتنسيق ملفك بصيغة PDF.
+              </p>
+</div>
+</div>
+<!-- Divider -->
+<div class="h-[1px] bg-[#E2DDD5]/50 -mx-1"></div>
+<!-- Row 2: Job Matches -->
+<div class="flex items-start gap-3.5 group">
+<div class="w-11 h-11 shrink-0 rounded-xl bg-[#E8F5EF] flex items-center justify-center text-[#0B7A53] mt-0.5 shadow-sm shadow-[#0B7A53]/5">
+<span class="material-symbols-outlined material-symbols-fill text-[22px]">work</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="font-label-md text-label-md font-semibold text-[#0E1E24]">
+                  وظائف جديدة تناسب مسماك
+                </h4>
+<span class="w-1.5 h-1.5 rounded-full bg-[#0B7A53]/40"></span>
+</div>
+<p class="font-body-sm text-body-sm text-[#5A6A72] leading-snug">
+                إشعارات بالوظائف الشاغرة المطابقة لخبراتك في السوق السعودي.
+              </p>
+</div>
+</div>
+<!-- Divider -->
+<div class="h-[1px] bg-[#E2DDD5]/50 -mx-1"></div>
+<!-- Row 3: ATS Scan Results -->
+<div class="flex items-start gap-3.5 group">
+<div class="w-11 h-11 shrink-0 rounded-xl bg-[#FEF3E2] flex items-center justify-center text-[#C97F1B] mt-0.5 shadow-sm shadow-[#C97F1B]/5">
+<span class="material-symbols-outlined material-symbols-fill text-[22px]">insights</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<h4 class="font-label-md text-label-md font-semibold text-[#0E1E24]">
+                  نتائج فحص سيرتك (ATS)
+                </h4>
+<span class="w-1.5 h-1.5 rounded-full bg-[#C97F1B]/40"></span>
+</div>
+<p class="font-body-sm text-body-sm text-[#5A6A72] leading-snug">
+                تحليل دقيق لكلمات المفتاح ونسبة قبول سيرتك لدى جهات التوظيف.
+              </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Spacer to ensure breathing space on taller screens -->
+<div class="mt-auto"></div>
+<!-- Action Buttons Call-To-Action Cluster -->
+<div class="flex flex-col gap-2.5 pt-2">
+<!-- Primary Action Button: Scan CV Now -->
+<button class="w-full min-h-[48px] py-3.5 px-5 bg-[#007F73] hover:bg-[#006A60] active:scale-[0.99] text-[#FFFFFF] rounded-xl font-label-lg text-label-lg font-semibold shadow-sm transition-all duration-150 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#006A60] focus:ring-offset-2" type="button">
+<span class="material-symbols-outlined text-[20px]">document_scanner</span>
+<span>فحص سيرتك الآن</span>
+</button>
+<!-- Secondary Action Button: Build CV -->
+<button class="w-full min-h-[48px] py-2.5 px-4 text-[#006A60] hover:bg-[#FAF7F2] active:scale-[0.99] font-label-md text-label-md font-semibold rounded-xl transition-all duration-150 flex items-center justify-center gap-1.5 focus:outline-none" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>إنشاء سيرة ذاتية</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

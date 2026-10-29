@@ -31,6 +31,9 @@ class AtsScoringService
         'finance' => ['financial analysis', 'excel', 'sql', 'accounting', 'budget', 'forecast', 'p&l', 'cash flow', 'audit'],
         'hr' => ['recruitment', 'talent acquisition', 'onboarding', 'performance management', 'employee relations', 'hr policies'],
         'sales' => ['sales', 'revenue', 'quota', 'pipeline', 'crm', 'salesforce', 'hubspot', 'prospecting', 'negotiation'],
+        'pharmacy' => ['pharmacist', 'dispensing', 'prescription', 'clinical pharmacy', 'drug interactions', 'medication', 'patient counseling', 'inventory', 'pharmacovigilance', 'gmp', 'sfda', 'formulary'],
+        'healthcare' => ['patient care', 'clinical', 'diagnosis', 'treatment', 'emr', 'bls', 'acls', 'infection control', 'scfhs', 'medical records', 'patient safety', 'triage'],
+        'engineering' => ['autocad', 'revit', 'design', 'site supervision', 'specifications', 'qa/qc', 'hse', 'project engineering', 'technical drawings', 'mep', 'primavera', 'saudi council of engineers'],
         'general' => [
             'communication', 'coordination', 'management', 'leadership', 'planning', 'quality',
             'safety', 'compliance', 'training', 'reporting', 'documentation', 'collaboration',
@@ -68,6 +71,9 @@ class AtsScoringService
             'finance' => 'المالية والمحاسبة',
             'hr' => 'الموارد البشرية',
             'sales' => 'المبيعات وتطوير الأعمال',
+            'pharmacy' => 'الصيدلة',
+            'healthcare' => 'الرعاية الصحية والطب',
+            'engineering' => 'الهندسة',
             default => 'عام (كفاءات مهنية مشتركة)',
         };
     }
@@ -266,14 +272,28 @@ class AtsScoringService
             return $categoryHint;
         }
 
+        return self::inferCategory($jobTitle);
+    }
+
+    /**
+     * Infer a JOB_KEYWORDS category key from a free-text job title ('general' when unknown).
+     * Also used by the job-posting matcher so postings share the users' category vocabulary.
+     */
+    public static function inferCategory(string $jobTitle): string
+    {
         $normalizedTitle = self::normalizeArabic($jobTitle);
         $title = mb_strtolower($jobTitle).' '.$normalizedTitle;
 
         return match (true) {
             (bool) preg_match('/ecommerce|e-commerce|متجر|تجارة/u', $title) => 'ecommerce',
             (bool) preg_match('/market|brand|content|social|seo|ppc|advertis|تسويق/u', $title) => 'marketing',
-            (bool) preg_match('/software|developer|programmer|frontend|backend|fullstack|laravel|flutter|devops|برمجة|مبرمج|مطور|مهندس\s+برمجيات/u', $title) => 'software',
-            (bool) preg_match('/data|analyst|analytics|تحليل|بيانات/u', $title) => 'data',
+            // Pharmacy before healthcare ("medical representative"); software before engineering
+            // ("solutions architect"); engineering before healthcare ("biomedical engineer").
+            (bool) preg_match('/pharma|drug|regulatory affairs|medical rep|صيدل|دواء|دوائي|أدوية|ادويه|دعاية طبية|شؤون تنظيمية/u', $title) => 'pharmacy',
+            (bool) preg_match('/software|developer|programmer|frontend|backend|fullstack|laravel|flutter|devops|solutions? architect|cloud|network|cyber|qa engineer|qa automation|test automation|helpdesk|help desk|technical support|\bit\s+(?:manager|support|specialist|technician|director|officer)|information technology|database|\bdba\b|systems? administrator|sysadmin|ui\/ux|\bux\b|ui designer|\berp\b|\bsap\b|odoo|برمجة|مبرمج|مطور|مهندس\s+برمجيات|حلول تقنية|سحاب|شبكات|سيبراني|ضمان جودة|دعم فني|قواعد بيانات|تجربة مستخدم|تقنية المعلومات|مسؤول أنظمة|استشاري أنظمة/u', $title) => 'software',
+            (bool) preg_match('/civil|structural|mechanical|electrical|chemical|industrial engineer|petroleum|biomedical|\bmep\b|hvac|architect|site engineer|project engineer|\bhse\b|safety engineer|qa\/qc|مدني|إنشائي|انشائي|ميكانيك|كهرب|كيميائي|بترول|معماري|مهندس\s+(?:موقع|سلامة|ضبط|مشاريع|أجهزة|تكييف|صناعي)/u', $title) => 'engineering',
+            (bool) preg_match('/doctor|physician|practitioner|nurs|medical|clinic|hospital|dentist|dental|radiolog|therap|dietitian|nutrition|infection|laborator|paramedic|patient|health(?!\s*(?:and|&)\s*safety)|ممرض|تمريض|(?<!\p{L})(?:ال)?طبي|مستشفى|أسنان|اسنان|أشعة|اشعه|علاج|تغذية|عدوى|مختبر|صحي|إسعاف|اسعاف|مسعف/u', $title) => 'healthcare',
+            (bool) preg_match('/data|analyst|analytics|machine learning|\bml\b|\bai\b|artificial intelligence|تحليل|بيانات|(?<!\p{L})محلل|ذكاء اصطناعي|ذكاء أعمال|تعلم آلي/u', $title) => 'data',
             (bool) preg_match('/manager|director|head|lead|رئيس|مدير|إدارة/u', $title) => 'management',
             (bool) preg_match('/finance|financial|accountant|محاسب|مالي/u', $title) => 'finance',
             (bool) preg_match('/hr|human resources|talent|recruiter|بشرية|موارد/u', $title) => 'hr',

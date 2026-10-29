@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html class="h-full" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>سيرتي - صانع السيرة الذاتية الذكي</title>
+<!-- IBM Plex Sans Arabic Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-background": "#0e1e24",
+            "tertiary-fixed": "#ffdcbb",
+            "secondary-fixed": "#c9e6ff",
+            "secondary-container": "#bee1fe",
+            "on-error": "#ffffff",
+            "on-surface": "#0e1e24",
+            "inverse-surface": "#23333a",
+            "primary-fixed": "#9ff2e4",
+            "secondary-fixed-dim": "#a8cbe7",
+            "surface-container-lowest": "#ffffff",
+            "tertiary": "#673c00",
+            "surface-container-high": "#daebf4",
+            "primary": "#005048",
+            "surface-container": "#dff0fa",
+            "on-error-container": "#93000a",
+            "on-tertiary-fixed": "#2b1700",
+            "on-surface-variant": "#3e4947",
+            "on-secondary": "#ffffff",
+            "on-primary-fixed-variant": "#005048",
+            "primary-container": "#006a60",
+            "on-secondary-fixed-variant": "#274a62",
+            "surface-tint": "#016a60",
+            "on-tertiary": "#ffffff",
+            "error": "#ba1a1a",
+            "background": "#f3faff",
+            "surface-container-low": "#e6f6ff",
+            "on-primary-fixed": "#00201c",
+            "surface-container-highest": "#d4e5ee",
+            "on-primary-container": "#95e7da",
+            "on-primary": "#ffffff",
+            "surface-bright": "#f3faff",
+            "tertiary-fixed-dim": "#ffb869",
+            "on-secondary-fixed": "#001e2f",
+            "tertiary-container": "#875100",
+            "error-container": "#ffdad6",
+            "surface-variant": "#d4e5ee",
+            "outline-variant": "#bec9c6",
+            "surface-dim": "#ccdde6",
+            "primary-fixed-dim": "#84d5c8",
+            "secondary": "#40627b",
+            "surface": "#f3faff",
+            "on-tertiary-container": "#ffcf9e",
+            "outline": "#6e7977",
+            "on-secondary-container": "#43647d",
+            "on-tertiary-fixed-variant": "#673d00",
+            "inverse-primary": "#84d5c8",
+            "inverse-on-surface": "#e2f3fd"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin-tablet": "1.5rem",
+            "gutter": "1rem",
+            "space-xs": "0.25rem",
+            "space-sm": "0.5rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "margin": "1rem",
+            "gutter-desktop": "1.5rem",
+            "space-xl": "2rem",
+            "margin-desktop": "2.5rem"
+          },
+          "fontFamily": {
+            "label-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "body-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "headline-xl": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "headline-md": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "headline-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "headline-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "label-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "headline-xl-mobile": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "body-md": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "label-md": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "body-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"]
+          },
+          "fontSize": {
+            "label-sm": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "body-lg": ["16px", {"lineHeight": "28px", "fontWeight": "400"}],
+            "headline-xl": ["32px", {"lineHeight": "48px", "fontWeight": "700"}],
+            "headline-md": ["20px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "headline-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+            "headline-lg": ["24px", {"lineHeight": "36px", "fontWeight": "700"}],
+            "label-lg": ["14px", {"lineHeight": "22px", "fontWeight": "600"}],
+            "headline-xl-mobile": ["26px", {"lineHeight": "38px", "fontWeight": "700"}],
+            "body-md": ["15px", {"lineHeight": "26px", "fontWeight": "400"}],
+            "label-md": ["13px", {"lineHeight": "20px", "fontWeight": "600"}],
+            "body-sm": ["14px", {"lineHeight": "24px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      font-family: 'IBM Plex Sans Arabic', 'IBM Plex Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col justify-between antialiased overflow-x-hidden selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Main Mobile Canvas Container -->
+<div class="w-full max-w-md mx-auto min-h-screen flex flex-col bg-surface shadow-2xl relative pb-28">
+<!-- Header Section (Dark Rich Teal Gradient with geometric mesh aesthetic) -->
+<header class="relative w-full bg-gradient-to-b from-primary to-primary-container pt-8 pb-14 px-4 text-on-primary overflow-hidden">
+<!-- Subtle geometric decorative watermark / mesh grid -->
+<div class="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay">
+<svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="32" id="grid-pattern" patternunits="userSpaceOnUse" width="32">
+<path d="M 32 0 L 0 0 0 32" fill="none" stroke="#ffffff" stroke-opacity="0.8" stroke-width="1.2"></path>
+<path d="M 16 10 L 22 16 L 28 8" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"></path>
+</pattern>
+</defs>
+<rect fill="url(#grid-pattern)" height="100%" width="100%"></rect>
+</svg>
+</div>
+<!-- Radial mint glow accent -->
+<div class="absolute -top-16 -left-16 w-52 h-52 bg-primary-fixed-dim/20 rounded-full blur-3xl pointer-events-none"></div>
+<!-- Top Status & Actions Bar -->
+<div class="relative z-10 flex items-center justify-between pt-1 pb-4">
+<!-- User Profile Avatar and Greeting Tag -->
+<div class="flex items-center gap-3">
+<div class="relative w-10 h-10 rounded-full ring-2 ring-primary-fixed/40 bg-primary-fixed/20 flex items-center justify-center overflow-hidden">
+<span class="font-label-lg text-label-lg font-bold text-on-primary">م</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-primary-fixed-dim block">أهلاً بك</span>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-primary leading-tight">محمد السعيد</span>
+</div>
+</div>
+<!-- Notification Bell with Notification Badge Dot -->
+<button aria-label="الإشعارات" class="relative w-11 h-11 rounded-full bg-on-primary/10 hover:bg-on-primary/20 backdrop-blur-md flex items-center justify-center text-on-primary border border-on-primary/15 transition-all duration-150 active:scale-95" type="button">
+<span class="material-symbols-outlined text-2xl" data-icon="notifications">notifications</span>
+<span class="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-primary-fixed rounded-full ring-2 ring-primary-container"></span>
+</button>
+</div>
+<!-- Title & Value Proposition -->
+<div class="relative z-10 mt-3 pr-0.5">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-fixed/20 text-primary-fixed-dim border border-primary-fixed/30 mb-2.5 backdrop-blur-sm">
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-sm text-label-sm font-semibold">الذكاء الاصطناعي المهني</span>
+</div>
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile font-bold text-on-primary tracking-tight">سيرتي</h1>
+<p class="font-body-sm text-body-sm text-primary-fixed-dim mt-1.5 leading-relaxed max-w-xs font-normal">
+          أنشئ سيرتك، وافحصها، وأدر نسخك من مكان واحد
+        </p>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="relative px-4 -mt-7 z-20 space-y-6">
+<!-- Overlapping Card - "الأدوات" (Tools Bento Grid) -->
+<section class="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 shadow-sm p-4.5 p-4">
+<!-- Section Title Header -->
+<div class="flex items-center justify-between mb-3.5 pb-2 border-b border-outline-variant/20">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-lg" data-icon="widgets">widgets</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">الأدوات</h2>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">٤ أدوات نشطة</span>
+</div>
+<!-- 2x2 Grid of Tool Tiles -->
+<div class="grid grid-cols-2 gap-3">
+<!-- Tile 1: Primary Featured Action (Filled Solid Teal) -->
+<button class="group relative text-right flex flex-col justify-between p-3.5 rounded-xl bg-primary-container text-on-primary shadow-sm active:scale-95 transition-all duration-150 overflow-hidden" type="button">
+<!-- Subtle Mint Glow Accent in Corner -->
+<div class="absolute -top-8 -left-8 w-20 h-20 bg-primary-fixed/20 rounded-full blur-xl pointer-events-none"></div>
+<div class="flex items-center justify-between w-full mb-3">
+<div class="w-9 h-9 rounded-lg bg-on-primary/15 backdrop-blur-sm border border-on-primary/20 flex items-center justify-center text-primary-fixed">
+<span class="material-symbols-outlined text-xl" data-icon="edit_document">edit_document</span>
+</div>
+<span class="material-symbols-outlined text-base text-primary-fixed-dim group-hover:-translate-x-0.5 transition-transform" data-icon="chevron_left">chevron_left</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5 mb-1">
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary leading-tight">إنشاء السيرة</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed inline-block"></span>
+</div>
+<p class="font-body-sm text-body-sm text-on-primary/80 leading-snug line-clamp-2">
+                متوافقة مع أنظمة الفرز الآلي ATS
+              </p>
+</div>
+</button>
+<!-- Tile 2: فحص السيرة بنظام ATS -->
+<button class="group text-right flex flex-col justify-between p-3.5 rounded-xl bg-surface-container-lowest border border-outline-variant/40 hover:border-primary/40 active:scale-95 transition-all duration-150" type="button">
+<div class="flex items-center justify-between w-full mb-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-xl" data-icon="fact_check">fact_check</span>
+</div>
+<span class="material-symbols-outlined text-base text-outline group-hover:-translate-x-0.5 transition-transform" data-icon="chevron_left">chevron_left</span>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface block mb-1 leading-tight">فحص</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug line-clamp-2">
+                فحص السيرة بنظام (ATS)
+              </p>
+</div>
+</button>
+<!-- Tile 3: رفع سيرة خارجية -->
+<button class="group text-right flex flex-col justify-between p-3.5 rounded-xl bg-surface-container-lowest border border-outline-variant/40 hover:border-primary/40 active:scale-95 transition-all duration-150" type="button">
+<div class="flex items-center justify-between w-full mb-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-xl" data-icon="upload_file">upload_file</span>
+</div>
+<span class="material-symbols-outlined text-base text-outline group-hover:-translate-x-0.5 transition-transform" data-icon="chevron_left">chevron_left</span>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface block mb-1 leading-tight">رفع سيرة خارجية</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug line-clamp-2">
+                ارفع سيرتك الذاتية PDF، وحوّلها
+              </p>
+</div>
+</button>
+<!-- Tile 4: استهداف وظيفة -->
+<button class="group text-right flex flex-col justify-between p-3.5 rounded-xl bg-surface-container-lowest border border-outline-variant/40 hover:border-primary/40 active:scale-95 transition-all duration-150" type="button">
+<div class="flex items-center justify-between w-full mb-3">
+<div class="w-9 h-9 rounded-lg bg-surface-container text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-xl" data-icon="target">target</span>
+</div>
+<span class="material-symbols-outlined text-base text-outline group-hover:-translate-x-0.5 transition-transform" data-icon="chevron_left">chevron_left</span>
+</div>
+<div>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface block mb-1 leading-tight">استهداف وظيفة</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug line-clamp-2">
+                إنشاء سيرة مطابقة لوصف وظيفي معين
+              </p>
+</div>
+</button>
+</div>
+</section>
+<!-- Section "سيري الذاتية" (My CVs Empty State) -->
+<section class="space-y-3">
+<!-- Section Header with Counter Badge -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">سيري الذاتية</h2>
+<span class="inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm font-bold">
+              0
+            </span>
+</div>
+<button class="font-label-sm text-label-sm font-semibold text-primary hover:underline flex items-center gap-0.5" type="button">
+<span>دليل النماذج</span>
+<span class="material-symbols-outlined text-base" data-icon="chevron_left">chevron_left</span>
+</button>
+</div>
+<!-- Empty State Card -->
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 shadow-sm p-6 text-center flex flex-col items-center">
+<!-- Illustrated Document Graphic with Dashed Outline and Mint Sparkles -->
+<div class="relative w-24 h-24 my-2 flex items-center justify-center">
+<!-- Background Soft Halo -->
+<div class="absolute inset-0 bg-primary-fixed/20 rounded-full blur-xl"></div>
+<!-- Document Shape with Dashed Stroke -->
+<div class="relative w-16 h-20 rounded-lg border-2 border-dashed border-primary/50 bg-surface flex flex-col justify-center items-center gap-1.5 p-2 shadow-inner">
+<div class="w-8 h-1.5 bg-outline-variant/60 rounded-full"></div>
+<div class="w-10 h-1.5 bg-outline-variant/40 rounded-full"></div>
+<div class="w-6 h-1.5 bg-outline-variant/40 rounded-full"></div>
+<!-- Plus Mint Badge -->
+<div class="absolute -bottom-2 -left-2 w-7 h-7 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-md ring-2 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-base font-bold" data-icon="add">add</span>
+</div>
+</div>
+<!-- Top Sparkle -->
+<div class="absolute -top-1 right-2 text-primary-container animate-pulse">
+<span class="material-symbols-outlined text-lg" data-icon="sparkles" style="font-variation-settings: 'FILL' 1;">arrow_back_ios_new</span>
+</div>
+<!-- Bottom Sparkle -->
+<div class="absolute bottom-2 -right-1 text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<!-- Empty State Headline & Helper -->
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mt-2 mb-1.5">
+            لا توجد سير ذاتية بعد
+          </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs leading-relaxed mb-6">
+            أنشئ أول سيرة متوافقة مع ATS، أو ارفع سيرة خارجية لتعديلها.
+          </p>
+<!-- Primary CTA Button (Solid Teal) -->
+<button class="w-full h-12 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-semibold flex items-center justify-center gap-2 active:scale-98 transition-all duration-150 shadow-sm mb-3" type="button">
+<span>أنشئ سيرتك</span>
+<span class="material-symbols-outlined text-xl" data-icon="arrow_back">arrow_back</span>
+</button>
+<!-- Secondary CTA Button (Outlined Teal) -->
+<button class="w-full h-12 rounded-xl bg-transparent hover:bg-primary-fixed/15 border-1.5 border-primary text-primary font-label-lg text-label-lg font-semibold flex items-center justify-center gap-2 active:scale-98 transition-all duration-150" type="button">
+<span class="material-symbols-outlined text-xl" data-icon="upload_file">upload_file</span>
+<span>ارفع سيرة خارجية</span>
+</button>
+</div>
+</section>
+<!-- Institutional Assurance Banner (Saudi ATS Compliance Badge) -->
+<section class="bg-surface-container-low rounded-xl p-3.5 border border-outline-variant/30 flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-xl" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div class="text-right">
+<h4 class="font-label-md text-label-md font-bold text-on-surface">معايير التوظيف الوطنية</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-xs leading-snug">صيغ معتمدة تتوافق مع بوابات جدارات والشركات الكبرى بالمملكة.</p>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Docked Bottom, Semantic Shell) -->
+<!-- Destination count: 4 | [الرئيسية, سيرتي الذاتية, الوظائف, تعلّم] -->
+<nav aria-label="التنقل الرئيسي" class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-3 py-2 pb-safe bg-surface-container-lowest border-t border-outline-variant/30 shadow-[0_-4px_12px_rgba(18,56,79,0.04)]">
+<!-- Tab 1: الرئيسية (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary py-1.5 px-3 active:scale-95 transition-all duration-150" type="button">
+<span class="material-symbols-outlined text-2xl" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm mt-0.5">الرئيسية</span>
+</button>
+<!-- Tab 2: سيرتي الذاتية (ACTIVE TAB - Maps directly to active Sirati context) -->
+<button class="flex flex-col items-center justify-center text-primary font-semibold py-1.5 px-3 rounded-xl bg-primary-fixed/30 active:scale-95 transition-all duration-150" type="button">
+<span class="material-symbols-outlined text-2xl" data-icon="description" style="font-variation-settings: 'FILL' 1;">description</span>
+<span class="font-label-sm text-label-sm mt-0.5">سيرتي الذاتية</span>
+</button>
+<!-- Tab 3: الوظائف (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary py-1.5 px-3 active:scale-95 transition-all duration-150" type="button">
+<span class="material-symbols-outlined text-2xl" data-icon="work">work</span>
+<span class="font-label-sm text-label-sm mt-0.5">الوظائف</span>
+</button>
+<!-- Tab 4: تعلّم (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary py-1.5 px-3 active:scale-95 transition-all duration-150" type="button">
+<span class="material-symbols-outlined text-2xl" data-icon="school">school</span>
+<span class="font-label-sm text-label-sm mt-0.5">تعلّم</span>
+</button>
+</nav>
+</div>
+</body></html>

@@ -82,6 +82,9 @@ class CvAnalysis extends Model
             'finance' => 'المالية والمحاسبة',
             'hr' => 'الموارد البشرية',
             'management' => 'الإدارة والعمليات',
+            'pharmacy' => 'الصيدلة',
+            'healthcare' => 'الرعاية الصحية والطب',
+            'engineering' => 'الهندسة',
             default => 'تقييم عام (مهارات مهنية مشتركة)',
         };
     }
@@ -97,6 +100,9 @@ class CvAnalysis extends Model
             'finance' => 'Finance & Accounting',
             'hr' => 'Human Resources',
             'management' => 'Management & Operations',
+            'pharmacy' => 'Pharmacy',
+            'healthcare' => 'Healthcare & Medical',
+            'engineering' => 'Engineering',
             default => 'General Profile (Transferable Skills)',
         };
     }

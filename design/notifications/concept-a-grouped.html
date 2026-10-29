@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+
+<html class="h-full" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>صندوق الإشعارات | سيرتي</title>
+<!-- IBM Plex Sans Arabic Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-secondary": "#ffffff",
+            "secondary-fixed": "#c9e6ff",
+            "surface-dim": "#ccdde6",
+            "secondary": "#40627b",
+            "primary": "#005048",
+            "secondary-container": "#bee1fe",
+            "surface-variant": "#d4e5ee",
+            "tertiary-container": "#875100",
+            "primary-fixed": "#9ff2e4",
+            "error": "#ba1a1a",
+            "outline": "#6e7977",
+            "on-secondary-fixed": "#001e2f",
+            "surface-container-high": "#daebf4",
+            "surface-container-low": "#e6f6ff",
+            "surface-container": "#dff0fa",
+            "tertiary-fixed-dim": "#ffb869",
+            "primary-fixed-dim": "#84d5c8",
+            "inverse-surface": "#23333a",
+            "background": "#f3faff",
+            "tertiary": "#673c00",
+            "on-primary-fixed-variant": "#005048",
+            "on-background": "#0e1e24",
+            "surface-container-highest": "#d4e5ee",
+            "on-tertiary-container": "#ffcf9e",
+            "surface-container-lowest": "#ffffff",
+            "primary-container": "#006a60",
+            "inverse-primary": "#84d5c8",
+            "on-primary-fixed": "#00201c",
+            "surface-tint": "#016a60",
+            "on-surface": "#0e1e24",
+            "surface-bright": "#f3faff",
+            "outline-variant": "#bec9c6",
+            "on-tertiary-fixed-variant": "#673d00",
+            "surface": "#f3faff",
+            "on-surface-variant": "#3e4947",
+            "on-tertiary-fixed": "#2b1700",
+            "tertiary-fixed": "#ffdcbb",
+            "on-secondary-container": "#43647d",
+            "on-error": "#ffffff",
+            "on-primary": "#ffffff",
+            "secondary-fixed-dim": "#a8cbe7",
+            "on-primary-container": "#95e7da",
+            "on-secondary-fixed-variant": "#274a62",
+            "on-error-container": "#93000a",
+            "on-tertiary": "#ffffff",
+            "inverse-on-surface": "#e2f3fd",
+            "error-container": "#ffdad6"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "2rem",
+            "space-sm": "0.5rem",
+            "margin-desktop": "2.5rem",
+            "margin": "1rem",
+            "gutter-desktop": "1.5rem",
+            "space-lg": "1.5rem",
+            "space-xs": "0.25rem",
+            "space-md": "1rem",
+            "margin-tablet": "1.5rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "label-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "label-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "headline-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "headline-sm-mobile": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "headline-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "headline-md": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "body-md": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "label-md": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "headline-xl": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "headline-xl-mobile": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "body-sm": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"],
+            "body-lg": ["IBM Plex Sans Arabic", "IBM Plex Sans", "sans-serif"]
+          },
+          "fontSize": {
+            "label-sm": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "label-lg": ["14px", {"lineHeight": "22px", "fontWeight": "600"}],
+            "headline-sm": ["18px", {"lineHeight": "28px", "fontWeight": "600"}],
+            "headline-sm-mobile": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+            "headline-lg": ["24px", {"lineHeight": "36px", "fontWeight": "700"}],
+            "headline-md": ["20px", {"lineHeight": "32px", "fontWeight": "600"}],
+            "body-md": ["15px", {"lineHeight": "26px", "fontWeight": "400"}],
+            "label-md": ["13px", {"lineHeight": "20px", "fontWeight": "600"}],
+            "headline-xl": ["32px", {"lineHeight": "48px", "fontWeight": "700"}],
+            "headline-xl-mobile": ["26px", {"lineHeight": "38px", "fontWeight": "700"}],
+            "body-sm": ["14px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "body-lg": ["16px", {"lineHeight": "28px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      font-family: 'IBM Plex Sans Arabic', sans-serif;
+      background-color: #FAF7F2;
+      color: #0e1e24;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .custom-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .card-shadow {
+      box-shadow: 0 2px 8px -2px rgba(18, 56, 79, 0.04), 0 1px 3px 0 rgba(18, 56, 79, 0.02);
+    }
+    .unread-shadow {
+      box-shadow: 0 4px 14px -3px rgba(0, 80, 72, 0.08), 0 1px 4px 0 rgba(18, 56, 79, 0.03);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#FAF7F2] text-on-surface antialiased flex flex-col min-h-screen selection:bg-primary selection:text-white">
+<!-- TOP APP BAR -->
+<header class="sticky top-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md shadow-sm transition-shadow">
+<div class="flex justify-between items-center w-full px-4 h-16 max-w-md mx-auto">
+<!-- Right: RTL Back Navigation -->
+<button aria-label="الرجوع" class="w-10 h-10 -mr-2 flex items-center justify-center rounded-xl text-on-surface hover:bg-surface-container-high transition-colors active:scale-95 duration-150" type="button">
+<span class="material-symbols-outlined text-[24px]">arrow_forward</span>
+</button>
+<!-- Center: Screen Title -->
+<h1 class="font-headline-sm text-headline-sm font-bold text-on-surface text-center">
+        الإشعارات
+      </h1>
+<!-- Left: Mark all as read action -->
+<button class="text-primary font-label-md text-label-md font-semibold px-2 py-1.5 rounded-lg hover:bg-primary-fixed/20 active:scale-95 transition-all duration-150" type="button">
+        قراءة الكل
+      </button>
+</div>
+</header>
+<!-- MAIN SCROLLABLE CONTENT AREA -->
+<main class="flex-1 w-full max-w-md mx-auto px-4 pt-3 pb-24">
+<!-- HORIZONTAL FILTER CHIPS -->
+<section class="mb-5 -mx-4 px-4 overflow-x-auto custom-scrollbar flex items-center gap-2 py-1">
+<!-- Active Chip: الكل with counter -->
+<button class="shrink-0 flex items-center gap-1.5 bg-primary text-on-primary px-3.5 py-1.5 rounded-full font-label-md text-label-md shadow-sm active:scale-95 transition-transform" type="button">
+<span>الكل</span>
+<span class="inline-flex items-center justify-center bg-white/20 text-white text-[11px] font-bold h-4 min-w-[16px] px-1 rounded-full">٤</span>
+</button>
+<!-- Filter Chip: غير مقروء -->
+<button class="shrink-0 flex items-center bg-surface-container-lowest border border-outline-variant/50 text-on-surface-variant hover:text-primary px-3.5 py-1.5 rounded-full font-label-md text-label-md active:scale-95 transition-all" type="button">
+<span>غير مقروء</span>
+</button>
+<!-- Filter Chip: السيرة الذاتية -->
+<button class="shrink-0 flex items-center bg-surface-container-lowest border border-outline-variant/50 text-on-surface-variant hover:text-primary px-3.5 py-1.5 rounded-full font-label-md text-label-md active:scale-95 transition-all" type="button">
+<span>السيرة الذاتية</span>
+</button>
+<!-- Filter Chip: الوظائف -->
+<button class="shrink-0 flex items-center bg-surface-container-lowest border border-outline-variant/50 text-on-surface-variant hover:text-primary px-3.5 py-1.5 rounded-full font-label-md text-label-md active:scale-95 transition-all" type="button">
+<span>الوظائف</span>
+</button>
+<!-- Filter Chip: التحليل -->
+<button class="shrink-0 flex items-center bg-surface-container-lowest border border-outline-variant/50 text-on-surface-variant hover:text-primary px-3.5 py-1.5 rounded-full font-label-md text-label-md active:scale-95 transition-all" type="button">
+<span>التحليل</span>
+</button>
+</section>
+<!-- TIMELINE LIST CONTAINER -->
+<div class="space-y-6">
+<!-- SECTION 1: اليوم -->
+<section class="space-y-3">
+<div class="flex items-center justify-between px-1">
+<h2 class="font-label-lg text-label-lg font-bold text-secondary flex items-center gap-1.5">
+<span>اليوم</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+</h2>
+<span class="font-label-sm text-label-sm text-outline">٣ جديدة</span>
+</div>
+<div class="space-y-3">
+<!-- NOTIFICATION 1: (Unread, teal tint background, dot, inline action) -->
+<article class="relative bg-[#F2F9F7] border border-[#BCE3DE] rounded-2xl p-4 unread-shadow transition-all duration-200">
+<!-- Unread Pulse Dot -->
+<span class="absolute top-4 left-4 w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-[#E0F2EE]"></span>
+<div class="flex items-start gap-3.5">
+<!-- Icon Tile -->
+<div class="w-11 h-11 shrink-0 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">description</span>
+</div>
+<!-- Content Body -->
+<div class="flex-1 pl-4">
+<div class="flex items-baseline justify-between gap-2 mb-1">
+<h3 class="font-headline-sm-mobile text-headline-sm-mobile font-bold text-on-surface">
+                    سيرتك الذاتية جاهزة للتحميل
+                  </h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-3">
+                  تم تجهيز وتنسيق سيرة مهندس حوسبة سحابية بصيغة PDF نقية ومتوافقة مع المعايير السعودية.
+                </p>
+<div class="flex items-center justify-between pt-0.5">
+<span class="font-label-sm text-label-sm text-outline">منذ ٥ دقائق</span>
+<button class="inline-flex items-center gap-1.5 bg-primary hover:bg-[#003d36] text-on-primary px-3.5 py-1.5 rounded-xl font-label-md text-label-md font-semibold transition-all active:scale-95 shadow-sm" type="button">
+<span>عرض السيرة</span>
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+</button>
+</div>
+</div>
+</div>
+</article>
+<!-- NOTIFICATION 2: (Unread, blue tint icon, dot) -->
+<article class="relative bg-surface-container-lowest border border-[#DCE8F1] rounded-2xl p-4 card-shadow transition-all duration-200">
+<!-- Unread Dot -->
+<span class="absolute top-4 left-4 w-2.5 h-2.5 rounded-full bg-secondary ring-4 ring-secondary-fixed/40"></span>
+<div class="flex items-start gap-3.5">
+<!-- Icon Tile -->
+<div class="w-11 h-11 shrink-0 rounded-xl bg-secondary-fixed/50 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">work</span>
+</div>
+<!-- Content Body -->
+<div class="flex-1 pl-4">
+<div class="flex items-baseline justify-between gap-2 mb-1">
+<h3 class="font-headline-sm-mobile text-headline-sm-mobile font-bold text-on-surface">
+                    مطابقة وظيفة جديدة مميزة
+                  </h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-2.5">
+                  وظيفة 'مهندس سحابي أول' لدى شركة علم بنسبة توافق 88% مع خبراتك ومهاراتك.
+                </p>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-outline">منذ ساعة</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">شركة علم</span>
+</div>
+</div>
+</div>
+</article>
+<!-- NOTIFICATION 3: (Unread, amber tint icon, dot) -->
+<article class="relative bg-surface-container-lowest border border-[#F3E5D3] rounded-2xl p-4 card-shadow transition-all duration-200">
+<!-- Unread Dot -->
+<span class="absolute top-4 left-4 w-2.5 h-2.5 rounded-full bg-[#C97F1B] ring-4 ring-[#FDF5EB]"></span>
+<div class="flex items-start gap-3.5">
+<!-- Icon Tile -->
+<div class="w-11 h-11 shrink-0 rounded-xl bg-[#FDF5EB] text-[#8A5612] flex items-center justify-center border border-[#E5C28F]/40">
+<span class="material-symbols-outlined text-[22px]">insights</span>
+</div>
+<!-- Content Body -->
+<div class="flex-1 pl-4">
+<div class="flex items-baseline justify-between gap-2 mb-1">
+<h3 class="font-headline-sm-mobile text-headline-sm-mobile font-bold text-on-surface">
+                    اكتمل تحليل فحص التوافق (ATS)
+                  </h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-2.5">
+                  سيرتك الذاتية حصلت على درجة 72/100. أضف مهارة Kubernetes لرفع النسبة إلى 86%.
+                </p>
+<span class="font-label-sm text-label-sm text-outline">منذ ٣ ساعات</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- SECTION 2: أمس -->
+<section class="space-y-3">
+<div class="flex items-center justify-between px-1">
+<h2 class="font-label-lg text-label-lg font-bold text-secondary">
+            أمس
+          </h2>
+<span class="font-label-sm text-label-sm text-outline">٢ إشعار</span>
+</div>
+<div class="space-y-3">
+<!-- NOTIFICATION 4: (Read, white card) -->
+<article class="bg-surface-container-lowest border border-[#E2DDD5] rounded-2xl p-4 card-shadow opacity-95 transition-all">
+<div class="flex items-start gap-3.5">
+<!-- Icon Tile -->
+<div class="w-11 h-11 shrink-0 rounded-xl bg-surface-container text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">school</span>
+</div>
+<!-- Content Body -->
+<div class="flex-1">
+<h3 class="font-headline-sm-mobile text-headline-sm-mobile font-semibold text-on-surface mb-1">
+                  نصيحة مسار مهني جديدة
+                </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-2.5">
+                  تعرف على أهم الكلمات المفتاحية المطلوبة في الوظائف التقنية في الرياض والمنطقة الشرقية.
+                </p>
+<span class="font-label-sm text-label-sm text-outline">أمس، 4:30 م</span>
+</div>
+</div>
+</article>
+<!-- NOTIFICATION 5: (Read, white card) -->
+<article class="bg-surface-container-lowest border border-[#E2DDD5] rounded-2xl p-4 card-shadow opacity-95 transition-all">
+<div class="flex items-start gap-3.5">
+<!-- Icon Tile -->
+<div class="w-11 h-11 shrink-0 rounded-xl bg-secondary-fixed/40 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">work</span>
+</div>
+<!-- Content Body -->
+<div class="flex-1">
+<h3 class="font-headline-sm-mobile text-headline-sm-mobile font-semibold text-on-surface mb-1">
+                  تم فتح باب التقديم في برنامج نيوم
+                </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-2.5">
+                  فرص تدريب وتوظيف مخصصة للمهندسين والمختصين في التحول الرقمي.
+                </p>
+<span class="font-label-sm text-label-sm text-outline">أمس، 11:15 ص</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- SECTION 3: هذا الأسبوع -->
+<section class="space-y-3">
+<div class="flex items-center justify-between px-1">
+<h2 class="font-label-lg text-label-lg font-bold text-secondary">
+            هذا الأسبوع
+          </h2>
+<span class="font-label-sm text-label-sm text-outline">٢ إشعار</span>
+</div>
+<div class="space-y-3">
+<!-- NOTIFICATION 6: (Read, white card) -->
+<article class="bg-surface-container-lowest border border-[#E2DDD5] rounded-2xl p-4 card-shadow opacity-95 transition-all">
+<div class="flex items-start gap-3.5">
+<!-- Icon Tile -->
+<div class="w-11 h-11 shrink-0 rounded-xl bg-[#FDF5EB] text-[#8A5612] flex items-center justify-center border border-[#E5C28F]/30">
+<span class="material-symbols-outlined text-[22px]">verified</span>
+</div>
+<!-- Content Body -->
+<div class="flex-1">
+<h3 class="font-headline-sm-mobile text-headline-sm-mobile font-semibold text-on-surface mb-1">
+                  عرض سيرتي بلس التجريبي متاح الآن
+                </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-2.5">
+                  استفد من 7 أيام تجربة مجانية لإنشاء نسخ غير محدودة وفحص دقيق لجميع الوظائف.
+                </p>
+<span class="font-label-sm text-label-sm text-outline">منذ ٣ أيام</span>
+</div>
+</div>
+</article>
+<!-- NOTIFICATION 7: (Read, white card) -->
+<article class="bg-surface-container-lowest border border-[#E2DDD5] rounded-2xl p-4 card-shadow opacity-95 transition-all">
+<div class="flex items-start gap-3.5">
+<!-- Icon Tile -->
+<div class="w-11 h-11 shrink-0 rounded-xl bg-surface-container text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">tips_and_updates</span>
+</div>
+<!-- Content Body -->
+<div class="flex-1">
+<h3 class="font-headline-sm-mobile text-headline-sm-mobile font-semibold text-on-surface mb-1">
+                  تحديث أمني ناجح لمعلومات حسابك
+                </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed mb-2.5">
+                  تم تأكيد بريدك الإلكتروني والتحقق من الشهادات المهنية المرفقة بنجاح.
+                </p>
+<span class="font-label-sm text-label-sm text-outline">منذ ٥ أيام</span>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- SWIPE-TO-DISMISS HINT PILL -->
+<div class="pt-2 pb-1 flex justify-center">
+<div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EAE5DC]/60 border border-[#E2DDD5] text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">swipe_left</span>
+<span>اسحب لليسار للحذف أو الأرشفة</span>
+</div>
+</div>
+</div>
+</main>
+<!-- SHARED BOTTOM NAVIGATION BAR -->
+<!-- Active state intent: Focused inbox accessible within primary shell -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-3 py-2 pb-safe bg-surface-container-lowest shadow-[0_-4px_12px_rgba(18,56,79,0.04)]">
+<div class="w-full max-w-md mx-auto flex justify-around items-center">
+<!-- Tab 1: الرئيسية -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-1.5 px-3 hover:text-primary transition-colors duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="font-label-sm text-label-sm mt-0.5">الرئيسية</span>
+</a>
+<!-- Tab 2: سيرتي الذاتية -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-1.5 px-3 hover:text-primary transition-colors duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined text-[24px]">description</span>
+<span class="font-label-sm text-label-sm mt-0.5">سيرتي الذاتية</span>
+</a>
+<!-- Tab 3: الوظائف -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-1.5 px-3 hover:text-primary transition-colors duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined text-[24px]">work</span>
+<span class="font-label-sm text-label-sm mt-0.5">الوظائف</span>
+</a>
+<!-- Tab 4: تعلّم -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-1.5 px-3 hover:text-primary transition-colors duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined text-[24px]">school</span>
+<span class="font-label-sm text-label-sm mt-0.5">تعلّم</span>
+</a>
+</div>
+</nav>
+</body></html>
