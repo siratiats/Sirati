@@ -15,23 +15,8 @@ class JobTaxonomyMatcher
      */
     private ?Collection $taxonomy = null;
 
-    /**
-     * Map common Saudi cities in Arabic and English.
-     */
-    private const SAUDI_CITIES = [
-        'riyadh' => ['الرياض', 'riyadh'],
-        'jeddah' => ['جدة', 'جده', 'jeddah'],
-        'dammam' => ['الدمام', 'dammam'],
-        'khobar' => ['الخبر', 'khobar', 'al khobar', 'al-khobar'],
-        'mecca' => ['مكة', 'مكه', 'مكة المكرمة', 'mecca', 'makkah'],
-        'medina' => ['المدينة', 'المدينه', 'المدينة المنورة', 'medina', 'madinah'],
-        'dhahran' => ['الظهران', 'dhahran'],
-        'jubail' => ['الجبيل', 'jubail'],
-        'tabuk' => ['تبوك', 'tabuk'],
-        'qassim' => ['القصيم', 'بريدة', 'عنيزة', 'qassim', 'buraidah'],
-        'abha' => ['أبها', 'abha', 'عسير', 'asir'],
-        'remote' => ['عن بعد', 'عن_بعد', 'remote', 'work from home', 'telecommute'],
-    ];
+    /** Phrases that mark a post as remote work (normalised). */
+    private const REMOTE_TERMS = ['عن بعد', 'عن_بعد', 'remote', 'work from home', 'telecommute'];
 
     /**
      * Match a job posting's title and text against the active JobTitle taxonomy.
@@ -126,29 +111,62 @@ class JobTaxonomyMatcher
         return (bool) preg_match($pattern, $haystack);
     }
 
+    /**
+     * The city a post is in: the earliest city named in [$location] then
+     * [$fallbackText], matched as a whole word (an attached و/ب/ل/ف is
+     * allowed, so "بالرياض" is Riyadh but "الخبرة" is not Khobar). A province
+     * ("المنطقة الشرقية") counts only when no city is named.
+     *
+     * @return array{city: ?string, is_remote: bool}
+     */
     public function detectCity(?string $location, string $fallbackText = ''): array
     {
         $haystack = $this->normalizeText(($location ?? '').' '.$fallbackText);
 
-        $isRemote = str_contains($haystack, 'عن بعد') ||
-            str_contains($haystack, 'remote') ||
-            str_contains($haystack, 'work from home');
+        $isRemote = false;
+        foreach (self::REMOTE_TERMS as $term) {
+            $isRemote = $isRemote || str_contains($haystack, $term);
+        }
 
-        foreach (self::SAUDI_CITIES as $cityKey => $synonyms) {
-            foreach ($synonyms as $syn) {
-                if (str_contains($haystack, $this->normalizeText($syn))) {
-                    return [
-                        'city' => $cityKey === 'remote' ? null : $cityKey,
-                        'is_remote' => $isRemote || $cityKey === 'remote',
-                    ];
+        return [
+            'city' => $this->firstNamed($haystack, SaudiCities::CITIES)
+                ?? $this->firstNamed($haystack, SaudiCities::PROVINCES),
+            'is_remote' => $isRemote,
+        ];
+    }
+
+    /**
+     * @param  array<string, array{0: string, 1: string, 2: list<string>}>  $table
+     */
+    private function firstNamed(string $haystack, array $table): ?string
+    {
+        $best = null;
+        $bestOffset = PHP_INT_MAX;
+
+        foreach ($table as $code => [, , $names]) {
+            foreach ($names as $name) {
+                $pattern = '/(?<![\p{L}\p{N}])(?:[وبلف])?(?:[بل])?'
+                    .preg_quote($this->normalizeText($name), '/')
+                    .'(?![\p{L}\p{N}])/u';
+                if (preg_match($pattern, $haystack, $m, PREG_OFFSET_CAPTURE) && $m[0][1] < $bestOffset) {
+                    $best = $code;
+                    $bestOffset = $m[0][1];
                 }
             }
         }
 
-        return [
-            'city' => null,
-            'is_remote' => $isRemote,
-        ];
+        return $best;
+    }
+
+    /** The location shown for [$text]: its city or province, remote, or the country. */
+    public function locationLabel(string $text): string
+    {
+        $cityMatch = $this->detectCity($text);
+        if ($cityMatch['city'] !== null) {
+            return SaudiCities::label($cityMatch['city']) ?? 'المملكة العربية السعودية';
+        }
+
+        return $cityMatch['is_remote'] ? 'عن بُعد (Remote)' : 'المملكة العربية السعودية';
     }
 
     public function normalizeText(?string $text): string
@@ -156,6 +174,8 @@ class JobTaxonomyMatcher
         if ($text === null) return '';
 
         $text = mb_strtolower(trim($text), 'UTF-8');
+        // Drop Arabic diacritics and tatweel ("عن بُعد" is "عن بعد").
+        $text = preg_replace('/[\x{064B}-\x{065F}\x{0670}\x{0640}]/u', '', $text);
         // Normalize Arabic letters: أ/إ/آ -> ا, ة -> ه, ى -> ي
         $text = preg_replace('/[أإآ]/u', 'ا', $text);
         $text = preg_replace('/[ة]/u', 'ه', $text);

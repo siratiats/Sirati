@@ -14,6 +14,7 @@ use App\Models\MobileNotification;
 use App\Models\User;
 use App\Services\Jobs\ApplyLinkExtractor;
 use App\Services\Jobs\JobProfileMatcherService;
+use App\Services\Jobs\SaudiCities;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Carbon;
@@ -319,9 +320,11 @@ class MobileContentController extends Controller
         // the filter and the profile context (SIRATI-97).
         $matcher = app(JobProfileMatcherService::class);
 
+        // Curated listings are written per app language; aggregated posts carry
+        // the language they were written in and are shown in both.
         $query = JobNews::query()
             ->with('jobTitle')
-            ->where('language', $language)
+            ->where(fn ($q) => $q->where('language', $language)->orWhereNotNull('external_source'))
             ->active()
             ->orderBy('sort_order')
             // Newest day first; within a day, posts the user can act on
@@ -375,8 +378,8 @@ class MobileContentController extends Controller
             $query->where('city', $city);
         }
 
-        if ($region !== null && isset(self::REGION_CITIES[$region])) {
-            $query->whereIn('city', self::REGION_CITIES[$region]);
+        if (SaudiCities::isRegion($region)) {
+            $query->whereIn('city', SaudiCities::codesInRegion($region));
         }
 
         if ($request->has('is_remote') && $isRemote) {
@@ -412,7 +415,7 @@ class MobileContentController extends Controller
                     : 'فرص وتحديثات توظيف موثقة ومخصصة لملفك المهني.',
                 'selected_category' => $category ?? 'all',
                 'selected_preset' => $preset,
-                'selected_region' => $region !== null && isset(self::REGION_CITIES[$region]) ? $region : 'all',
+                'selected_region' => SaudiCities::isRegion($region) ? $region : 'all',
                 'profile_context' => [
                     'has_profile' => $matcher->hasRole($user),
                     'job_title_id' => $user?->job_title_id,
@@ -532,15 +535,6 @@ class MobileContentController extends Controller
             'skills_required' => $item->skills_required ?? [],
         ];
     }
-
-    /** Saudi regions as used by the app's region chips, by stored city code. */
-    private const REGION_CITIES = [
-        'central' => ['riyadh', 'qassim'],
-        'eastern' => ['dammam', 'khobar', 'dhahran', 'jubail'],
-        'western' => ['jeddah', 'mecca', 'medina'],
-        'northern' => ['tabuk'],
-        'southern' => ['abha'],
-    ];
 
     private function jobNewsCategory($value): ?string
     {

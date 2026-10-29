@@ -77,3 +77,9 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 - Aggregated rows: no invented company, no inferred "verified", no deadline label (retire after 21 days internally). Dedupe by `fingerprint` (title + company, else destination; null = never merge). `jobs:repair-listings` (run by the 2026-10-29 migration) cleans old rows.
 - Flutter test helpers must read text via `paragraphOf()` (`test/support/contrast_probe.dart`): inside `SelectionArea` a Text renders a mouse region around the paragraph. Shipped font weights are 400/600/700 only; raw `Colors.*` outside the theme fails `app_metrics_test`.
 - `LandingLeadTest::test_landing_page_can_be_viewed` and two `SaudiJobAggregatorTest` notification tests (quiet hours 01:00-02:00 UTC) fail independently of jobs work.
+
+## Job post quality (2026-10-29)
+- Aggregated posts pass `JobPostClassifier` once at ingestion: image-only headers, near-empty posts, courses and admissions are not stored; titles are cleaned there; `language` is the post's own (feed shows aggregated rows in both app languages).
+- Cities live only in `SaudiCities` (code, Arabic label, region). Add a city there; matching is whole-word, so "الخبرة" is not Khobar.
+- Remotive jobs are kept only when `candidate_required_location` admits Saudi Arabia (worldwide/EMEA/MENA/GCC/Saudi).
+- Shell heredocs in this environment collapse doubled backslashes to one: write PHP regex edits with the Edit tool or `chr(92)`.

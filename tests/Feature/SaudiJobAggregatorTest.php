@@ -114,6 +114,7 @@ HTML;
                     'url' => 'https://remotive.com/job/9988',
                     'description' => 'We are hiring a remote software engineer with Laravel and Flutter experience.',
                     'publication_date' => '2026-09-02T10:00:00',
+                    'candidate_required_location' => 'Worldwide',
                 ],
             ],
         ];

@@ -27,6 +27,7 @@ class SaudiJobAggregatorService
     public function __construct(
         private readonly JobTaxonomyMatcher $matcher,
         private readonly ApplyLinkExtractor $applyLinks,
+        private readonly JobPostClassifier $classifier,
     ) {}
 
     /** Aggregated posts rarely state a deadline; they retire after this many days. */
@@ -173,29 +174,25 @@ class SaudiJobAggregatorService
 
             $fetched++;
 
+            // Only links inside the message text count (the wrapper also holds
+            // the channel's own avatar link). No link or email means no apply
+            // action; the Telegram post is kept as the source `url` only.
+            $apply = $this->applyLinks->fromMessageHtml($rawText);
+
+            // Image-only headers, near-empty posts, courses and admissions are
+            // not stored at all.
+            $hasMedia = (bool) preg_match('/tgme_widget_message_(?:photo|video|document|grouped)/', $part);
+            if ($this->classifier->rejectionReason($cleanText, $apply, $hasMedia) !== null) {
+                continue;
+            }
+
             // Published timestamp
             $pubDate = now();
             if (preg_match('/<time[^>]*datetime="([^"]+)"/', $part, $dm)) {
                 $pubDate = Carbon::parse($dm[1]);
             }
 
-            // Only links inside the message text count (the wrapper also holds
-            // the channel's own avatar link). No link or email means no apply
-            // action; the Telegram post is kept as the source `url` only.
-            $apply = $this->applyLinks->fromMessageHtml($rawText);
-
-            // Clean title
-            $lines = array_values(array_filter(explode("\n", $cleanText), fn ($l) => trim($l) !== ''));
-            $firstLine = $lines[0] ?? '';
-            $title = preg_replace('/^[\s\x{200e}\x{200f}\x{202a}-\x{202e}\(\)\[\]\{\}\-\*\#\:\!\.\،\?\|\/\\\@]+\s*/u', '', $firstLine);
-            $title = trim(preg_replace('/[\s\)\]\}\:\-]+$/u', '', (string) $title));
-
-            if (mb_strlen($title) < 5 && isset($lines[1])) {
-                $title .= ' - ' . trim($lines[1]);
-            }
-            if (mb_strlen($title) > 180) {
-                $title = mb_substr($title, 0, 177) . '...';
-            }
+            $title = $this->classifier->titleFrom($cleanText);
             if ($title === '') {
                 $title = Str::limit($cleanText, 60, '...');
             }
@@ -206,7 +203,7 @@ class SaudiJobAggregatorService
             $match = $this->matcher->match($title, $cleanText, $location);
 
             $jobData = [
-                'language' => $feed['language'] ?? 'ar',
+                'language' => $this->classifier->languageOf($title."\n".$cleanText),
                 'title' => Str::limit($title, 180, ''),
                 'company' => $company !== null ? Str::limit($company, 160, '') : null,
                 'location' => Str::limit($location ?: 'المملكة العربية السعودية', 160, ''),
@@ -280,6 +277,13 @@ class SaudiJobAggregatorService
             }
 
             $fetched++;
+
+            // Most remote jobs are open only to residents of other regions.
+            $requiredLocation = trim((string) ($item['candidate_required_location'] ?? ''));
+            if (! $this->classifier->remoteOpenToSaudi($requiredLocation)) {
+                continue;
+            }
+
             $externalId = (string) ($item['id'] ?? md5($title));
             $company = trim((string) ($item['company_name'] ?? ''));
             $description = trim(strip_tags((string) ($item['description'] ?? '')));
@@ -289,10 +293,10 @@ class SaudiJobAggregatorService
             $match = $this->matcher->match($title, $description, 'remote');
 
             $jobData = [
-                'language' => $feed['language'] ?? 'en',
+                'language' => $this->classifier->languageOf($title."\n".$description),
                 'title' => Str::limit($title, 180, ''),
                 'company' => $company !== '' ? Str::limit($company, 160, '') : null,
-                'location' => 'عن بُعد (Worldwide Remote)',
+                'location' => Str::limit('عن بُعد ('.$requiredLocation.')', 160, ''),
                 'body' => $description ?: $title,
                 'url' => $urlLink,
                 'apply_url' => $this->applyLinks->isAllowedApplyUrl($urlLink) ? $urlLink : null,
@@ -376,7 +380,7 @@ class SaudiJobAggregatorService
             $match = $this->matcher->match($title, $description, $location);
 
             $jobData = [
-                'language' => $feed['language'] ?? 'ar',
+                'language' => $this->classifier->languageOf($title."\n".$description),
                 'title' => Str::limit($title, 180, ''),
                 'company' => $company !== null ? Str::limit($company, 160, '') : null,
                 'location' => Str::limit($location ?: 'المملكة العربية السعودية', 160, ''),
@@ -739,28 +743,6 @@ class SaudiJobAggregatorService
 
     private function extractLocation(string $text): ?string
     {
-        $cityMatch = $this->matcher->detectCity($text);
-        if ($cityMatch['city']) {
-            $map = [
-                'riyadh' => 'الرياض',
-                'jeddah' => 'جدة',
-                'dammam' => 'الدمام',
-                'khobar' => 'الخبر',
-                'mecca' => 'مكة المكرمة',
-                'medina' => 'المدينة المنورة',
-                'dhahran' => 'الظهران',
-                'jubail' => 'الجبيل',
-                'tabuk' => 'تبوك',
-                'qassim' => 'القصيم',
-                'abha' => 'أبها',
-            ];
-            return $map[$cityMatch['city']] ?? 'المملكة العربية السعودية';
-        }
-
-        if ($cityMatch['is_remote']) {
-            return 'عن بُعد (Remote)';
-        }
-
-        return 'المملكة العربية السعودية';
+        return $this->matcher->locationLabel($text);
     }
 }

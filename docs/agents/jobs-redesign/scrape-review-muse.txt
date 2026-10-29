@@ -1,0 +1,32 @@
+=== Muse (muse-wonder-1.0, effort high) session=8b0c4087-a873-4112-a520-5dcfffa3654f
+## Ranked fixes
+
+1. **P0 — Gate junk before storage (low effort, removes ~25% noise).** Classify at ingest in [SaudiJobAggregatorService.php:163](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:163): **drop** photo posts (part contains `tgme_widget_message_photo` and kept text <120 chars and no apply destination — OCR later only as a queued experiment, error-prone on Arabic posters and a PII risk); **drop** non-jobs via negative lexicon first (دورة مجانية، محاضرة، زوم، قبول دراسات عليا، ماجستير) unless an employment cue co-occurs (توظيف، شاغر، تمهير، تدريب منتهٍ بالتوظيف → keep as `tamheer`); **keep** detailed posts even with `apply_method=none`.
+2. **P0 — Title cleaning (low).** Current regex at [:190](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:190) misses emoji. Strip leading `[\p{S}\p{P}\s]+` clusters repeatedly until a letter; if the first line is hashtag/location-only (“وظائف_الشرقية #الدمام”), promote the first body line containing a role or hiring verb instead.
+3. **P0 — Split multi-role posts (medium, fixes 29 posts + match coverage).** When a bulleted/numbered list yields ≥2 taxonomy roles, emit one row per role section: `external_id` suffixed `#2`, `#3`, title = that role line, shared company/city/apply, body = shared header + its section. Do not let [JobTaxonomyMatcher.php:59](/D:/Sirati/app/Services/Jobs/JobTaxonomyMatcher.php:59) pick a single role from the first 1,000 body chars for an unsplit post.
+4. **P0 — Language per post, not per feed (low, unlocks Remotive + English posts).** Detect from letter counts (Latin vs Arabic script) instead of `$feed['language']` ([:209](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:209)); jobmag English posts are currently stored `ar`, Remotive `en` is excluded by the strict filter at [MobileContentController.php:324](/D:/Sirati/app/Http/Controllers/MobileContentController.php:324). For jobs, return requested language **plus English** with a content-language chip — Saudi roles are routinely posted in English.
+5. **P1 — Company extraction v2 (medium; 45/216 → target 60%+).** Add labelled patterns (`الشركة:`, `لدى/تعلن شركة … عن`, English `X is seeking/hiring`, `Company:`), stop captures at عن/تعلن/يعلن, reject captures containing digits+فرصة/وظيفة (kills “نينجا عن 27 فرصة”), and fall back to the apply email/link domain as a weak company hint, never a fabricated name.
+6. **P1 — City map completion (low).** Add القطيف والأحساء/الهفوف (eastern), رابغ وينبع (western), جازان ونجران (southern), حائل والباحة وعرعر والجوف (northern) to [JobTaxonomyMatcher.php:21](/D:/Sirati/app/Services/Jobs/JobTaxonomyMatcher.php:21) **and** the controller’s `REGION_CITIES`; detect from the location line before the whole body to avoid source-city false hits.
+7. **P1 — Backfill paging (low, after gates 1–3).** Loop `t.me/s/<channel>?before=<oldest id>` up to 4 pages or until a known `external_id`; today one page per run caps volume ([:128](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:128)).
+8. **P2 — Role-match coverage.** After cleaning/splitting, expand taxonomy keywords with Arabic variants (محاسب عام، مسؤول توظيف…) and match on the role section, not the raw body; track match rate per channel as the KPI.
+
+## Sources
+
+| Source | Confidence | Ingestion route |
+|---|---|---|
+| Greenhouse boards API (`boards-api.greenhouse.io/v1/boards/{slug}/jobs`) | Confident, public documented API | Per-employer slug allowlist |
+| Lever postings API (`api.lever.co/v0/postings/{slug}?mode=json`) | Confident, public | Same |
+| Ashby, Workable, SmartRecruiters public board endpoints | Likely — verify endpoint + terms per employer | Same |
+| Jadarat, ministry/PIF-portfolio career portals | Platforms exist; **no public API known** | Partnership, or sitemap/HTML only where robots + terms allow |
+| Remotive (already used) | Confident API | Filter locally on the payload’s candidate-location field; drop USA/EU-residency-only |
+| LinkedIn, Indeed, Bayt, GulfTalent | No lawful self-serve ingestion | Skip without a partnership |
+
+Build the employer allowlist from apply domains already observed in the audit rather than guessing slugs.
+
+## Quality signals & health
+
+Completeness score (rank, don’t drop, except non-job/photo gates): apply destination 30, role matched 20, company 15, city 15, body ≥300 chars with requirements 10, stated deadline 5, curated source 5. Extend the existing feed health ([SaudiJobAggregatorService.php:637](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:637)) with per-source daily kept/fetched yield, % applyable/company/role/city, duplicate rate, median body length, sampled non-job precision (manual label of 20/source/week), and apply-host link-rot rechecks; alert when kept-yield or applyable-% falls >30% against the 7-day baseline.
+
+## Risks
+
+Telegram web scraping is a ToS grey area and rate-limit/ban-prone — keep frequency low and migrate volume to ATS/official feeds. Scam pattern (fee, visa payment, personal Gmail + no company + WhatsApp-only) should be down-ranked and reportable, never auto-verified. Bodies carry recruiter emails/phones: expose only the apply contact, retain the rest briefly, and get legal review before any image OCR or new portal scraping.

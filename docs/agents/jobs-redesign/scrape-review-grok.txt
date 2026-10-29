@@ -1,0 +1,24 @@
+=== Grok (grok-4.7, effort high) session=01a1854c-66ae-7672-8f0b-481e19aa87f8 turns=3 cost=$0.153 stop=end_turn
+I'll ground the ranking in the audit rows and the extractors, then answer the four questions.The audit shows the feed is losing usable jobs to photo stubs, untitled noise, and a language filter, while the rows that do survive often have no employer and no city. Fix the drop rules and the title first. New sources come after that.
+
+1. **Drop photo-only posts.** `jobs2ksa` has 28 of 67 rows that are only a header such as "وظائف في القطيف". The duties are in the attached image. Skip a post when the text is under about 120 characters, the message contains `tgme_widget_message_photo`, and there is no apply link or email. Do not OCR. It is the wrong text, it is easy to fake, and it burns the 21-day slot.
+
+2. **Drop non-jobs.** About a dozen `ewdifh` rows are free courses, Zoom sessions, or graduate admission. Store a row only when a line has a vacancy cue (`شاغر`, `مطلوب`, `فرصة وظيفية`, `we are hiring`, `is seeking`) and no course cue (`دورة`, `تدريب مجاني`, `ورش`, `zoom`, `قبول دراسات`, `منحة`) unless a real apply link is also present.
+
+3. **Clean the title.** 136 of 234 titles still start with emoji. The strip at `SaudiJobAggregatorService.php:190` removes punctuation only, not `\p{So}`. Strip symbols from both ends. If the first line is only hashtags (`وظائف_الشرقية #الدمام`), use the next line that contains a role word.
+
+4. **Add the missing cities.** 78 of 216 rows have no city because `JobTaxonomyMatcher.php:21` stops at eleven cities. Add Qatif and Ahsa to the eastern region, Rabigh to the western, and Jazan, Najran, Hail, Yanbu, and Taif to their regions, and extend `REGION_CITIES` to match. Detect the city before defaulting the location to "المملكة العربية السعودية" (`:212`).
+
+5. **Fix the company regex.** Only 45 of 216 Telegram rows get a company, and the pattern at `:710` captures junk such as "نينجا عن 27 فرصة وظيفية" because `عن` is optional before `شركة`. Require the organization noun, reject a match that is only a number plus "فرصة", and add an English pattern: `([A-Z][\w& ]{2,40}) is seeking` or `at ([A-Z]…)`.
+
+6. **Keep one card for multi-role posts.** 29 posts list several roles. Do not split them: they share one email and one link. Show the bullet roles as chips. Splitting would double-notify and invent apply targets.
+
+7. **Detect language from the text.** `jobmag` English posts are stored as `ar` (`:209`). Remotive is stored as `en` (`:65`) and `jobNews` filters on `language`, so Arabic users never see those 11 remote jobs, some of which require US or EU residence. Set `language` from the script. In the Arabic feed, include remote rows whose `candidate_required_location` is worldwide, Saudi, or empty. Exclude US, EU, UK, and Canada-only rows.
+
+8. **Fetch a second public preview page.** `t.me/s/<channel>?before=<id>` is the same public surface the adapter already uses. One extra page per run, with the existing delay. Keep the 21-day retirement.
+
+**Sources.** Confident: the Remotive API you already call, including `candidate_required_location`. Greenhouse `boards-api.greenhouse.io/v1/boards/{token}/jobs`, Lever `api.lever.co/v0/postings/{site}?mode=json`, and Ashby `api.ashbyhq.com/posting-api/job-board/{name}` are public JSON boards. Workable's widget endpoint `apply.workable.com/api/v1/widget/accounts/{slug}` is the same kind of board. You need each employer's real board slug. Guess, not a plan: a public Jadarat or Qiwa API. Do not scrape Jadarat, LinkedIn, or Bayt.
+
+**Rank and health.** Drop a row that fails the photo or course rule, or that has no role and no apply destination. Among the rest, order by the apply link, then the email, then the company, then the city, then a matched `job_title_id`, then the recency. Per channel, track the kept share of fetched posts, the link rate, and the photo-only rate beside the existing zero-fetch counter. Alert when the kept share falls under half.
+
+**Risks.** Stay on the public `t.me/s` preview, identify the bot, and do not raise the page count. Greenhouse, Lever, and Ashby boards are their public APIs. Posts contain personal emails and phones. Keep phones out of `apply_email`. Prefer a `careers.` or `gov.sa` link over a free-mail address. Drop a post that asks for a fee, a national ID, or an IBAN.
