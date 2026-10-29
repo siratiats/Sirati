@@ -1,0 +1,23 @@
+=== Codex (gpt-6.1-sol, effort high) session=01a1854c-0f3f-7f13-95fe-0d604d4137aa usage={"input_tokens":15955135,"cached_input_tokens":14595072,"cache_write_input_tokens":0,"output_tokens":43125,"reasoning_output_tokens":24402}
+1. **P2 - Upload opens the saved-CV source.** [dashboard_home_tab.dart:131](D:/Sirati/flutter_app/lib/features/dashboard/presentation/home/dashboard_home_tab.dart:131)  
+   "Upload CV" constructs `CvAnalysisScreen()` whose default source is `saved`. Users see saved CV selection-or "no saved CVs"-instead of upload controls. Pass `initialSource: AnalysisCvSource.upload`, or use the composed upload route.
+
+2. **P2 - Edit opens the preview hub and leaves Home stale.** [home_latest_cv_section.dart:242](D:/Sirati/flutter_app/lib/features/dashboard/presentation/home/home_latest_cv_section.dart:242)  
+   `AppRoutes.cv(id)` resolves to the CV preview hub, requiring another Edit action. After editing and returning, Home's providers retain the old CV because this navigation neither awaits completion nor refreshes them. Open the editor with the loaded CV, then refresh affected providers on return.
+
+3. **P2 - Production edit timestamps disappear.** [home_latest_cv_section.dart:170](D:/Sirati/flutter_app/lib/features/dashboard/presentation/home/home_latest_cv_section.dart:170)  
+   `/mobile/my-cvs` supplies `updated_label`, but no `updated_at`/`created_at`. Consequently `updatedAt` is null and the new card hides the edit time; the previous component used the label fallback. Preserve that fallback. The provider's update-time sorting also needs a real server contract, including CVs outside the creation-ordered 20-row limit.
+
+4. **P2 - Retained accessibility defect: bell lacks a semantic tap action.** [dashboard_home_header.dart:120](D:/Sirati/flutter_app/lib/features/dashboard/presentation/home/dashboard_home_header.dart:120)  
+   `excludeSemantics: true` removes the InkWell's semantic action, while the replacement node supplies only a button flag and label. VoiceOver/TalkBack activation cannot invoke notifications. Add `onTap: onNotifications` to the Semantics node, or preserve and merge the child action.
+
+5. **P2 - Reduced-motion preference is ignored.** [home_pressable_card.dart:48](D:/Sirati/flutter_app/lib/features/dashboard/presentation/home/home_pressable_card.dart:48)  
+   Pressing Home cards still animates for 120 ms with `disableAnimations=true`. Use `MotionSettings.reduce(context)` to select `Duration.zero`.
+
+The navigation order matches `DashboardTab`; no index/deep-link mismatch found. White on `inkSurface` passes contrast: **15.63:1 light, 14.32:1 dark**.
+
+Tests currently invent timestamps absent from production and replace navigation destinations with placeholders. Add contract-backed selection tests, real editor/upload navigation, mutation-and-return refresh, semantic-action activation, and reduced-motion checks.
+
+No files changed. `git diff --check` passed; widget tests were not run.
+
+VERDICT: CHANGES

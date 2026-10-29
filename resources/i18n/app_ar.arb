@@ -689,7 +689,7 @@
   "homeToolAtsBody": "تحليل سيرتك بنظام الفرز",
   "homeToolEducationTitle": "التعليم والتطوير المهني",
   "homeToolEducationBody": "قريباً",
-  "homeJobsTitle": "وظائف تناسبك",
+  "homeJobsTitle": "أحدث الوظائف",
   "homeJobsViewAll": "عرض الكل",
   "homeJobsEmpty": "لا توجد وظائف مناسبة الآن. سنعرض لك الجديد هنا.",
   "@homeHeroScoreTitle": {
@@ -2922,5 +2922,23 @@
   "jobsRemoteChip": "عن بُعد",
   "@jobsRemoteChip": {
     "description": "Card chip for remote jobs"
-  }
+  },
+  "homeProfileSubtitle": "مشوارك المهني يبدأ من سيرتك",
+  "homeProfileOpen": "افتح ملفك الشخصي",
+  "homeStartCreateTitle": "إنشاء سيرة ذاتية متوافقة مع أنظمة الفرز الآلي",
+  "homeStartCreateBody": "قوالب احترافية بالعربية والإنجليزية، وتحميل PDF بضغطة",
+  "homeStartAtsTitle": "افحص سيرتك بنظام ATS",
+  "homeStartAtsBody": "اعرف ما يحتاج تحسين في سيرتك قبل التقديم",
+  "homeServiceUpload": "رفع سيرة جاهزة",
+  "homeServiceTarget": "استهداف وظيفة",
+  "homeServiceEducation": "التعليم",
+  "homeSoon": "قريباً",
+  "homeServiceSoonA11y": "{service}، قريباً",
+  "homeMyCvTitle": "سيرتي الأخيرة",
+  "homeMyCvEdited": "آخر تعديل: {time}",
+  "homeMyCvEdit": "تعديل",
+  "homeMyCvCheck": "فحص ATS",
+  "homeMyCvEmptyTitle": "لا توجد سيرة بعد",
+  "homeMyCvEmptyBody": "أنشئ أول سيرة متوافقة مع ATS، أو ارفع سيرة خارجية لتعديلها.",
+  "homeHonesty": "سيرتك تعكس خبرتك الحقيقية، بلا مبالغة"
 }

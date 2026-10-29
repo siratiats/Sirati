@@ -682,7 +682,7 @@
   "homeToolAtsBody": "Check your CV against screening systems",
   "homeToolEducationTitle": "Learning & career development",
   "homeToolEducationBody": "Coming soon",
-  "homeJobsTitle": "Jobs for you",
+  "homeJobsTitle": "Latest jobs",
   "homeJobsViewAll": "View all",
   "homeJobsEmpty": "No matching jobs right now. New ones will show up here.",
   "@homeHeroScoreTitle": {
@@ -1203,5 +1203,23 @@
   "jobsSourceName": "Source: {source}",
   "jobsViewSourcePost": "View original post",
   "jobsShare": "Share",
-  "jobsRemoteChip": "Remote"
+  "jobsRemoteChip": "Remote",
+  "homeProfileSubtitle": "Your career starts with your CV",
+  "homeProfileOpen": "Open your profile",
+  "homeStartCreateTitle": "Create a CV that passes ATS screening",
+  "homeStartCreateBody": "Professional Arabic and English templates, PDF in one tap",
+  "homeStartAtsTitle": "Check your CV with ATS",
+  "homeStartAtsBody": "See what your CV needs before you apply",
+  "homeServiceUpload": "Upload a CV",
+  "homeServiceTarget": "Target a job",
+  "homeServiceEducation": "Learning",
+  "homeSoon": "Soon",
+  "homeServiceSoonA11y": "{service}, coming soon",
+  "homeMyCvTitle": "My latest CV",
+  "homeMyCvEdited": "Last edited: {time}",
+  "homeMyCvEdit": "Edit",
+  "homeMyCvCheck": "ATS check",
+  "homeMyCvEmptyTitle": "No CV yet",
+  "homeMyCvEmptyBody": "Create your first ATS-friendly CV, or upload one to edit it.",
+  "homeHonesty": "Your CV reflects your real experience, without exaggeration"
 }
