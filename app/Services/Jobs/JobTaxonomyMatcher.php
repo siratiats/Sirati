@@ -136,7 +136,13 @@ class JobTaxonomyMatcher
         $city = null;
         if (preg_match_all(self::WORKPLACE_CUE, $haystack, $cues, PREG_OFFSET_CAPTURE)) {
             foreach ($cues[0] as [$cue, $offset]) {
-                $window = mb_strcut($haystack, $offset + strlen($cue), 120, 'UTF-8');
+                // An explicit label ("مقر العمل:", "📍", "Location:") may be
+                // followed by a list; "للعمل في" names the place right away,
+                // so only its next few words up to punctuation count.
+                $window = (string) preg_split('/[\n،,.؛;:]/u', mb_strcut($haystack, $offset + strlen($cue), 120, 'UTF-8'))[0];
+                if (preg_match('/عمل\s+(?:في|ب)$/u', $cue)) {
+                    $window = implode(' ', array_slice(preg_split('/\s+/u', trim($window)) ?: [], 0, 3));
+                }
                 $city = $this->firstNamed($window, SaudiCities::CITIES) ?? $this->firstNamed($window, SaudiCities::PROVINCES);
                 if ($city !== null) {
                     break;

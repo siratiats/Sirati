@@ -83,7 +83,10 @@ class RepairJobListingsCommand extends Command
     {
         $body = (string) $job->body;
         $apply = ['url' => $job->apply_url, 'email' => $job->apply_email];
-        if ($classifier->rejectionReason($body, $apply, hasMedia: false) !== null) {
+        // Whether the post had a photo was not stored; most Telegram job
+        // headers did, so the stricter photo bar applies. It never drops a
+        // post that names a role or has a way to apply.
+        if ($classifier->rejectionReason($body, $apply, hasMedia: true) !== null) {
             $job->is_published = false;
 
             return;
@@ -100,7 +103,8 @@ class RepairJobListingsCommand extends Command
         $match = $matcher->match($job->title, $body, $job->location);
         $job->city = $match['city'];
         $job->is_remote = $match['is_remote'];
-        $job->job_title_id = $match['job_title_id'] ?? $job->job_title_id;
-        $job->category = $match['job_title_id'] !== null ? $match['category'] : ($job->category ?? $match['category']);
+        // A role the current rules no longer find is cleared, not kept.
+        $job->job_title_id = $match['job_title_id'];
+        $job->category = $match['category'];
     }
 }

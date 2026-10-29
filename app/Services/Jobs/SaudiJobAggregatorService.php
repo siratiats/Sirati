@@ -36,6 +36,12 @@ class SaudiJobAggregatorService
     /** A feed with no successful run for this long is unhealthy. */
     public const STALE_AFTER_HOURS = 12;
 
+    /** Runs in a row that accept no post before a feed is unhealthy (~a day at 3-hourly runs). */
+    public const ZERO_ACCEPT_RUNS = 8;
+
+    /** Accepted posts in a run from which "no apply destination at all" means broken extraction. */
+    public const APPLY_CHECK_MIN_ACCEPTED = 5;
+
     /**
      * Curated Saudi Job Sources (Telegram channels, Remote API, and RSS).
      */
@@ -157,6 +163,7 @@ class SaudiJobAggregatorService
         $created = 0;
         $updated = 0;
         $rejected = [];
+        $withApply = 0;
 
         foreach ($parts as $part) {
             if (! preg_match('/data-post="([^"]+)"/', $part, $pm)) {
@@ -231,6 +238,10 @@ class SaudiJobAggregatorService
                 'is_remote' => $match['is_remote'],
             ];
 
+            if ($jobData['apply_url'] !== null || $jobData['apply_email'] !== null) {
+                $withApply++;
+            }
+
             match ($this->persistAggregatedJob($jobData)) {
                 'created' => $created++,
                 'updated' => $updated++,
@@ -241,7 +252,7 @@ class SaudiJobAggregatorService
         if ($fetched === 0) {
             $this->recordFeedWarning($feed['source'], "Channel @{$channel} returned 0 parseable job posts");
         } else {
-            $this->recordFeedRun($feed['source'], $fetched, $rejected);
+            $this->recordFeedRun($feed['source'], $fetched, $rejected, $withApply);
         }
 
         return [
@@ -283,6 +294,7 @@ class SaudiJobAggregatorService
         $created = 0;
         $updated = 0;
         $rejected = [];
+        $withApply = 0;
 
         foreach ($jobs as $item) {
             $title = trim($item['title'] ?? '');
@@ -330,6 +342,10 @@ class SaudiJobAggregatorService
                 'is_remote' => true,
             ];
 
+            if ($jobData['apply_url'] !== null || $jobData['apply_email'] !== null) {
+                $withApply++;
+            }
+
             match ($this->persistAggregatedJob($jobData)) {
                 'created' => $created++,
                 'updated' => $updated++,
@@ -340,7 +356,7 @@ class SaudiJobAggregatorService
         if ($fetched === 0) {
             $this->recordFeedWarning($feed['source'], 'Remotive API returned 0 job posts');
         } else {
-            $this->recordFeedRun($feed['source'], $fetched, $rejected);
+            $this->recordFeedRun($feed['source'], $fetched, $rejected, $withApply);
         }
 
         return [
@@ -654,27 +670,43 @@ class SaudiJobAggregatorService
     }
 
     /**
-     * A run that parsed posts. Rejections are kept per reason; a run where
-     * every parsed post was rejected counts as a warning (a channel that only
-     * posts courses, or a markup change that breaks extraction), so three in a
-     * row make the feed unhealthy.
+     * A run that parsed posts. The fetch itself succeeded; what it yielded is
+     * tracked apart from fetch failures:
+     * - every post rejected: a quiet day of courses is normal, so only a
+     *   streak of ZERO_ACCEPT_RUNS such runs (about a day) is unhealthy;
+     * - posts accepted but none with an apply link or email: extraction is
+     *   likely broken (markup change), unhealthy at once.
      *
      * @param  array<string, int>  $rejected
      */
-    public function recordFeedRun(string $source, int $fetched, array $rejected): void
+    public function recordFeedRun(string $source, int $fetched, array $rejected, int $withApply): void
     {
         $accepted = $fetched - array_sum($rejected);
-        Cache::put("job_feed:{$source}:last_accepted_count", $accepted, now()->addDays(7));
-        Cache::put("job_feed:{$source}:last_rejections", $rejected, now()->addDays(7));
+        $ttl = now()->addDays(7);
+        Cache::put("job_feed:{$source}:last_accepted_count", $accepted, $ttl);
+        Cache::put("job_feed:{$source}:last_rejections", $rejected, $ttl);
+        Cache::put("job_feed:{$source}:last_with_apply_count", $withApply, $ttl);
+        $this->recordFeedSuccess($source, $fetched);
 
+        $issue = null;
         if ($accepted <= 0) {
+            $streak = (int) Cache::get("job_feed:{$source}:consecutive_zero_accepts", 0) + 1;
+            Cache::put("job_feed:{$source}:consecutive_zero_accepts", $streak, $ttl);
             $reasons = collect($rejected)->map(fn (int $n, string $r): string => "{$r}={$n}")->implode(', ');
-            $this->recordFeedWarning($source, "Parsed {$fetched} posts but accepted none ({$reasons})");
-
-            return;
+            $issue = "Parsed {$fetched} posts but accepted none ({$reasons}); {$streak} run(s) in a row";
+        } else {
+            Cache::forget("job_feed:{$source}:consecutive_zero_accepts");
+            if ($accepted >= self::APPLY_CHECK_MIN_ACCEPTED && $withApply === 0) {
+                $issue = "Accepted {$accepted} posts but none has an apply link or email (extraction broken?)";
+            }
         }
 
-        $this->recordFeedSuccess($source, $fetched);
+        Cache::put("job_feed:{$source}:yield_issue", $issue, $ttl);
+        if ($issue !== null) {
+            Cache::put("job_feed:{$source}:last_warning", $issue, $ttl);
+            Cache::put("job_feed:{$source}:last_warning_at", now()->toISOString(), $ttl);
+            Log::warning("Job feed {$source} warning: {$issue}");
+        }
     }
 
     /**
@@ -730,7 +762,9 @@ class SaudiJobAggregatorService
      *     last_fetched_count: int,
      *     consecutive_failures: int,
      *     consecutive_zero_fetches: int,
+     *     consecutive_zero_accepts: int,
      *     last_accepted_count: int,
+     *     last_with_apply_count: int,
      *     last_rejections: array<string, int>,
      *     stale: bool,
      *     last_issue: ?string
@@ -751,7 +785,11 @@ class SaudiJobAggregatorService
             // The scheduler runs every few hours; no success for 12 hours
             // means runs are missing or failing silently.
             $stale = $lastSuccess !== null && Carbon::parse($lastSuccess)->lt(now()->subHours(self::STALE_AFTER_HOURS));
-            $isHealthy = $consecutiveFails < 3 && $consecutiveZeroes < 3 && ! $stale;
+            $zeroAccepts = (int) Cache::get("job_feed:{$source}:consecutive_zero_accepts", 0);
+            $yieldIssue = Cache::get("job_feed:{$source}:yield_issue");
+            $noApply = is_string($yieldIssue) && str_contains($yieldIssue, 'apply link');
+            $isHealthy = $consecutiveFails < 3 && $consecutiveZeroes < 3 && ! $stale
+                && $zeroAccepts < self::ZERO_ACCEPT_RUNS && ! $noApply;
 
             $health[] = [
                 'source' => $source,
@@ -762,7 +800,9 @@ class SaudiJobAggregatorService
                 'last_fetched_count' => $lastCount,
                 'consecutive_failures' => $consecutiveFails,
                 'consecutive_zero_fetches' => $consecutiveZeroes,
+                'consecutive_zero_accepts' => $zeroAccepts,
                 'last_accepted_count' => (int) Cache::get("job_feed:{$source}:last_accepted_count", 0),
+                'last_with_apply_count' => (int) Cache::get("job_feed:{$source}:last_with_apply_count", 0),
                 'last_rejections' => (array) Cache::get("job_feed:{$source}:last_rejections", []),
                 'stale' => $stale,
                 'last_issue' => $stale ? 'No successful run for over '.self::STALE_AFTER_HOURS.' hours' : ($lastError ?: $lastWarning),

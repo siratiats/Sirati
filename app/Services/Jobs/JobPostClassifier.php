@@ -60,14 +60,21 @@ class JobPostClassifier
         $actionable = $apply['url'] !== null || $apply['email'] !== null || $this->hasPhone($text);
 
         // Hashtags are channel tags ("#وظائف_الشرقية"), not an offer.
-        $prose = $this->matcher->normalizeText((string) preg_replace('/#\S+/u', ' ', $text));
-        if (! $actionable && $this->letterCount($text) < ($hasMedia ? 120 : 60)
-            && ($this->isGeneric($this->titleFrom($text)) || ! preg_match(self::HIRING_CUE, $prose)
-                || ($hasMedia && preg_match(self::SEE_ATTACHMENT, $prose)))) {
-            return $hasMedia ? self::REJECT_IMAGE_ONLY : self::REJECT_EMPTY;
+        $untagged = (string) preg_replace('/#\S+/u', ' ', $text);
+        $prose = $this->matcher->normalizeText($untagged);
+        if (! $actionable && $this->letterCount($text) < ($hasMedia ? 120 : 60)) {
+            $title = $this->titleFrom($text);
+            // A known role in the title is an offer even without a hiring word.
+            $offersWork = preg_match(self::HIRING_CUE, $prose)
+                || ($title !== '' && $this->matcher->resolveJobTitle($title) !== null);
+            if ($this->isGeneric($title) || ! $offersWork || ($hasMedia && preg_match(self::SEE_ATTACHMENT, $prose))) {
+                return $hasMedia ? self::REJECT_IMAGE_ONLY : self::REJECT_EMPTY;
+            }
         }
 
-        $head = $this->matcher->normalizeText(implode("\n", array_slice($this->lines($text), 0, 2)));
+        // The opening lines say what the post is; further down, "القبول" or
+        // "دورات تدريبية" are usually conditions or benefits of a job.
+        $head = $this->matcher->normalizeText(implode("\n", array_slice($this->lines($untagged), 0, 3)));
         if (preg_match(self::NON_JOB_CUE, $head) && ! preg_match(self::OFFER_CUE, $head)) {
             return self::REJECT_NOT_A_JOB;
         }
@@ -157,9 +164,12 @@ class JobPostClassifier
         }
 
         $open = ['worldwide', 'anywhere', 'anywhere in the world', 'global', 'globally', 'saudi', 'saudi arabia', 'ksa',
-            'middle east', 'mena', 'emea', 'gcc', 'gulf', 'gulf region'];
-        foreach (preg_split('/\s*(?:[,;\/|]|\band\b|&)\s*/u', $required) ?: [] as $place) {
-            if (in_array(trim($place, " \t.()"), $open, true)) {
+            'kingdom of saudi arabia', 'middle east', 'mena', 'emea', 'gcc', 'gulf', 'gulf region'];
+        foreach (preg_split('/\s*(?:[,;\/|()\[\]]|\s[–—-]\s|\band\b|&)\s*/u', $required) ?: [] as $place) {
+            // "Saudi Arabia only", "Remote – KSA": qualifiers around a place.
+            $place = trim((string) preg_replace('/(?<![a-z])(?:only|remote|fully remote|based|residents?|time ?zones?)(?![a-z])/', ' ', $place), " \t.-–—");
+            $place = (string) preg_replace('/\s+/', ' ', $place);
+            if (in_array($place, $open, true)) {
                 return true;
             }
         }

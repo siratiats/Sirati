@@ -181,6 +181,37 @@ class JobPostQualityTest extends TestCase
         $this->assertSame(JobPostClassifier::REJECT_EMPTY, $this->classifier->rejectionReason($tagsOnly, $this->noApply(), false));
     }
 
+    public function test_a_course_cue_in_the_opening_lines_or_behind_a_hashtag_still_rejects(): void
+    {
+        $apply = ['url' => 'https://forms.gle/AbC123', 'email' => null];
+        $openers = ['فرص جديدة للسعوديين', 'سجّل الآن وطوّر مهاراتك', 'لا تفوت الفرصة #وظائف', '#وظائف_الرياض #تدريب'];
+        foreach (self::COURSES as $course) {
+            for ($i = 0; $i < 3; $i++) {
+                $lines = [$this->pick($openers), $this->pick($openers)];
+                array_splice($lines, mt_rand(0, 2), 0, [$course.' #وظائف']);
+                $text = implode("\n", $lines)."\nللتسجيل عبر الرابط";
+                $this->assertSame(JobPostClassifier::REJECT_NOT_A_JOB, $this->classifier->rejectionReason($text, $apply, false), $text);
+            }
+        }
+    }
+
+    public function test_a_short_post_whose_title_is_a_known_role_is_kept(): void
+    {
+        $this->seed(\Database\Seeders\JobTitleSeeder::class);
+        $names = \App\Models\JobTitle::query()->active()->where('slug', '!=', 'other')->get()
+            ->flatMap(fn ($t) => [$t->name_en, $t->name_ar])->filter()->values()->all();
+        $this->assertNotEmpty($names);
+        $classifier = app(JobPostClassifier::class);
+
+        foreach ($names as $name) {
+            $city = $this->pick(SaudiCities::CITIES)[2][0];
+            foreach (["{$name} — {$city}\n5 years", "{$name} - {$city}"] as $text) {
+                $this->assertNull($classifier->rejectionReason($text, $this->noApply(), false), $text);
+                $this->assertNull($classifier->rejectionReason($text, $this->noApply(), true), "with media: {$text}");
+            }
+        }
+    }
+
     public function test_courses_about_employment_are_still_courses(): void
     {
         $apply = ['url' => 'https://example.sa/register', 'email' => null];
@@ -218,6 +249,39 @@ class JobPostQualityTest extends TestCase
         }
     }
 
+    public function test_work_in_a_setting_is_not_a_place_and_a_later_city_is_not_the_workplace(): void
+    {
+        $settings = ['بيئة مهنية', 'فريق متميز', 'شركة رائدة', 'دوام مرن', 'قطاع التجزئة'];
+        foreach (SaudiCities::CITIES as $code => [, , $names]) {
+            $text = 'مطلوب محاسب للعمل في '.$this->pick($settings).'، مقر الشركة الأم في '.$names[0].' والمقابلات عن بعد';
+            $this->assertSame($code, $this->matcher->detectCity($text)['city'], 'only mention, so it is the fallback: '.$text);
+
+            [$other] = array_values(array_diff(array_keys(SaudiCities::CITIES), [$code]));
+            $withWork = $text."\n📍 مقر العمل: ".SaudiCities::CITIES[$other][2][0];
+            $this->assertSame($other, $this->matcher->detectCity($withWork)['city'], $withWork);
+        }
+    }
+
+    public function test_repair_clears_a_role_the_rules_no_longer_find(): void
+    {
+        $this->seed(\Database\Seeders\JobTitleSeeder::class);
+        $ids = \App\Models\JobTitle::query()->pluck('id')->all();
+        $bodies = ["إعلان عن لقاء مفتوح\nللتسجيل: jobs@corp.example.sa", "مطلوب محاسب في الرياض\nللتقديم: cv@corp.example.sa", "فرصة عمل مميزة\nالتفاصيل: jobs@x.sa"];
+        foreach ($bodies as $i => $body) {
+            $title = strtok($body, "\n");
+            $found = $this->matcher->match($title, $body, $this->matcher->locationLabel($body))['job_title_id'];
+            $stale = $this->pick(array_values(array_diff($ids, [$found])));
+            $job = JobNews::create([
+                'language' => 'ar', 'title' => $title, 'body' => $body, 'external_source' => 'telegram_jobmag',
+                'external_id' => "r{$i}", 'job_title_id' => $stale, 'is_published' => true, 'published_at' => now(),
+            ]);
+
+            $this->artisan('jobs:repair-listings')->assertSuccessful();
+
+            $this->assertSame($found, $job->fresh()->job_title_id, 'the stored role is what the rules find now: '.$body);
+        }
+    }
+
     public function test_a_refetch_that_now_fails_the_rules_unpublishes_the_stored_post(): void
     {
         $post = $where = '';
@@ -249,21 +313,35 @@ class JobPostQualityTest extends TestCase
         $this->assertSame([JobPostClassifier::REJECT_NOT_A_JOB => 1], $result['rejected']);
     }
 
-    public function test_a_run_that_accepts_nothing_is_a_warning_and_three_make_the_feed_unhealthy(): void
+    public function test_feed_health_tracks_yield_apart_from_fetch_failures(): void
     {
         $svc = app(SaudiJobAggregatorService::class);
-        foreach ([1, 2, 3] as $run) {
-            $svc->recordFeedRun('telegram_jobmag', 20, [JobPostClassifier::REJECT_NOT_A_JOB => 20]);
-            $health = collect($svc->getFeedsHealth())->keyBy('source')['telegram_jobmag'];
-            $this->assertSame($run < 3, $health['healthy'], "run {$run}");
-            $this->assertSame(0, $health['last_accepted_count']);
-            $this->assertStringContainsString('accepted none', (string) $health['last_issue']);
+        $health = fn (): array => collect($svc->getFeedsHealth())->keyBy('source')['telegram_jobmag'];
+
+        // A streak of all-rejected runs is unhealthy only once it lasts about a day.
+        for ($run = 1; $run <= SaudiJobAggregatorService::ZERO_ACCEPT_RUNS; $run++) {
+            $svc->recordFeedRun('telegram_jobmag', 20, [JobPostClassifier::REJECT_NOT_A_JOB => 20], 0);
+            $this->assertSame($run < SaudiJobAggregatorService::ZERO_ACCEPT_RUNS, $health()['healthy'], "run {$run}");
+            $this->assertSame(0, $health()['last_accepted_count']);
+            $this->assertSame(0, $health()['consecutive_zero_fetches'], 'a successful fetch is not a zero fetch');
+            $this->assertStringContainsString('accepted none', (string) $health()['last_issue']);
         }
 
-        $svc->recordFeedRun('telegram_jobmag', 20, [JobPostClassifier::REJECT_EMPTY => 5]);
-        $health = collect($svc->getFeedsHealth())->keyBy('source')['telegram_jobmag'];
-        $this->assertTrue($health['healthy']);
-        $this->assertSame(15, $health['last_accepted_count']);
+        // One run that accepts posts with apply destinations ends the streak.
+        $svc->recordFeedRun('telegram_jobmag', 20, [JobPostClassifier::REJECT_EMPTY => 5], 9);
+        $this->assertTrue($health()['healthy']);
+        $this->assertSame(15, $health()['last_accepted_count']);
+        $this->assertSame(9, $health()['last_with_apply_count']);
+
+        // Accepted posts with no apply link or email at all: extraction broke.
+        $accepted = SaudiJobAggregatorService::APPLY_CHECK_MIN_ACCEPTED + mt_rand(0, 15);
+        $svc->recordFeedRun('telegram_jobmag', $accepted, [], 0);
+        $this->assertFalse($health()['healthy']);
+        $this->assertStringContainsString('apply link', (string) $health()['last_issue']);
+
+        // Too few accepted posts to judge is not an alarm.
+        $svc->recordFeedRun('telegram_jobmag', SaudiJobAggregatorService::APPLY_CHECK_MIN_ACCEPTED - 1, [], 0);
+        $this->assertTrue($health()['healthy']);
 
         $this->travel(SaudiJobAggregatorService::STALE_AFTER_HOURS + 1)->hours();
         $health = collect($svc->getFeedsHealth())->keyBy('source')['telegram_jobmag'];
@@ -289,10 +367,15 @@ class JobPostQualityTest extends TestCase
     {
         foreach (['Worldwide', 'worldwide', 'Anywhere in the World', 'EMEA', 'Europe, Middle East', 'MENA', 'Saudi Arabia', 'KSA, UAE', 'GCC', 'Global'] as $open) {
             $this->assertTrue($this->classifier->remoteOpenToSaudi($open), $open);
+            // The same place with qualifiers around it is still open.
+            foreach (['%s only', 'Remote – %s', 'Remote - %s', '%s (remote)', 'USA, %s', 'Middle East (%s)', '%s residents', 'Fully remote / %s'] as $shape) {
+                $qualified = sprintf($shape, $open);
+                $this->assertTrue($this->classifier->remoteOpenToSaudi($qualified), $qualified);
+            }
         }
         foreach (['', '  ', 'USA', 'USA, Canada, USA timezones', 'Europe, USA, Canada, APAC', 'UK', 'Germany', 'Latin America', 'Americas',
             'Worldwide except Saudi Arabia', 'Anywhere in Europe', 'Anywhere in the US', 'Global (excluding MENA)', 'EMEA, not KSA',
-            'Worldwide without Middle East', 'Gulf of Mexico states', 'Outside the GCC'] as $closed) {
+            'Worldwide without Middle East', 'Gulf of Mexico states', 'Outside the GCC', 'Remote – USA only', 'Europe (EU residents only)'] as $closed) {
             $this->assertFalse($this->classifier->remoteOpenToSaudi($closed), $closed);
         }
     }
