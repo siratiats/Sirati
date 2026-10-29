@@ -54,9 +54,13 @@ class RepairJobListingsCommand extends Command
                     $job->apply_email = $extractor->fromText((string) $job->body)['email'];
                 }
 
-                if (str_starts_with((string) $job->external_source, 'telegram_')) {
+                // Only listings users can still see are re-classified, so the
+                // work stays bounded by the 21-day lifetime, not the table size.
+                $visible = $job->is_published && ($job->valid_until === null || ! $job->valid_until->isPast() || $job->valid_until->isToday());
+
+                if ($visible && str_starts_with((string) $job->external_source, 'telegram_')) {
                     $this->reclassifyTelegramPost($job, $classifier, $matcher);
-                } elseif ($aggregated && $job->location === self::UNCHECKED_REMOTE_LOCATION) {
+                } elseif ($visible && $aggregated && $job->location === self::UNCHECKED_REMOTE_LOCATION) {
                     $job->is_published = false;
                 }
 

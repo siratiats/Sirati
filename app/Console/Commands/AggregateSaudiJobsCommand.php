@@ -26,10 +26,12 @@ class AggregateSaudiJobsCommand extends Command
                 $f['healthy'] ? '✅ Healthy' : '❌ Warning/Degraded',
                 $f['last_success_at'] ?: 'Never recorded',
                 $f['last_fetched_count'],
+                $f['last_accepted_count'],
+                collect($f['last_rejections'])->map(fn ($n, $r) => "{$r}={$n}")->implode(', ') ?: '-',
                 $f['last_issue'] ?: 'None',
             ], $health);
 
-            $this->table(['Source', 'Type', 'Status', 'Last Success', 'Last Fetched', 'Last Issue'], $rows);
+            $this->table(['Source', 'Type', 'Status', 'Last Success', 'Last Fetched', 'Last Accepted', 'Rejected', 'Last Issue'], $rows);
 
             return Command::SUCCESS;
         }

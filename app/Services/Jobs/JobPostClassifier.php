@@ -15,7 +15,16 @@ class JobPostClassifier
     public const REJECT_NOT_A_JOB = 'not_a_job';
 
     /** A post that offers work (normalised text). Wins over a non-job cue. */
-    private const HIRING_CUE = '/وظيف|وظائف|توظيف|شاغر|شواغر|(?<!\p{L})مطلوب|تمهير|تطوير الخريجين|فرص عمل|فرصه عمل|(?<![a-z])(?:hiring|vacanc(?:y|ies)|jobs?|positions?|openings?)(?![a-z])/u';
+    private const HIRING_CUE = '/وظيف|وظائف|توظيف|شاغر|شواغر|(?<!\p{L})مطلوب|تمهير|تطوير الخريجين|فرص عمل|فرصه عمل|(?:نبحث|يبحث|تبحث) عن|بحاجه (?:الي|ل)|(?<![a-z])looking for(?![a-z])|(?<![a-z])(?:hiring|vacanc(?:y|ies)|jobs?|positions?|openings?)(?![a-z])/u';
+
+    /**
+     * A job actually offered (normalised text). Only this overrides a course
+     * cue: "دورة في مهارات التوظيف" is about employment, not a vacancy.
+     */
+    private const OFFER_CUE = '/(?<!\p{L})(?:[وبل]|ال)?(?:وظائف|وظيفه|شاغر|شاغره|شواغر|تمهير)(?!\p{L})|(?<!\p{L})[وب]?مطلوب(?:ين|ون)?(?!\p{L})|تطوير الخريجين|فرص(?:ه)? عمل|فرص(?:ه)? وظيفيه|(?:منتهي|منتهيه|مبتدئ|مبتدئه|مبتديء)\s+بالتوظيف|فتح (?:باب )?التوظيف|(?<![a-z])(?:hiring|vacanc(?:y|ies))(?![a-z])/u';
+
+    /** Text that points at the attachment for the details (normalised). */
+    private const SEE_ATTACHMENT = '/اضغط علي (?:الملف|الصوره)|(?:في|داخل) (?:الملف|الصوره|المرفق)|(?:الملف|الصوره) المرفق|التفاصيل بالصوره|(?<![a-z])(?:see|check) (?:the )?(?:attached|image|pdf|file)(?![a-z])/u';
 
     /** Courses, admissions and training without a job (normalised text). */
     private const NON_JOB_CUE = '/(?<![\p{L}\p{N}])(?:[وبل]|ال|بال)?(?:دوره|دورات|ورشه|ورش|ندوه|قبول|الدراسات العليا|الدبلوم العالي|التجسير|برامج الدبلوم|برنامج تدريبي|برامج تدريبيه)(?![\p{L}\p{N}])|(?<![a-z])(?:courses?|webinars?|workshops?|admissions?)(?![a-z])/u';
@@ -37,30 +46,29 @@ class JobPostClassifier
     public function __construct(private readonly JobTaxonomyMatcher $matcher) {}
 
     /**
-     * Why [$text] should not be published, or null to publish it. A post with
-     * no apply destination and no phone that says almost nothing is dropped,
-     * and so is a photo or file post whose text is only a short header (the
-     * job is in the image). A course or admission without a hiring cue is not
-     * a job.
+     * Why [$text] should not be published, or null to publish it. A short
+     * post with no apply destination and no phone is dropped when it names
+     * no role (a generic header such as "وظائف في القطيف") or offers no work.
+     * With a photo or file the bar is higher, since the job is then usually
+     * in the image; the attachment alone never drops a post that names a
+     * role. A course or admission is not a job unless it offers one.
      *
      * @param  array{url: ?string, email: ?string}  $apply
      */
     public function rejectionReason(string $text, array $apply, bool $hasMedia): ?string
     {
         $actionable = $apply['url'] !== null || $apply['email'] !== null || $this->hasPhone($text);
-        $letters = $this->letterCount($text);
 
-        if (! $actionable && $hasMedia && $letters < 120) {
-            return self::REJECT_IMAGE_ONLY;
+        // Hashtags are channel tags ("#وظائف_الشرقية"), not an offer.
+        $prose = $this->matcher->normalizeText((string) preg_replace('/#\S+/u', ' ', $text));
+        if (! $actionable && $this->letterCount($text) < ($hasMedia ? 120 : 60)
+            && ($this->isGeneric($this->titleFrom($text)) || ! preg_match(self::HIRING_CUE, $prose)
+                || ($hasMedia && preg_match(self::SEE_ATTACHMENT, $prose)))) {
+            return $hasMedia ? self::REJECT_IMAGE_ONLY : self::REJECT_EMPTY;
         }
 
         $head = $this->matcher->normalizeText(implode("\n", array_slice($this->lines($text), 0, 2)));
-        if (! $actionable && $letters < 60
-            && ($this->isGeneric($this->titleFrom($text)) || ! preg_match(self::HIRING_CUE, $this->matcher->normalizeText($text)))) {
-            return self::REJECT_EMPTY;
-        }
-
-        if (preg_match(self::NON_JOB_CUE, $head) && ! preg_match(self::HIRING_CUE, $head)) {
+        if (preg_match(self::NON_JOB_CUE, $head) && ! preg_match(self::OFFER_CUE, $head)) {
             return self::REJECT_NOT_A_JOB;
         }
 
@@ -121,9 +129,13 @@ class JobPostClassifier
         return $this->cleanLine($title) !== trim($title) || $this->isGeneric($title);
     }
 
-    /** 'en' when Latin letters clearly outnumber Arabic ones, else 'ar'. */
+    /**
+     * 'en' when Latin letters clearly outnumber Arabic ones, else 'ar'. Links
+     * and email addresses are not prose and do not count.
+     */
     public function languageOf(string $text): string
     {
+        $text = (string) preg_replace('~(?:https?://|www\.)\S+|[^\s@]+@[^\s@]+~iu', ' ', $text);
         $arabic = preg_match_all('/\p{Arabic}/u', $text);
         $latin = preg_match_all('/[A-Za-z]/', $text);
 
@@ -132,14 +144,27 @@ class JobPostClassifier
 
     /**
      * Whether a remote job's stated candidate location admits someone in Saudi
-     * Arabia. An empty or unknown location does not.
+     * Arabia: one of its listed places must be exactly an open one
+     * ("Worldwide", "EMEA", "Saudi Arabia"). An empty or unknown location, any
+     * exclusion ("Worldwide except …") and a qualified one ("Anywhere in
+     * Europe") do not.
      */
     public function remoteOpenToSaudi(?string $requiredLocation): bool
     {
         $required = mb_strtolower(trim((string) $requiredLocation));
+        if ($required === '' || preg_match('/(?<![a-z])(?:except|excluding|exclude|excl|not|outside|without)(?![a-z])/', $required)) {
+            return false;
+        }
 
-        return $required !== ''
-            && (bool) preg_match('/(?<![a-z])(?:worldwide|anywhere|global|saudi|ksa|middle east|mena|emea|gcc|gulf)(?![a-z])/', $required);
+        $open = ['worldwide', 'anywhere', 'anywhere in the world', 'global', 'globally', 'saudi', 'saudi arabia', 'ksa',
+            'middle east', 'mena', 'emea', 'gcc', 'gulf', 'gulf region'];
+        foreach (preg_split('/\s*(?:[,;\/|]|\band\b|&)\s*/u', $required) ?: [] as $place) {
+            if (in_array(trim($place, " \t.()"), $open, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** @return list<string> non-empty trimmed lines */

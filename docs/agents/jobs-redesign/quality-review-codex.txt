@@ -1,0 +1,32 @@
+=== Codex (gpt-6.1-sol, effort high) session=01a1854c-0f3f-7f13-95fe-0d604d4137aa usage={"input_tokens":11301712,"cached_input_tokens":10320896,"cache_write_input_tokens":0,"output_tokens":34143,"reasoning_output_tokens":19001}
+1. **P1, fix now - rejected updates remain published.** [SaudiJobAggregatorService.php:283](D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:283)  
+   Input: Remotive ID 7 is stored as Worldwide, then changes to USA. The adapter skips it without unpublishing the existing row; Telegram edits have the same problem. Deactivate observed listings that fail revalidation.
+
+2. **P1, fix now - exclusions pass eligibility.** [JobPostClassifier.php:142](D:/Sirati/app/Services/Jobs/JobPostClassifier.php:142)  
+   `Worldwide except Saudi Arabia` and `Anywhere in Europe` both return true. Positive-word detection ignores restrictions. Give exclusions precedence and withhold ambiguous eligibility.
+
+3. **P1, fix now - media rejects complete vacancies.** [JobPostClassifier.php:53](D:/Sirati/app/Services/Jobs/JobPostClassifier.php:53)  
+   `????? ???? ???? ??? ????? ???? ????? ???? ???? ????? ??????? ??????? ???? ?????.` publishes without media but is rejected with a decorative photo. Evaluate vacancy evidence rather than attachment presence plus character count.
+
+4. **P2 - employment-topic courses bypass classification.** [JobPostClassifier.php:63](D:/Sirati/app/Services/Jobs/JobPostClassifier.php:63)  
+   `???? ?????? ?? ?????? ??????? ??????? ?????????` with a registration link publishes because "?????" overrides the course cue. Distinguish offered employment from training about employment.
+
+5. **P2 - URLs determine body direction.** [JobPostClassifier.php:127](D:/Sirati/app/Services/Jobs/JobPostClassifier.php:127)  
+   Arabic `????? ????? ????? ???????` followed by a URL containing 200 Latin tracking characters becomes `en`; the app renders its body LTR. Exclude URLs/contacts from language evidence and assert on rendered text.
+
+6. **P2 - first city need not be workplace.** [JobTaxonomyMatcher.php:151](D:/Sirati/app/Services/Jobs/JobTaxonomyMatcher.php:151)  
+   `??? ?????? ?? ???? ??????? ????? ?? ??????` becomes Jeddah, including during repair. Prioritize explicit workplace phrases over headquarters/incidental mentions.
+
+7. **P2, deployment risk - synchronous backfill.** [migration:12](D:/Sirati/database/migrations/2026_10_29_000002_reclassify_aggregated_job_news.php:12)  
+   With 100,000 Telegram rows, deployment performs per-row classification and taxonomy queries. Chunking bounds memory, not duration or partial rewrites following failure. Move this into resumable maintenance with checkpoints and progress reporting.
+
+8. **P2, monitoring required now.** [SaudiJobAggregatorService.php:639](D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:639)  
+   Twenty parsed courses produce zero accepted jobs yet record success and clear warnings. Track parsed/accepted/rejected counts and reasons. Alert after three historically productive runs with zero acceptance, on schema/markup mismatches, and after two missed collection intervals. Challenge pages, renamed Telegram classes, malformed Remotive responses and 429s need explicit handling/backoff. Later: adaptive baselines and style-drift sampling.
+
+The grouped bilingual OR preserves active/filter constraints without duplicating rows. Dashboard reuses this feed; notifications already query all languages. Search remains literal; per-language totals overlap.
+
+Missing invariants: decorative-media independence, negated eligibility, acceptedrejected updates, language independence from tracking URLs, workplace precedence, complete curated-row preservation and repair idempotence. Existing randomized tests shuffle finite examples; city tests encode "first mention wins."
+
+No files changed; no app/tests run.
+
+VERDICT: CHANGES

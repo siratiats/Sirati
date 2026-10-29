@@ -18,6 +18,9 @@ class JobTaxonomyMatcher
     /** Phrases that mark a post as remote work (normalised). */
     private const REMOTE_TERMS = ['عن بعد', 'عن_بعد', 'remote', 'work from home', 'telecommute'];
 
+    /** Phrases followed by where the job is (normalised text). */
+    private const WORKPLACE_CUE = '/(?:مقر|مكان|موقع|مدينه)\s+العمل\s*[:：]?|(?<!\p{L})(?:لل|ال)?عمل\s+(?:في|ب)|\x{1F4CD}|(?<![a-z])(?:work location|job location|location|based in)\s*[:：]?/u';
+
     /**
      * Match a job posting's title and text against the active JobTitle taxonomy.
      *
@@ -112,10 +115,12 @@ class JobTaxonomyMatcher
     }
 
     /**
-     * The city a post is in: the earliest city named in [$location] then
-     * [$fallbackText], matched as a whole word (an attached و/ب/ل/ف is
-     * allowed, so "بالرياض" is Riyadh but "الخبرة" is not Khobar). A province
-     * ("المنطقة الشرقية") counts only when no city is named.
+     * The city a post is in. A city right after a workplace phrase ("مقر
+     * العمل", "للعمل في", "📍") wins over one mentioned elsewhere (a head
+     * office, an earlier branch); otherwise the earliest city named in
+     * [$location] then [$fallbackText]. Names match as whole words (an
+     * attached و/ب/ل/ف is allowed, so "بالرياض" is Riyadh but "الخبرة" is not
+     * Khobar). A province ("المنطقة الشرقية") counts only when no city is named.
      *
      * @return array{city: ?string, is_remote: bool}
      */
@@ -128,8 +133,20 @@ class JobTaxonomyMatcher
             $isRemote = $isRemote || str_contains($haystack, $term);
         }
 
+        $city = null;
+        if (preg_match_all(self::WORKPLACE_CUE, $haystack, $cues, PREG_OFFSET_CAPTURE)) {
+            foreach ($cues[0] as [$cue, $offset]) {
+                $window = mb_strcut($haystack, $offset + strlen($cue), 120, 'UTF-8');
+                $city = $this->firstNamed($window, SaudiCities::CITIES) ?? $this->firstNamed($window, SaudiCities::PROVINCES);
+                if ($city !== null) {
+                    break;
+                }
+            }
+        }
+
         return [
-            'city' => $this->firstNamed($haystack, SaudiCities::CITIES)
+            'city' => $city
+                ?? $this->firstNamed($haystack, SaudiCities::CITIES)
                 ?? $this->firstNamed($haystack, SaudiCities::PROVINCES),
             'is_remote' => $isRemote,
         ];

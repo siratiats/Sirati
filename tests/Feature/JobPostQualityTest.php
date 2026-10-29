@@ -158,6 +158,119 @@ class JobPostQualityTest extends TestCase
         }
     }
 
+    public function test_an_attachment_never_drops_a_post_that_names_a_role(): void
+    {
+        foreach (self::ROLES as $role) {
+            foreach (['مطلوب %s للعمل في الرياض خبرة سنتين', 'نبحث عن %s', 'وظيفة %s بالدمام'] as $shape) {
+                $text = sprintf($shape, $role);
+                $this->assertNull($this->classifier->rejectionReason($text, $this->noApply(), false), $text);
+                $this->assertNull($this->classifier->rejectionReason($text, $this->noApply(), true), "with media: {$text}");
+            }
+        }
+    }
+
+    public function test_an_attachment_post_that_points_at_the_file_or_only_has_tags_is_image_only(): void
+    {
+        foreach (self::ROLES as $role) {
+            foreach (["(🔴) وظائف {$role} 📘 شركة الصحة (PDF)\nاضغط على الملف", "وظيفة {$role}\nالتفاصيل في الصورة المرفقة", "{$role} jobs, see the attached PDF"] as $text) {
+                $this->assertSame(JobPostClassifier::REJECT_IMAGE_ONLY, $this->classifier->rejectionReason($text, $this->noApply(), true), $text);
+            }
+        }
+        $tagsOnly = "#وظائف_الشرقية #الخبر\nالشرقية\n5:36 PM · Oct 28, 2026\n#المنطقة_الشرقية, #الدمام";
+        $this->assertSame(JobPostClassifier::REJECT_IMAGE_ONLY, $this->classifier->rejectionReason($tagsOnly, $this->noApply(), true));
+        $this->assertSame(JobPostClassifier::REJECT_EMPTY, $this->classifier->rejectionReason($tagsOnly, $this->noApply(), false));
+    }
+
+    public function test_courses_about_employment_are_still_courses(): void
+    {
+        $apply = ['url' => 'https://example.sa/register', 'email' => null];
+        $topics = ['مهارات التوظيف', 'كتابة السيرة الذاتية للتوظيف', 'المقابلات الوظيفية', 'الاستعداد للتوظيف', 'Job interview skills'];
+        foreach ($topics as $topic) {
+            foreach (['دورة تدريبية في %s', 'ورشة عمل: %s', 'دورات مجانية عن %s', 'Free course: %s'] as $shape) {
+                $text = sprintf($shape, $topic)."\nالتسجيل عبر الرابط";
+                $this->assertSame(JobPostClassifier::REJECT_NOT_A_JOB, $this->classifier->rejectionReason($text, $apply, false), $text);
+            }
+        }
+    }
+
+    public function test_links_and_emails_do_not_decide_the_language(): void
+    {
+        for ($i = 0; $i < 100; $i++) {
+            $noise = 'https://careers.example.com/jobs/'.bin2hex(random_bytes(mt_rand(20, 120))).'?utm_source=telegram&utm_campaign=x';
+            $email = 'Recruitment.Department.'.mt_rand(1, 999).'@very-long-company-domain.example.com';
+            $ar = 'مطلوب '.$this->pick(self::ROLES)." في الرياض\n{$noise}\n{$email}";
+            $this->assertSame('ar', $this->classifier->languageOf($ar), $ar);
+
+            $en = 'We are hiring a '.$this->pick(['Accountant', 'HSE Officer', 'Engineer'])." in Riyadh\nللتقديم {$noise}";
+            $this->assertSame('en', $this->classifier->languageOf($en), $en);
+        }
+    }
+
+    public function test_the_workplace_beats_a_head_office_or_branch_mentioned_first(): void
+    {
+        $codes = array_keys(SaudiCities::CITIES);
+        $cues = ['مقر العمل: %s', 'مكان العمل %s', 'للعمل في %s', 'العمل بمدينة %s', '📍 %s', 'Work location: %s', 'Location: %s'];
+        for ($i = 0; $i < 200; $i++) {
+            [$hq, $work] = array_rand(array_flip($codes), 2);
+            $text = 'شركة رائدة مقرها '.SaudiCities::CITIES[$hq][2][0].' تعلن عن وظيفة محاسب'."\n"
+                .sprintf($this->pick($cues), SaudiCities::CITIES[$work][2][0]);
+            $this->assertSame($work, $this->matcher->detectCity($text)['city'], $text);
+        }
+    }
+
+    public function test_a_refetch_that_now_fails_the_rules_unpublishes_the_stored_post(): void
+    {
+        $post = $where = '';
+        $page = fn (string $text): string => '<html><body><div class="tgme_widget_message_wrap"><div class="tgme_widget_message" data-post="chan/5">'
+            .'<div class="tgme_widget_message_text js-message_text">'.$text.'</div><time datetime="2026-10-28T12:00:00+03:00"></time></div></div></body></html>';
+        $remotive = fn (string $where): array => ['jobs' => [['id' => 7, 'title' => 'Writer', 'company_name' => 'A', 'url' => 'https://remotive.com/job/7', 'description' => 'x', 'candidate_required_location' => $where]]];
+        $svc = app(SaudiJobAggregatorService::class);
+        $telegram = ['source' => 'telegram_chan', 'name' => '@chan', 'channel' => 'chan', 'type' => 'telegram'];
+        $remote = ['source' => 'remotive_remote', 'name' => 'Remotive', 'url' => 'https://remotive.com/api/remote-jobs', 'type' => 'remotive_api'];
+
+        // One closure fake: Http::fake stubs stack and the first one would keep answering.
+        $post = 'مطلوب محاسب في جدة<br/>للتقديم: cv@corp.example.sa';
+        $where = 'Worldwide';
+        Http::fake(function ($request) use (&$post, &$where, $page, $remotive) {
+            return str_contains($request->url(), 't.me')
+                ? Http::response($page($post))
+                : Http::response($remotive($where));
+        });
+        $svc->aggregateFeed($telegram);
+        $svc->aggregateFeed($remote);
+        $this->assertSame(2, JobNews::query()->where('is_published', true)->count());
+
+        $post = 'دورة تدريبية عبر (Zoom) بشهادة حضور<br/>التسجيل: cv@corp.example.sa';
+        $where = 'Worldwide except Saudi Arabia';
+        $result = $svc->aggregateFeed($telegram);
+        $svc->aggregateFeed($remote);
+
+        $this->assertSame(0, JobNews::query()->where('is_published', true)->count());
+        $this->assertSame([JobPostClassifier::REJECT_NOT_A_JOB => 1], $result['rejected']);
+    }
+
+    public function test_a_run_that_accepts_nothing_is_a_warning_and_three_make_the_feed_unhealthy(): void
+    {
+        $svc = app(SaudiJobAggregatorService::class);
+        foreach ([1, 2, 3] as $run) {
+            $svc->recordFeedRun('telegram_jobmag', 20, [JobPostClassifier::REJECT_NOT_A_JOB => 20]);
+            $health = collect($svc->getFeedsHealth())->keyBy('source')['telegram_jobmag'];
+            $this->assertSame($run < 3, $health['healthy'], "run {$run}");
+            $this->assertSame(0, $health['last_accepted_count']);
+            $this->assertStringContainsString('accepted none', (string) $health['last_issue']);
+        }
+
+        $svc->recordFeedRun('telegram_jobmag', 20, [JobPostClassifier::REJECT_EMPTY => 5]);
+        $health = collect($svc->getFeedsHealth())->keyBy('source')['telegram_jobmag'];
+        $this->assertTrue($health['healthy']);
+        $this->assertSame(15, $health['last_accepted_count']);
+
+        $this->travel(SaudiJobAggregatorService::STALE_AFTER_HOURS + 1)->hours();
+        $health = collect($svc->getFeedsHealth())->keyBy('source')['telegram_jobmag'];
+        $this->assertFalse($health['healthy'], 'no success for too long');
+        $this->assertTrue($health['stale']);
+    }
+
     public function test_language_follows_the_script_of_the_post(): void
     {
         $english = ['is seeking', 'Requirements: Bachelor degree', 'Apply now at careers page', 'Location: Riyadh, Saudi Arabia'];
@@ -177,7 +290,9 @@ class JobPostQualityTest extends TestCase
         foreach (['Worldwide', 'worldwide', 'Anywhere in the World', 'EMEA', 'Europe, Middle East', 'MENA', 'Saudi Arabia', 'KSA, UAE', 'GCC', 'Global'] as $open) {
             $this->assertTrue($this->classifier->remoteOpenToSaudi($open), $open);
         }
-        foreach (['', '  ', 'USA', 'USA, Canada, USA timezones', 'Europe, USA, Canada, APAC', 'UK', 'Germany', 'Latin America', 'Americas'] as $closed) {
+        foreach (['', '  ', 'USA', 'USA, Canada, USA timezones', 'Europe, USA, Canada, APAC', 'UK', 'Germany', 'Latin America', 'Americas',
+            'Worldwide except Saudi Arabia', 'Anywhere in Europe', 'Anywhere in the US', 'Global (excluding MENA)', 'EMEA, not KSA',
+            'Worldwide without Middle East', 'Gulf of Mexico states', 'Outside the GCC'] as $closed) {
             $this->assertFalse($this->classifier->remoteOpenToSaudi($closed), $closed);
         }
     }
