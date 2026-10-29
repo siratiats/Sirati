@@ -26,7 +26,11 @@ class SaudiJobAggregatorService
 
     public function __construct(
         private readonly JobTaxonomyMatcher $matcher,
+        private readonly ApplyLinkExtractor $applyLinks,
     ) {}
+
+    /** Aggregated posts rarely state a deadline; they retire after this many days. */
+    public const AGGREGATED_LIFETIME_DAYS = 21;
 
     /**
      * Curated Saudi Job Sources (Telegram channels, Remote API, and RSS).
@@ -161,7 +165,8 @@ class SaudiJobAggregatorService
             }
 
             $rawText = $tm[1];
-            $cleanText = trim(html_entity_decode(strip_tags(str_replace(['<br/>', '<br>', '<br />'], "\n", $rawText)), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            $fullText = trim(html_entity_decode(strip_tags(str_replace(['<br/>', '<br>', '<br />'], "\n", $rawText)), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            $cleanText = $this->applyLinks->stripPromoFooter($fullText);
             if (mb_strlen($cleanText) < 15) {
                 continue;
             }
@@ -174,19 +179,10 @@ class SaudiJobAggregatorService
                 $pubDate = Carbon::parse($dm[1]);
             }
 
-            // Extract external apply URL, fallback to telegram post link
-            $applyUrl = null;
-            if (preg_match_all('/href="([^"]+)"/', $part, $um)) {
-                foreach ($um[1] as $candidate) {
-                    if (filter_var($candidate, FILTER_VALIDATE_URL) && ! str_contains($candidate, 't.me/s/') && ! str_contains($candidate, 'telegram.org')) {
-                        $applyUrl = $candidate;
-                        break;
-                    }
-                }
-            }
-            if (! $applyUrl) {
-                $applyUrl = "https://t.me/{$postSlug}";
-            }
+            // Only links inside the message text count (the wrapper also holds
+            // the channel's own avatar link). No link or email means no apply
+            // action; the Telegram post is kept as the source `url` only.
+            $apply = $this->applyLinks->fromMessageHtml($rawText);
 
             // Clean title
             $lines = array_values(array_filter(explode("\n", $cleanText), fn ($l) => trim($l) !== ''));
@@ -204,21 +200,23 @@ class SaudiJobAggregatorService
                 $title = Str::limit($cleanText, 60, '...');
             }
 
-            $company = $this->extractCompany($cleanText);
+            // Unknown employer stays unknown: only an explicit "شركة/مجموعة/…" name counts.
+            $company = $this->extractCompany($cleanText, strict: true);
             $location = $this->extractLocation($cleanText);
             $match = $this->matcher->match($title, $cleanText, $location);
 
             $jobData = [
                 'language' => $feed['language'] ?? 'ar',
                 'title' => Str::limit($title, 180, ''),
-                'company' => Str::limit($company ?: 'جهة سعودية معتمدة', 160, ''),
+                'company' => $company !== null ? Str::limit($company, 160, '') : null,
                 'location' => Str::limit($location ?: 'المملكة العربية السعودية', 160, ''),
                 'body' => $cleanText,
                 'url' => "https://t.me/{$postSlug}",
-                'apply_url' => $applyUrl,
+                'apply_url' => $apply['url'],
+                'apply_email' => $apply['email'],
                 'published_at' => $pubDate,
                 'valid_from' => $pubDate->toDateString(),
-                'valid_until' => $pubDate->copy()->addDays(30)->toDateString(),
+                'valid_until' => $pubDate->copy()->addDays(self::AGGREGATED_LIFETIME_DAYS)->toDateString(),
                 'is_published' => true,
                 'source' => $feed['name'] ?? $feed['source'],
                 'external_source' => $feed['source'],
@@ -229,20 +227,11 @@ class SaudiJobAggregatorService
                 'is_remote' => $match['is_remote'],
             ];
 
-            $job = JobNews::query()->updateOrCreate(
-                [
-                    'external_source' => $feed['source'],
-                    'external_id' => $externalId,
-                ],
-                $jobData,
-            );
-
-            if ($job->wasRecentlyCreated) {
-                $created++;
-                $this->notifyInterestedCandidates($job);
-            } else {
-                $updated++;
-            }
+            match ($this->persistAggregatedJob($jobData)) {
+                'created' => $created++,
+                'updated' => $updated++,
+                default => null,
+            };
         }
 
         if ($fetched === 0) {
@@ -292,7 +281,7 @@ class SaudiJobAggregatorService
 
             $fetched++;
             $externalId = (string) ($item['id'] ?? md5($title));
-            $company = trim($item['company_name'] ?? 'شركة عالمية');
+            $company = trim((string) ($item['company_name'] ?? ''));
             $description = trim(strip_tags((string) ($item['description'] ?? '')));
             $urlLink = trim((string) ($item['url'] ?? ''));
             $pubDate = ! empty($item['publication_date']) ? Carbon::parse((string) $item['publication_date']) : now();
@@ -302,11 +291,12 @@ class SaudiJobAggregatorService
             $jobData = [
                 'language' => $feed['language'] ?? 'en',
                 'title' => Str::limit($title, 180, ''),
-                'company' => Str::limit($company, 160, ''),
+                'company' => $company !== '' ? Str::limit($company, 160, '') : null,
                 'location' => 'عن بُعد (Worldwide Remote)',
                 'body' => $description ?: $title,
                 'url' => $urlLink,
-                'apply_url' => $urlLink,
+                'apply_url' => $this->applyLinks->isAllowedApplyUrl($urlLink) ? $urlLink : null,
+                'apply_email' => null,
                 'published_at' => $pubDate,
                 'valid_from' => $pubDate->toDateString(),
                 'valid_until' => $pubDate->copy()->addDays(30)->toDateString(),
@@ -320,20 +310,11 @@ class SaudiJobAggregatorService
                 'is_remote' => true,
             ];
 
-            $job = JobNews::query()->updateOrCreate(
-                [
-                    'external_source' => $feed['source'],
-                    'external_id' => $externalId,
-                ],
-                $jobData,
-            );
-
-            if ($job->wasRecentlyCreated) {
-                $created++;
-                $this->notifyInterestedCandidates($job);
-            } else {
-                $updated++;
-            }
+            match ($this->persistAggregatedJob($jobData)) {
+                'created' => $created++,
+                'updated' => $updated++,
+                default => null,
+            };
         }
 
         if ($fetched === 0) {
@@ -397,11 +378,12 @@ class SaudiJobAggregatorService
             $jobData = [
                 'language' => $feed['language'] ?? 'ar',
                 'title' => Str::limit($title, 180, ''),
-                'company' => Str::limit($company ?: 'جهة سعودية رائدة', 160, ''),
+                'company' => $company !== null ? Str::limit($company, 160, '') : null,
                 'location' => Str::limit($location ?: 'المملكة العربية السعودية', 160, ''),
                 'body' => $description ?: $title,
                 'url' => $link,
-                'apply_url' => $link,
+                'apply_url' => $this->applyLinks->isAllowedApplyUrl($link) ? $link : null,
+                'apply_email' => null,
                 'published_at' => $pubDate,
                 'valid_from' => $pubDate->toDateString(),
                 'valid_until' => $pubDate->copy()->addDays(30)->toDateString(),
@@ -415,20 +397,11 @@ class SaudiJobAggregatorService
                 'is_remote' => $match['is_remote'],
             ];
 
-            $job = JobNews::query()->updateOrCreate(
-                [
-                    'external_source' => $feed['source'],
-                    'external_id' => $guid,
-                ],
-                $jobData,
-            );
-
-            if ($job->wasRecentlyCreated) {
-                $created++;
-                $this->notifyInterestedCandidates($job);
-            } else {
-                $updated++;
-            }
+            match ($this->persistAggregatedJob($jobData)) {
+                'created' => $created++,
+                'updated' => $updated++,
+                default => null,
+            };
         }
 
         if ($fetched === 0) {
@@ -442,6 +415,83 @@ class SaudiJobAggregatorService
             'created' => $created,
             'updated' => $updated,
         ];
+    }
+
+    /**
+     * Store one aggregated post. The same vacancy reposted by another source
+     * (same fingerprint, still active) is not stored again; if the repost has
+     * an apply destination the original lacks, the original gains it. A
+     * re-fetch never replaces a stored apply destination with a missing one.
+     *
+     * @param  array<string, mixed>  $jobData
+     * @return 'created'|'updated'|'duplicate'
+     */
+    private function persistAggregatedJob(array $jobData): string
+    {
+        $hasApply = $jobData['apply_url'] !== null || $jobData['apply_email'] !== null;
+
+        $existing = JobNews::query()
+            ->where('external_source', $jobData['external_source'])
+            ->where('external_id', $jobData['external_id'])
+            ->first();
+
+        // A re-fetch never downgrades the destination: a stored link stays
+        // unless a new link replaces it; a stored email stays unless the
+        // re-fetch has some destination. Identity uses the values that will
+        // actually be stored.
+        if ($existing !== null) {
+            if ($jobData['apply_url'] === null && $existing->apply_url !== null) {
+                $jobData['apply_url'] = $existing->apply_url;
+            }
+            if (! $hasApply && $existing->apply_email !== null) {
+                $jobData['apply_email'] = $existing->apply_email;
+            }
+        }
+
+        $jobData['fingerprint'] = JobNews::fingerprintFor(
+            $jobData['title'],
+            $jobData['company'],
+            $jobData['city'],
+            $jobData['apply_url'] ?? $jobData['apply_email'],
+        );
+        $hasApply = $jobData['apply_url'] !== null || $jobData['apply_email'] !== null;
+
+        if ($existing === null && $jobData['fingerprint'] !== null) {
+            $original = JobNews::query()
+                ->active()
+                ->where('fingerprint', $jobData['fingerprint'])
+                ->orderBy('id')
+                ->first();
+
+            // Different apply destinations mean different vacancies (e.g. two
+            // requisitions with the same title): never merge those.
+            $originalDestination = $original?->apply_url ?? $original?->apply_email;
+            $newDestination = $jobData['apply_url'] ?? $jobData['apply_email'];
+            $conflict = $originalDestination !== null && $newDestination !== null
+                && JobNews::normalizeDestination($originalDestination) !== JobNews::normalizeDestination($newDestination);
+
+            if ($original !== null && ! $conflict) {
+                if ($hasApply && $original->apply_url === null && $original->apply_email === null) {
+                    $original->forceFill([
+                        'apply_url' => $jobData['apply_url'],
+                        'apply_email' => $jobData['apply_email'],
+                    ])->save();
+                }
+
+                return 'duplicate';
+            }
+        }
+
+        if ($existing !== null) {
+            $existing->fill($jobData)->save();
+
+            return 'updated';
+        }
+
+        $job = JobNews::query()->create($jobData);
+        $this->notifyInterestedCandidates($job);
+
+        return 'created';
     }
 
     /**
@@ -655,7 +705,7 @@ class SaudiJobAggregatorService
         return $health;
     }
 
-    private function extractCompany(string $text): ?string
+    private function extractCompany(string $text, bool $strict = false): ?string
     {
         if (preg_match('/(?:لدى|في|عن|بـ|بواسطة)?\s*[\(\[]?(?:شركة|مجموعة|مؤسسة|بنك|مصرف|هيئة|مستشفى)\s+([^\)\],،\.\-\n]+)[\)\]]?/u', $text, $matches)) {
             $extracted = trim(strip_tags($matches[1]));
@@ -663,6 +713,10 @@ class SaudiJobAggregatorService
             if (mb_strlen($extracted) >= 2 && mb_strlen($extracted) <= 50) {
                 return $extracted;
             }
+        }
+
+        if ($strict) {
+            return null;
         }
 
         if (preg_match('/(?:لدى|في|بشركة|بـ|شركة)\s+([\p{Arabic}\w\s]+)/u', $text, $matches)) {

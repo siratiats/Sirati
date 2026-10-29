@@ -1,0 +1,10 @@
+=== Grok (grok-4.7, effort medium) session=01a1854c-66ae-7672-8f0b-481e19aa87f8 turns=7 cost=$0.222 stop=end_turn
+I'll check the updated diffs against each earlier finding and look for new defects in those fixes.The six earlier findings are fixed. The footer no longer cuts real trailing lines, a missing company produces a null fingerprint so those rows never merge, an email-only re-fetch keeps the stored URL, `lnkd.in` is denied on both sides, weak instruction cues need a contact, and the share text omits the source link. The deadline chip follows `valid_until_label`, and the hero is the best eligible item of the top three. The hero `InkWell` still wraps the Apply `FilledButton` in `featured_job_card.dart`.
+
+Two new defects:
+
+- `APPLY_CUE_PATTERN` (`ApplyLinkExtractor.php:50`) has no word boundary, so `تقدم` matches inside `المتقدمين`. At `:83` any allowed URL on that line becomes Apply. The input `على المتقدمين مراجعة الشروط https://company.example/about` opens the homepage as Apply.
+- `APPLY_PATH_PATTERN` (`:48`) is unanchored, so `/job` matches a blog path. With no cue, `https://news.example/blog/job-market-2026` is stored as the apply URL.
+- A link-less re-fetch recomputes the fingerprint before keeping the stored URL (`SaudiJobAggregatorService.php:431`, unset at `:474`). A row with company null and `https://careers.example.com/jobs/9`, re-fetched with no link and no email, keeps the URL but saves a null fingerprint, so another channel posting that same URL is stored again.
+
+VERDICT: CHANGES

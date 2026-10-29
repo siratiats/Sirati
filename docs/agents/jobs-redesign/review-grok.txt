@@ -1,0 +1,39 @@
+=== Grok (grok-4.7, effort high) session=01a1854c-66ae-7672-8f0b-481e19aa87f8 turns=9 cost=$0.144 stop=end_turn
+I'll review the jobs feed, apply-link path, and the current design board, then answer each question with ranked direction.The board still shows a match percentage the owner wants gone. Next I’ll read how apply links and ranking are actually built.## 1. Apply links
+
+Pick hrefs only inside `tgme_widget_message_text`. Today the scan is the whole wrap (`SaudiJobAggregatorService.php:177`), so the avatar `https://t.me/<channel>` wins (`:181` excludes only `t.me/s/` and `telegram.org`), then `:187` stores `https://t.me/{post}`. Flutter `actionUrl` (`job_news.dart:119`) falls through to that post. `parseSafeExternalUrl` (`safe_url.dart:12`) opens any https URL, including Telegram, and rejects `mailto`.
+
+For every candidate, not these three channels: https only. Deny the host and its subdomains: `t.me`, `telegram.me`, `telegram.org`, Instagram, Snapchat, Facebook, TikTok, `x.com`, Twitter, YouTube, `wa.me`, WhatsApp, and shorteners (`lik.ad`, `bit.ly`, `t.co`, `cutt.ly`, `tinyurl`, `goo.gl`, `rb.gy`). Do not resolve shorteners. Drop hashtag and search links. LinkedIn counts only when the path contains `/jobs/`. The first remaining in-text href wins. Otherwise an email in the job text (outside the footer) sets `apply_method=email`. Otherwise `apply_method=none` and `apply_url=null`. No phone or WhatsApp apply. Strip a trailing block that is only social or channel links from `body` before display and before extraction.
+
+API field: `url | email | none`. CTA: url opens "تقدم الآن"; email copies the address through its own launcher; none shows no apply button. Telegram is source text only. The client refuses the deny list even when a stored row still has it. Re-ingest must not replace a good `apply_url` with a denied one.
+
+## 2. Match %
+
+Remove the badge, bar, and high-match chrome (`job_news_card.dart:115`, `featured_job_card.dart:127`, `job_news_detail_screen.dart:25,212,228`, `hasHighMatch` at `job_news.dart:128`) and the payload score (`MobileContentController.php:516`), including the 15–98 floor (`JobProfileMatcherService.php:219`). Telegram ingest never sets `skills_required`, so drop `matched_skills` and `missing_skills` too.
+
+Keep preset `matched`. `applyMatchedFilter` (`:83`) ORs in every remote job and every same-city job. Require a title hit (`job_title_id`, else taxonomy category, else CV title). Rank that set by exact title, then category, then `published_at` desc. City and remote are sort keys. One quiet chip is enough ("نفس المجال" or "في مدينتك"). Daily notifications use a separate `keywordHitScore` (`DailyNotificationCandidateService.php:253`); leave that picker, and keep any percent out of the push text.
+
+## 3. Layout
+
+The board still paints "82% تطابق" on the hero. Card order: title, real employer, city or عن بعد, relative time, and one trust chip only for gov, enterprise, or tamheer. A hero exists only when that row has `apply_method=url` and a trusted source. "جديد" stays under 48 hours. Show "التقديم حتى" only for a date parsed from the post. The synthetic +30 days (`:221`) is not a deadline. An empty company stays empty: "جهة سعودية معتمدة" (`:214`) and the general badge "وظيفة موثقة" (`formatSourceType` default `:259`) are false. Share in-app text. Save stays on the device. The board's filters and empty, error, and offline states stay. RTL: Latin hosts and dates sit in LTR isolates; the external-link icon stays unmirrored; a selected chip needs a check; white on `#12B3A6` fails AA, so use the dark teal. On the detail screen, apply is the primary button when `method=url`. Otherwise the existing tailor-CV button stays primary and apply is absent.
+
+## 4. Do now, by value
+
+1. Deny list, client guard, and null existing `t.me` apply URLs.
+2. Stop the fake employer name and the "موثقة" badge on general rows.
+3. Tighten and re-rank "مناسبة لي", and delete the score.
+4. Strip promo footers.
+5. Dedupe on normalized title plus city, keeping the row with an allowed apply URL.
+6. Parse a real deadline. Otherwise expire Telegram rows at about 14–21 days and do not label that date as a deadline.
+7. Use the taxonomy title when the first line is a slogan. Take the company only from the company regex.
+
+## 5. Tests
+
+Across arbitrary inputs: no stored or launched apply URL is on the deny list; an avatar href never wins; no in-text link yields `none`; shorteners and hashtag searches are dropped; an email-only post yields `email` and does not use the https launcher; re-ingest keeps a good URL; "مناسبة لي" excludes another field's remote jobs; the payload and pumped widgets contain no "%"; the placeholder company and the fake deadline label never appear; two channels and one allowed link produce one item, the one with the link. Historical rows stay poisoned until that backfill. Resolving shorteners would be SSRF.
+
+LEARNINGS:
+- Telegram apply picking walks every href in the message wrap; the avatar `https://t.me/<channel>` matches because only `t.me/s/` and `telegram.org` are excluded, then the fallback is `https://t.me/{post}`.
+- `parseSafeExternalUrl` accepts any https host, including `t.me`, and rejects `mailto`.
+- `calculateMatch` clamps every logged-in score to 15–98, and `formatSourceType('general')` returns the badge "وظيفة موثقة".
+- Daily notification `match_score` is `keywordHitScore`, not `JobProfileMatcherService`.
+- A missing company is stored as "جهة سعودية معتمدة", and `valid_until` is always published+30, which the API labels "التقديم حتى".

@@ -321,9 +321,12 @@ XML;
         $this->assertContains($remoteJob->id, $returnedIds);
         $this->assertNotContains($financeJob->id, $returnedIds);
 
-        // Exact match should be ranked first with highest match score
+        // Tiers are ordered: exact title, then same category; no score is exposed.
         $this->assertSame($exactJob->id, $items[0]['id']);
-        $this->assertGreaterThanOrEqual($items[1]['match_score'], $items[0]['match_score']);
+        $this->assertSame($categoryJob->id, $items[1]['id']);
+        foreach ($items as $item) {
+            $this->assertEmpty(array_filter(array_keys($item), fn ($k) => str_starts_with($k, 'match') || str_contains($k, 'skills_matched') || $k === 'missing_skills'));
+        }
     }
 
     public function test_feed_health_tracking_records_success_and_warnings(): void

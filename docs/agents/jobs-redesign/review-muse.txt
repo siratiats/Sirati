@@ -1,0 +1,46 @@
+=== Muse (muse-wonder-1.0, effort high) session=8b0c4087-a873-4112-a520-5dcfffa3654f
+## Ranked review
+
+### 1. Apply link — P0, fix at ingestion
+Current picker scans the whole post HTML, so the channel avatar wins ([SaudiJobAggregatorService.php:177](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:177)); Flutter then falls back to the Telegram post ([job_news.dart:119](/D:/Sirati/flutter_app/lib/shared/models/job_news.dart:119)).
+
+- Parse anchors **only inside the message-text element**, never the post wrapper.
+- **Deny:** `t.me`/`telegram.*`, Instagram, Snapchat, X/Twitter, Facebook, YouTube, hashtag-search URLs (`?q=%23…`), `chat.whatsapp.com` group invites, and any link in a repeated promo footer.
+- **Allow as `url`:** HTTPS employer career pages, official `.gov.sa`, Jadarat, and known ATS hosts (Greenhouse, Lever, Workable, Taleo, SmartRecruiters); LinkedIn only for `/jobs/view/…` or company jobs pages. Unknown HTTPS hosts only when the anchor text or surrounding line says apply/register/careers (تقديم، سجّل، وظائف).
+- **Shorteners** (`lik.ad`, `bit.ly`, …): resolve server-side with a timeout, re-validate the final host against the same rules; unresolved → `none`.
+- **Email in text** → `apply_method: email`, `apply_email`; explicit “apply via WhatsApp + number” → `apply_method: whatsapp` (`wa.me/<number>`); a bare phone number is shown as text only, never auto-linked.
+- API: `apply_method: url|email|whatsapp|none`, `apply_url` (non-null only for url/whatsapp), `apply_email`, `source_url` (the Telegram post), `source_label`. When `none`: no Apply button; primary CTA stays “Tailor my CV”, plus muted text “No direct application link in the source post” and a clearly-labelled secondary “View source post” — Telegram is **source attribution only, never Apply**. Note [safe_url.dart:12](/D:/Sirati/flutter_app/lib/core/utils/safe_url.dart:12) accepts HTTPS only, so `mailto:` needs its own launch path.
+- Yes: strip promo footers from `body` at ingestion (cut the repeated social/footer block per channel), keep the raw text server-side if needed for audit.
+
+### 2. Removing match %
+Delete: payload `match_score/match_reasons/matched_skills/missing_skills` ([MobileContentController.php:516](/D:/Sirati/app/Http/Controllers/MobileContentController.php:516)), `sort_matched` re-sort ([:396](/D:/Sirati/app/Http/Controllers/MobileContentController.php:396)), Flutter fields, `hasHighMatch` ([job_news.dart:128](/D:/Sirati/flutter_app/lib/shared/models/job_news.dart:128)), and the score chips/bars in card, featured and detail screens. Keep `skills_required` as plain chips, un-highlighted.
+
+Keep “مناسبة لي” as an **invisible relevance ranking**: tier exact `job_title_id` → same category → target-title keyword → user city/remote, freshness inside each tier, implemented server-side in `applyMatchedFilter` ([JobProfileMatcherService.php:35](/D:/Sirati/app/Services/Jobs/JobProfileMatcherService.php:35)) so ordering is stable and testable. `calculateMatch` can then be deleted; move `formatSourceType`/`formatSalary` to a formatter. Correction to the brief: notifications do **not** use this matcher — [DailyNotificationCandidateService.php:235](/D:/Sirati/app/Services/Notifications/DailyNotificationCandidateService.php:235) has its own keyword score and the aggregator notifies on exact `job_title_id` only, so removal is safe there. Update `PersonalizedJobNewsTest` and the matched-preset ordering test in `SaudiJobAggregatorTest`.
+
+### 3. List + detail UX
+Keep the board’s skeleton/error/offline/empty-region states. Change:
+
+- **Hero:** today it is just `items.first` ([job_news_feed.dart:58](/D:/Sirati/flutter_app/lib/features/jobs/domain/job_news_feed.dart:58)) and its “تقدّم الآن” pill only opens detail ([featured_job_card.dart:246](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/featured_job_card.dart:246)). Show a hero only when verified + has a real apply method + <48h old; otherwise no hero. Its button must say “التفاصيل” unless it truly applies.
+- **Card priority:** title → company · city → published time / deadline → remote/employment chips → source line. Deadline chip turns urgent ≤3 days. “جديد” only when `published_at` <48h — not `index == 0` as now ([job_news_screen.dart:299](/D:/Sirati/flutter_app/lib/features/jobs/presentation/job_news_screen.dart:299)).
+- **Filters:** board uses one preset row + one region row; code stacks three rows ([:224](/D:/Sirati/flutter_app/lib/features/jobs/presentation/job_news_screen.dart:224)). Match the board, drop category chips into the preset row overflow, and drop region “flags” — Saudi regions have no flags; use pin icon + name.
+- **Detail:** sticky bottom CTA bar (Apply/Tailor CV), save (bookmark) and share actions in the app bar, “report broken link”, structured sections (requirements, deadline, source) instead of one raw body block.
+- **RTL/a11y:** directional padding everywhere, Latin company names and numbers isolated LTR, ≥48dp targets, verified text never colour-only, AA contrast on the dark hero (already guarded in code — keep).
+
+### 4. Logic improvements, ranked
+1. **Dedupe (high value, medium effort):** `updateOrCreate` keys only on source+post id ([:232](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:232)), so the same job from three channels appears thrice. Add a fingerprint (normalised title+company+city, or canonical apply host+path), merge duplicates, keep earliest publish date and all sources.
+2. **Trust (high, low):** aggregator fabricates `جهة سعودية معتمدة` / “Saudi Arabia” when extraction fails ([:214](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:214)) and the payload infers verified from `source_type` ([:485](/D:/Sirati/app/Http/Controllers/MobileContentController.php:485)), while the default source badge literally says “Verified Job” ([JobProfileMatcherService.php:258](/D:/Sirati/app/Services/Jobs/JobProfileMatcherService.php:258)). Use null/“غير محددة”, `is_verified=false` unless a curated source sets it, badge = channel name for general posts.
+3. **Expiry (high, low):** replace fixed +30 days ([:221](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:221)) with a parsed deadline from the text when present, else 14 days for Telegram, 30 for curated/API feeds.
+4. **Ranking (medium, low):** default sort = has-apply-method, then verified, then freshness — currently pure recency ([:320](/D:/Sirati/app/Http/Controllers/MobileContentController.php:320)).
+5. **Extraction quality (medium, medium):** title from the first line is often an announcement banner; prefer the first line containing a role keyword, and stop `extractCompany`’s last-dash-segment heuristic from inventing employers ([:675](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:675)).
+
+### 5. Top risks + required tests
+Risks: legacy rows already carry `t.me` apply URLs (needs a backfill/re-extraction, not just new-ingest fix); shortener resolution is an SSRF surface (allowlist schemes, private-IP block, timeout); footer-stripping must not eat the apply line itself.
+
+Tests, as invariants over arbitrary inputs (AGENTS.md §1): for any shuffled post HTML, `apply_url` is never a denied host and never the avatar/header link; any anchor set containing exactly one allowlisted apply link yields it regardless of position; footer stripping is idempotent and preserves an apply line placed after the footer; API responses never contain `match_*` keys for guest or authed users; `matched` ordering is tier-monotonic for randomised fixtures; dedupe collapses variants differing only in diacritics/punctuation/case; expiry boundary at today/tomorrow in `Asia/Riyadh`; widget tests: `apply_method=none` shows no Apply button and no Telegram navigation, `email` fires `mailto:`, RTL golden for list/detail/empty states.
+
+No files modified.
+
+LEARNINGS: `DailyNotificationCandidateService` does not use `JobProfileMatcherService` — it has an independent keyword scorer, so match-% removal does not touch daily notifications.
+LEARNINGS: Aggregated Telegram jobs never set `source_type`/`is_verified`, yet the payload marks gov/enterprise/tamheer types verified and the default badge reads “Verified Job” — trust is currently inferred, not earned.
+LEARNINGS: The featured hero is unconditionally `items.first`, so any ranking change silently changes the hero; gate it explicitly.
+LEARNINGS: `safe_url.dart` rejects non-HTTPS schemes, so an email apply CTA cannot reuse `launchSafeExternalUrl` without a separate mailto path.

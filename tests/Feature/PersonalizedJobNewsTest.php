@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\JobNews;
 use App\Models\JobTitle;
 use App\Models\User;
 use Database\Seeders\JobNewsSeeder;
@@ -66,7 +67,7 @@ class PersonalizedJobNewsTest extends TestCase
         }
     }
 
-    public function test_authenticated_user_receives_match_score_and_reasons(): void
+    public function test_matched_preset_never_exposes_a_score_and_only_returns_the_users_field(): void
     {
         $devTitle = JobTitle::where('slug', 'software-engineer')->firstOrFail();
         $user = User::factory()->create([
@@ -83,12 +84,62 @@ class PersonalizedJobNewsTest extends TestCase
         $this->assertTrue($context['has_profile']);
         $this->assertSame($devTitle->id, $context['job_title_id']);
 
-        $items = $response->json('data.items');
-        $this->assertNotEmpty($items);
+        foreach ($response->json('data.items') as $item) {
+            foreach (['match_score', 'match_reasons', 'matched_skills', 'missing_skills'] as $removed) {
+                $this->assertArrayNotHasKey($removed, $item);
+            }
+            $stored = JobNews::findOrFail($item['id']);
+            $this->assertTrue(
+                $stored->job_title_id === $devTitle->id || $stored->category === $devTitle->category,
+                'matched preset returned a job outside the user field',
+            );
+        }
+    }
 
-        $first = $items[0];
-        $this->assertNotNull($first['match_score']);
-        $this->assertGreaterThanOrEqual(45, $first['match_score']);
-        $this->assertNotEmpty($first['match_reasons']);
+    public function test_matched_preset_is_empty_without_a_role_on_the_profile(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['job_title_id' => null, 'location' => 'الرياض']));
+
+        $response = $this->getJson('/api/mobile/job-news?preset=matched');
+        $response->assertOk();
+        $this->assertSame([], $response->json('data.items'));
+        $this->assertFalse($response->json('data.profile_context.has_profile'));
+    }
+
+    public function test_matched_preset_works_from_a_cv_target_title_alone(): void
+    {
+        $user = User::factory()->create(['job_title_id' => null, 'location' => null]);
+        \App\Models\CvAnalysis::create([
+            'user_id' => $user->id,
+            'target_job_title' => 'مطور',
+            'input_method' => 'paste',
+            'resume_text' => 'Laravel developer',
+            'score_total' => 50,
+            'grade' => 'C',
+            'job_match' => 50,
+            'criteria' => [],
+            'strengths' => [],
+            'weaknesses' => [],
+            'keywords_found' => [],
+            'keywords_missing' => [],
+            'quick_wins' => [],
+        ]);
+        Sanctum::actingAs($user);
+
+        $response = $this->getJson('/api/mobile/job-news?preset=matched')->assertOk();
+
+        $this->assertTrue($response->json('data.profile_context.has_profile'));
+        $this->assertSame('مطور', $response->json('data.profile_context.job_title_name'));
+        foreach ($response->json('data.items') as $item) {
+            $stored = JobNews::findOrFail($item['id']);
+            $this->assertTrue(str_contains($stored->title.' '.$stored->body, 'مطور'), $stored->title);
+        }
+    }
+
+    public function test_guest_matched_preset_is_empty(): void
+    {
+        $this->getJson('/api/mobile/job-news?preset=matched')
+            ->assertOk()
+            ->assertJsonPath('data.items', []);
     }
 }

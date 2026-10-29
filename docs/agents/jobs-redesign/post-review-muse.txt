@@ -1,0 +1,18 @@
+=== Muse (muse-wonder-1.0, effort high) session=8b0c4087-a873-4112-a520-5dcfffa3654f
+## Findings
+
+**P1 — Dedupe can merge different employers and transfer the wrong apply link.** [JobNews.php:64](/D:/Sirati/app/Models/JobNews.php:64) fingerprints only normalised title + company + city, and company is often null under strict extraction. Two posts titled “مطلوب مهندس كهرباء في الدمام” from different employers named only in Latin, or without a شركة/مجموعة prefix, get the same fingerprint; [SaudiJobAggregatorService.php:442](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:442) then discards the second and force-fills its apply link onto the first employer’s row ([:448](/D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:448)). Add employer/apply-host to the fingerprint, or never merge when company is null.
+
+**P1 — “Apply” is still a denylist, and the first allowed link wins.** [ApplyLinkExtractor.php:97](/D:/Sirati/app/Services/Jobs/ApplyLinkExtractor.php:97) allows any HTTPS non-denied host, so an unlisted shortener such as `https://clck.ru/Ab12` (redirecting to Telegram) passes on server and client, contrary to “shorteners denied”. Separately, [fromMessageHtml:49](/D:/Sirati/app/Services/Jobs/ApplyLinkExtractor.php:49) returns the first allowed href regardless of context: a post linking the employer homepage in its intro before “للتقديم: careers…” stores the homepage as Apply. Require apply-context anchor text or known ATS/employer paths for unknown hosts.
+
+**P2 — Client guard diverges from the server.** Server rejects `/search` and `/hashtag` paths; [apply_destination.dart:96](/D:/Sirati/flutter_app/lib/features/jobs/domain/apply_destination.dart:96) only checks the `q` parameter. A cached payload with `apply_method=url`, `apply_url=https://example.com/hashtag/jobs` opens as Apply on the client. Mirror the path rules.
+
+**P2 — Footer “signature” cut can eat real job text.** The separator-tail heuristic in [ApplyLinkExtractor.php:144](/D:/Sirati/app/Services/Jobs/ApplyLinkExtractor.php:144) removes up to three short lines after a `-----` divider. Input ending `-----\nخبرة سنتين\nيشترط لغة إنجليزية\nالراتب مجزي` loses all three requirement lines. Only cut a tail that contains a promo/social token or channel name.
+
+**P2 — `applyInstructions` false-positives on job duties.** [ApplyLinkExtractor.php:233](/D:/Sirati/app/Services/Jobs/ApplyLinkExtractor.php:233) triggers on “التواصل مع”, so “من مهام الوظيفة التواصل مع العملاء” is presented as the how-to-apply card. Require an apply verb plus a contact/link cue in the same block.
+
+**P3 — Two consistency misses.** Users with only a CV target title do get matched results ([JobProfileMatcherService.php:43](/D:/Sirati/app/Services/Jobs/JobProfileMatcherService.php:43)), yet `has_profile` requires `job_title_id` ([MobileContentController.php:413](/D:/Sirati/app/Http/Controllers/MobileContentController.php:413)), so [matched_preset_note.dart:24](/D:/Sirati/flutter_app/lib/features/jobs/presentation/widgets/matched_preset_note.dart:24) tells them to add a title. And [job_news_feed.dart:57](/D:/Sirati/flutter_app/lib/features/jobs/domain/job_news_feed.dart:57) only ever promotes `items.first`, so a fresh linked second item yields no hero.
+
+Checked with no issue: matched ORDER BY prepend/binding alignment (the caller’s raw orders carry no bindings), mailto validation/subject encoding, and the Telegram source row labelling.
+
+VERDICT: CHANGES

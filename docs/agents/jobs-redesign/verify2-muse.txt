@@ -1,0 +1,6 @@
+=== Muse (muse-wonder-1.0, effort medium) session=8b0c4087-a873-4112-a520-5dcfffa3654f
+**Fixed:** plain unlisted shorteners (e.g. `dlvr.it/Ab12`) are now denied on server and client, and destination identity ignores `www`, trailing slash, fragment and tracking parameters, so the UTM repost merges.
+
+**New defect (P2):** the shortener heuristic only fires when the query string is empty — [ApplyLinkExtractor.php:201](/D:/Sirati/app/Services/Jobs/ApplyLinkExtractor.php:201), mirrored at [apply_destination.dart:156](/D:/Sirati/flutter_app/lib/features/jobs/domain/apply_destination.dart:156). Input `للتقديم: https://dlvr.it/Ab12?utm_source=tg` therefore passes both guards and becomes Apply, although it is the same denied shortener with a tracking parameter. A segment longer than 12 chars (`dlvr.it/Ab12Cd34Ef56Gh7`) escapes the `{3,12}` bound the same way. Drop the query-empty condition and the length cap, or deny single-segment paths on hosts that are neither known apply hosts nor plausible employer domains.
+
+VERDICT: CHANGES

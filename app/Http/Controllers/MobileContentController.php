@@ -12,6 +12,7 @@ use App\Models\JobNews;
 use App\Models\JobTitle;
 use App\Models\MobileNotification;
 use App\Models\User;
+use App\Services\Jobs\ApplyLinkExtractor;
 use App\Services\Jobs\JobProfileMatcherService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -307,19 +308,28 @@ class MobileContentController extends Controller
         $search = trim((string) ($request->query('q') ?? $request->query('query', '')));
         $jobTitleId = $request->filled('job_title_id') ? (int) $request->query('job_title_id') : null;
         $city = $request->filled('city') ? trim((string) $request->query('city')) : null;
+        $region = $request->filled('region') ? trim((string) $request->query('region')) : null;
         $isRemote = $request->boolean('is_remote', false);
         $isVerified = $request->has('is_verified') ? $request->boolean('is_verified') : null;
         $sourceType = $request->filled('source_type') ? trim((string) $request->query('source_type')) : null;
         $employmentType = $request->filled('employment_type') ? trim((string) $request->query('employment_type')) : null;
         $experienceLevel = $request->filled('experience_level') ? trim((string) $request->query('experience_level')) : null;
 
+        // One instance so its per-request cache (CV target title) serves both
+        // the filter and the profile context (SIRATI-97).
+        $matcher = app(JobProfileMatcherService::class);
+
         $query = JobNews::query()
             ->with('jobTitle')
             ->where('language', $language)
             ->active()
             ->orderBy('sort_order')
+            // Newest day first; within a day, posts the user can act on
+            // (a link or an email) come before ones without.
+            ->orderByRaw('DATE(published_at) DESC')
+            ->orderByRaw('CASE WHEN apply_url IS NULL AND apply_email IS NULL THEN 1 ELSE 0 END')
             ->latest('published_at')
-            ->latest();
+            ->latest('id');
 
         // Preset handling
         if ($preset === 'gov') {
@@ -333,8 +343,8 @@ class MobileContentController extends Controller
             });
         } elseif ($preset === 'remote') {
             $query->where('is_remote', true);
-        } elseif ($preset === 'matched' && $user !== null) {
-            app(JobProfileMatcherService::class)->applyMatchedFilter($query, $user);
+        } elseif ($preset === 'matched') {
+            $matcher->applyMatchedFilter($query, $user);
         }
 
         // Direct filters
@@ -365,6 +375,10 @@ class MobileContentController extends Controller
             $query->where('city', $city);
         }
 
+        if ($region !== null && isset(self::REGION_CITIES[$region])) {
+            $query->whereIn('city', self::REGION_CITIES[$region]);
+        }
+
         if ($request->has('is_remote') && $isRemote) {
             $query->where('is_remote', true);
         }
@@ -378,9 +392,6 @@ class MobileContentController extends Controller
             });
         }
 
-        // Shared matcher instance so its per-request caches (user skills,
-        // latest CV title) are hit once, not once per rendered job (SIRATI-97).
-        $matcher = app(JobProfileMatcherService::class);
         if ($user !== null) {
             $user->loadMissing('jobTitle');
         }
@@ -390,12 +401,8 @@ class MobileContentController extends Controller
             ->get()
             ->filter(fn (JobNews $item): bool => $category === null || $this->inferJobCategory($item) === $category)
             ->take(30)
-            ->map(fn (JobNews $item): array => $this->jobNewsPayload($item, $language, $user, $matcher));
-
-        // If user is matched or has profile, sort by match_score descending if preset is matched or requested
-        if ($preset === 'matched' || $request->boolean('sort_matched')) {
-            $items = $items->sortByDesc('match_score')->values();
-        }
+            ->map(fn (JobNews $item): array => $this->jobNewsPayload($item, $language))
+            ->values();
 
         return [
             'data' => [
@@ -405,10 +412,11 @@ class MobileContentController extends Controller
                     : 'فرص وتحديثات توظيف موثقة ومخصصة لملفك المهني.',
                 'selected_category' => $category ?? 'all',
                 'selected_preset' => $preset,
+                'selected_region' => $region !== null && isset(self::REGION_CITIES[$region]) ? $region : 'all',
                 'profile_context' => [
-                    'has_profile' => $user !== null && ($user->job_title_id !== null || ! empty($user->location)),
+                    'has_profile' => $matcher->hasRole($user),
                     'job_title_id' => $user?->job_title_id,
-                    'job_title_name' => $language === 'en' ? $user?->jobTitle?->name_en : $user?->jobTitle?->name_ar,
+                    'job_title_name' => $matcher->roleNameFor($user, $language),
                     'location' => $user?->location,
                 ],
                 'items' => $items,
@@ -429,7 +437,7 @@ class MobileContentController extends Controller
             404
         );
 
-        return ['data' => $this->jobNewsPayload($jobNews, $language, $user)];
+        return ['data' => $this->jobNewsPayload($jobNews, $language)];
     }
 
     public function notifications(Request $request): array
@@ -468,24 +476,28 @@ class MobileContentController extends Controller
         return ['message' => 'تم تعليم كل الإشعارات كمقروءة.'];
     }
 
-    private function jobNewsPayload(JobNews $item, string $language = 'ar', ?User $user = null, ?JobProfileMatcherService $matcher = null): array
+    private function jobNewsPayload(JobNews $item, string $language = 'ar'): array
     {
+        // Aggregated posts retire on an internal date, not a stated deadline,
+        // so only curated listings show "apply by".
         $validUntilLabel = null;
-        if ($item->valid_until !== null) {
+        if ($item->valid_until !== null && $item->external_source === null) {
             $validUntilLabel = $language === 'en'
                 ? 'Apply by '.$item->valid_until->format('d M Y')
                 : 'التقديم حتى '.$this->latinDigits($item->valid_until->translatedFormat('d F Y'));
         }
 
-        $matcher ??= app(JobProfileMatcherService::class);
-        $matchInfo = $matcher->calculateMatch($item, $user, $language);
-        $sourceInfo = $matcher->formatSourceType($item->source_type ?? 'general', $language);
-        $salaryRange = $matcher->formatSalary($item->salary_min, $item->salary_max, $language);
+        $formatter = app(JobProfileMatcherService::class);
+        $sourceInfo = $formatter->formatSourceType($item->source_type ?? 'general', $language);
+        $salaryRange = $formatter->formatSalary($item->salary_min, $item->salary_max, $language);
 
-        $isVerified = (bool) (
-            $item->is_verified
-            || in_array($item->source_type, ['gov', 'enterprise', 'tamheer'], true)
-        );
+        // Re-checked on every response, so rows stored under older rules can
+        // never offer Telegram or a social page as "Apply".
+        $links = app(ApplyLinkExtractor::class);
+        $apply = $links->resolve($item->apply_url, $item->apply_email);
+        $applyInstructions = $apply['method'] === ApplyLinkExtractor::METHOD_NONE
+            ? $links->applyInstructions((string) $item->body)
+            : null;
 
         return [
             'id' => $item->id,
@@ -499,13 +511,18 @@ class MobileContentController extends Controller
             'category' => $this->inferJobCategory($item),
             'job_title_id' => $item->job_title_id,
             'url' => $item->url,
-            'apply_url' => $item->apply_url,
+            'source_url' => $item->url,
+            'source_name' => $item->source,
+            'apply_method' => $apply['method'],
+            'apply_url' => $apply['url'],
+            'apply_email' => $apply['email'],
+            'apply_instructions' => $applyInstructions,
             'valid_from' => $item->valid_from?->toDateString(),
             'valid_until' => $item->valid_until?->toDateString(),
             'valid_until_label' => $validUntilLabel,
             'published_label' => $item->published_at?->diffForHumans(),
             'published_at' => $item->published_at?->toISOString(),
-            'is_verified' => $isVerified,
+            'is_verified' => (bool) $item->is_verified,
             'source_type' => $item->source_type ?? 'general',
             'source_type_label' => $sourceInfo['label'],
             'source_badge' => $sourceInfo['badge'],
@@ -513,12 +530,17 @@ class MobileContentController extends Controller
             'experience_level' => $item->experience_level,
             'salary_range' => $salaryRange,
             'skills_required' => $item->skills_required ?? [],
-            'match_score' => $matchInfo['score'],
-            'match_reasons' => $matchInfo['reasons'],
-            'matched_skills' => $matchInfo['matched_skills'],
-            'missing_skills' => $matchInfo['missing_skills'],
         ];
     }
+
+    /** Saudi regions as used by the app's region chips, by stored city code. */
+    private const REGION_CITIES = [
+        'central' => ['riyadh', 'qassim'],
+        'eastern' => ['dammam', 'khobar', 'dhahran', 'jubail'],
+        'western' => ['jeddah', 'mecca', 'medina'],
+        'northern' => ['tabuk'],
+        'southern' => ['abha'],
+    ];
 
     private function jobNewsCategory($value): ?string
     {

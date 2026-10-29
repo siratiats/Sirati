@@ -1,0 +1,15 @@
+=== Codex (gpt-6.1-sol, effort medium) session=01a1854c-0f3f-7f13-95fe-0d604d4137aa usage={"input_tokens":6891641,"cached_input_tokens":6293376,"cache_write_input_tokens":0,"output_tokens":19848,"reasoning_output_tokens":10582}
+All four previous repros are fixed: promotional URL exclusion, URL case preservation, refetch fingerprint retention, and Arabic-digit phone preservation.
+
+**P1 - New destination normalization can merge distinct vacancies.** [JobNews.php:103](D:/Sirati/app/Models/JobNews.php:103)
+
+For listings with identical employer/title/city, these distinct destinations normalize identically:
+
+- `https://careers.example.com/#/jobs/101` and `https://careers.example.com/#/jobs/202`: dropping fragments removes the vacancy identifier on sites using hash routing.
+- `https://careers.example.com/apply?req.id=101` and `https://careers.example.com/apply?req_id=101`: `parse_str` converts dots in parameter names to underscores, conflating parameters that the destination server can distinguish.
+
+The conflict check consequently permits merging, silently discarding a vacancy and its application link. Preserve routing fragments and non-tracking query names, values, and multiplicity; remove only established tracking noise. Add tests asserting that distinct vacancy identities remain separate.
+
+Read-only verification; no app or tests run.
+
+VERDICT: CHANGES

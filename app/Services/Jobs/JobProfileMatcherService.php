@@ -2,233 +2,134 @@
 
 namespace App\Services\Jobs;
 
-use App\Models\JobNews;
-use App\Models\JobTitle;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * Profile relevance for the "مناسبة لي" preset, plus display formatting for
+ * source type and salary. There is no visible match score: relevance only
+ * filters and orders the list.
+ */
 class JobProfileMatcherService
 {
     /**
-     * Per-instance caches so a single request that renders 30 jobs (via
-     * calculateMatch() inside a ->map()) does one DB read for the user's
-     * skills and one for the latest CV/analysis title, not 30 (SIRATI-97).
-     * Keyed by user id.
+     * Latest CV/analysis target title per user id, so one request reads it
+     * once (SIRATI-97).
      *
-     * @var array<int, list<string>>
-     */
-    private array $userSkillsCache = [];
-
-    /**
      * @var array<int, string>
      */
     private array $userTargetTitleCache = [];
 
     /**
-     * Apply intelligent tiered match filter to a JobNews query for a user.
-     * Hierarchy:
-     * 1. Exact job_title_id match
-     * 2. Same taxonomy category match (e.g. tech, finance, health)
-     * 3. CV target title keyword match
-     * 4. City match or Remote fallback
+     * Restrict a JobNews query to jobs in the user's field and order them by
+     * relevance. A job qualifies only through the role: the exact job title,
+     * the same taxonomy category, or the CV target title in its text. City and
+     * remote only order qualifying jobs; they never admit another field's job.
+     * A user with no role information gets no results (the app asks them to
+     * set a job title instead).
+     *
+     * Order: exact title, then category, then target-title text; inside each
+     * tier same-city first, then remote, then the caller's own ordering.
      */
     public function applyMatchedFilter(Builder $query, ?User $user): Builder
     {
         if ($user === null) {
-            return $query;
+            return $query->whereRaw('1 = 0');
         }
 
         $user->loadMissing('jobTitle');
         $jobTitleId = $user->job_title_id;
-        $category = $user->jobTitle?->category;
-        $userLocation = mb_strtolower(trim((string) ($user->location ?? $user->city ?? '')), 'UTF-8');
+        $category = trim((string) $user->jobTitle?->category);
+        $targetTitle = $jobTitleId === null ? $this->targetTitleFor($user) : '';
+        $city = $this->cityCodeFor($user);
 
-        // Look up target job title from recent CV if profile title is empty
-        $targetTitle = null;
-        if ($jobTitleId === null) {
-            $targetTitle = $this->targetTitleFor($user);
+        if (! $this->hasRole($user)) {
+            return $query->whereRaw('1 = 0');
         }
 
-        $query->where(function (Builder $q) use ($jobTitleId, $category, $userLocation, $targetTitle): void {
-            $hasCondition = false;
-
+        $query->where(function (Builder $q) use ($jobTitleId, $category, $targetTitle): void {
             if ($jobTitleId !== null) {
-                $q->where('job_title_id', $jobTitleId);
-                $hasCondition = true;
+                $q->orWhere('job_title_id', $jobTitleId);
             }
-
-            if (! empty($category)) {
-                if ($hasCondition) {
-                    $q->orWhere('category', $category);
-                } else {
-                    $q->where('category', $category);
-                    $hasCondition = true;
-                }
+            if ($category !== '') {
+                $q->orWhere('category', $category);
             }
-
-            if (! empty($targetTitle)) {
-                if ($hasCondition) {
-                    $q->orWhere('title', 'like', "%{$targetTitle}%")
-                      ->orWhere('body', 'like', "%{$targetTitle}%");
-                } else {
-                    $q->where(function ($sub) use ($targetTitle): void {
-                        $sub->where('title', 'like', "%{$targetTitle}%")
-                            ->orWhere('body', 'like', "%{$targetTitle}%");
-                    });
-                    $hasCondition = true;
-                }
-            }
-
-            // Also include remote opportunities or same-city opportunities
-            if ($hasCondition) {
-                $q->orWhere('is_remote', true);
-                if ($userLocation !== '') {
-                    $q->orWhere('city', $userLocation)
-                      ->orWhere('location', 'like', "%{$userLocation}%");
-                }
-            } else {
-                // If user has no title info, fall back to location / remote
-                $q->where('is_remote', true);
-                if ($userLocation !== '') {
-                    $q->orWhere('city', $userLocation)
-                      ->orWhere('location', 'like', "%{$userLocation}%");
-                }
+            if ($targetTitle !== '') {
+                $q->orWhere('title', 'like', "%{$targetTitle}%")
+                    ->orWhere('body', 'like', "%{$targetTitle}%");
             }
         });
+
+        // A CASE needs at least one WHEN; with only a CV target title every
+        // qualifying job is in the same tier and there is no tier ordering.
+        $tier = null;
+        $bindings = [];
+        if ($jobTitleId !== null || $category !== '') {
+            $tier = 'CASE';
+            if ($jobTitleId !== null) {
+                $tier .= ' WHEN job_title_id = ? THEN 0';
+                $bindings[] = $jobTitleId;
+            }
+            if ($category !== '') {
+                $tier .= ' WHEN category = ? THEN 1';
+                $bindings[] = $category;
+            }
+            $tier .= ' ELSE 2 END';
+        }
+
+        $place = 'CASE';
+        $placeBindings = [];
+        if ($city !== null) {
+            $place .= ' WHEN city = ? THEN 0';
+            $placeBindings[] = $city;
+        }
+        $place .= ' WHEN is_remote = 1 THEN 1 ELSE 2 END';
+
+        // Relevance goes before the caller's ordering, ahead of the LIMIT.
+        $query->getQuery()->orders = array_merge(
+            $tier !== null ? [['type' => 'Raw', 'sql' => $tier]] : [],
+            [['type' => 'Raw', 'sql' => $place]],
+            $query->getQuery()->orders ?? [],
+        );
+        $query->addBinding(array_merge($bindings, $placeBindings), 'order');
 
         return $query;
     }
 
     /**
-     * Compute compatibility match between a job and a user.
-     *
-     * @return array{
-     *     score: int|null,
-     *     reasons: list<string>,
-     *     matched_skills: list<string>,
-     *     missing_skills: list<string>
-     * }
+     * Whether the profile names a role the "in my field" preset can use: a
+     * job title, or a target title from the latest CV or analysis.
      */
-    public function calculateMatch(JobNews $job, ?User $user, string $language = 'ar'): array
+    public function hasRole(?User $user): bool
     {
         if ($user === null) {
-            return [
-                'score' => null,
-                'reasons' => [],
-                'matched_skills' => [],
-                'missing_skills' => $job->skills_required ?? [],
-            ];
+            return false;
         }
-
-        $isEnglish = $language === 'en';
-        $score = 0;
-        $reasons = [];
-        $matchedSkills = [];
-        $missingSkills = [];
-
         $user->loadMissing('jobTitle');
-        $userJobTitleId = $user->job_title_id;
-        $userLocation = mb_strtolower(trim((string) ($user->location ?? $user->city ?? '')), 'UTF-8');
 
-        // 1. Direct Job Title Match (Up to 45 points)
-        if ($userJobTitleId !== null && $job->job_title_id !== null && $userJobTitleId === $job->job_title_id) {
-            $score += 45;
-            $titleName = $isEnglish
-                ? ($user->jobTitle?->name_en ?? 'your target role')
-                : ($user->jobTitle?->name_ar ?? 'مسماك الوظيفي');
-            $reasons[] = $isEnglish
-                ? "Matches your target title ({$titleName})"
-                : "يتطابق مع مسماك المستهدف ({$titleName})";
-        } elseif ($userJobTitleId !== null && $user->jobTitle !== null) {
-            // Partial match on taxonomy category
-            $userCategory = $user->jobTitle->category ?? '';
-            if ($userCategory !== '' && $job->category === $userCategory) {
-                $score += 25;
-                $reasons[] = $isEnglish
-                    ? 'Matches your career field'
-                    : 'ضمن مجالك وقطاعك المهني';
-            }
-        } else {
-            // Check target title from latest CV or analysis (cached per-request).
-            $targetTitle = $this->targetTitleFor($user);
+        return $user->job_title_id !== null
+            || trim((string) $user->jobTitle?->category) !== ''
+            || $this->targetTitleFor($user) !== '';
+    }
 
-            if ($targetTitle !== '') {
-                $cleanTarget = mb_strtolower($targetTitle, 'UTF-8');
-                $jobTitleClean = mb_strtolower($job->title, 'UTF-8');
-                if (str_contains($jobTitleClean, $cleanTarget) || str_contains($cleanTarget, $jobTitleClean)) {
-                    $score += 40;
-                    $reasons[] = $isEnglish
-                        ? "Matches your CV title ({$targetTitle})"
-                        : "يتطابق مع مسمى سيرتك الذاتية ({$targetTitle})";
-                }
-            }
+    /** The role the preset is based on: the job title, else the CV target title. */
+    public function roleNameFor(?User $user, string $language): ?string
+    {
+        if ($user === null) {
+            return null;
         }
+        $user->loadMissing('jobTitle');
+        $name = $language === 'en' ? $user->jobTitle?->name_en : $user->jobTitle?->name_ar;
+        $name = trim((string) ($name ?: $this->targetTitleFor($user)));
 
-        // 2. City / Remote Location Match (Up to 25 points)
-        if ($job->is_remote) {
-            $score += 25;
-            $reasons[] = $isEnglish ? 'Remote opportunity (work from anywhere)' : 'فرصة عمل عن بُعد تناسبك';
-        } elseif ($job->city !== null && $userLocation !== '') {
-            $normalizedCity = mb_strtolower($job->city, 'UTF-8');
-            if (str_contains($userLocation, $normalizedCity) || (str_contains($userLocation, 'riyadh') && $normalizedCity === 'riyadh')) {
-                $score += 25;
-                $cityLabel = $isEnglish ? ucfirst($job->city) : ($job->location ?? 'مدينتك');
-                $reasons[] = $isEnglish ? "Located in your city ({$cityLabel})" : "في نفس مدينتك ({$cityLabel})";
-            }
-        }
-
-        // 3. Skills Overlap with User CV / Profile (Up to 30 points)
-        $requiredSkills = $job->skills_required ?: [];
-        if (! empty($requiredSkills)) {
-            $userCvSkills = $this->extractUserSkills($user);
-
-            foreach ($requiredSkills as $skill) {
-                $cleanSkill = mb_strtolower(trim($skill), 'UTF-8');
-                $found = false;
-                foreach ($userCvSkills as $userSkill) {
-                    if ($this->skillsMatch($userSkill, $cleanSkill)) {
-                        $found = true;
-                        break;
-                    }
-                }
-
-                if ($found) {
-                    $matchedSkills[] = $skill;
-                } else {
-                    $missingSkills[] = $skill;
-                }
-            }
-
-            if (! empty($matchedSkills)) {
-                $ratio = count($matchedSkills) / max(1, count($requiredSkills));
-                $skillPoints = (int) round($ratio * 30);
-                $score += $skillPoints;
-
-                $skillsSnippet = implode(', ', array_slice($matchedSkills, 0, 3));
-                $reasons[] = $isEnglish
-                    ? "Matches your skills: {$skillsSnippet}"
-                    : "تطابق مهاراتك: {$skillsSnippet}";
-            }
-        } else {
-            // If job didn't specify distinct skills, grant base points if title matched
-            if ($score >= 40) {
-                $score += 15;
-            }
-        }
-
-        // Bound score between 15% and 98%
-        $finalScore = min(98, max(15, $score));
-
-        return [
-            'score' => $finalScore,
-            'reasons' => $reasons,
-            'matched_skills' => $matchedSkills,
-            'missing_skills' => $missingSkills,
-        ];
+        return $name !== '' ? $name : null;
     }
 
     /**
-     * Human-readable label and badge for source_type.
+     * Human-readable label and badge for source_type. A general aggregated
+     * post has neither: nothing has verified it.
+     *
+     * @return array{code: string, label: ?string, badge: ?string}
      */
     public function formatSourceType(string $sourceType, string $language = 'ar'): array
     {
@@ -238,27 +139,27 @@ class JobProfileMatcherService
             'gov' => [
                 'code' => 'gov',
                 'label' => $isEnglish ? 'Gov / Semi-Gov' : 'جهة حكومية / شبه حكومية',
-                'badge' => '🏛️ ' . ($isEnglish ? 'Verified Gov' : 'جهة حكومية موثقة'),
+                'badge' => $isEnglish ? 'Government' : 'جهة حكومية',
             ],
             'enterprise' => [
                 'code' => 'enterprise',
-                'label' => $isEnglish ? 'Top Enterprise' : 'شركة كبرى معتمدة',
-                'badge' => '🏢 ' . ($isEnglish ? 'Enterprise' : 'شركة كبرى'),
+                'label' => $isEnglish ? 'Company' : 'شركة',
+                'badge' => $isEnglish ? 'Company' : 'شركة',
             ],
             'tamheer' => [
                 'code' => 'tamheer',
-                'label' => $isEnglish ? 'Tamheer Program' : 'برنامج تمهير الوطني',
-                'badge' => '🎓 ' . ($isEnglish ? 'Tamheer' : 'تمهير'),
+                'label' => $isEnglish ? 'Tamheer Program' : 'برنامج تمهير',
+                'badge' => $isEnglish ? 'Tamheer & training' : 'تمهير وتدريب',
             ],
             'startup' => [
                 'code' => 'startup',
-                'label' => $isEnglish ? 'Verified Startup' : 'شركة ناشئة معتمدة',
-                'badge' => '🚀 ' . ($isEnglish ? 'Verified Startup' : 'شركة ناشئة'),
+                'label' => $isEnglish ? 'Startup' : 'شركة ناشئة',
+                'badge' => $isEnglish ? 'Startup' : 'شركة ناشئة',
             ],
             default => [
                 'code' => 'general',
-                'label' => $isEnglish ? 'Direct Apply' : 'تقديم مباشر',
-                'badge' => '✅ ' . ($isEnglish ? 'Verified Job' : 'وظيفة موثقة'),
+                'label' => null,
+                'badge' => null,
             ],
         };
     }
@@ -292,91 +193,21 @@ class JobProfileMatcherService
         return $language === 'en' ? "Up to {$formattedMax} {$currency}" : "حتى {$formattedMax} {$currency}";
     }
 
-    /**
-     * True when two skill strings refer to the same skill.
-     *
-     * Uses exact-or-word-boundary matching, mirroring the fix already applied
-     * to AtsScoringService::matchKeyword (SIRATI-98). The previous bidirectional
-     * str_contains falsely credited "java" for "javascript", "sql" for
-     * "postgresql", and "type" for "typescript" — inflating match_score for
-     * every tech job in the list.
-     *
-     * Match rules, in order:
-     *   1. exact string match after normalisation
-     *   2. the shorter side appears as a WHOLE WORD inside the longer side,
-     *      so "REST APIs" contains the whole token "rest" and "React 18"
-     *      contains "react", but "javascript" does NOT contain "java".
-     */
-    private function skillsMatch(string $a, string $b): bool
+    /** The user's location as a stored city code (e.g. "riyadh"), if recognised. */
+    private function cityCodeFor(User $user): ?string
     {
-        $a = mb_strtolower(trim($a), 'UTF-8');
-        $b = mb_strtolower(trim($b), 'UTF-8');
-        if ($a === '' || $b === '') {
-            return false;
-        }
-        if ($a === $b) {
-            return true;
+        $location = trim((string) ($user->location ?? ''));
+        if ($location === '') {
+            return null;
         }
 
-        [$short, $long] = mb_strlen($a) <= mb_strlen($b) ? [$a, $b] : [$b, $a];
-        if ($short === $long) {
-            return true;
-        }
+        $city = app(JobTaxonomyMatcher::class)->detectCity($location)['city'] ?? null;
 
-        // \b with /u honours Unicode word boundaries, so Arabic terms
-        // work too (e.g. "لارفيل" whole-word inside "خبرة لارفيل ٥ سنوات").
-        return (bool) preg_match('/\b'.preg_quote($short, '/').'\b/u', $long);
-    }
-
-    /**
-     * Collect user skills from latest GeneratedCv or profile.
-     * Cached per instance so a request that renders 30 jobs re-uses the same
-     * one-time DB read instead of hitting generated_cvs N times (SIRATI-97).
-     *
-     * @return list<string>
-     */
-    private function extractUserSkills(User $user): array
-    {
-        $key = (int) $user->id;
-        if (isset($this->userSkillsCache[$key])) {
-            return $this->userSkillsCache[$key];
-        }
-
-        $skills = [];
-
-        // Check latest generated CV
-        $latestCv = $user->generatedCvs()->latest()->first();
-        if ($latestCv !== null && ! empty($latestCv->skills_input)) {
-            $raw = is_array($latestCv->skills_input)
-                ? implode(',', $latestCv->skills_input)
-                : (string) $latestCv->skills_input;
-
-            $parts = preg_split('/[,،\n]+/', $raw);
-            foreach ($parts as $part) {
-                $trimmed = mb_strtolower(trim($part), 'UTF-8');
-                if ($trimmed !== '') {
-                    $skills[] = $trimmed;
-                }
-            }
-        }
-
-        // Add keywords from user's registered job title
-        if ($user->jobTitle !== null && ! empty($user->jobTitle->keywords)) {
-            foreach ($user->jobTitle->keywords as $kw) {
-                $clean = mb_strtolower(trim($kw), 'UTF-8');
-                if ($clean !== '') {
-                    $skills[] = $clean;
-                }
-            }
-        }
-
-        return $this->userSkillsCache[$key] = array_values(array_unique($skills));
+        return is_string($city) && $city !== 'remote' ? $city : null;
     }
 
     /**
      * Latest CV or analysis target title, cached per instance (SIRATI-97).
-     * Called from applyMatchedFilter() and calculateMatch(); with 30 items in
-     * a list, the naive path hits generated_cvs + cv_analyses 60 times.
      */
     private function targetTitleFor(User $user): string
     {

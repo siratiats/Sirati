@@ -1,0 +1,6 @@
+=== Grok (grok-4.7, effort medium) session=01a1854c-66ae-7672-8f0b-481e19aa87f8 turns=9 cost=$0.306 stop=end_turn
+I'll verify the round-2 fixes in the two diffs and report only new defects.The open findings are fixed. Whole-word cues no longer match `المتقدمين`, `/job-market-2026` is not an apply path, a link-less re-fetch fingerprints the preserved URL, promo lines do not become Apply, and the hero tap and Apply button are siblings.
+
+**New.** `looksLikeShortener` (`ApplyLinkExtractor.php:200`, `apply_destination.dart:156`) treats any host of 10 characters or fewer plus one 3–12 character path segment as a shortener. The segment does not have to be opaque, and a `careers.`/`hr.`/`jobs.` host is not exempt. `https://qiwa.sa/login` and `https://hr.sabb.sa/Ab3k` are rejected, so a post whose only apply link is either of those gets `apply_method=none`.
+
+VERDICT: CHANGES

@@ -69,3 +69,11 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 - Capture records keys through a test-only `RemoteStringLookup` subclass fed by the bundled ARB messages; no production hook. Sample data equal to a label value gets that key.
 - Test fixtures live in `tests/Fixtures` (capital F; Linux CI is case-sensitive). New `admin.labels.*` routes must be added to the route list in `AppLocalizationAdminTest`.
 - In flutter_test, text whose style sets no font family (e.g. a ButtonStyle `textStyle`) renders as boxes.
+
+## Jobs redesign + apply links (2026-10-29)
+- Apply destination = `apply_method` url|email|none from `App\Services\Jobs\ApplyLinkExtractor` (server) and `ApplyDestination.of` (Flutter, `features/jobs/domain/apply_destination.dart`). Keep the two deny lists in sync. Telegram/social/shorteners are never Apply; the Telegram post is `source_url` ("View original post" only). Shorteners are not resolved (SSRF).
+- Telegram `t.me/s/<channel>` wraps each post with the channel's avatar link `https://t.me/<channel>`: read links only from `tgme_widget_message_text`, line by line, after footer stripping. jobs2ksa ends every post with an Instagram/Snapchat/WhatsApp promo block; jobmag applies mostly by email; ewdifh has real employer links.
+- No match % anywhere. "مناسبة لي" = role-only filter (job title / category / CV target title) ordered in SQL before LIMIT. A CASE needs a WHEN: CV-target-only users get no tier ORDER BY (an `ORDER BY 0` is a column position in SQLite).
+- Aggregated rows: no invented company, no inferred "verified", no deadline label (retire after 21 days internally). Dedupe by `fingerprint` (title + company, else destination; null = never merge). `jobs:repair-listings` (run by the 2026-10-29 migration) cleans old rows.
+- Flutter test helpers must read text via `paragraphOf()` (`test/support/contrast_probe.dart`): inside `SelectionArea` a Text renders a mouse region around the paragraph. Shipped font weights are 400/600/700 only; raw `Colors.*` outside the theme fails `app_metrics_test`.
+- `LandingLeadTest::test_landing_page_can_be_viewed` and two `SaudiJobAggregatorTest` notification tests (quiet hours 01:00-02:00 UTC) fail independently of jobs work.

@@ -1,0 +1,18 @@
+=== Codex (gpt-6.1-sol, effort medium) session=01a1854c-0f3f-7f13-95fe-0d604d4137aa usage={"input_tokens":5806870,"cached_input_tokens":5424640,"cache_write_input_tokens":0,"output_tokens":16966,"reasoning_output_tokens":8579}
+The **CV-only SQL** and **retirement-date display** findings are fixed. **Dedupe, promotional-link selection, and footer preservation** are only partially fixed.
+
+1. **P1 - Promotional URLs can still override recruitment emails.** [ApplyLinkExtractor.php:275](D:/Sirati/app/Services/Jobs/ApplyLinkExtractor.php:275)  
+   Input: `???????: hr@employer.sa<br>???????: <a href="https://channel.example/careers/newsletter">https://channel.example/careers/newsletter</a>`. The visible URL makes the footer "contact-bearing," so it survives; `careers` then qualifies it as Apply. Explicit promotion must remain ineligible for application selection.
+
+2. **P1 - Distinct requisitions differing by URL case still merge.** [SaudiJobAggregatorService.php:455](D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:455)  
+   Input: identical employer/title/city with `/jobs/ABC` versus `/jobs/abc` on a server where paths distinguish case. Lowercasing entire destinations suppresses the conflict and discards one vacancy. Normalize scheme/host only; preserve path/query case.
+
+3. **P2 - Refetch can erase dedupe identity while retaining Apply.** [SaudiJobAggregatorService.php:431](D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:431)  
+   Sequence: ingest an unnamed employer with an application URL; refetch without that URL; ingest the original content through another channel. Fingerprinting uses incoming empty destinations before the stored URL is preserved, saving `fingerprint=null`. The repost creates a duplicate. Compute identity from the final persisted values.
+
+4. **P2 - Arabic-digit phone instructions are still deleted.** [ApplyLinkExtractor.php:259](D:/Sirati/app/Services/Jobs/ApplyLinkExtractor.php:259)  
+   Input ending `?????? ???????: ??????????`. The phone regex lacks Unicode digit handling, so the line is removed as promotion, including during repair. Preserve equivalent phone numbers across supported digit scripts.
+
+Read-only review; no app or tests run.
+
+VERDICT: CHANGES

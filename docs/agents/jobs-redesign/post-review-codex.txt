@@ -1,0 +1,19 @@
+=== Codex (gpt-6.1-sol, effort high) session=01a1854c-0f3f-7f13-95fe-0d604d4137aa usage={"input_tokens":4615400,"cached_input_tokens":4428288,"cache_write_input_tokens":0,"output_tokens":13855,"reasoning_output_tokens":6723}
+1. **P1 - CV-only personalization generates invalid SQL.** [JobProfileMatcherService.php:63](D:/Sirati/app/Services/Jobs/JobProfileMatcherService.php:63)  
+   Input: user has `job_title_id=null` and latest CV target title `?????`; request `preset=matched`. Neither tier condition is added, producing `ORDER BY CASE ELSE 2 END`, which fails in MySQL and SQLite. Use a constant ordering expression when there are no `WHEN` clauses, and test this fallback through the endpoint.
+
+2. **P1 - Dedupe silently removes distinct vacancies.** [SaudiJobAggregatorService.php:439](D:/Sirati/app/Services/Jobs/SaudiJobAggregatorService.php:439)  
+   Input: two active posts with title `????? ???????`, company `???? ???`, city `riyadh`, but distinct requisitions `/jobs/101` and `/jobs/202`. Their fingerprints match; the second vacancy is discarded, including its application destination. Require stronger vacancy identity; conflicting requisition IDs or destinations must prevent automatic merging.
+
+3. **P1 - Stripped promotional links still become Apply.** [ApplyLinkExtractor.php:51](D:/Sirati/app/Services/Jobs/ApplyLinkExtractor.php:51)  
+   Input: message ends with `???????: hr@employer.sa<br>???????: <a href="https://channel.example/newsletter">??????</a>`. Footer cleaning removes the promotional text, but extraction scans the original HTML and selects the newsletter ahead of the recruitment email. Extract anchors from retained content and test the resulting API destination.
+
+4. **P2 - Internal retirement dates still appear as deadlines.** [job_news_detail_screen.dart:35](D:/Sirati/flutter_app/lib/features/jobs/presentation/job_news_detail_screen.dart:35)  
+   Input: aggregated payload with `valid_until="2026-11-19"` and `valid_until_label=null`. `jobValidUntilText` prioritizes `validUntil`, so the detail screen still displays the invented retirement date in its calendar chip. Separate application deadlines from retirement metadata throughout the payload/model, then assert on the rendered detail.
+
+5. **P2 - Footer repair deletes genuine application instructions and job facts.** [ApplyLinkExtractor.php:201](D:/Sirati/app/Services/Jobs/ApplyLinkExtractor.php:201), [line 160](D:/Sirati/app/Services/Jobs/ApplyLinkExtractor.php:160)  
+   Input ending `?????? ???????: 0551234567` loses its only application instructions because the promo-prefix check ignores the phone. Separately, `-----\n?????? 6000 ????\n???? ????` is deleted as a "short signature." The migration persists these losses. Preserve contact-bearing lines and require positive promotional evidence before deleting separator tails.
+
+No files changed; app and tests were not run.
+
+VERDICT: CHANGES

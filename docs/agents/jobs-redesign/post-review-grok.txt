@@ -1,0 +1,25 @@
+=== Grok (grok-4.7, effort high) session=01a1854c-66ae-7672-8f0b-481e19aa87f8 turns=12 cost=$0.274 stop=end_turn
+I'll review only the two diffs, looking for apply-link leaks, ranking SQL, dedupe, and footer false positives.The apply guard looks closed for `t.me`. I'm checking the merge and footer paths that can still drop or invent a destination.No Apply button can open a denied host or the Telegram post. `ApplyLinkExtractor::resolve` and `ApplyDestination.of` both drop it, and `launchMailto` encodes the subject. The matched `ORDER BY` is portable: the prepended `CASE` placeholders are the only order bindings, and `DATE()` / `CASE` work on MySQL and SQLite.
+
+**High.** `stripPromoFooter` (`ApplyLinkExtractor.php:150` and `:157`) deletes real job text. A trailing line that starts with `قناة`, `انضم`, or `شارك` (`:35`) is treated as promo, and a divider followed by two short lines is cut as a signature. This input:
+
+```
+مطلوب مهندس مدني للعمل في المشروع
+-----
+الرياض
+دوام كامل
+```
+
+keeps only the first line. The migration runs that over every aggregated body (`RepairJobListingsCommand.php:38`).
+
+**High.** The dedupe key is the title, the company, and the city (`JobNews.php:80`). Strict extraction leaves the company null, so two vacancies with the same headline and city collapse (`persistAggregatedJob`, `:446`). Two posts titled `مطلوب مهندس مدني للعمل فورا`, city `riyadh`, empty company, and apply URLs `https://a.example/jobs/1` and `https://b.example/jobs/2`: the second is discarded. Its link is copied only when the first had none, and `published_at` stays on the old row (`:454`). Repair writes the fingerprint (`:48`) and does not merge existing rows.
+
+**Medium.** A re-fetch that has an email and a null URL clears a stored link (`SaudiJobAggregatorService.php:459`). Stored `https://careers.example.com/jobs/9`, re-fetch `apply_url=null` and `apply_email=hr@example.com`, and the URL becomes null.
+
+**Medium.** `lnkd.in` is absent from `DENIED_HOSTS` (`ApplyLinkExtractor.php:29`, `apply_destination.dart:67`). `https://lnkd.in/eAb12` is stored and opened as Apply, including from a cached payload.
+
+**Medium.** `applyInstructions` (`ApplyLinkExtractor.php:241`) treats `التقديم على` and `to apply` as the how-to line and keeps the next three lines. `التقديم على الوظائف يتطلب خبرة خمس سنوات`, followed by two requirement lines, is shown as the application method.
+
+**Low.** The hero is an `InkWell` around a `FilledButton` (`featured_job_card.dart:42` and `:100`). Sharing a job with no destination appends `item.url` (`job_news_detail_screen.dart:158`), so `https://t.me/jobmag/1` goes out in the share text.
+
+VERDICT: CHANGES
