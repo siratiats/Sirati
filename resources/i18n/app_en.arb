@@ -1312,5 +1312,13 @@
   "aiLocalFallback": "A local version was created because AI generation did not complete: {detail}",
   "jobNewsTitle": "Job News",
   "crashMessage": "Something went wrong. Your data is safe — try again.",
-  "avatarFallbackInitial": "S"
+  "avatarFallbackInitial": "S",
+  "coreApiErrorBadResponse": "Could not read the server response.",
+  "coreApiErrorEmptyResponse": "The server sent an empty response.",
+  "coreApiErrorUnexpected": "Something went wrong while contacting the server.",
+  "coreApiErrorRequestFailed": "The request failed. Try again.",
+  "coreApiErrorStatus": "The request failed with code {code}.",
+  "authVerifyCodeResent": "We sent a new verification code to your email.",
+  "authForgotCodeSent": "If this email is registered, we sent a reset code to it.",
+  "authForgotPasswordReset": "Your new password is set. You can sign in now."
 }
