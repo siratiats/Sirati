@@ -55,10 +55,7 @@ class MobileContentController extends Controller
                         : 'ارفع سيرتك واعرف نقاط قوتها ومدى توافقها مع الوظائف المستهدفة.',
                     'button_label' => $language === 'en' ? 'Analyze Now' : 'تحليل الآن',
                 ],
-                'latest_news' => [
-                    'title' => $language === 'en' ? 'New opportunities in tech' : 'فرص عمل جديدة في مجال التقنية',
-                    'subtitle' => $language === 'en' ? '2 hours ago · Riyadh' : 'منذ ساعتين · الرياض',
-                ],
+                'latest_news' => $this->latestNews($language),
                 'latest_cv' => $latestGeneratedCv ? [
                     'id' => $latestGeneratedCv->id,
                     'title' => $this->displayTitles($request, [$latestGeneratedCv], $language)[$latestGeneratedCv->id] ?? $latestGeneratedCv->target_job_title,
@@ -66,6 +63,30 @@ class MobileContentController extends Controller
                     'updated_at' => $latestGeneratedCv->updated_at?->toISOString(),
                 ] : null,
             ],
+        ];
+    }
+
+    /**
+     * The newest job the feed would show in this language, as stored. Null when
+     * there is none: the home screen never gets invented news.
+     *
+     * @return array{id: int, title: string, location: ?string, published_at: string}|null
+     */
+    private function latestNews(string $language): ?array
+    {
+        $item = JobNews::query()
+            ->where(fn ($q) => $q->where('language', $language)->orWhereNotNull('external_source'))
+            ->active()
+            ->whereNotNull('published_at')
+            ->latest('published_at')
+            ->latest('id')
+            ->first();
+
+        return $item === null ? null : [
+            'id' => $item->id,
+            'title' => $item->title,
+            'location' => $item->location,
+            'published_at' => $item->published_at->toISOString(),
         ];
     }
 
@@ -210,7 +231,7 @@ class MobileContentController extends Controller
                 'icon' => $content->icon ?: 'book',
                 'title' => $content->title,
                 'body' => $content->body,
-                'duration' => $content->duration_label ?: ($language === 'en' ? 'Reading time: 10 min' : 'مدة القراءة: ١٠ دقائق'),
+                'duration' => $content->duration_label ?: null,
             ]);
 
         $featuredContent = $contents
@@ -220,22 +241,21 @@ class MobileContentController extends Controller
 
         $featuredCourse = $featuredContent ? [
             'id' => $featuredContent->id,
-            'badge' => $featuredContent->badge ?: ($language === 'en' ? 'Recommended' : 'موصى به لك'),
+            // Only a badge an editor wrote: "Recommended for you" would claim a personal pick.
+            'badge' => $featuredContent->badge ?: null,
             'title' => $featuredContent->title,
             'body' => $featuredContent->body,
             'button_label' => $featuredContent->button_label ?: ($language === 'en' ? 'Start Learning' : 'ابدأ التعلم الآن'),
         ] : null;
 
-        $targetRole = $contents->firstWhere('target_role')?->target_role
-            ?? ($language === 'en' ? 'Data Analyst' : 'محلل بيانات');
+        // The signed-in user's own role, never a content row's or a default one.
+        $targetRole = app(JobProfileMatcherService::class)
+            ->roleNameFor($request->user('sanctum') ?? $request->user(), $language);
 
         return [
             'data' => [
-                'profile' => [
-                    'name' => $language === 'en' ? 'Ahmed' : 'أحمد',
-                ],
                 'title' => $language === 'en' ? 'Learning & Development' : 'التعلم والتطوير',
-                'subtitle' => $language === 'en' ? 'Content tailored to your target job' : 'محتوى مخصص حسب وظيفتك المستهدفة',
+                'subtitle' => $language === 'en' ? 'Articles, certificates and study guides for your career' : 'مقالات وشهادات وأدلة دراسة لمسارك المهني',
                 'target_label' => $language === 'en' ? 'Based on your target job' : 'حسب وظيفتك المستهدفة',
                 'target_role' => $targetRole,
                 'tabs' => [
@@ -244,32 +264,9 @@ class MobileContentController extends Controller
                     ['key' => 'study', 'label' => $language === 'en' ? 'Study' : 'دراسة'],
                 ],
                 'selected_type' => $selectedType,
-                'study_cards' => $studyCards->isNotEmpty() ? $studyCards : [
-                    [
-                        'icon' => 'book',
-                        'title' => $language === 'en' ? 'Big Data Analysis Basics' : 'أساسيات تحليل البيانات الضخمة',
-                        'body' => $language === 'en'
-                            ? 'Learn the essential tools and methods for working with large datasets.'
-                            : 'تعرف على الأدوات والمنهجيات الأساسية للتعامل مع مجموعات البيانات الكبيرة.',
-                        'duration' => $language === 'en' ? 'Reading time: 15 min' : 'مدة القراءة: ١٥ دقيقة',
-                    ],
-                    [
-                        'icon' => 'psychology',
-                        'title' => $language === 'en' ? 'Analytical Thinking at Work' : 'التفكير التحليلي في بيئة العمل',
-                        'body' => $language === 'en'
-                            ? 'Turn raw data into effective strategic decisions.'
-                            : 'كيفية تحويل البيانات الخام إلى قرارات استراتيجية فعالة ومدروسة.',
-                        'duration' => $language === 'en' ? 'Reading time: 10 min' : 'مدة القراءة: ١٠ دقائق',
-                    ],
-                ],
-                'featured_course' => $featuredCourse ?: [
-                    'badge' => $language === 'en' ? 'Recommended' : 'موصى به لك',
-                    'title' => $language === 'en' ? 'SQL Mastery for Beginners' : 'رحلة احتراف SQL للمبتدئين',
-                    'body' => $language === 'en'
-                        ? 'A complete learning path from zero to advanced queries.'
-                        : 'مسار تعليمي متكامل يأخذك من الصفر حتى بناء استعلامات معقدة.',
-                    'button_label' => $language === 'en' ? 'Start Learning' : 'ابدأ التعلم الآن',
-                ],
+                // Stored content only: an empty catalog is an empty list, not sample courses.
+                'study_cards' => $studyCards->all(),
+                'featured_course' => $featuredCourse,
             ],
         ];
     }
@@ -350,12 +347,10 @@ class MobileContentController extends Controller
             $matcher->applyMatchedFilter($query, $user);
         }
 
-        // Direct filters
+        // Direct filters. Verified means the row was verified: a government or
+        // company source type alone verifies nothing.
         if ($isVerified === true) {
-            $query->where(function ($q): void {
-                $q->where('is_verified', true)
-                    ->orWhereIn('source_type', ['gov', 'enterprise', 'tamheer']);
-            });
+            $query->verified();
         }
 
         if ($sourceType !== null && $sourceType !== 'all') {
@@ -411,8 +406,8 @@ class MobileContentController extends Controller
             'data' => [
                 'title' => $language === 'en' ? 'Job News' : 'أخبار الوظائف',
                 'subtitle' => $language === 'en'
-                    ? 'Fresh verified opportunities tailored to your profile.'
-                    : 'فرص وتحديثات توظيف موثقة ومخصصة لملفك المهني.',
+                    ? 'New openings from employers and job boards.'
+                    : 'وظائف جديدة من جهات التوظيف ومواقع الوظائف.',
                 'selected_category' => $category ?? 'all',
                 'selected_preset' => $preset,
                 'selected_region' => SaudiCities::isRegion($region) ? $region : 'all',
