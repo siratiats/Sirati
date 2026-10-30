@@ -28,3 +28,17 @@ All agents and contributors working in the Sirati repository must adhere to the 
 ## 7. Security Gates Must Fail Closed (No Optional Configuration Bypasses)
 - A gate or authorization check that can be disabled by a missing environment variable is not a gate until it fails closed.
 - Outside local development, if a required secret, token, or security configuration is unset or empty, the system must **fail closed loudly** (e.g., HTTP 503 with a critical log alert), never fall through to permissive or unauthenticated processing.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on the fork `Abobker85/Sirati` (the `origin` remote; pass `--repo Abobker85/Sirati`). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default five-role vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root, created lazily. See `docs/agents/domain.md`.
