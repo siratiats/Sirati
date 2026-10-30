@@ -5,6 +5,7 @@ namespace App\Cv;
 use App\Enums\AiStatus;
 use App\Models\GeneratedCv;
 use App\Models\User;
+use App\Services\I18n\ServerText;
 use App\Services\Subscriptions\SubscriptionGate;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -83,22 +84,13 @@ final class CvExportGuard
 
     public static function message(string $reason, string $language): string
     {
-        $messages = [
-            self::BLOCKED_GENERATING => [
-                'ar' => 'لا يزال إنشاء السيرة جارياً. حمّلها بعد اكتماله.',
-                'en' => 'Your CV is still being generated. Download it once it finishes.',
-            ],
-            self::BLOCKED_MISSING_CONTACT => [
-                'ar' => 'أضف البريد الإلكتروني ورقم الجوال إلى السيرة قبل إرسالها إلى جهات التوظيف.',
-                'en' => 'Add your email and phone number to the CV before sending it to employers.',
-            ],
-            self::BLOCKED_UNSTRUCTURED_EXPERIENCE => [
-                'ar' => 'الخبرات في السيرة غير منظّمة بعد. عدّل السيرة وأضف لكل خبرة المسمى والشركة والفترة، أو أعد إنشاءها.',
-                'en' => 'Your experience is not structured yet. Edit the CV and give each role a title, company and dates, or generate it again.',
-            ],
-        ];
+        $key = [
+            self::BLOCKED_GENERATING => 'serverCvExportGenerating',
+            self::BLOCKED_MISSING_CONTACT => 'serverCvExportMissingContact',
+            self::BLOCKED_UNSTRUCTURED_EXPERIENCE => 'serverCvExportUnstructuredExperience',
+        ][$reason];
 
-        return $messages[$reason][$language === 'en' ? 'en' : 'ar'];
+        return ServerText::t($key, [], $language);
     }
 
     private static function qualityGap(GeneratedCv $generatedCv): ?string

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserFcmToken;
+use App\Services\I18n\ServerText;
 use App\Services\Notifications\NotificationPreferenceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -79,7 +80,7 @@ class FcmTokenController extends Controller
         $preferences->update($user, $prefUpdates);
 
         return response()->json([
-            'message' => 'FCM token registered successfully.',
+            'message' => ServerText::t('serverNotificationsTokenRegistered'),
             'data' => [
                 'id' => $fcmToken->id,
                 'device_id' => $fcmToken->device_id,
@@ -109,7 +110,7 @@ class FcmTokenController extends Controller
         }
 
         return response()->json([
-            'message' => 'FCM token removed successfully.',
+            'message' => ServerText::t('serverNotificationsTokenRemoved'),
         ]);
     }
 }

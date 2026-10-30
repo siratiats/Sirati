@@ -14,6 +14,7 @@ use App\Models\MobileNotification;
 use App\Models\User;
 use App\Services\Jobs\ApplyLinkExtractor;
 use App\Services\Jobs\JobProfileMatcherService;
+use App\Services\I18n\ServerText;
 use App\Services\Jobs\SaudiCities;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -34,7 +35,7 @@ class MobileContentController extends Controller
                 'profile' => [
                     'name' => $user->name,
                     'email' => $user->email,
-                    'status' => $language === 'en' ? 'Active Account' : 'حساب نشط',
+                    'status' => $this->text('serverDashboardStatusActive'),
                 ],
                 'stats' => [
                     'generated_cvs' => $user->generatedCvs()->count(),
@@ -42,23 +43,19 @@ class MobileContentController extends Controller
                     'unread_notifications' => $user->mobileNotifications()->whereNull('read_at')->count(),
                 ],
                 'primary_action' => [
-                    'title' => $language === 'en' ? 'Create ATS-Optimized CV' : 'أنشئ سيرة ذاتية وفق ATS',
-                    'subtitle' => $language === 'en'
-                        ? 'Build your CV step by step and get a professional design that passes screening systems.'
-                        : 'ابن سيرتك خطوة بخطوة واحصل على تصميم احترافي يتجاوز أنظمة الفرز.',
-                    'button_label' => $language === 'en' ? 'Start Now' : 'ابدأ الآن',
+                    'title' => $this->text('serverDashboardCreateCvTitle'),
+                    'subtitle' => $this->text('serverDashboardCreateCvSubtitle'),
+                    'button_label' => $this->text('serverDashboardCreateCvButton'),
                 ],
                 'analysis_action' => [
-                    'title' => $language === 'en' ? 'Analyze Your CV with ATS' : 'حلّل سيرتك الذاتية بـ ATS',
-                    'subtitle' => $language === 'en'
-                        ? 'Upload your CV and discover its strengths and match with target jobs.'
-                        : 'ارفع سيرتك واعرف نقاط قوتها ومدى توافقها مع الوظائف المستهدفة.',
-                    'button_label' => $language === 'en' ? 'Analyze Now' : 'تحليل الآن',
+                    'title' => $this->text('serverDashboardAnalyzeTitle'),
+                    'subtitle' => $this->text('serverDashboardAnalyzeSubtitle'),
+                    'button_label' => $this->text('serverDashboardAnalyzeButton'),
                 ],
                 'latest_news' => $this->latestNews($language),
                 'latest_cv' => $latestGeneratedCv ? [
                     'id' => $latestGeneratedCv->id,
-                    'title' => $this->displayTitles($request, [$latestGeneratedCv], $language)[$latestGeneratedCv->id] ?? $latestGeneratedCv->target_job_title,
+                    'title' => $this->displayTitles($request, [$latestGeneratedCv])[$latestGeneratedCv->id] ?? $latestGeneratedCv->target_job_title,
                     'score_total' => $latestGeneratedCv->score_total,
                     'updated_at' => $latestGeneratedCv->updated_at?->toISOString(),
                 ] : null,
@@ -97,7 +94,7 @@ class MobileContentController extends Controller
      * @param  iterable<GeneratedCv>  $cvs
      * @return array<int, string> display title by generated CV id
      */
-    private function displayTitles(Request $request, iterable $cvs, string $language): array
+    private function displayTitles(Request $request, iterable $cvs): array
     {
         $cvs = collect($cvs);
         $matches = JobMatch::where('user_id', $request->user()->id)
@@ -105,7 +102,7 @@ class MobileContentController extends Controller
             ->get(['applied_generated_cv_id', 'target_job_title'])
             ->keyBy('applied_generated_cv_id');
 
-        return $cvs->mapWithKeys(function (GeneratedCv $cv) use ($matches, $language): array {
+        return $cvs->mapWithKeys(function (GeneratedCv $cv) use ($matches): array {
             $base = (string) ($cv->target_job_title ?: $cv->full_name);
             $match = $matches->get($cv->id);
             if ($match === null) {
@@ -114,7 +111,7 @@ class MobileContentController extends Controller
             $job = trim((string) $match->target_job_title);
             $title = $job !== '' && mb_strtolower($job) !== mb_strtolower(trim($base))
                 ? $base.' — '.$job
-                : $base.($language === 'en' ? ' (tailored)' : ' (مخصصة)');
+                : $this->text('serverMyCvsTailoredTitle', ['title' => $base]);
 
             return [$cv->id => $title];
         })->all();
@@ -122,11 +119,10 @@ class MobileContentController extends Controller
 
     public function myCvs(Request $request): array
     {
-        $language = $this->language($request);
         $publicBaseUrl = rtrim((string) config('app.public_url', 'https://siratie.com'), '/');
         $cvs = $request->user()->generatedCvs()->latest()->limit(20)->get();
-        $titles = $this->displayTitles($request, $cvs, $language);
-        $items = $cvs->map(function (GeneratedCv $cv) use ($language, $publicBaseUrl, $titles): array {
+        $titles = $this->displayTitles($request, $cvs);
+        $items = $cvs->map(function (GeneratedCv $cv) use ($publicBaseUrl, $titles): array {
             $signedPath = URL::temporarySignedRoute(
                 'api.generated-cvs.pdf',
                 now()->addDays(7),
@@ -139,7 +135,7 @@ class MobileContentController extends Controller
             return [
                 'id' => $cv->id,
                 'title' => $titles[$cv->id] ?? ($cv->target_job_title ?: $cv->full_name),
-                'updated_label' => $this->updatedLabel($cv->updated_at, $language),
+                'updated_label' => $this->updatedLabel($cv->updated_at),
                 'badge' => $cv->score_total === null ? '' : 'ATS '.$cv->score_total.'%',
                 'score_total' => $cv->score_total,
                 'is_draft' => $export['blocked_reason'] === CvExportGuard::BLOCKED_GENERATING,
@@ -152,10 +148,8 @@ class MobileContentController extends Controller
 
         return [
             'data' => [
-                'title' => $language === 'en' ? 'My CVs' : 'سيرتي الذاتية',
-                'summary' => $language === 'en'
-                    ? 'You have '.$items->count().' draft and completed files'
-                    : 'لديك '.$items->count().' ملفات مسودة ومكتملة',
+                'title' => $this->text('serverMyCvsTitle'),
+                'summary' => $this->text('serverMyCvsSummary', ['count' => $items->count()]),
                 'items' => $items,
             ],
         ];
@@ -199,10 +193,8 @@ class MobileContentController extends Controller
 
         return [
             'data' => [
-                'title' => $language === 'en' ? 'CV Designs' : 'تصاميم السيرة الذاتية',
-                'subtitle' => $language === 'en'
-                    ? 'Choose the design that fits your next application.'
-                    : 'اختر التصميم الأنسب لتقديمك القادم.',
+                'title' => $this->text('serverCvTemplatesTitle'),
+                'subtitle' => $this->text('serverCvTemplatesSubtitle'),
                 'items' => $items,
             ],
         ];
@@ -245,7 +237,7 @@ class MobileContentController extends Controller
             'badge' => $featuredContent->badge ?: null,
             'title' => $featuredContent->title,
             'body' => $featuredContent->body,
-            'button_label' => $featuredContent->button_label ?: ($language === 'en' ? 'Start Learning' : 'ابدأ التعلم الآن'),
+            'button_label' => $featuredContent->button_label ?: $this->text('serverEducationStartLearning'),
         ] : null;
 
         // The signed-in user's own role, never a content row's or a default one.
@@ -254,14 +246,14 @@ class MobileContentController extends Controller
 
         return [
             'data' => [
-                'title' => $language === 'en' ? 'Learning & Development' : 'التعلم والتطوير',
-                'subtitle' => $language === 'en' ? 'Articles, certificates and study guides for your career' : 'مقالات وشهادات وأدلة دراسة لمسارك المهني',
-                'target_label' => $language === 'en' ? 'Based on your target job' : 'حسب وظيفتك المستهدفة',
+                'title' => $this->text('serverEducationTitle'),
+                'subtitle' => $this->text('serverEducationSubtitle'),
+                'target_label' => $this->text('serverEducationTargetLabel'),
                 'target_role' => $targetRole,
                 'tabs' => [
-                    ['key' => 'news', 'label' => $language === 'en' ? 'News' : 'أخبار'],
-                    ['key' => 'certificate', 'label' => $language === 'en' ? 'Certificates' : 'شهادات'],
-                    ['key' => 'study', 'label' => $language === 'en' ? 'Study' : 'دراسة'],
+                    ['key' => 'news', 'label' => $this->text('serverEducationTabNews')],
+                    ['key' => 'certificate', 'label' => $this->text('serverEducationTabCertificates')],
+                    ['key' => 'study', 'label' => $this->text('serverEducationTabStudy')],
                 ],
                 'selected_type' => $selectedType,
                 // Stored content only: an empty catalog is an empty list, not sample courses.
@@ -275,8 +267,6 @@ class MobileContentController extends Controller
     {
         abort_unless($educationContent->is_published, 404);
 
-        $language = $this->language($request);
-
         return [
             'data' => [
                 'id' => $educationContent->id,
@@ -288,7 +278,7 @@ class MobileContentController extends Controller
                 'target_role' => $educationContent->target_role,
                 'badge' => $educationContent->badge,
                 'button_label' => $educationContent->button_label
-                    ?: ($language === 'en' ? 'Start Learning' : 'ابدأ التعلم الآن'),
+                    ?: $this->text('serverEducationStartLearning'),
                 'icon' => $educationContent->icon,
                 'is_featured' => $educationContent->is_featured,
                 'created_at' => $educationContent->created_at?->toISOString(),
@@ -399,15 +389,14 @@ class MobileContentController extends Controller
             ->get()
             ->filter(fn (JobNews $item): bool => $category === null || $this->inferJobCategory($item) === $category)
             ->take(30)
-            ->map(fn (JobNews $item): array => $this->jobNewsPayload($item, $language))
+            ->map(fn (JobNews $item): array => $this->jobNewsPayload($item))
             ->values();
 
         return [
             'data' => [
-                'title' => $language === 'en' ? 'Job News' : 'أخبار الوظائف',
-                'subtitle' => $language === 'en'
-                    ? 'New openings from employers and job boards.'
-                    : 'وظائف جديدة من جهات التوظيف ومواقع الوظائف.',
+                // The feed mixes verified and unverified rows, so it never claims either (#15).
+                'title' => $this->text('serverJobsTitle'),
+                'subtitle' => $this->text('serverJobsSubtitle'),
                 'selected_category' => $category ?? 'all',
                 'selected_preset' => $preset,
                 'selected_region' => SaudiCities::isRegion($region) ? $region : 'all',
@@ -424,8 +413,6 @@ class MobileContentController extends Controller
 
     public function jobNewsShow(Request $request, JobNews $jobNews): array
     {
-        $language = $this->language($request);
-        $user = $request->user('sanctum') ?? $request->user();
         $today = today();
 
         abort_unless(
@@ -435,7 +422,7 @@ class MobileContentController extends Controller
             404
         );
 
-        return ['data' => $this->jobNewsPayload($jobNews, $language)];
+        return ['data' => $this->jobNewsPayload($jobNews)];
     }
 
     public function notifications(Request $request): array
@@ -471,23 +458,21 @@ class MobileContentController extends Controller
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
-        return ['message' => 'تم تعليم كل الإشعارات كمقروءة.'];
+        return ['message' => $this->text('serverNotificationsAllRead')];
     }
 
-    private function jobNewsPayload(JobNews $item, string $language = 'ar'): array
+    private function jobNewsPayload(JobNews $item): array
     {
         // Aggregated posts retire on an internal date, not a stated deadline,
         // so only curated listings show "apply by".
         $validUntilLabel = null;
         if ($item->valid_until !== null && $item->external_source === null) {
-            $validUntilLabel = $language === 'en'
-                ? 'Apply by '.$item->valid_until->format('d M Y')
-                : 'التقديم حتى '.$this->latinDigits($item->valid_until->translatedFormat('d F Y'));
+            $validUntilLabel = $this->text('serverJobsApplyBy', ['date' => app(ServerText::class)->date($item->valid_until)]);
         }
 
         $formatter = app(JobProfileMatcherService::class);
-        $sourceInfo = $formatter->formatSourceType($item->source_type ?? 'general', $language);
-        $salaryRange = $formatter->formatSalary($item->salary_min, $item->salary_max, $language);
+        $sourceInfo = $formatter->formatSourceType($item->source_type ?? 'general');
+        $salaryRange = $formatter->formatSalary($item->salary_min, $item->salary_max);
 
         // Re-checked on every response, so rows stored under older rules can
         // never offer Telegram or a social page as "Apply".
@@ -569,8 +554,8 @@ class MobileContentController extends Controller
         return [
             'id' => $notification->id,
             'type' => $notification->type,
-            'title' => $notification->title,
-            'body' => $notification->body,
+            'title' => $notification->displayTitle(),
+            'body' => $notification->displayBody(),
             'action_type' => $notification->action_type,
             'action_url' => $notification->action_url,
             'is_read' => $notification->read_at !== null,
@@ -580,38 +565,29 @@ class MobileContentController extends Controller
         ];
     }
 
+    /**
+     * The content language (ar or en) rows are read in: ?lang= when it names one,
+     * else the bundled language the caller's app language falls back to.
+     */
     private function language(Request $request): string
     {
-        return $request->query('lang') === 'en' ? 'en' : 'ar';
+        $lang = $request->query('lang');
+
+        return in_array($lang, ['ar', 'en'], true) ? $lang : app(ServerText::class)->contentLanguage();
     }
 
-    private function updatedLabel(?Carbon $date, string $language): string
+    /** A catalog label in the caller's app language (#12). */
+    private function text(string $key, array $params = []): string
+    {
+        return app(ServerText::class)->get($key, $params);
+    }
+
+    private function updatedLabel(?Carbon $date): string
     {
         if (! $date) {
-            return $language === 'en' ? 'Last updated: unknown' : 'آخر تعديل: غير محدد';
+            return $this->text('serverMyCvsUpdatedUnknown');
         }
 
-        return $language === 'en'
-            ? 'Last updated: '.$date->format('M d, Y')
-            : 'آخر تعديل: '.$this->latinDigits($date->translatedFormat('d F Y'));
-    }
-
-    /**
-     * Force Latin (Western) digits inside a string.
-     *
-     * Carbon's translatedFormat() with an Arabic locale returns Arabic month
-     * names AND Arabic-Indic digits (١٥ يناير ٢٠٢٦). Product decision is that
-     * numbers stay 0-9 across the app even in Arabic UI, so we keep the
-     * translated month name but transliterate the digits back to Latin.
-     */
-    private function latinDigits(string $value): string
-    {
-        return strtr($value, [
-            '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
-            '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
-            // Extended Arabic-Indic (used by some Farsi/Urdu locales)
-            '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4',
-            '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
-        ]);
+        return $this->text('serverMyCvsUpdated', ['date' => app(ServerText::class)->date($date)]);
     }
 }

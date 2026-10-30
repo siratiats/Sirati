@@ -5,6 +5,8 @@ namespace App\Jobs;
 use App\Models\NotificationDecision;
 use App\Models\User;
 use App\Services\FirebaseNotificationService;
+use App\Services\Notifications\NotificationPreferenceService;
+use App\Support\NotificationText;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -30,6 +32,9 @@ class SendPushNotificationJob implements ShouldQueue
         public readonly ?string $actionType = null,
         public readonly ?string $actionUrl = null,
         public readonly array $data = [],
+        // NotificationText::toArray(): when set, title/body are rendered at send
+        // time in the user's notification language (#12).
+        public readonly ?array $text = null,
     ) {}
 
     public function handle(FirebaseNotificationService $service): void
@@ -48,15 +53,19 @@ class SendPushNotificationJob implements ShouldQueue
             return;
         }
 
+        $text = NotificationText::fromArray($this->text);
+        $language = $text === null ? null : app(NotificationPreferenceService::class)->forUser($user)->language;
+
         try {
             $result = $service->createAndSendToUser(
                 user: $user,
-                title: $this->title,
-                body: $this->body,
+                title: $text?->title($language) ?? $this->title,
+                body: $text?->body($language) ?? $this->body,
                 type: $this->type,
                 actionType: $this->actionType,
                 actionUrl: $this->actionUrl,
                 data: $this->data,
+                text: $text,
             );
         } catch (Throwable $exception) {
             $this->closeDecision($decision, false, 'send_exception');

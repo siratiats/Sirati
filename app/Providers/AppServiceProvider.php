@@ -11,6 +11,8 @@ use App\Services\ClaudeCvService;
 use App\Services\DeepInfraCvService;
 use App\Services\ErrorReporter;
 use App\Services\HealthMonitor;
+use App\Services\I18n\CatalogTranslationLoader;
+use App\Services\I18n\ServerText;
 use App\Services\OpenAiCvService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Events\DiagnosingHealth;
@@ -33,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(OpenAiCvService::class);
         $this->app->singleton(ClaudeCvService::class);
         $this->app->singleton(DeepInfraCvService::class);
+
+        // Per request / queued job, so a published label edit is read at once (#12).
+        $this->app->scoped(ServerText::class);
+        $this->app->extend('translation.loader', fn ($loader) => new CatalogTranslationLoader($loader));
 
         $this->app->singleton(CvAiProvider::class, function ($app): CvAiProvider {
             $driver = strtolower((string) config('services.cv_ai.provider', 'openai'));

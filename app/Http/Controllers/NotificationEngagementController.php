@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MobileNotification;
 use App\Models\NotificationDecision;
+use App\Services\I18n\ServerText;
 use App\Services\Notifications\NotificationPreferenceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,7 +34,7 @@ class NotificationEngagementController extends Controller
             ]);
 
         return response()->json([
-            'message' => 'تم تسجيل فتح الإشعار.',
+            'message' => ServerText::t('serverNotificationsOpenRecorded'),
             'data' => [
                 'notification_id' => $notification->id,
                 'read_at' => $notification->fresh()->read_at?->toISOString(),
@@ -65,7 +66,7 @@ class NotificationEngagementController extends Controller
         $preference = $this->preferences->touchActivity($user);
 
         return response()->json([
-            'message' => 'تم تسجيل النشاط.',
+            'message' => ServerText::t('serverNotificationsActivityRecorded'),
             'data' => $this->preferences->toArray($preference),
         ]);
     }
@@ -114,7 +115,7 @@ class NotificationEngagementController extends Controller
         $this->preferences->touchActivity($request->user());
 
         return response()->json([
-            'message' => 'تم تسجيل التحويل.',
+            'message' => ServerText::t('serverNotificationsConversionRecorded'),
             'data' => [
                 'decision_id' => $decision?->id,
                 'conversion_type' => $validated['conversion_type'],

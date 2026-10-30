@@ -66,13 +66,13 @@ class SendPlannedNotificationJob implements ShouldQueue
         );
 
         $language = (string) ($context['language'] ?? config('smart_notifications.default_language', 'ar'));
-        $copy = $templates->render($candidate, $language === 'en' ? 'en' : 'ar');
+        $text = $templates->text($candidate);
+        $copy = ['title' => $text->title($language), 'body' => $text->body($language)];
 
         try {
             $notification = $user->mobileNotifications()->create([
                 'type' => $candidate->type,
-                'title' => $copy['title'],
-                'body' => $copy['body'],
+                ...$text->attributes($language),
                 'action_type' => $candidate->actionType,
                 'action_url' => $candidate->actionUrl,
             ]);

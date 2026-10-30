@@ -12,6 +12,7 @@ use App\Services\Ai\CachedCvAiProvider;
 use App\Services\AtsScoringService;
 use App\Services\CvTextExtractor;
 use App\Services\ErrorReporter;
+use App\Services\I18n\ServerText;
 use App\Services\ResumeClassifier;
 use App\Services\Subscriptions\SubscriptionGate;
 use App\Support\Idempotency;
@@ -116,7 +117,7 @@ class CvAnalysisController extends Controller
 
         if (! $request->filled('resume_text') && ! $request->hasFile('resume_file')) {
             throw ValidationException::withMessages([
-                'resume_text' => 'الصق نص السيرة أو ارفع ملف PDF/TXT للبدء.',
+                'resume_text' => ServerText::t('serverAnalysisResumeRequired'),
             ]);
         }
 
@@ -126,7 +127,7 @@ class CvAnalysisController extends Controller
 
         if ($classification === ResumeClassification::NotResume || $classification === ResumeClassification::Uncertain) {
             throw ValidationException::withMessages([
-                'resume_text' => 'يبدو أن الملف المرفوع ليس سيرة ذاتية (مثلاً إيصال بنك أو فاتورة أو مستند غير مهني). يرجى رفع سيرتك الذاتية بصيغة PDF أو نص.',
+                'resume_text' => ServerText::t('serverAnalysisNotResume'),
             ]);
         }
 

@@ -17,6 +17,7 @@ use App\Services\AtsScoringService;
 use App\Services\CvTemplateRenderer;
 use App\Services\EntitlementService;
 use App\Services\ErrorReporter;
+use App\Services\I18n\ServerText;
 use App\Services\Subscriptions\SubscriptionGate;
 use App\Support\CvMarkdownIdentityBlock;
 use App\Support\Idempotency;
@@ -120,7 +121,7 @@ class GeneratedCvController extends Controller
 
         $generatedCv->delete();
 
-        return response()->json(['message' => 'Deleted']);
+        return response()->json(['message' => ServerText::t('serverCvDeleted')]);
     }
 
     public function duplicateApi(GeneratedCv $generatedCv, Request $request)
@@ -257,9 +258,8 @@ class GeneratedCvController extends Controller
                     'enhanced_text' => $validated['draft'],
                     'changes_made' => [],
                     'missing_facts' => [
-                        $validated['language'] === 'en'
-                            ? 'AI enhancement is temporarily unavailable.'
-                            : 'تحسين الذكاء الاصطناعي غير متاح مؤقتاً.',
+                        // Shown with the draft, in the CV's language.
+                        ServerText::t('serverCvEnhanceUnavailable', [], $validated['language']),
                     ],
                     'ats_keywords_added' => [],
                     'unverified_claims' => [],
@@ -286,9 +286,7 @@ class GeneratedCvController extends Controller
                     'enhanced_text' => $validated['draft'],
                     'changes_made' => [],
                     'missing_facts' => [
-                        $validated['language'] === 'en'
-                            ? 'AI enhancement encountered an issue. Your draft was preserved.'
-                            : 'حدث خطأ أثناء تحسين الحقل بالذكاء الاصطناعي. تم الاحتفاظ بمسودتك.',
+                        ServerText::t('serverCvEnhanceFailed', [], $validated['language']),
                     ],
                     'ats_keywords_added' => [],
                     'unverified_claims' => [],
@@ -379,7 +377,7 @@ class GeneratedCvController extends Controller
                 ->first();
 
             if ($requestedTemplate !== null && ! $entitlements->canPreviewTemplate($request->user(), $requestedTemplate)) {
-                abort(404, 'القالب غير متوفر حالياً.');
+                abort(404, ServerText::t('serverCvTemplateUnavailable'));
             }
         }
 

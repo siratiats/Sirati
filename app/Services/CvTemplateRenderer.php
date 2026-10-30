@@ -9,6 +9,7 @@ use App\Models\GeneratedCv;
 use App\Models\User;
 use App\Services\Cv\CvMarkdownRenderer;
 use App\Services\Cv\LogicalTextMpdf;
+use App\Services\I18n\ServerText;
 use App\Support\CvMarkdownIdentityBlock;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -123,12 +124,12 @@ class CvTemplateRenderer
         if ($template->isPremium() && ! $this->entitlementService()->canExportTemplate($effectiveUser, $template)) {
             if (request()?->wantsJson()) {
                 return response()->json([
-                    'message' => 'هذا القالب متاح للمشتركين فقط. يرجى الترقية لتحميل السيرة الذاتية بهذا القالب.',
+                    'message' => ServerText::t('serverCvTemplatePremiumOnly'),
                     'error' => 'premium_template_locked',
                     'template' => $template->slug,
                 ], 403);
             }
-            abort(403, 'هذا القالب متاح للمشتركين فقط. يرجى الترقية لتحميل السيرة الذاتية بهذا القالب.');
+            abort(403, ServerText::t('serverCvTemplatePremiumOnly'));
         }
 
         // Entitled export downloads are never watermarked

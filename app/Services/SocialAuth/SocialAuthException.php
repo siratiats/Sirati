@@ -2,6 +2,7 @@
 
 namespace App\Services\SocialAuth;
 
+use App\Services\I18n\ServerText;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -79,10 +80,10 @@ class SocialAuthException extends RuntimeException
     {
         $label = SocialAuthProviders::label($this->provider);
 
-        return match ($this->reason) {
-            self::NOT_CONFIGURED, self::PROVIDER_UNAVAILABLE => "تسجيل الدخول عبر {$label} غير متاح حالياً. حاول لاحقاً.",
-            self::INVALID_TOKEN => "تعذّر التحقق من حساب {$label}. حاول مرة أخرى.",
-            self::EMAIL_UNVERIFIED => "البريد الإلكتروني لحساب {$label} غير مؤكد.",
-        };
+        return ServerText::t(match ($this->reason) {
+            self::NOT_CONFIGURED, self::PROVIDER_UNAVAILABLE => 'serverAuthSocialUnavailable',
+            self::INVALID_TOKEN => 'serverAuthSocialInvalidToken',
+            self::EMAIL_UNVERIFIED => 'serverAuthSocialEmailUnverified',
+        }, ['provider' => $label]);
     }
 }

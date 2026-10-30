@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Middleware\SetRequestLanguage;
+use App\Support\ApiErrorText;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 use Sentry\Laravel\Integration;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -25,8 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->runInBackground();
     })
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Server text follows the app language (#12).
+        $middleware->api(prepend: [SetRequestLanguage::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         Integration::handles($exceptions);
+        $exceptions->respond(fn ($response, Throwable $exception, Request $request) => ApiErrorText::localize($response, $exception, $request));
     })->create();

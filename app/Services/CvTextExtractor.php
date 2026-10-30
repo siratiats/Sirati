@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Services\I18n\ServerText;
 use App\Support\ArabicPdfText;
 use App\Support\Utf8Sanitizer;
 use Illuminate\Http\Request;
@@ -10,6 +11,8 @@ use Smalot\PdfParser\Parser;
 
 class CvTextExtractor
 {
+    private const MIN_LENGTH = 80;
+
     public function extract(Request $request): array
     {
         $textParts = [];
@@ -30,16 +33,16 @@ class CvTextExtractor
                 'pdf' => $this->extractPdf($file->getRealPath()),
                 'txt' => Utf8Sanitizer::sanitize((string) file_get_contents($file->getRealPath())),
                 default => throw ValidationException::withMessages([
-                    'resume_file' => 'يدعم Siratie حالياً ملفات PDF و TXT فقط.',
+                    'resume_file' => ServerText::t('serverCvFileTypeUnsupported'),
                 ]),
             };
         }
 
         $text = Utf8Sanitizer::sanitize(trim(implode("\n\n", array_filter($textParts))));
 
-        if (mb_strlen($text) < 80) {
+        if (mb_strlen($text) < self::MIN_LENGTH) {
             throw ValidationException::withMessages([
-                'resume_text' => 'أدخل أو ارفع سيرة ذاتية تحتوي على 80 حرفاً على الأقل.',
+                'resume_text' => ServerText::t('serverCvTextTooShort', ['min' => self::MIN_LENGTH]),
             ]);
         }
 
@@ -57,7 +60,7 @@ class CvTextExtractor
 
         if ($text === '') {
             throw ValidationException::withMessages([
-                'resume_file' => 'لم نتمكن من قراءة النص من ملف PDF. جرّب نسخ النص يدوياً أو رفع ملف PDF نصي.',
+                'resume_file' => ServerText::t('serverCvPdfUnreadable'),
             ]);
         }
 

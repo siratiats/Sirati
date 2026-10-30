@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Enums\AiStatus;
+use App\Services\I18n\ServerText;
 use App\Services\Subscriptions\SubscriptionGate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -107,12 +108,12 @@ class CvAnalysisResource extends JsonResource
             'reason' => 'subscription_required',
             'hidden_total' => $total,
             'hidden' => $hidden,
-            'title_ar' => 'باقي التحليل مخفي',
-            'title_en' => 'The rest of your analysis is locked',
-            'message_ar' => 'لديك '.$total.' ملاحظة وتوصية إضافية تشرح كيف ترفع درجتك. اشترك لعرضها كاملة.',
-            'message_en' => 'You have '.$total.' more findings and recommendations explaining how to raise your score. Subscribe to see them all.',
-            'cta_ar' => 'عرض التحليل الكامل',
-            'cta_en' => 'Unlock full analysis',
+            'title_ar' => ServerText::t('serverAnalysisLockedTitle', [], 'ar'),
+            'title_en' => ServerText::t('serverAnalysisLockedTitle', [], 'en'),
+            'message_ar' => ServerText::t('serverAnalysisLockedMessage', ['count' => $total], 'ar'),
+            'message_en' => ServerText::t('serverAnalysisLockedMessage', ['count' => $total], 'en'),
+            'cta_ar' => ServerText::t('serverAnalysisLockedCta', [], 'ar'),
+            'cta_en' => ServerText::t('serverAnalysisLockedCta', [], 'en'),
         ];
     }
 

@@ -254,11 +254,12 @@ class AsyncCvAiTest extends TestCase
                 && $job->type === 'cv_failed'
                 && $job->actionType === 'screen'
                 && $job->actionUrl === 'my-cvs/'.$generatedCv->id
-                && $job->title === 'CV generation did not finish';
+                // Rendered at send time in the user's notification language (#12).
+                && ($job->text['title_key'] ?? null) === 'serverNotifyCvFailedTitle';
         });
     }
 
-    public function test_arabic_cv_failure_dispatches_arabic_push_notification(): void
+    public function test_cv_failure_push_carries_its_catalog_labels_whatever_the_cv_language(): void
     {
         Queue::fake([SendPushNotificationJob::class]);
 
@@ -274,8 +275,8 @@ class AsyncCvAiTest extends TestCase
                 && $job->type === 'cv_failed'
                 && $job->actionType === 'screen'
                 && $job->actionUrl === 'my-cvs/'.$generatedCv->id
-                && $job->title === 'تعذر إكمال توليد السيرة'
-                && str_contains($job->body, 'افتح سيرتي لمعرفة السبب');
+                && ($job->text['title_key'] ?? null) === 'serverNotifyCvFailedTitle'
+                && ($job->text['body_key'] ?? null) === 'serverNotifyCvFailedBody';
         });
     }
 
@@ -306,8 +307,8 @@ class AsyncCvAiTest extends TestCase
                 && $job->type === 'cv_ready'
                 && $job->actionType === 'screen'
                 && $job->actionUrl === 'my-cvs/'.$generatedCv->id
-                && $job->title === 'سيرتك الذاتية جاهزة'
-                && str_contains($job->body, 'افتح سيرتي لمراجعة السيرة وتصديرها');
+                && ($job->text['title_key'] ?? null) === 'serverNotifyCvReadyTitle'
+                && ($job->text['body_key'] ?? null) === 'serverNotifyCvReadyBody';
         });
     }
 

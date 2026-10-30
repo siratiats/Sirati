@@ -6,6 +6,7 @@ use App\Exceptions\SubscriptionRequiredException;
 use App\Models\CvAnalysis;
 use App\Models\GeneratedCv;
 use App\Models\User;
+use App\Services\I18n\ServerText;
 use App\Support\FailClosed;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -35,7 +36,7 @@ class SubscriptionGate
             return false;
         }
 
-        FailClosed::unavailable('Monetization', 'monetization.enabled', 'This feature is temporarily unavailable.');
+        FailClosed::unavailable('Monetization', 'monetization.enabled');
     }
 
     /** The explicit boolean switch, or null when unset, empty or malformed. */
@@ -183,8 +184,7 @@ class SubscriptionGate
         if (! $this->isSubscribed($user)) {
             throw new SubscriptionRequiredException(
                 feature: 'job_match',
-                messageAr: 'مطابقة السيرة الذاتية مع الوظيفة متاحة للمشتركين. اشترك لاكتشاف نقاط القوة والفجوات وتحسين سيرتك.',
-                messageEn: 'Job Match is for subscribers. Subscribe to discover strengths, gaps and suggested CV edits.',
+                messageKey: 'serverPaywallJobMatch',
             );
         }
     }
@@ -197,7 +197,7 @@ class SubscriptionGate
         if ($checkQuota && $this->jobMatchesUsedToday($user) >= $this->jobMatchDailyLimit()) {
             throw new HttpException(
                 429,
-                'Daily Job Match limit reached. Try again after the quota resets.',
+                ServerText::t('serverJobMatchDailyLimit'),
                 headers: ['Retry-After' => (string) max(1, (int) now()->diffInSeconds(now()->addDay()->startOfDay()))],
             );
         }
@@ -232,21 +232,11 @@ class SubscriptionGate
 
         throw new SubscriptionRequiredException(
             feature: 'cv_download',
-            messageAr: 'المعاينة مجانية. لتحميل السيرة كملف PDF نظيف بدون علامة مائية، فعّل الاشتراك.',
-            messageEn: 'Preview is free. Subscribe to download a clean, watermark-free PDF.',
+            messageKey: 'serverPaywallDownload',
             meta: [
-                'benefits_ar' => [
-                    'تحميل PDF بدون علامة مائية',
-                    'تحسين النصوص بالذكاء الاصطناعي',
-                    'التحليل الكامل مع كل التوصيات',
-                    'عدد غير محدود من السير الذاتية',
-                ],
-                'benefits_en' => [
-                    'Watermark-free PDF download',
-                    'AI text enhancement',
-                    'Full analysis with every recommendation',
-                    'Unlimited CVs',
-                ],
+                'benefits' => $this->benefits(),
+                'benefits_ar' => $this->benefits('ar'),
+                'benefits_en' => $this->benefits('en'),
             ],
         );
     }
@@ -259,8 +249,7 @@ class SubscriptionGate
 
         throw new SubscriptionRequiredException(
             feature: 'ai_enhancement',
-            messageAr: 'تحسين النصوص بالذكاء الاصطناعي متاح للمشتركين. اشترك لإعادة صياغة خبراتك بلغة يفهمها نظام التوظيف.',
-            messageEn: 'AI enhancement is for subscribers. Subscribe to rewrite your experience in ATS-friendly language.',
+            messageKey: 'serverPaywallEnhance',
         );
     }
 
@@ -282,8 +271,8 @@ class SubscriptionGate
 
         throw new SubscriptionRequiredException(
             feature: 'daily_cv_quota',
-            messageAr: 'وصلت إلى حد الخطة المجانية ('.$limit.' سيرة في اليوم). اشترك لإنشاء عدد غير محدود من السير الذاتية.',
-            messageEn: 'You reached the free plan limit ('.$limit.' CV per day). Subscribe for unlimited CVs.',
+            messageKey: 'serverPaywallDailyCvLimit',
+            params: ['limit' => $limit],
             meta: [
                 'limit' => $limit,
                 'used' => $used,
@@ -310,8 +299,8 @@ class SubscriptionGate
 
         throw new SubscriptionRequiredException(
             feature: 'daily_analysis_quota',
-            messageAr: 'وصلت إلى حد الخطة المجانية ('.$limit.' تحليل في اليوم). اشترك لتحليل عدد غير محدود من السير.',
-            messageEn: 'You reached the free plan limit ('.$limit.' analyses per day). Subscribe for unlimited analyses.',
+            messageKey: 'serverPaywallDailyAnalysisLimit',
+            params: ['limit' => $limit],
             meta: [
                 'limit' => $limit,
                 'used' => $used,
@@ -345,10 +334,42 @@ class SubscriptionGate
 
             return [
                 ...$plan,
+                ...self::planLabels($plan),
                 'currency' => $currency,
                 'price_per_month' => round($price / $months, 2),
             ];
         }, (array) config('monetization.plans', [])));
+    }
+
+    /**
+     * Plan names and badges from the label catalog (#12): `name`/`badge` follow
+     * the app language, the _ar/_en pairs serve older app builds.
+     *
+     * @param  array<string, mixed>  $plan
+     * @return array<string, ?string>
+     */
+    private static function planLabels(array $plan): array
+    {
+        $labels = [];
+        foreach (['name', 'badge'] as $field) {
+            $key = $plan[$field.'_key'] ?? null;
+            $labels[$field] = $key === null ? null : ServerText::t($key);
+            $labels[$field.'_ar'] = $key === null ? null : ServerText::t($key, [], 'ar');
+            $labels[$field.'_en'] = $key === null ? null : ServerText::t($key, [], 'en');
+        }
+
+        return $labels;
+    }
+
+    /** @return list<string> */
+    private function benefits(?string $language = null): array
+    {
+        return array_map(fn (string $key) => ServerText::t($key, [], $language), [
+            'serverPaywallBenefitPdf',
+            'serverPaywallBenefitEnhance',
+            'serverPaywallBenefitAnalysis',
+            'serverPaywallBenefitUnlimited',
+        ]);
     }
 
     /**

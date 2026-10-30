@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\I18n\ServerText;
 use App\Services\Subscriptions\SubscriptionGate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,33 +32,42 @@ class SubscriptionPlanController extends Controller
                 // From the snapshot, so a broken switch never blocks the catalogue.
                 'enforced' => $access['enforced'],
                 'access' => $access,
-                'free_plan' => [
-                    'title_ar' => 'الخطة المجانية',
-                    'title_en' => 'Free plan',
-                    'includes_ar' => [
-                        'تصفح الوظائف والإشعارات — مجاني دائماً',
-                        'درجة ATS ونتيجة التحليل',
-                        'معاينة السيرة قبل التحميل',
-                        ($gate->dailyCvLimit() ?? 0).' سيرة و'.($gate->dailyAnalysisLimit() ?? 0).' تحليل في اليوم',
-                    ],
-                    'includes_en' => [
-                        'Job board and alerts — free forever',
-                        'ATS score and analysis result',
-                        'CV preview before download',
-                        ($gate->dailyCvLimit() ?? 0).' CV and '.($gate->dailyAnalysisLimit() ?? 0).' analyses per day',
-                    ],
-                    'excludes_ar' => [
-                        'تحميل PDF بدون علامة مائية',
-                        'تحسين النصوص بالذكاء الاصطناعي',
-                        'التوصيات الكاملة ('.(int) ($freeAnalysis['quick_wins'] ?? 1).' فقط مجاناً)',
-                    ],
-                    'excludes_en' => [
-                        'Watermark-free PDF download',
-                        'AI text enhancement',
-                        'Full recommendations ('.(int) ($freeAnalysis['quick_wins'] ?? 1).' shown free)',
-                    ],
-                ],
+                'free_plan' => $this->freePlan($gate, (int) ($freeAnalysis['quick_wins'] ?? 1)),
             ],
         ]);
+    }
+
+    /**
+     * What the free plan includes, from the label catalog (#12); the _ar/_en
+     * pairs serve older app builds.
+     *
+     * @return array<string, mixed>
+     */
+    private function freePlan(SubscriptionGate $gate, int $freeRecommendations): array
+    {
+        $limits = ['cvs' => $gate->dailyCvLimit() ?? 0, 'analyses' => $gate->dailyAnalysisLimit() ?? 0];
+        $includes = fn (?string $language) => [
+            ServerText::t('serverPlanFreeIncludesJobs', [], $language),
+            ServerText::t('serverPlanFreeIncludesAts', [], $language),
+            ServerText::t('serverPlanFreeIncludesPreview', [], $language),
+            ServerText::t('serverPlanFreeIncludesDailyLimits', $limits, $language),
+        ];
+        $excludes = fn (?string $language) => [
+            ServerText::t('serverPaywallBenefitPdf', [], $language),
+            ServerText::t('serverPaywallBenefitEnhance', [], $language),
+            ServerText::t('serverPlanFreeExcludesRecommendations', ['count' => $freeRecommendations], $language),
+        ];
+
+        return [
+            'title' => ServerText::t('serverPlanFreeTitle'),
+            'title_ar' => ServerText::t('serverPlanFreeTitle', [], 'ar'),
+            'title_en' => ServerText::t('serverPlanFreeTitle', [], 'en'),
+            'includes' => $includes(null),
+            'includes_ar' => $includes('ar'),
+            'includes_en' => $includes('en'),
+            'excludes' => $excludes(null),
+            'excludes_ar' => $excludes('ar'),
+            'excludes_en' => $excludes('en'),
+        ];
     }
 }

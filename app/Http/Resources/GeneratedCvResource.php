@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Cv\CvExportGuard;
 use App\Enums\AiStatus;
+use App\Services\I18n\ServerText;
 use App\Services\Subscriptions\SubscriptionGate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -74,8 +75,9 @@ class GeneratedCvResource extends JsonResource
             'can_download' => $canDownload,
             'is_watermarked' => ! $canDownload,
             'download_locked_reason' => $canDownload ? null : 'subscription_required',
-            'message_ar' => $canDownload ? null : 'المعاينة مجانية — اشترك لتحميل نسخة PDF بدون علامة مائية.',
-            'message_en' => $canDownload ? null : 'Preview is free — subscribe to download a watermark-free PDF.',
+            'message' => $canDownload ? null : ServerText::t('serverCvDownloadLocked'),
+            'message_ar' => $canDownload ? null : ServerText::t('serverCvDownloadLocked', [], 'ar'),
+            'message_en' => $canDownload ? null : ServerText::t('serverCvDownloadLocked', [], 'en'),
         ];
     }
 

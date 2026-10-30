@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Notifications\PasswordResetCode;
+use App\Services\I18n\ServerText;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
@@ -29,7 +30,7 @@ class PasswordResetService
     {
         if (! $force && Cache::has($this->throttleKey($user))) {
             throw ValidationException::withMessages([
-                'email' => 'يرجى الانتظار دقيقة قبل إعادة إرسال رمز الاستعادة.',
+                'email' => ServerText::t('serverAuthResetResendWait'),
             ]);
         }
 
@@ -54,7 +55,7 @@ class PasswordResetService
 
         if (! is_string($expected) || ! hash_equals($expected, $code)) {
             throw ValidationException::withMessages([
-                'code' => 'رمز التحقق غير صحيح أو منتهي الصلاحية.',
+                'code' => ServerText::t('serverAuthInvalidCode'),
             ]);
         }
 
