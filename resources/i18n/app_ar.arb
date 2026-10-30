@@ -2413,6 +2413,28 @@
   "@settingsDeleteConfirmWithPassword": {
     "description": "Password field heading on the delete account screen."
   },
+  "settingsDeleteConfirmWithProvider": "أكّد هويتك بتسجيل الدخول مرة أخرى بالحساب الذي تستخدمه في سيرتي",
+  "@settingsDeleteConfirmWithProvider": {
+    "description": "Heading on the delete account screen for accounts without a password (Google/Apple sign-in)."
+  },
+  "settingsDeleteWithProvider": "احذف حسابي عبر {provider}",
+  "@settingsDeleteWithProvider": {
+    "description": "Button that confirms account deletion by signing in again. provider is a brand name such as Google or Apple.",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsDeleteProviderMismatch": "حساب {provider} هذا غير مرتبط بحسابك في سيرتي.",
+  "@settingsDeleteProviderMismatch": {
+    "description": "Error when the provider account used to confirm deletion is not the linked one. provider is a brand name such as Google or Apple.",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
   "settingsDeletePasswordRequired": "كلمة المرور مطلوبة",
   "@settingsDeletePasswordRequired": {
     "description": "Validation error for an empty password on account deletion."
