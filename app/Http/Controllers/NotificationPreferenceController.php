@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\I18n\ServerText;
 use App\Services\Notifications\NotificationPreferenceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,7 +38,7 @@ class NotificationPreferenceController extends Controller
         $preference = $this->preferences->update($request->user(), $validated);
 
         return response()->json([
-            'message' => 'تم تحديث تفضيلات الإشعارات.',
+            'message' => ServerText::t('serverNotificationsPreferencesUpdated'),
             'data' => $this->preferences->toArray($preference),
         ]);
     }

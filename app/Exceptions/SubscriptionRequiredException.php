@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Services\I18n\ServerText;
 use App\Services\Subscriptions\SubscriptionGate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,15 +20,18 @@ final class SubscriptionRequiredException extends HttpException
     public const STATUS = 402;
 
     /**
+     * @param  string  $messageKey  catalog label (#12): `message` follows the app language,
+     *                              message_ar / message_en are kept for older app builds
+     * @param  array<string, mixed>  $params
      * @param  array<string, mixed>  $meta
      */
     public function __construct(
         private readonly string $feature,
-        private readonly string $messageAr,
-        private readonly string $messageEn,
+        private readonly string $messageKey,
+        private readonly array $params = [],
         private readonly array $meta = [],
     ) {
-        parent::__construct(self::STATUS, $messageAr);
+        parent::__construct(self::STATUS, ServerText::t($messageKey, $params));
     }
 
     public function render(Request $request): ?JsonResponse
@@ -40,17 +44,20 @@ final class SubscriptionRequiredException extends HttpException
         $gate = app(SubscriptionGate::class);
 
         return response()->json([
-            'message' => $this->messageAr,
+            'message' => ServerText::t($this->messageKey, $this->params),
             'error' => 'subscription_required',
             'code' => 'subscription_required',
             'feature' => $this->feature,
             'paywall' => [
-                'title_ar' => 'اشترك لتفتح هذه الميزة',
-                'title_en' => 'Subscribe to unlock',
-                'message_ar' => $this->messageAr,
-                'message_en' => $this->messageEn,
-                'cta_ar' => 'عرض الخطط',
-                'cta_en' => 'See plans',
+                'title' => ServerText::t('serverPaywallTitle'),
+                'title_ar' => ServerText::t('serverPaywallTitle', [], 'ar'),
+                'title_en' => ServerText::t('serverPaywallTitle', [], 'en'),
+                'message' => ServerText::t($this->messageKey, $this->params),
+                'message_ar' => ServerText::t($this->messageKey, $this->params, 'ar'),
+                'message_en' => ServerText::t($this->messageKey, $this->params, 'en'),
+                'cta' => ServerText::t('serverPaywallCta'),
+                'cta_ar' => ServerText::t('serverPaywallCta', [], 'ar'),
+                'cta_en' => ServerText::t('serverPaywallCta', [], 'en'),
                 ...$this->meta,
                 'trial_days' => $gate->trialDays(),
                 'currency' => $gate->currency(),

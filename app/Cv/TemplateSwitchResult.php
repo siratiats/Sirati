@@ -2,6 +2,8 @@
 
 namespace App\Cv;
 
+use App\Services\I18n\ServerText;
+
 final readonly class TemplateSwitchResult
 {
     /**
@@ -24,38 +26,25 @@ final readonly class TemplateSwitchResult
             return null;
         }
 
-        $labels = $language === 'ar'
-            ? [
-                'summary' => 'الملخص',
-                'skills' => 'المهارات',
-                'experience' => 'الخبرات',
-                'education' => 'التعليم',
-                'certifications' => 'الشهادات',
-                'projects' => 'المشاريع',
-                'languages' => 'اللغات',
-                'custom_sections' => 'أقسام إضافية',
-            ]
-            : [
-                'summary' => 'summary',
-                'skills' => 'skills',
-                'experience' => 'experience',
-                'education' => 'education',
-                'certifications' => 'certifications',
-                'projects' => 'projects',
-                'languages' => 'languages',
-                'custom_sections' => 'extra sections',
-            ];
+        $keys = [
+            'summary' => 'serverCvSectionSummary',
+            'skills' => 'serverCvSectionSkills',
+            'experience' => 'serverCvSectionExperience',
+            'education' => 'serverCvSectionEducation',
+            'certifications' => 'serverCvSectionCertifications',
+            'projects' => 'serverCvSectionProjects',
+            'languages' => 'serverCvSectionLanguages',
+            'custom_sections' => 'serverCvSectionCustom',
+        ];
 
         $names = array_map(
-            fn (string $key) => $labels[$key] ?? $key,
+            fn (string $key) => isset($keys[$key]) ? ServerText::t($keys[$key], [], $language) : $key,
             $this->omittedSections,
         );
 
-        if ($language === 'ar') {
-            return 'هذا القالب لن يعرض: '.implode('، ', $names).'. المحتوى محفوظ ويمكنك الرجوع للقالب السابق.';
-        }
-
-        return 'This template will hide: '.implode(', ', $names).'. Your content is kept and the switch is reversible.';
+        return ServerText::t('serverCvTemplateHidesSections', [
+            'sections' => implode(ServerText::t('serverCvTemplateSectionListSeparator', [], $language), $names),
+        ], $language);
     }
 
     /**

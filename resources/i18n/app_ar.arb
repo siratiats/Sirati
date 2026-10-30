@@ -637,6 +637,8 @@
   "cvHubDownload": "تحميل السيرة الذاتية (PDF)",
   "cvHubPreparing": "جارٍ التجهيز...",
   "cvHubShare": "مشاركة",
+  "cvShareSubscriptionRequired": "مشاركة ملف PDF تتطلب اشتراكًا.",
+  "cvShareFailed": "تعذّر تجهيز ملف PDF للمشاركة. حاول مرة أخرى.",
   "cvHubNextSteps": "الخطوات التالية",
   "cvHubCheckAts": "فحص التوافق بالتفصيل (ATS)",
   "cvHubCheckAtsBody": "افحص توافق هذه السيرة مع أنظمة ATS مع تحديد نصها تلقائياً.",
@@ -2895,6 +2897,20 @@
       }
     }
   },
+  "atsCategoryGeneral": "تقييم عام (مهارات مهنية مشتركة)",
+  "@atsCategoryGeneral": {
+    "description": "Scoring category label for the general profile when the server sends no label."
+  },
+  "atsHiddenMore": "+{count} أخرى مخفية",
+  "@atsHiddenMore": {
+    "description": "Under an ATS result list: how many more items the server withheld (free tier).",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "myCvsHeaderSubtitle": "أنشئ سيرتك، وافحصها، وأدر نسخك من مكان واحد",
   "@myCvsHeaderSubtitle": {
     "description": "Subtitle under the My CVs header"
@@ -3283,5 +3299,697 @@
   },
   "authVerifyCodeResent": "تم إرسال رمز التحقق إلى بريدك الإلكتروني.",
   "authForgotCodeSent": "تم إرسال رمز استعادة كلمة المرور إذا كان البريد مسجلاً لدينا.",
-  "authForgotPasswordReset": "تم تعيين كلمة المرور الجديدة بنجاح. يمكنك تسجيل الدخول الآن."
+  "authForgotPasswordReset": "تم تعيين كلمة المرور الجديدة بنجاح. يمكنك تسجيل الدخول الآن.",
+  "serverDashboardStatusActive": "حساب نشط",
+  "serverDashboardCreateCvTitle": "أنشئ سيرة ذاتية وفق ATS",
+  "serverDashboardCreateCvSubtitle": "ابن سيرتك خطوة بخطوة واحصل على تصميم احترافي يتجاوز أنظمة الفرز.",
+  "serverDashboardCreateCvButton": "ابدأ الآن",
+  "serverDashboardAnalyzeTitle": "حلّل سيرتك الذاتية بـ ATS",
+  "serverDashboardAnalyzeSubtitle": "ارفع سيرتك واعرف نقاط قوتها ومدى توافقها مع الوظائف المستهدفة.",
+  "serverDashboardAnalyzeButton": "تحليل الآن",
+  "serverMyCvsTitle": "سيرتي الذاتية",
+  "serverMyCvsSummary": "لديك {count} ملفات مسودة ومكتملة",
+  "@serverMyCvsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "serverMyCvsUpdated": "آخر تعديل: {date}",
+  "@serverMyCvsUpdated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "serverMyCvsUpdatedUnknown": "آخر تعديل: غير محدد",
+  "serverMyCvsTailoredTitle": "{title} (مخصصة)",
+  "@serverMyCvsTailoredTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "serverCvTemplatesTitle": "تصاميم السيرة الذاتية",
+  "serverCvTemplatesSubtitle": "اختر التصميم الأنسب لتقديمك القادم.",
+  "serverEducationTitle": "التعلم والتطوير",
+  "serverEducationSubtitle": "مقالات وشهادات وأدلة دراسة لمسارك المهني",
+  "serverEducationTargetLabel": "حسب وظيفتك المستهدفة",
+  "serverEducationTabNews": "أخبار",
+  "serverEducationTabCertificates": "شهادات",
+  "serverEducationTabStudy": "دراسة",
+  "serverEducationStartLearning": "ابدأ التعلم الآن",
+  "serverJobsTitle": "أخبار الوظائف",
+  "serverJobsSubtitle": "وظائف جديدة من جهات التوظيف ومواقع الوظائف.",
+  "serverJobsApplyBy": "التقديم حتى {date}",
+  "@serverJobsApplyBy": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "serverJobsSourceGovLabel": "جهة حكومية / شبه حكومية",
+  "serverJobsSourceGovBadge": "جهة حكومية",
+  "serverJobsSourceCompanyLabel": "شركة",
+  "serverJobsSourceCompanyBadge": "شركة",
+  "serverJobsSourceTamheerLabel": "برنامج تمهير",
+  "serverJobsSourceTamheerBadge": "تمهير وتدريب",
+  "serverJobsSourceStartupLabel": "شركة ناشئة",
+  "serverJobsSourceStartupBadge": "شركة ناشئة",
+  "serverJobsSalaryRange": "{min} - {max} {currency}",
+  "@serverJobsSalaryRange": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "serverJobsSalaryFrom": "من {min} {currency}",
+  "@serverJobsSalaryFrom": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "serverJobsSalaryUpTo": "حتى {max} {currency}",
+  "@serverJobsSalaryUpTo": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "serverJobsCurrencySar": "ر.س",
+  "serverNotificationsAllRead": "تم تعليم كل الإشعارات كمقروءة.",
+  "serverNotificationsPreferencesUpdated": "تم تحديث تفضيلات الإشعارات.",
+  "serverNotificationsOpenRecorded": "تم تسجيل فتح الإشعار.",
+  "serverNotificationsActivityRecorded": "تم تسجيل النشاط.",
+  "serverNotificationsConversionRecorded": "تم تسجيل التحويل.",
+  "serverNotificationsTokenRegistered": "تم تسجيل الجهاز للإشعارات.",
+  "serverNotificationsTokenRemoved": "تم إلغاء تسجيل الجهاز من الإشعارات.",
+  "serverAuthInvalidCredentials": "بيانات تسجيل الدخول غير صحيحة.",
+  "serverAuthEmailVerified": "تم تأكيد البريد الإلكتروني بنجاح.",
+  "serverAuthEmailAlreadyVerified": "البريد الإلكتروني مؤكد مسبقاً.",
+  "serverAuthVerificationCodeSent": "تم إرسال رمز التحقق إلى بريدك الإلكتروني.",
+  "serverAuthResetCodeSent": "تم إرسال رمز استعادة كلمة المرور إذا كان البريد مسجلاً لدينا.",
+  "serverAuthInvalidCode": "رمز التحقق غير صحيح أو منتهي الصلاحية.",
+  "serverAuthPasswordReset": "تم تعيين كلمة المرور الجديدة بنجاح. يمكنك تسجيل الدخول الآن.",
+  "serverAuthLoggedOut": "تم تسجيل الخروج بنجاح.",
+  "serverAuthCurrentPasswordWrong": "كلمة المرور الحالية غير صحيحة.",
+  "serverAuthPasswordChanged": "تم تغيير كلمة المرور بنجاح.",
+  "serverAuthAvatarSaveFailed": "تعذر حفظ الصورة.",
+  "serverAuthPasswordWrong": "كلمة المرور غير صحيحة.",
+  "serverAuthSocialAccountMismatch": "هذا الحساب غير مرتبط بحسابك في سيرتي.",
+  "serverAuthAccountDeleted": "تم حذف الحساب نهائياً.",
+  "serverAuthJobTitleOtherRequired": "يرجى كتابة المسمى الوظيفي عند اختيار أخرى.",
+  "serverAuthVerificationResendWait": "يرجى الانتظار دقيقة قبل إعادة إرسال رمز التحقق.",
+  "serverAuthResetResendWait": "يرجى الانتظار دقيقة قبل إعادة إرسال رمز الاستعادة.",
+  "serverAuthEmailNotVerified": "يجب تأكيد البريد الإلكتروني أولاً.",
+  "serverAuthSocialUnavailable": "تسجيل الدخول عبر {provider} غير متاح حالياً. حاول لاحقاً.",
+  "@serverAuthSocialUnavailable": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "serverAuthSocialInvalidToken": "تعذّر التحقق من حساب {provider}. حاول مرة أخرى.",
+  "@serverAuthSocialInvalidToken": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "serverAuthSocialEmailUnverified": "البريد الإلكتروني لحساب {provider} غير مؤكد.",
+  "@serverAuthSocialEmailUnverified": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "serverCvDeleted": "تم حذف السيرة.",
+  "serverCvTemplateUnavailable": "القالب غير متوفر حالياً.",
+  "serverCvTemplatePremiumOnly": "هذا القالب متاح للمشتركين فقط. يرجى الترقية لتحميل السيرة الذاتية بهذا القالب.",
+  "serverCvEnhanceUnavailable": "تحسين الذكاء الاصطناعي غير متاح مؤقتاً.",
+  "serverCvEnhanceFailed": "حدث خطأ أثناء تحسين الحقل بالذكاء الاصطناعي. تم الاحتفاظ بمسودتك.",
+  "serverCvExportGenerating": "لا يزال إنشاء السيرة جارياً. حمّلها بعد اكتماله.",
+  "serverCvExportMissingContact": "أضف البريد الإلكتروني ورقم الجوال إلى السيرة قبل إرسالها إلى جهات التوظيف.",
+  "serverCvExportUnstructuredExperience": "الخبرات في السيرة غير منظّمة بعد. عدّل السيرة وأضف لكل خبرة المسمى والشركة والفترة، أو أعد إنشاءها.",
+  "serverCvTemplateHidesSections": "هذا القالب لن يعرض: {sections}. المحتوى محفوظ ويمكنك الرجوع للقالب السابق.",
+  "@serverCvTemplateHidesSections": {
+    "placeholders": {
+      "sections": {
+        "type": "String"
+      }
+    }
+  },
+  "serverCvTemplateSectionListSeparator": "، ",
+  "serverCvSectionSummary": "الملخص",
+  "serverCvSectionSkills": "المهارات",
+  "serverCvSectionExperience": "الخبرات",
+  "serverCvSectionEducation": "التعليم",
+  "serverCvSectionCertifications": "الشهادات",
+  "serverCvSectionProjects": "المشاريع",
+  "serverCvSectionLanguages": "اللغات",
+  "serverCvSectionCustom": "أقسام إضافية",
+  "serverCvFileTypeUnsupported": "يدعم Siratie حالياً ملفات PDF و TXT فقط.",
+  "serverCvTextTooShort": "أدخل أو ارفع سيرة ذاتية تحتوي على {min} حرفاً على الأقل.",
+  "@serverCvTextTooShort": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "serverCvPdfUnreadable": "لم نتمكن من قراءة النص من ملف PDF. جرّب نسخ النص يدوياً أو رفع ملف PDF نصي.",
+  "serverAnalysisResumeRequired": "الصق نص السيرة أو ارفع ملف PDF/TXT للبدء.",
+  "serverAnalysisLockedTitle": "باقي التحليل مخفي",
+  "serverAnalysisLockedMessage": "لديك {count} ملاحظة وتوصية إضافية تشرح كيف ترفع درجتك. اشترك لعرضها كاملة.",
+  "@serverAnalysisLockedMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "serverAnalysisLockedCta": "عرض التحليل الكامل",
+  "serverPaywallTitle": "اشترك لتفتح هذه الميزة",
+  "serverPaywallCta": "عرض الخطط",
+  "serverPaywallJobMatch": "مطابقة السيرة الذاتية مع الوظيفة متاحة للمشتركين. اشترك لاكتشاف نقاط القوة والفجوات وتحسين سيرتك.",
+  "serverPaywallDownload": "المعاينة مجانية. لتحميل السيرة كملف PDF نظيف بدون علامة مائية، فعّل الاشتراك.",
+  "serverPaywallEnhance": "تحسين النصوص بالذكاء الاصطناعي متاح للمشتركين. اشترك لإعادة صياغة خبراتك بلغة يفهمها نظام التوظيف.",
+  "serverPaywallDailyCvLimit": "وصلت إلى حد الخطة المجانية ({limit} سيرة في اليوم). اشترك لإنشاء عدد غير محدود من السير الذاتية.",
+  "@serverPaywallDailyCvLimit": {
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "serverPaywallDailyAnalysisLimit": "وصلت إلى حد الخطة المجانية ({limit} تحليل في اليوم). اشترك لتحليل عدد غير محدود من السير.",
+  "@serverPaywallDailyAnalysisLimit": {
+    "placeholders": {
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "serverPaywallBenefitPdf": "تحميل PDF بدون علامة مائية",
+  "serverPaywallBenefitEnhance": "تحسين النصوص بالذكاء الاصطناعي",
+  "serverPaywallBenefitAnalysis": "التحليل الكامل مع كل التوصيات",
+  "serverPaywallBenefitUnlimited": "عدد غير محدود من السير الذاتية",
+  "serverJobMatchDailyLimit": "وصلت إلى الحد اليومي لمطابقة الوظائف. حاول مرة أخرى بعد تجدد الحد.",
+  "serverPlanMonthlyName": "اشتراك شهري",
+  "serverPlanSixMonthsName": "اشتراك ٦ أشهر",
+  "serverPlanSixMonthsBadge": "الأكثر توفيراً",
+  "serverPlanAnnualName": "اشتراك سنوي",
+  "serverErrorUnauthenticated": "سجّل الدخول للمتابعة.",
+  "serverErrorForbidden": "لا تملك صلاحية لهذا الإجراء.",
+  "serverErrorNotFound": "لم يتم العثور على المطلوب.",
+  "serverErrorMethodNotAllowed": "هذا الطلب غير مدعوم.",
+  "serverErrorTooManyRequests": "طلبات كثيرة جداً. انتظر قليلاً ثم حاول مرة أخرى.",
+  "serverErrorServer": "حدث خطأ في الخادم. حاول مرة أخرى.",
+  "serverErrorUnavailable": "هذه الميزة غير متاحة مؤقتاً.",
+  "serverErrorRequestFailed": "تعذر إتمام الطلب.",
+  "serverValidationRequired": "حقل {attribute} مطلوب.",
+  "@serverValidationRequired": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationString": "يجب أن يكون {attribute} نصاً صحيحاً.",
+  "@serverValidationString": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationEmail": "يرجى إدخال بريد إلكتروني صحيح.",
+  "serverValidationFile": "يرجى رفع ملف صحيح في حقل {attribute}.",
+  "@serverValidationFile": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationImage": "يجب أن يكون {attribute} صورة.",
+  "@serverValidationImage": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationMimes": "يجب أن يكون {attribute} من نوع: {values}.",
+  "@serverValidationMimes": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "values": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationMaxString": "يجب ألا يتجاوز {attribute} {max} حرفاً.",
+  "@serverValidationMaxString": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationMaxFile": "يجب ألا يتجاوز حجم {attribute} {max} كيلوبايت.",
+  "@serverValidationMaxFile": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationMaxNumeric": "يجب ألا تكون قيمة {attribute} أكبر من {max}.",
+  "@serverValidationMaxNumeric": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationMaxArray": "يجب ألا يحتوي {attribute} على أكثر من {max} عناصر.",
+  "@serverValidationMaxArray": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationMinString": "يجب ألا يقل {attribute} عن {min} حرفاً.",
+  "@serverValidationMinString": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationMinFile": "يجب ألا يقل حجم {attribute} عن {min} كيلوبايت.",
+  "@serverValidationMinFile": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationMinNumeric": "يجب ألا تكون قيمة {attribute} أقل من {min}.",
+  "@serverValidationMinNumeric": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationMinArray": "يجب أن يحتوي {attribute} على {min} عناصر على الأقل.",
+  "@serverValidationMinArray": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationBetweenNumeric": "يجب أن تكون قيمة {attribute} بين {min} و {max}.",
+  "@serverValidationBetweenNumeric": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationBetweenString": "يجب أن يكون طول {attribute} بين {min} و {max} حرفاً.",
+  "@serverValidationBetweenString": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationSizeString": "يجب أن يتكون {attribute} من {size} أحرف.",
+  "@serverValidationSizeString": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationIn": "القيمة المختارة في {attribute} غير صحيحة.",
+  "@serverValidationIn": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationInteger": "يجب أن يكون {attribute} عدداً صحيحاً.",
+  "@serverValidationInteger": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationNumeric": "يجب أن يكون {attribute} رقماً.",
+  "@serverValidationNumeric": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationBoolean": "يجب أن تكون قيمة {attribute} صحيحة أو خاطئة.",
+  "@serverValidationBoolean": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationArray": "يجب أن يكون {attribute} قائمة.",
+  "@serverValidationArray": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationRegex": "صيغة {attribute} غير صحيحة.",
+  "@serverValidationRegex": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationUrl": "يجب أن يكون {attribute} رابطاً صحيحاً.",
+  "@serverValidationUrl": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationDate": "يجب أن يكون {attribute} تاريخاً صحيحاً.",
+  "@serverValidationDate": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationExists": "القيمة المختارة في {attribute} غير صحيحة.",
+  "@serverValidationExists": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationUnique": "{attribute} مستخدم مسبقاً.",
+  "@serverValidationUnique": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationConfirmed": "تأكيد {attribute} غير مطابق.",
+  "@serverValidationConfirmed": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationRequiredIf": "حقل {attribute} مطلوب.",
+  "@serverValidationRequiredIf": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationAccepted": "يجب قبول {attribute}.",
+  "@serverValidationAccepted": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationAlphaDash": "يجب أن يحتوي {attribute} على حروف وأرقام وشرطات فقط.",
+  "@serverValidationAlphaDash": {
+    "placeholders": {
+      "attribute": {
+        "type": "String"
+      }
+    }
+  },
+  "serverValidationMoreErrors": "{message} (وأخطاء أخرى: {count})",
+  "@serverValidationMoreErrors": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "serverAttributeName": "الاسم",
+  "serverAttributeFullName": "الاسم الكامل",
+  "serverAttributeEmail": "البريد الإلكتروني",
+  "serverAttributePassword": "كلمة المرور",
+  "serverAttributeCurrentPassword": "كلمة المرور الحالية",
+  "serverAttributeCode": "رمز التحقق",
+  "serverAttributePhone": "رقم الجوال",
+  "serverAttributeLocation": "المدينة أو الدولة",
+  "serverAttributeJobTitle": "المسمى الوظيفي",
+  "serverAttributeJobTitleOther": "المسمى الوظيفي",
+  "serverAttributeAvatar": "الصورة",
+  "serverAttributeRoleInterest": "نوع الاهتمام",
+  "serverAttributeTargetJobTitle": "المسمى الوظيفي المستهدف",
+  "serverAttributeNotes": "الملاحظات",
+  "serverAttributeResumeText": "نص السيرة الذاتية",
+  "serverAttributeResumeFile": "ملف السيرة الذاتية",
+  "serverAttributeLinkedin": "حساب لينكدإن",
+  "serverAttributeLanguage": "لغة السيرة",
+  "serverAttributeSummary": "الملخص المهني",
+  "serverAttributeSkills": "المهارات الأساسية",
+  "serverAttributeExperience": "الخبرات العملية والإنجازات",
+  "serverAttributeEducation": "التعليم",
+  "serverAttributeCertifications": "الشهادات والدورات",
+  "serverAttributeJobDescription": "الوصف الوظيفي",
+  "serverAttributeDraft": "النص",
+  "serverAttributeTemplate": "القالب",
+  "serverNotifyFirstAnalysisTitle": "اكتشف ما قد يضعف سيرتك",
+  "serverNotifyFirstAnalysisBody": "حلّل سيرتك بسرعة واحصل على نصائح تحسين واضحة خلال دقائق.",
+  "serverNotifyLowScoreTitle": "درجة ATS الخاصة بك قابلة للتحسين",
+  "serverNotifyLowScoreBodyScoreTip": "تحليلُك الأخير (الدرجة: {score}) يحتوي خطوة واضحة: {tip}",
+  "@serverNotifyLowScoreBodyScoreTip": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      },
+      "tip": {
+        "type": "String"
+      }
+    }
+  },
+  "serverNotifyLowScoreBodyTip": "تحليلُك الأخير يحتوي خطوة واضحة: {tip}",
+  "@serverNotifyLowScoreBodyTip": {
+    "placeholders": {
+      "tip": {
+        "type": "String"
+      }
+    }
+  },
+  "serverNotifyLowScoreBodyScore": "تحليلُك الأخير (الدرجة: {score}) قابل للتحسين. افتحه لترى إصلاحات عملية.",
+  "@serverNotifyLowScoreBodyScore": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "serverNotifyLowScoreBody": "تحليلُك الأخير قابل للتحسين. افتحه لترى إصلاحات عملية.",
+  "serverNotifyAnalysisToCvTitle": "حوّل التحليل إلى سيرة محسّنة",
+  "serverNotifyAnalysisToCvBody": "لديك نتائج تحليل جاهزة — أنشئ سيرة أقوى منها الآن.",
+  "serverNotifyStaleCvTitle": "راجع سيرتك قبل التقديم",
+  "serverNotifyStaleCvBody": "آخر سيرة أنشأتها مرّ عليها أكثر من أسبوع. تحديث سريع قد يحسّن فرصك.",
+  "serverNotifyMatchingJobTitle": "فرصة مناسبة لك",
+  "serverNotifyMatchingJobBodyTitleCompany": "إعلان جديد مرتبط بـ {jobTitle} لدى {company}. افتح أخبار الوظائف لمراجعته.",
+  "@serverNotifyMatchingJobBodyTitleCompany": {
+    "placeholders": {
+      "jobTitle": {
+        "type": "String"
+      },
+      "company": {
+        "type": "String"
+      }
+    }
+  },
+  "serverNotifyMatchingJobBodyTitle": "يتوفر إعلان جديد مرتبط بـ {jobTitle} في أخبار الوظائف.",
+  "@serverNotifyMatchingJobBodyTitle": {
+    "placeholders": {
+      "jobTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "serverNotifyMatchingJobBody": "يوجد إعلان وظيفي قد يناسب ملفك. تصفّح أخبار الوظائف.",
+  "serverNotifyEducationTitle": "تعلّم ما يدعم مسارك",
+  "serverNotifyEducationBodyTitle": "قراءة موصى بها: {title}",
+  "@serverNotifyEducationBodyTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "serverNotifyEducationBody": "محتوى تعليمي قصير قد يقوّي طلبك التالي.",
+  "serverNotifyTipTitle": "نصيحة سريعة لبحثك عن عمل",
+  "serverNotifyTipBody": "حافظ على تطابق كلمات سيرتك مع المسمى المستهدف لنتائج ATS أفضل.",
+  "serverNotifyCvReadyTitle": "سيرتك الذاتية جاهزة",
+  "serverNotifyCvReadyBody": "افتح سيرتي لمراجعة السيرة وتصديرها.",
+  "serverNotifyCvFailedTitle": "تعذر إكمال توليد السيرة",
+  "serverNotifyCvFailedBody": "افتح سيرتي لمعرفة السبب وإعادة المحاولة.",
+  "serverNotifyNewJobTitle": "🎯 فرصة وظيفية جديدة تناسبك",
+  "serverNotifyNewJobBody": "تم نشر وظيفة جديدة: {jobTitle}",
+  "@serverNotifyNewJobBody": {
+    "placeholders": {
+      "jobTitle": {
+        "type": "String"
+      }
+    }
+  },
+  "serverNotifyNewJobBodyCompany": "تم نشر وظيفة جديدة: {jobTitle} لدى {company}",
+  "@serverNotifyNewJobBodyCompany": {
+    "placeholders": {
+      "jobTitle": {
+        "type": "String"
+      },
+      "company": {
+        "type": "String"
+      }
+    }
+  },
+  "serverNotifyNewJobBodyLocation": "تم نشر وظيفة جديدة: {jobTitle} في {location}",
+  "@serverNotifyNewJobBodyLocation": {
+    "placeholders": {
+      "jobTitle": {
+        "type": "String"
+      },
+      "location": {
+        "type": "String"
+      }
+    }
+  },
+  "serverNotifyNewJobBodyLocationCompany": "تم نشر وظيفة جديدة: {jobTitle} في {location} لدى {company}",
+  "@serverNotifyNewJobBodyLocationCompany": {
+    "placeholders": {
+      "jobTitle": {
+        "type": "String"
+      },
+      "location": {
+        "type": "String"
+      },
+      "company": {
+        "type": "String"
+      }
+    }
+  },
+  "serverAnalysisNotResume": "يبدو أن الملف المرفوع ليس سيرة ذاتية (مثلاً إيصال بنك أو فاتورة أو مستند غير مهني). يرجى رفع سيرتك الذاتية بصيغة PDF أو نص.",
+  "serverPlanFreeTitle": "الخطة المجانية",
+  "serverPlanFreeIncludesJobs": "تصفح الوظائف والإشعارات — مجاني دائماً",
+  "serverPlanFreeIncludesAts": "درجة ATS ونتيجة التحليل",
+  "serverPlanFreeIncludesPreview": "معاينة السيرة قبل التحميل",
+  "serverPlanFreeIncludesDailyLimits": "{cvs} سيرة و{analyses} تحليل في اليوم",
+  "@serverPlanFreeIncludesDailyLimits": {
+    "placeholders": {
+      "cvs": {
+        "type": "int"
+      },
+      "analyses": {
+        "type": "int"
+      }
+    }
+  },
+  "serverPlanFreeExcludesRecommendations": "التوصيات الكاملة ({count} فقط مجاناً)",
+  "@serverPlanFreeExcludesRecommendations": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "serverCvDownloadLocked": "المعاينة مجانية — اشترك لتحميل نسخة PDF بدون علامة مائية."
 }

@@ -9,6 +9,7 @@ use App\Models\NotificationDecision;
 use App\Models\User;
 use App\Services\Notifications\NotificationPolicyService;
 use App\Services\Notifications\NotificationPreferenceService;
+use App\Services\Notifications\NotificationTemplateService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -617,12 +618,12 @@ class SaudiJobAggregatorService
             // 7. Idempotency per user per job
             $idempotencyKey = "realtime_job:{$user->id}:{$job->id}";
 
-            $isEnglish = ($preference->language ?? 'ar') === 'en';
-            $locationNote = $job->city ? ($isEnglish ? " in {$job->city}" : " في {$job->location}") : '';
-            $title = $isEnglish ? '🎯 New Matching Job Opening' : '🎯 فرصة وظيفية جديدة تناسبك';
-            $body = $isEnglish
-                ? "New role: {$job->title}{$locationNote} at {$job->company}"
-                : "تم نشر وظيفة جديدة: {$job->title}{$locationNote} لدى {$job->company}";
+            // Catalog labels in the user's notification language (#12); no
+            // company or place is added when the post has none.
+            $text = app(NotificationTemplateService::class)->newJob((string) $job->title, $job->company, $job->location);
+            $language = $preference->language ?? 'ar';
+            $title = $text->title($language);
+            $body = $text->body($language);
 
             // The unique idempotency_key makes this atomic across concurrent runs.
             $decision = NotificationDecision::query()->createOrFirst([
@@ -665,6 +666,7 @@ class SaudiJobAggregatorService
                     'action_url' => 'job-news/'.$job->id,
                     'decision_id' => (string) $decision->id,
                 ],
+                text: $text->toArray(),
             );
         }
     }

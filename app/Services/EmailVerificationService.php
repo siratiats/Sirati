@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Notifications\VerifyEmailCode;
+use App\Services\I18n\ServerText;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
@@ -33,7 +34,7 @@ class EmailVerificationService
 
         if (! $force && Cache::has($this->throttleKey($user))) {
             throw ValidationException::withMessages([
-                'email' => 'يرجى الانتظار دقيقة قبل إعادة إرسال رمز التحقق.',
+                'email' => ServerText::t('serverAuthVerificationResendWait'),
             ]);
         }
 
@@ -59,7 +60,7 @@ class EmailVerificationService
 
         if (! is_string($expected) || ! hash_equals($expected, $code)) {
             throw ValidationException::withMessages([
-                'code' => 'رمز التحقق غير صحيح أو منتهي الصلاحية.',
+                'code' => ServerText::t('serverAuthInvalidCode'),
             ]);
         }
 

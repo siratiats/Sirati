@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\MobileNotification;
 use App\Models\User;
 use App\Models\UserFcmToken;
+use App\Support\NotificationText;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Contract\Messaging;
 use Kreait\Firebase\Exception\MessagingException;
@@ -84,6 +85,7 @@ class FirebaseNotificationService
         ?string $actionType = null,
         ?string $actionUrl = null,
         array $data = [],
+        ?NotificationText $text = null,
     ): array {
         $notification = $user->mobileNotifications()->create([
             'type' => $type,
@@ -91,6 +93,10 @@ class FirebaseNotificationService
             'body' => $body,
             'action_type' => $actionType,
             'action_url' => $actionUrl,
+            // Keys let the in-app list show it in the reader's language (#12).
+            'title_key' => $text?->titleKey,
+            'body_key' => $text?->bodyKey,
+            'text_params' => $text?->params,
         ]);
 
         return $this->sendToUser($user, $title, $body, array_merge($data, [

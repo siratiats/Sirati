@@ -351,15 +351,18 @@ class CvMvpTest extends TestCase
 
     public function test_mobile_education_endpoint_is_bilingual(): void
     {
+        // No stored content: an honest empty response, never sample courses (#15).
         $this->getJson('/api/mobile/education?lang=en')
             ->assertOk()
             ->assertJsonPath('data.title', 'Learning & Development')
-            ->assertJsonPath('data.featured_course.badge', 'Recommended');
+            ->assertJsonPath('data.featured_course', null)
+            ->assertJsonPath('data.study_cards', []);
 
         $this->getJson('/api/mobile/education?lang=ar')
             ->assertOk()
             ->assertJsonPath('data.title', 'التعلم والتطوير')
-            ->assertJsonPath('data.featured_course.badge', 'موصى به لك');
+            ->assertJsonPath('data.featured_course', null)
+            ->assertJsonPath('data.study_cards', []);
     }
 
     public function test_mobile_education_detail_endpoint_returns_content(): void

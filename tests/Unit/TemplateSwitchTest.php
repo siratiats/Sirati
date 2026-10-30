@@ -9,8 +9,9 @@ use App\Cv\Project;
 use App\Cv\Skill;
 use App\Cv\TemplateSwitch;
 use App\Models\CvTemplate;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
+/** The warning text comes from the label catalog (#12), so this needs the app. */
 class TemplateSwitchTest extends TestCase
 {
     public function test_switch_preserves_document_and_warns_about_hidden_sections(): void

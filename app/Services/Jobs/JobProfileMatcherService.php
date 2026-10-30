@@ -3,6 +3,7 @@
 namespace App\Services\Jobs;
 
 use App\Models\User;
+use App\Services\I18n\ServerText;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -131,66 +132,45 @@ class JobProfileMatcherService
      *
      * @return array{code: string, label: ?string, badge: ?string}
      */
-    public function formatSourceType(string $sourceType, string $language = 'ar'): array
+    public function formatSourceType(string $sourceType): array
     {
-        $isEnglish = $language === 'en';
+        $keys = [
+            'gov' => ['serverJobsSourceGovLabel', 'serverJobsSourceGovBadge'],
+            'enterprise' => ['serverJobsSourceCompanyLabel', 'serverJobsSourceCompanyBadge'],
+            'tamheer' => ['serverJobsSourceTamheerLabel', 'serverJobsSourceTamheerBadge'],
+            'startup' => ['serverJobsSourceStartupLabel', 'serverJobsSourceStartupBadge'],
+        ][$sourceType] ?? null;
 
-        return match ($sourceType) {
-            'gov' => [
-                'code' => 'gov',
-                'label' => $isEnglish ? 'Gov / Semi-Gov' : 'جهة حكومية / شبه حكومية',
-                'badge' => $isEnglish ? 'Government' : 'جهة حكومية',
-            ],
-            'enterprise' => [
-                'code' => 'enterprise',
-                'label' => $isEnglish ? 'Company' : 'شركة',
-                'badge' => $isEnglish ? 'Company' : 'شركة',
-            ],
-            'tamheer' => [
-                'code' => 'tamheer',
-                'label' => $isEnglish ? 'Tamheer Program' : 'برنامج تمهير',
-                'badge' => $isEnglish ? 'Tamheer & training' : 'تمهير وتدريب',
-            ],
-            'startup' => [
-                'code' => 'startup',
-                'label' => $isEnglish ? 'Startup' : 'شركة ناشئة',
-                'badge' => $isEnglish ? 'Startup' : 'شركة ناشئة',
-            ],
-            default => [
-                'code' => 'general',
-                'label' => null,
-                'badge' => null,
-            ],
-        };
+        if ($keys === null) {
+            return ['code' => 'general', 'label' => null, 'badge' => null];
+        }
+
+        $text = app(ServerText::class);
+
+        return ['code' => $sourceType, 'label' => $text->get($keys[0]), 'badge' => $text->get($keys[1])];
     }
 
     /**
-     * Format salary range nicely.
+     * Salary range in the caller's app language (catalog labels, #12).
      */
-    public function formatSalary(?int $min, ?int $max, string $language = 'ar'): ?string
+    public function formatSalary(?int $min, ?int $max): ?string
     {
         if ($min === null && $max === null) {
             return null;
         }
 
-        $currency = $language === 'en' ? 'SAR' : 'ر.س';
+        $text = app(ServerText::class);
+        $currency = $text->get('serverJobsCurrencySar');
 
         if ($min !== null && $max !== null) {
-            $formattedMin = number_format($min);
-            $formattedMax = number_format($max);
-
-            return "{$formattedMin} - {$formattedMax} {$currency}";
+            return $text->get('serverJobsSalaryRange', ['min' => number_format($min), 'max' => number_format($max), 'currency' => $currency]);
         }
 
         if ($min !== null) {
-            $formattedMin = number_format($min);
-
-            return $language === 'en' ? "From {$formattedMin} {$currency}" : "من {$formattedMin} {$currency}";
+            return $text->get('serverJobsSalaryFrom', ['min' => number_format($min), 'currency' => $currency]);
         }
 
-        $formattedMax = number_format($max);
-
-        return $language === 'en' ? "Up to {$formattedMax} {$currency}" : "حتى {$formattedMax} {$currency}";
+        return $text->get('serverJobsSalaryUpTo', ['max' => number_format($max), 'currency' => $currency]);
     }
 
     /** The user's location as a stored city code (e.g. "riyadh"), if recognised. */

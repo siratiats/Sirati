@@ -2,136 +2,154 @@
 
 namespace App\Services\Notifications;
 
+use App\Services\I18n\ServerText;
 use App\Support\DailyNotificationCandidate;
+use App\Support\NotificationText;
 
+/**
+ * Notification copy as catalog labels (Abobker85/Sirati#12), so it follows the
+ * reader's app language and is editable in the admin Labels page.
+ */
 class NotificationTemplateService
 {
+    /**
+     * Every templated title and the bodies sent with it, most specific first.
+     * Used to recognise text stored before keys were kept.
+     */
+    public const TEMPLATES = [
+        'serverNotifyFirstAnalysisTitle' => ['serverNotifyFirstAnalysisBody'],
+        'serverNotifyLowScoreTitle' => ['serverNotifyLowScoreBodyScoreTip', 'serverNotifyLowScoreBodyTip', 'serverNotifyLowScoreBodyScore', 'serverNotifyLowScoreBody'],
+        'serverNotifyAnalysisToCvTitle' => ['serverNotifyAnalysisToCvBody'],
+        'serverNotifyStaleCvTitle' => ['serverNotifyStaleCvBody'],
+        'serverNotifyMatchingJobTitle' => ['serverNotifyMatchingJobBodyTitleCompany', 'serverNotifyMatchingJobBodyTitle', 'serverNotifyMatchingJobBody'],
+        'serverNotifyEducationTitle' => ['serverNotifyEducationBodyTitle', 'serverNotifyEducationBody'],
+        'serverNotifyTipTitle' => ['serverNotifyTipBody'],
+        'serverNotifyCvReadyTitle' => ['serverNotifyCvReadyBody'],
+        'serverNotifyCvFailedTitle' => ['serverNotifyCvFailedBody'],
+        'serverNotifyNewJobTitle' => ['serverNotifyNewJobBodyLocationCompany', 'serverNotifyNewJobBodyLocation', 'serverNotifyNewJobBodyCompany', 'serverNotifyNewJobBody'],
+    ];
+
     /**
      * @return array{title: string, body: string}
      */
     public function render(DailyNotificationCandidate $candidate, string $language): array
     {
-        $en = $language === 'en';
+        $text = $this->text($candidate);
+
+        return ['title' => $text->title($language), 'body' => $text->body($language)];
+    }
+
+    public function text(DailyNotificationCandidate $candidate): NotificationText
+    {
         $ctx = $candidate->context;
 
         return match ($candidate->templateKey) {
-            'first_analysis' => [
-                'title' => $en ? 'Discover what may be weakening your CV' : 'اكتشف ما قد يضعف سيرتك',
-                'body' => $en
-                    ? 'Run a quick ATS analysis and get clear improvement tips in minutes.'
-                    : 'حلّل سيرتك بسرعة واحصل على نصائح تحسين واضحة خلال دقائق.',
-            ],
-            'low_ats_score' => [
-                'title' => $en
-                    ? 'Your ATS score can improve'
-                    : 'درجة ATS الخاصة بك قابلة للتحسين',
-                'body' => $en
-                    ? $this->lowScoreBodyEn($ctx)
-                    : $this->lowScoreBodyAr($ctx),
-            ],
-            'analysis_to_cv' => [
-                'title' => $en ? 'Turn analysis into an improved CV' : 'حوّل التحليل إلى سيرة محسّنة',
-                'body' => $en
-                    ? 'You already have analysis insights — generate a stronger CV from them now.'
-                    : 'لديك نتائج تحليل جاهزة — أنشئ سيرة أقوى منها الآن.',
-            ],
-            'stale_cv' => [
-                'title' => $en ? 'Review your CV before applying' : 'راجع سيرتك قبل التقديم',
-                'body' => $en
-                    ? 'Your last generated CV is over a week old. A quick refresh can improve your chances.'
-                    : 'آخر سيرة أنشأتها مرّ عليها أكثر من أسبوع. تحديث سريع قد يحسّن فرصك.',
-            ],
-            'matching_job' => [
-                'title' => $en ? 'A matching opportunity for you' : 'فرصة مناسبة لك',
-                'body' => $en
-                    ? $this->jobBodyEn($ctx)
-                    : $this->jobBodyAr($ctx),
-            ],
-            'relevant_education' => [
-                'title' => $en ? 'Learn something that helps your role' : 'تعلّم ما يدعم مسارك',
-                'body' => $en
-                    ? $this->educationBodyEn($ctx)
-                    : $this->educationBodyAr($ctx),
-            ],
-            default => [
-                'title' => $en ? 'A small tip for your job search' : 'نصيحة سريعة لبحثك عن عمل',
-                'body' => $en
-                    ? 'Keep your CV keywords aligned with the target job title for better ATS results.'
-                    : 'حافظ على تطابق كلمات سيرتك مع المسمى المستهدف لنتائج ATS أفضل.',
-            ],
+            'first_analysis' => new NotificationText('serverNotifyFirstAnalysisTitle', 'serverNotifyFirstAnalysisBody'),
+            'low_ats_score' => $this->lowScore($ctx),
+            'analysis_to_cv' => new NotificationText('serverNotifyAnalysisToCvTitle', 'serverNotifyAnalysisToCvBody'),
+            'stale_cv' => new NotificationText('serverNotifyStaleCvTitle', 'serverNotifyStaleCvBody'),
+            'matching_job' => $this->matchingJob($ctx),
+            'relevant_education' => $this->education($ctx),
+            default => new NotificationText('serverNotifyTipTitle', 'serverNotifyTipBody'),
         };
     }
 
-    private function lowScoreBodyEn(array $ctx): string
+    /** A new job pushed as soon as it is aggregated. No company or place is invented. */
+    public function newJob(string $jobTitle, ?string $company, ?string $location): NotificationText
     {
-        $score = $ctx['score'] ?? null;
-        $tip = $this->safeTip($ctx['tip'] ?? null);
-        $scoreText = is_numeric($score) ? " (score: {$score})" : '';
-        if ($tip !== null) {
-            return "Your latest analysis{$scoreText} has a clear next step: {$tip}";
-        }
+        $params = array_filter([
+            'jobTitle' => $this->safeTip($jobTitle) ?? '',
+            'company' => $this->safeTip($company),
+            'location' => $this->safeTip($location),
+        ], fn ($value) => $value !== null);
 
-        return "Your latest analysis{$scoreText} has room to grow. Open it for practical fixes.";
+        $body = match (true) {
+            isset($params['company'], $params['location']) => 'serverNotifyNewJobBodyLocationCompany',
+            isset($params['location']) => 'serverNotifyNewJobBodyLocation',
+            isset($params['company']) => 'serverNotifyNewJobBodyCompany',
+            default => 'serverNotifyNewJobBody',
+        };
+
+        return new NotificationText('serverNotifyNewJobTitle', $body, $params);
     }
 
-    private function lowScoreBodyAr(array $ctx): string
+    /**
+     * Recognises a title and body sent before keys were stored, in any bundled
+     * language, and recovers the values. Null when it is not templated text
+     * (for example an admin broadcast).
+     */
+    public function recognise(string $title, string $body, ServerText $text): ?NotificationText
     {
-        $score = $ctx['score'] ?? null;
-        $tip = $this->safeTip($ctx['tip'] ?? null);
-        $scoreText = is_numeric($score) ? " (الدرجة: {$score})" : '';
-        if ($tip !== null) {
-            return "تحليلُك الأخير{$scoreText} يحتوي خطوة واضحة: {$tip}";
+        foreach (['ar', 'en'] as $language) {
+            foreach (self::TEMPLATES as $titleKey => $bodyKeys) {
+                if ($text->get($titleKey, [], $language) !== $title) {
+                    continue;
+                }
+                foreach ($bodyKeys as $bodyKey) {
+                    $params = self::match($text->get($bodyKey, [], $language), $body);
+                    if ($params !== null) {
+                        return new NotificationText($titleKey, $bodyKey, $params);
+                    }
+                }
+            }
         }
 
-        return "تحليلُك الأخير{$scoreText} قابل للتحسين. افتحه لترى إصلاحات عملية.";
+        return null;
     }
 
-    private function jobBodyEn(array $ctx): string
+    /** @return array<string, string>|null the placeholder values when $value is $template filled in */
+    private static function match(string $template, string $value): ?array
+    {
+        $parts = preg_split('/\{(\w+)\}/u', $template, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $pattern = '';
+        foreach ($parts as $i => $part) {
+            $pattern .= $i % 2 === 0 ? preg_quote($part, '/') : '(?<'.$part.'>.+?)';
+        }
+
+        if (preg_match('/^'.$pattern.'$/su', $value, $m) !== 1) {
+            return null;
+        }
+
+        return array_filter($m, fn ($key) => is_string($key), ARRAY_FILTER_USE_KEY);
+    }
+
+    private function lowScore(array $ctx): NotificationText
+    {
+        $score = $ctx['score'] ?? null;
+        $params = array_filter([
+            'score' => is_numeric($score) ? (string) $score : null,
+            'tip' => $this->safeTip($ctx['tip'] ?? null),
+        ], fn ($value) => $value !== null);
+
+        $body = match (true) {
+            isset($params['score'], $params['tip']) => 'serverNotifyLowScoreBodyScoreTip',
+            isset($params['tip']) => 'serverNotifyLowScoreBodyTip',
+            isset($params['score']) => 'serverNotifyLowScoreBodyScore',
+            default => 'serverNotifyLowScoreBody',
+        };
+
+        return new NotificationText('serverNotifyLowScoreTitle', $body, $params);
+    }
+
+    private function matchingJob(array $ctx): NotificationText
     {
         $title = $this->safeTip($ctx['job_title'] ?? null);
         $company = $this->safeTip($ctx['company'] ?? null);
-        if ($title && $company) {
-            return "New listing related to {$title} at {$company}. Open Job News to review it.";
-        }
-        if ($title) {
-            return "A new listing related to {$title} is available in Job News.";
-        }
 
-        return 'A new job listing may match your profile. Check Job News.';
+        return match (true) {
+            $title !== null && $company !== null => new NotificationText('serverNotifyMatchingJobTitle', 'serverNotifyMatchingJobBodyTitleCompany', ['jobTitle' => $title, 'company' => $company]),
+            $title !== null => new NotificationText('serverNotifyMatchingJobTitle', 'serverNotifyMatchingJobBodyTitle', ['jobTitle' => $title]),
+            default => new NotificationText('serverNotifyMatchingJobTitle', 'serverNotifyMatchingJobBody'),
+        };
     }
 
-    private function jobBodyAr(array $ctx): string
-    {
-        $title = $this->safeTip($ctx['job_title'] ?? null);
-        $company = $this->safeTip($ctx['company'] ?? null);
-        if ($title && $company) {
-            return "إعلان جديد مرتبط بـ {$title} لدى {$company}. افتح أخبار الوظائف لمراجعته.";
-        }
-        if ($title) {
-            return "يتوفر إعلان جديد مرتبط بـ {$title} في أخبار الوظائف.";
-        }
-
-        return 'يوجد إعلان وظيفي قد يناسب ملفك. تصفّح أخبار الوظائف.';
-    }
-
-    private function educationBodyEn(array $ctx): string
+    private function education(array $ctx): NotificationText
     {
         $title = $this->safeTip($ctx['title'] ?? null);
-        if ($title) {
-            return "Recommended read: {$title}";
-        }
 
-        return 'A short learning piece can strengthen your next application.';
-    }
-
-    private function educationBodyAr(array $ctx): string
-    {
-        $title = $this->safeTip($ctx['title'] ?? null);
-        if ($title) {
-            return "قراءة موصى بها: {$title}";
-        }
-
-        return 'محتوى تعليمي قصير قد يقوّي طلبك التالي.';
+        return $title !== null
+            ? new NotificationText('serverNotifyEducationTitle', 'serverNotifyEducationBodyTitle', ['title' => $title])
+            : new NotificationText('serverNotifyEducationTitle', 'serverNotifyEducationBody');
     }
 
     private function safeTip(mixed $value): ?string

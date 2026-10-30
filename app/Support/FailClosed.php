@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Services\I18n\ServerText;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -27,6 +28,6 @@ final class FailClosed
             'environment' => app()->environment(),
         ]);
 
-        throw new HttpException(503, $message ?? $feature.' is temporarily unavailable.');
+        throw new HttpException(503, $message ?? app(ServerText::class)->get('serverErrorUnavailable'));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\I18n\ServerText;
 use Closure;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class EnsureEmailIsVerified
             && ! $user->hasVerifiedEmail()
         ) {
             return response()->json([
-                'message' => 'يجب تأكيد البريد الإلكتروني أولاً.',
+                'message' => ServerText::t('serverAuthEmailNotVerified'),
                 'code' => 'email_not_verified',
                 'email_verified' => false,
             ], 403);

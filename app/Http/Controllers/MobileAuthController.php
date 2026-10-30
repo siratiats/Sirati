@@ -7,6 +7,7 @@ use App\Models\JobTitle;
 use App\Models\User;
 use App\Services\CvTemplateRenderer;
 use App\Services\EmailVerificationService;
+use App\Services\I18n\ServerText;
 use App\Services\PasswordResetService;
 use App\Services\SocialAuth\AppleTokenService;
 use App\Services\SocialAuth\SocialAccountLinker;
@@ -79,7 +80,7 @@ class MobileAuthController extends Controller
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => 'بيانات تسجيل الدخول غير صحيحة.',
+                'email' => ServerText::t('serverAuthInvalidCredentials'),
             ]);
         }
 
@@ -108,7 +109,7 @@ class MobileAuthController extends Controller
         $this->emailVerification->verify($user, $validated['code']);
 
         return response()->json([
-            'message' => 'تم تأكيد البريد الإلكتروني بنجاح.',
+            'message' => ServerText::t('serverAuthEmailVerified'),
             'data' => $this->userPayload($user->fresh()->loadMissing('jobTitle')),
         ]);
     }
@@ -120,7 +121,7 @@ class MobileAuthController extends Controller
 
         if ($user->hasVerifiedEmail()) {
             return response()->json([
-                'message' => 'البريد الإلكتروني مؤكد مسبقاً.',
+                'message' => ServerText::t('serverAuthEmailAlreadyVerified'),
                 'data' => $this->userPayload($user->loadMissing('jobTitle')),
             ]);
         }
@@ -128,7 +129,7 @@ class MobileAuthController extends Controller
         $this->emailVerification->send($user);
 
         return response()->json([
-            'message' => 'تم إرسال رمز التحقق إلى بريدك الإلكتروني.',
+            'message' => ServerText::t('serverAuthVerificationCodeSent'),
         ]);
     }
 
@@ -153,7 +154,7 @@ class MobileAuthController extends Controller
         }
 
         return response()->json([
-            'message' => 'تم إرسال رمز استعادة كلمة المرور إذا كان البريد مسجلاً لدينا.',
+            'message' => ServerText::t('serverAuthResetCodeSent'),
         ]);
     }
 
@@ -169,7 +170,7 @@ class MobileAuthController extends Controller
 
         if (! $user) {
             throw ValidationException::withMessages([
-                'code' => 'رمز التحقق غير صحيح أو منتهي الصلاحية.',
+                'code' => ServerText::t('serverAuthInvalidCode'),
             ]);
         }
 
@@ -180,7 +181,7 @@ class MobileAuthController extends Controller
         );
 
         return response()->json([
-            'message' => 'تم تعيين كلمة المرور الجديدة بنجاح. يمكنك تسجيل الدخول الآن.',
+            'message' => ServerText::t('serverAuthPasswordReset'),
         ]);
     }
 
@@ -196,7 +197,7 @@ class MobileAuthController extends Controller
         $request->user()?->currentAccessToken()?->delete();
 
         return response()->json([
-            'message' => 'تم تسجيل الخروج بنجاح.',
+            'message' => ServerText::t('serverAuthLoggedOut'),
         ]);
     }
 
@@ -212,7 +213,7 @@ class MobileAuthController extends Controller
 
         if (! Hash::check($validated['current_password'], $user->password)) {
             throw ValidationException::withMessages([
-                'current_password' => 'كلمة المرور الحالية غير صحيحة.',
+                'current_password' => ServerText::t('serverAuthCurrentPasswordWrong'),
             ]);
         }
 
@@ -225,7 +226,7 @@ class MobileAuthController extends Controller
             ->delete();
 
         return response()->json([
-            'message' => 'تم تغيير كلمة المرور بنجاح.',
+            'message' => ServerText::t('serverAuthPasswordChanged'),
         ]);
     }
 
@@ -286,7 +287,7 @@ class MobileAuthController extends Controller
             'public',
         );
         if ($path === false) {
-            abort(500, 'تعذر حفظ الصورة.');
+            abort(500, ServerText::t('serverAuthAvatarSaveFailed'));
         }
 
         $user->forceFill(['avatar_path' => $path])->save();
@@ -325,7 +326,7 @@ class MobileAuthController extends Controller
 
             if (! Hash::check($validated['password'], $user->password)) {
                 throw ValidationException::withMessages([
-                    'password' => 'كلمة المرور غير صحيحة.',
+                    'password' => ServerText::t('serverAuthPasswordWrong'),
                 ]);
             }
         } else {
@@ -341,7 +342,7 @@ class MobileAuthController extends Controller
 
             if ($linker->linkedUser($identity)?->is($user) !== true) {
                 throw ValidationException::withMessages([
-                    'id_token' => 'هذا الحساب غير مرتبط بحسابك في سيرتي.',
+                    'id_token' => ServerText::t('serverAuthSocialAccountMismatch'),
                 ]);
             }
         }
@@ -374,7 +375,7 @@ class MobileAuthController extends Controller
         $user->delete();
 
         return response()->json([
-            'message' => 'تم حذف الحساب نهائياً.',
+            'message' => ServerText::t('serverAuthAccountDeleted'),
         ]);
     }
 
@@ -400,7 +401,7 @@ class MobileAuthController extends Controller
     private function jobTitleMessages(): array
     {
         return [
-            'job_title_other.required' => 'يرجى كتابة المسمى الوظيفي عند اختيار أخرى.',
+            'job_title_other.required' => ServerText::t('serverAuthJobTitleOtherRequired'),
         ];
     }
 

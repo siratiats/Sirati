@@ -11,6 +11,7 @@ use App\Services\Ai\AiTimeouts;
 use App\Services\Ai\CachedCvAiProvider;
 use App\Services\AtsScoringService;
 use App\Services\ErrorReporter;
+use App\Support\NotificationText;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Auth;
@@ -130,21 +131,21 @@ class GenerateCvContentJob implements ShouldQueue
             return;
         }
 
-        $english = ($generatedCv->language ?? 'ar') === 'en';
+        // Rendered at send time in the user's notification language (#12).
+        $text = $completed
+            ? new NotificationText('serverNotifyCvReadyTitle', 'serverNotifyCvReadyBody')
+            : new NotificationText('serverNotifyCvFailedTitle', 'serverNotifyCvFailedBody');
 
         try {
             SendPushNotificationJob::dispatch(
                 $generatedCv->user_id,
-                $completed
-                    ? ($english ? 'Your CV is ready' : 'سيرتك الذاتية جاهزة')
-                    : ($english ? 'CV generation did not finish' : 'تعذر إكمال توليد السيرة'),
-                $completed
-                    ? ($english ? 'Open Siratie to review and export your CV.' : 'افتح سيرتي لمراجعة السيرة وتصديرها.')
-                    : ($english ? 'Open Siratie to see what went wrong and retry.' : 'افتح سيرتي لمعرفة السبب وإعادة المحاولة.'),
+                $text->title(),
+                $text->body(),
                 $completed ? 'cv_ready' : 'cv_failed',
                 'screen',
                 'my-cvs/'.$generatedCv->id,
                 ['generated_cv_id' => (string) $generatedCv->id],
+                $text->toArray(),
             );
         } catch (Throwable $exception) {
             report($exception);
