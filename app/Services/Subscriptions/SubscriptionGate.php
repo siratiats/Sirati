@@ -6,8 +6,8 @@ use App\Exceptions\SubscriptionRequiredException;
 use App\Models\CvAnalysis;
 use App\Models\GeneratedCv;
 use App\Models\User;
+use App\Support\FailClosed;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -20,10 +20,46 @@ class SubscriptionGate
 {
     /**
      * Master switch for existing features. Job Match always requires premium.
+     *
+     * Only an explicit MONETIZATION_ENABLED decides. Unset, empty or malformed
+     * is off in local/testing and a 503 everywhere else, never free access.
      */
     public function isEnforced(): bool
     {
-        return (bool) config('monetization.enabled', false);
+        $enabled = $this->enforcementSetting();
+        if ($enabled !== null) {
+            return $enabled;
+        }
+
+        if (FailClosed::allowsMissingConfiguration()) {
+            return false;
+        }
+
+        FailClosed::unavailable('Monetization', 'monetization.enabled', 'This feature is temporarily unavailable.');
+    }
+
+    /** The explicit boolean switch, or null when unset, empty or malformed. */
+    private function enforcementSetting(): ?bool
+    {
+        $enabled = config('monetization.enabled');
+        if (is_bool($enabled)) {
+            return $enabled;
+        }
+
+        if (! is_int($enabled) && (! is_string($enabled) || trim($enabled) === '')) {
+            return null;
+        }
+
+        return filter_var($enabled, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+    }
+
+    /**
+     * Enforcement for snapshots that must not break account access: a broken
+     * switch reads as enforced, and the gated action itself returns the 503.
+     */
+    private function enforcedForSnapshot(): bool
+    {
+        return $this->enforcementSetting() ?? ! FailClosed::allowsMissingConfiguration();
     }
 
     public function isSubscribed(?User $user): bool
@@ -41,14 +77,22 @@ class SubscriptionGate
 
     public function allowsDownload(?User $user): bool
     {
-        return $this->hasFullAccess($user)
-            || (bool) config('monetization.free.download', false);
+        return $this->hasFullAccess($user) || $this->freeAllowsDownload();
     }
 
     public function allowsEnhancements(?User $user): bool
     {
-        return $this->hasFullAccess($user)
-            || (bool) config('monetization.free.enhancements', false);
+        return $this->hasFullAccess($user) || $this->freeAllowsEnhancements();
+    }
+
+    private function freeAllowsDownload(): bool
+    {
+        return (bool) config('monetization.free.download', false);
+    }
+
+    private function freeAllowsEnhancements(): bool
+    {
+        return (bool) config('monetization.free.enhancements', false);
     }
 
     public function allowsFullAnalysis(?User $user): bool
@@ -92,7 +136,7 @@ class SubscriptionGate
             return $limit;
         }
 
-        if (! app()->environment('local', 'testing')) {
+        if (! FailClosed::allowsMissingConfiguration()) {
             $this->jobMatchConfigurationUnavailable('monetization.job_match.daily_limit');
         }
 
@@ -161,13 +205,11 @@ class SubscriptionGate
 
     private function assertJobMatchConfigured(): void
     {
-        if (app()->environment('local', 'testing')) {
+        if (FailClosed::allowsMissingConfiguration()) {
             return;
         }
 
-        $enabled = config('monetization.enabled');
-        if ((! is_bool($enabled) && ! is_string($enabled) && ! is_int($enabled))
-            || filter_var($enabled, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) !== true) {
+        if ($this->enforcementSetting() !== true) {
             $this->jobMatchConfigurationUnavailable('monetization.enabled');
         }
 
@@ -179,13 +221,7 @@ class SubscriptionGate
 
     private function jobMatchConfigurationUnavailable(string $key): never
     {
-        // Log the key only; configuration values may contain credentials.
-        Log::critical('Job Match unavailable: required configuration is missing or invalid.', [
-            'configuration' => $key,
-            'environment' => app()->environment(),
-        ]);
-
-        throw new HttpException(503, 'Job Match is temporarily unavailable.');
+        FailClosed::unavailable('Job Match', $key);
     }
 
     public function assertCanDownload(?User $user): void
@@ -338,16 +374,17 @@ class SubscriptionGate
         }
         $jobMatchesUsed = $user !== null ? $this->jobMatchesUsedToday($user) : 0;
         $subscribed = $this->isSubscribed($user);
-        $full = $this->hasFullAccess($user);
+        $enforced = $this->enforcedForSnapshot();
+        $full = ! $enforced || $subscribed;
 
         $state = [
-            'enforced' => $this->isEnforced(),
+            'enforced' => $enforced,
             'is_subscribed' => $subscribed,
             'plan_id' => $user?->subscription_plan_id,
             'expires_at' => $user?->premium_until?->toISOString(),
-            'can_download' => $this->allowsDownload($user),
-            'can_enhance' => $this->allowsEnhancements($user),
-            'can_view_full_analysis' => $this->allowsFullAnalysis($user),
+            'can_download' => $full || $this->freeAllowsDownload(),
+            'can_enhance' => $full || $this->freeAllowsEnhancements(),
+            'can_view_full_analysis' => $full,
             'can_job_match' => $jobMatchAvailable && $subscribed && $jobMatchesUsed < $jobMatchLimit,
             'jobs_free' => (bool) config('monetization.free.jobs', true),
             'trial_days' => $this->trialDays(),

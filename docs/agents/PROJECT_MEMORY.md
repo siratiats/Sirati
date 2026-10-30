@@ -92,3 +92,11 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 - Laravel `resources/i18n/*.arb` had drifted 65 keys behind the app; the 2026-10-30 migration runs `i18n:import-arb` on deploy and `AppLabelCatalogDeployTest` checks the API serves every bundled key.
 - Local `dart format` (3.12.2) rewraps many untouched files: format only the files you edit.
 - Not yet catalogued: CV-content-language text written into the CV ("Present"/"حتى الآن", "Copy of …", "Untitled CV" metadata, achievement presets, metric pills); needs a CV-language lookup and a migration for stored values.
+
+## Fail-closed gates (2026-10-30, Abobker85/Sirati#14)
+- Every security/billing gate uses `App\Support\FailClosed`: `allowsMissingConfiguration()` (local/testing only) and `unavailable($feature, $configKey)` (critical log "<Feature> unavailable: required configuration is missing or invalid." + 503). New gates must use it, never their own environment check.
+- `MONETIZATION_ENABLED` has no default: unset/empty/malformed is off in local/testing and a 503 on every gated endpoint elsewhere (deploys MUST set it explicitly). `stateFor()` and `/mobile/subscription-plans` never throw on it: they report `enforced=true` and the action returns the 503.
+- Admin allow-list lives only in `Services\Admin\AdminAllowList` (case-insensitive, trimmed); empty outside local/testing = 503 on login and every admin page.
+- RevenueCat grant/cancel events without a positive integer expiry grant nothing (status `missing_expiry`, `Log::error`); this includes NON_RENEWING_PURCHASE, which RevenueCat sends without an expiry.
+- `notifications:plan-daily` is scheduled only in `routes/console.php` (every 15 min); `bootstrap/app.php` must not repeat it.
+- Worktrees have no `.env`: run tests with `APP_KEY="base64:$(openssl rand -base64 32)"` (a PHP-generated key picks up the Imagick warning text).

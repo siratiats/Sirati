@@ -21,14 +21,16 @@ class SubscriptionPlanController extends Controller
         // caller should see their own entitlement, not the anonymous default.
         $user = $request->user('sanctum');
         $freeAnalysis = (array) config('monetization.free.analysis', []);
+        $access = $gate->stateFor($user);
 
         return response()->json([
             'data' => [
                 'plans' => $gate->plans(),
                 'currency' => $gate->currency(),
                 'trial_days' => $gate->trialDays(),
-                'enforced' => $gate->isEnforced(),
-                'access' => $gate->stateFor($user),
+                // From the snapshot, so a broken switch never blocks the catalogue.
+                'enforced' => $access['enforced'],
+                'access' => $access,
                 'free_plan' => [
                     'title_ar' => 'الخطة المجانية',
                     'title_en' => 'Free plan',

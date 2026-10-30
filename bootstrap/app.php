@@ -19,11 +19,6 @@ return Application::configure(basePath: dirname(__DIR__))
             ->withoutOverlapping()
             ->runInBackground();
 
-        $schedule->command('notifications:plan-daily')
-            ->everyFifteenMinutes()
-            ->withoutOverlapping()
-            ->runInBackground();
-
         $schedule->command('analyses:prune-guests')
             ->daily()
             ->withoutOverlapping()
