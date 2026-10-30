@@ -65,15 +65,21 @@ class GenerateCvAdviceJob implements ShouldQueue
         }
 
         try {
+            // Same inputs as the score stored by CvAnalysisController, so the
+            // advice cannot contradict the score the user sees (issue #16).
+            $jobDescription = $analysis->job_description_input;
             $score = $scorer->score(
                 $analysis->resume_text,
                 $analysis->target_job_title,
+                null,
+                $jobDescription,
             );
 
             $feedback = $provider->analysisAdvice(
                 $score,
                 $analysis->resume_text,
                 $analysis->target_job_title,
+                $jobDescription,
             );
 
             $analysis->update([

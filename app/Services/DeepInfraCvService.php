@@ -40,7 +40,7 @@ class DeepInfraCvService implements CvAiProvider
      * @throws AiRefusalException
      * @throws UnexpectedValueException
      */
-    public function analysisAdvice(array $score, string $resumeText, string $jobTitle): array
+    public function analysisAdvice(array $score, string $resumeText, string $jobTitle, ?string $jobDescription = null): array
     {
         $model = (string) config('services.deepinfra.model_ar', config('services.deepinfra.model', 'Qwen/Qwen2.5-72B-Instruct'));
         $fallback = app(OpenAiCvService::class);
@@ -49,11 +49,11 @@ class DeepInfraCvService implements CvAiProvider
             fn (): array => $this->requestJson(
                 'analysis_advice',
                 (new AnalysisAdviceSystemPrompt)->build()."\n\nYou MUST return a valid JSON object matching the requested structure. No markdown fences, no conversational prose outside JSON.",
-                "Analyze this CV for the target job and produce actionable Arabic advice.\n\nTarget job: {$jobTitle}\n\nDeterministic ATS score JSON:\n".json_encode($score, JSON_UNESCAPED_UNICODE)."\n\nCV text:\n".mb_substr($resumeText, 0, 7000)."\n\nReturn JSON with keys: executive_summary string, top_priorities array of strings, rewritten_summary string|null, keyword_recommendations array of strings, bullet_improvements array of objects {before:string|null, after:string, reason:string}, warnings array of strings.",
+                AnalysisAdviceSystemPrompt::userMessage($score, $resumeText, $jobTitle, $jobDescription),
                 $model
             ),
             $fallback->isConfigured()
-                ? fn (): array => $fallback->analysisAdvice($score, $resumeText, $jobTitle)
+                ? fn (): array => $fallback->analysisAdvice($score, $resumeText, $jobTitle, $jobDescription)
                 : null,
             'DeepInfra analysisAdvice failed, falling back to OpenAI',
         );

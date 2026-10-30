@@ -235,9 +235,13 @@ class JobTitleTaxonomyTest extends TestCase
         $keywords = AtsScoringService::jobKeywords();
         unset($keywords['general']);
 
+        // Category-bank coverage; job_match is reserved for job descriptions (issue #16).
+        $coverage = fn (string $cv, string $category): float => count($scorer->score($cv, 'Specialist', $category)['keywords_found'])
+            / count($keywords[$category]);
+
         foreach ($keywords as $category => $terms) {
             $cv = "Summary\nProfessional experienced in ".implode(', ', $terms).'.';
-            $own = $scorer->score($cv, 'Specialist', $category)['job_match'];
+            $own = $coverage($cv, $category);
 
             foreach (array_keys($keywords) as $other) {
                 $otherTerms = $keywords[$other];
@@ -245,7 +249,7 @@ class JobTitleTaxonomyTest extends TestCase
                     continue;
                 }
                 $this->assertGreaterThan(
-                    $scorer->score($cv, 'Specialist', $other)['job_match'],
+                    $coverage($cv, $other),
                     $own,
                     "A [{$category}] CV should match its own keyword bank better than [{$other}].",
                 );

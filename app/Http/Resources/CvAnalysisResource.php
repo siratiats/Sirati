@@ -29,6 +29,10 @@ class CvAnalysisResource extends JsonResource
         $visibleQuickWins = $unlocked ? $quickWins : $this->take($quickWins, $limits['quick_wins'] ?? 1);
         $showFeedback = $unlocked || (bool) ($limits['ai_feedback'] ?? false);
 
+        // Job match exists only when it was measured against a job description;
+        // otherwise null, and keyword_source says why (issue #16).
+        $keywordSource = $this->keyword_source === 'job_description' ? 'job_description' : 'category';
+
         return [
             'id' => $this->id,
             'target_job_title' => $this->target_job_title,
@@ -37,18 +41,15 @@ class CvAnalysisResource extends JsonResource
             'input_method' => $this->input_method,
             'score_total' => $this->score_total,
             'grade' => $this->grade,
-            'job_match' => $this->job_match,
+            'job_match' => $keywordSource === 'job_description' ? $this->job_match : null,
             'category' => $this->category ?? 'general',
             'category_label' => $this->category_label,
             'category_label_en' => $this->category_label_en,
             'is_general_profile' => ($this->category ?? 'general') === 'general',
-            // Tells the client whether the keyword score was built against the
-            // pasted job description or fell back to the generic category list
-            // (SIRATI-90). Derived here so we don't need a new column on
-            // cv_analyses just for a boolean the JD input already answers.
-            'keyword_source' => trim((string) $this->job_description_input) !== ''
-                ? 'job_description'
-                : 'category',
+            // "job_description": keywords and job_match come from the pasted JD.
+            // "category": no JD (or no recognisable terms in it); keywords come
+            // from the generic category list and job_match is null (SIRATI-90).
+            'keyword_source' => $keywordSource,
             'criteria' => $this->mobileList($this->criteria),
             'strengths' => $visibleStrengths,
             'weaknesses' => $visibleWeaknesses,
@@ -86,12 +87,20 @@ class CvAnalysisResource extends JsonResource
         $total = array_sum($hidden);
 
         if ($unlocked || $total === 0) {
-            return [
+            // Job match exists only when it was measured against a job description;
+        // otherwise null, and keyword_source says why (issue #16).
+        $keywordSource = $this->keyword_source === 'job_description' ? 'job_description' : 'category';
+
+        return [
                 'is_locked' => false,
                 'hidden_total' => 0,
                 'hidden' => $hidden,
             ];
         }
+
+        // Job match exists only when it was measured against a job description;
+        // otherwise null, and keyword_source says why (issue #16).
+        $keywordSource = $this->keyword_source === 'job_description' ? 'job_description' : 'category';
 
         return [
             'is_locked' => true,
@@ -121,7 +130,11 @@ class CvAnalysisResource extends JsonResource
     private function mobileList(?array $value): array
     {
         if ($value === null) {
-            return [];
+            // Job match exists only when it was measured against a job description;
+        // otherwise null, and keyword_source says why (issue #16).
+        $keywordSource = $this->keyword_source === 'job_description' ? 'job_description' : 'category';
+
+        return [];
         }
 
         return array_is_list($value) ? $value : array_values($value);

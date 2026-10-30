@@ -251,6 +251,13 @@ overlap that merely repeats the job title in its headline reports **20% job matc
 job-description term coverage, and shown with its evidence: which terms matched, which
 did not, and where.
 
+**Status (issue #16, 2026-10-30):** `job_match` is now coverage of the job description's
+terms only. Without a JD, or when no terms are recognised in it, `job_match` is `null` and
+`keyword_source` is `"category"`; with JD terms it is `"job_description"`. The async advice
+job and the sync path both score and advise with the stored JD. Grades come from the single
+table `AtsScoringService::GRADE_THRESHOLDS` (A+ ≥ 90, A ≥ 80, B ≥ 70, C ≥ 60, D ≥ 50, F < 50);
+the app must mirror it.
+
 ---
 
 ## 10. Nothing measures whether a change made the score better

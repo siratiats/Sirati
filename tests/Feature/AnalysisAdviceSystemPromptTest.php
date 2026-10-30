@@ -91,6 +91,54 @@ class AnalysisAdviceSystemPromptTest extends TestCase
         $this->assertStringNotContainsString('Laravel Backend Developer', $systemPrompts[0]);
     }
 
+    public function test_user_message_carries_the_job_description_and_the_system_prefix_never_does(): void
+    {
+        $body = [
+            'executive_summary' => 'ملخص',
+            'top_priorities' => [],
+            'rewritten_summary' => null,
+            'keyword_recommendations' => [],
+            'bullet_improvements' => [],
+            'warnings' => [],
+        ];
+        Http::fake([
+            'https://api.openai.com/v1/chat/completions' => Http::response([
+                'choices' => [['finish_reason' => 'stop', 'message' => ['content' => json_encode($body, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)]]],
+            ], 200),
+        ]);
+
+        mt_srand(1606);
+        $words = ['Kubernetes', 'IFRS', 'تمريض', 'AutoCAD', 'إدارة مشاريع', 'Power BI', 'SAP', 'مبيعات', 'Python', 'Salesforce'];
+        $cases = [];
+        for ($i = 0; $i < 6; $i++) {
+            shuffle($words);
+            $cases[] = 'JD '.mt_rand(1000, 9999).': '.implode('، ', array_slice($words, 0, mt_rand(2, 6)));
+        }
+        $cases[] = null;
+
+        foreach ($cases as $jd) {
+            app(OpenAiCvService::class)->analysisAdvice(['total' => 60, 'job_match' => null], 'CV text', 'Engineer', $jd);
+        }
+
+        $sent = [];
+        Http::assertSent(function ($request) use (&$sent): bool {
+            $roles = array_column($request->data()['messages'] ?? [], 'content', 'role');
+            $sent[] = $roles;
+
+            return true;
+        });
+
+        $this->assertCount(count($cases), $sent);
+        foreach ($cases as $i => $jd) {
+            $this->assertSame((new AnalysisAdviceSystemPrompt)->build(), $sent[$i]['system']);
+            if ($jd === null) {
+                $this->assertStringContainsString('No job description was provided', $sent[$i]['user']);
+            } else {
+                $this->assertStringContainsString($jd, $sent[$i]['user']);
+            }
+        }
+    }
+
     public function test_static_prefix_exceeds_1024_tokens_with_real_tokenizer(): void
     {
         $prompt = new AnalysisAdviceSystemPrompt;

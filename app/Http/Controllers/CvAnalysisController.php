@@ -145,7 +145,7 @@ class CvAnalysisController extends Controller
                 $startedAt = hrtime(true);
 
                 try {
-                    $aiFeedback = $openAi->analysisAdvice($score, $extracted['text'], $validated['target_job_title']);
+                    $aiFeedback = $openAi->analysisAdvice($score, $extracted['text'], $validated['target_job_title'], $jobDescription);
                     $aiStatus = AiStatus::Completed;
                 } catch (Throwable $exception) {
                     $aiStatus = AiStatus::Failed;
@@ -175,6 +175,7 @@ class CvAnalysisController extends Controller
                 'score_total' => $score['total'],
                 'grade' => $score['grade'],
                 'job_match' => $score['job_match'],
+                'keyword_source' => $score['keyword_source'],
                 'category' => $score['category'] ?? 'general',
                 'criteria' => $score['criteria'],
                 'strengths' => $score['strengths'],
