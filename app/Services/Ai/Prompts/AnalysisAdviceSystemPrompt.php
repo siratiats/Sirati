@@ -189,6 +189,35 @@ final class AnalysisAdviceSystemPrompt
     }
 
     /**
+     * The per-request user message. Every provider sends this same text, so advice is always
+     * written against the job description the score was computed from (issue #16).
+     *
+     * @param  array<string, mixed>  $score
+     */
+    public static function userMessage(array $score, string $resumeText, string $jobTitle, ?string $jobDescription = null): string
+    {
+        $jobDescription = trim((string) $jobDescription);
+        $job = $jobDescription !== ''
+            ? "Job description (the score's keywords and job_match come from it):
+".mb_substr($jobDescription, 0, 4000)
+            : 'No job description was provided: job_match is null and keywords come from the generic category list. Do not state or estimate a job-match percentage.';
+
+        return "Analyze this CV for the target job and produce actionable Arabic advice.
+
+Target job: {$jobTitle}
+
+{$job}
+
+Deterministic ATS score JSON:
+".json_encode($score, JSON_UNESCAPED_UNICODE)."
+
+CV text:
+".mb_substr($resumeText, 0, 7000)."
+
+Return JSON with keys: executive_summary string, top_priorities array of strings, rewritten_summary string|null, keyword_recommendations array of strings, bullet_improvements array of objects {before:string|null, after:string, reason:string}, warnings array of strings.";
+    }
+
+    /**
      * Token count via tiktoken for the model family used by Sirati (gpt-4.1-mini → o200k_base).
      */
     public function tokenCount(?string $model = null): int

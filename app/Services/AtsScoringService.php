@@ -22,6 +22,19 @@ class AtsScoringService
         'contact' => ['max' => 5, 'label' => 'معلومات التواصل'],
     ];
 
+    /**
+     * The only grade table: lowest total (0-100) that earns each grade, highest first.
+     * The app must mirror these values (issue #16); change them here only.
+     */
+    public const GRADE_THRESHOLDS = [
+        'A+' => 90,
+        'A' => 80,
+        'B' => 70,
+        'C' => 60,
+        'D' => 50,
+        'F' => 0,
+    ];
+
     private const JOB_KEYWORDS = [
         'ecommerce' => ['ecommerce', 'e-commerce', 'shopify', 'woocommerce', 'amazon', 'product listing', 'conversion', 'cart', 'marketplace', 'retail', 'campaign'],
         'marketing' => ['marketing', 'campaign', 'brand', 'content', 'social media', 'seo', 'sem', 'ppc', 'google ads', 'meta ads', 'analytics'],
@@ -236,13 +249,13 @@ class AtsScoringService
         }
 
         $total = array_sum(array_column($criteria, 'score'));
-        $grade = $this->grade($total);
+        $grade = self::gradeFor($total);
 
-        // job_match is pure coverage against the target term set (JD if given, category otherwise)
-        // — stripped of title-match / early-mention bonuses that are still counted in `total`
-        // (SIRATI-90, SIRATI-91). Reporting it as coverage lets the user act on a real number:
-        // "you matched 6 of 12 JD terms" rather than an inflated composite.
-        $jobMatch = (int) round($rawCoverage * 100);
+        // job_match is pure coverage of the JD's terms — stripped of title-match / early-mention
+        // bonuses that are still counted in `total` (SIRATI-90, SIRATI-91): "you matched 6 of 12
+        // JD terms". Without JD terms there is no job to match, so it is null rather than coverage
+        // of the generic category list (issue #16, ATS_SCORING_REVIEW.md §9).
+        $jobMatch = $keywordSource === 'job_description' ? (int) round($rawCoverage * 100) : null;
 
         return [
             'total' => $total,
@@ -1022,16 +1035,15 @@ class AtsScoringService
         ]));
     }
 
-    private function grade(int $total): string
+    public static function gradeFor(int $total): string
     {
-        return match (true) {
-            $total >= 90 => 'A+',
-            $total >= 80 => 'A',
-            $total >= 70 => 'B',
-            $total >= 60 => 'C',
-            $total >= 50 => 'D',
-            default => 'F',
-        };
+        foreach (self::GRADE_THRESHOLDS as $grade => $floor) {
+            if ($total >= $floor) {
+                return $grade;
+            }
+        }
+
+        return array_key_last(self::GRADE_THRESHOLDS);
     }
 
     private function hasEmail(string $text): bool

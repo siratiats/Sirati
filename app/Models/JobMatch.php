@@ -67,8 +67,10 @@ class JobMatch extends Model
     {
         return [
             'score_total' => $score['total'],
+            // A JD with no recognisable terms has nothing to cover; job_matches.job_match is required.
+            'job_match' => $score['job_match'] ?? 0,
             ...array_intersect_key($score, array_flip([
-                'grade', 'job_match', 'category', 'criteria', 'keywords_found', 'keywords_missing', 'strengths', 'weaknesses',
+                'grade', 'category', 'criteria', 'keywords_found', 'keywords_missing', 'strengths', 'weaknesses',
             ])),
         ];
     }

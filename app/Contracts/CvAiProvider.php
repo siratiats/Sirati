@@ -7,10 +7,12 @@ interface CvAiProvider
     public function isConfigured(): bool;
 
     /**
+     * Advice must be written against the same job description the score was computed with.
+     *
      * @param  array<string, mixed>  $score
      * @return array<string, mixed>
      */
-    public function analysisAdvice(array $score, string $resumeText, string $jobTitle): array;
+    public function analysisAdvice(array $score, string $resumeText, string $jobTitle, ?string $jobDescription = null): array;
 
     /**
      * @param  array<string, mixed>  $data

@@ -25,6 +25,7 @@ class CvAnalysis extends Model
         'score_total',
         'grade',
         'job_match',
+        'keyword_source',
         'category',
         'criteria',
         'strengths',

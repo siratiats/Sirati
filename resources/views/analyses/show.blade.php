@@ -7,7 +7,11 @@
         <div class="hero-card">
             <div class="score">{{ $analysis->score_total }}<small>/100</small></div>
             <h1>نتيجة التوافق مع ATS: {{ $analysis->grade }}</h1>
-            <p>نسبة التوافق مع وظيفة <strong>{{ $analysis->target_job_title }}</strong>: {{ $analysis->job_match }}%</p>
+            @if ($analysis->keyword_source === 'job_description' && $analysis->job_match !== null)
+                <p>نسبة التوافق مع وظيفة <strong>{{ $analysis->target_job_title }}</strong>: {{ $analysis->job_match }}%</p>
+            @else
+                <p class="muted">لم تُحسب نسبة التوافق مع الوظيفة لعدم وجود وصف وظيفي.</p>
+            @endif
             <p class="muted">معيار التقييم: <strong>{{ $analysis->category_label }}</strong></p>
             <p class="muted">طريقة الإدخال: {{ $analysis->input_method }} @if($analysis->original_filename) — {{ $analysis->original_filename }} @endif</p>
         </div>

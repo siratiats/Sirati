@@ -4,7 +4,7 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 
 ## Job Match (premium) learnings
 - `SubscriptionGate::hasFullAccess()` is open whenever `MONETIZATION_ENABLED=false`; premium-only features need their own fail-closed assert (`assertCanJobMatch()`: 402 non-premium, 503 + `Log::critical` on bad config outside local/testing). `premium_until` overrides `is_premium`. `stateFor()` feeds login/profile, so feature failures must not break account access.
-- `GenerateCvAdviceJob` re-scores without the JD; always pass the JD to `AtsScoringService::scoreDocument($doc, null, $jd)`.
+- Always pass the JD to `AtsScoringService` and to `CvAiProvider::analysisAdvice(..., $jd)` (sync path and `GenerateCvAdviceJob` read `job_description_input`). `job_match` is null unless `keyword_source === 'job_description'` (no JD, or no recognised terms); `job_matches.job_match` is NOT NULL, so `JobMatch::scoreAttributes` stores 0. Grades: `AtsScoringService::GRADE_THRESHOLDS` only (issue #16).
 - Any new AI operation must update `CvAiProvider`, all provider services, `OperationSchemas` (OpenAI + Anthropic) and `CachedCvAiProvider::PROMPT_VERSION` together; cache keys use the exact canonical CV snapshot hash (no lowercasing/digit folding).
 - Fixtures for `JobMatch` need `request_fingerprint` and `cv_snapshot`. The API field is `job_description_input`. Idempotent replays, polling and apply must not spend or check daily quota; only creating a new match does.
 - Mutating a `GeneratedCv` must sync `CvDocument` + `legacySnapshot()` + `generated_markdown`; avoid the generic update (re-runs AI).
