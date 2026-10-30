@@ -173,9 +173,14 @@ class AppLocalizationImportTest extends TestCase
         $dir = storage_path('framework/testing/arb-empty-'.getmypid());
         File::ensureDirectoryExists($dir);
 
+        $keys = AppTranslationKey::query()->count();
+        $versions = AppLanguage::query()->pluck('version', 'code')->all();
+
         try {
+            // A failed import leaves whatever catalog exists untouched.
             $this->artisan('i18n:import-arb', ['--path' => $dir])->assertFailed();
-            $this->assertSame(0, AppTranslationKey::query()->count());
+            $this->assertSame($keys, AppTranslationKey::query()->count());
+            $this->assertSame($versions, AppLanguage::query()->pluck('version', 'code')->all());
         } finally {
             File::deleteDirectory($dir);
         }

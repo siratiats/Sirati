@@ -83,3 +83,12 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 - Cities live only in `SaudiCities` (code, Arabic label, region). Add a city there; matching is whole-word, so "الخبرة" is not Khobar.
 - Remotive jobs are kept only when `candidate_required_location` admits Saudi Arabia (worldwide/EMEA/MENA/GCC/Saudi).
 - Shell heredocs in this environment collapse doubled backslashes to one: write PHP regex edits with the Edit tool or `chr(92)`.
+
+## Server-label audit (2026-10-30, Abobker85/Sirati#3)
+- Every app screen is registered once in flutter_app `test/support/app_screens.dart` (`appScreens`), shared by the CI audit `test/localization/server_labels_audit_test.dart` (runs in codemagic `flutter test`) and the admin preview capture. A new screen or state goes there.
+- The audit serves every catalog value with an invisible U+2060 prefix; painted text must be marked labels, harness sample data (`h.sample`, every mock-client JSON string, sample-name initials) or `ApiConfig.supportEmail`. Directional marks are stripped on both sides. Text equal to a label but typed in code still fails.
+- Helpers that used `english ? '…' : '…'` now take `AppLocalizations` (`AppFormat.relativeTime`, `LocaleFormat.relativeSavedAt`, `AiErrorMessage.*`); domain models leave server titles empty and the screen shows its catalog label.
+- `l10n.yaml` template is `app_ar.arb`: `@key` placeholder metadata goes in the Arabic file. The English catalog must contain no Arabic script (`l10n_adoption_test`).
+- Laravel `resources/i18n/*.arb` had drifted 65 keys behind the app; the 2026-10-30 migration runs `i18n:import-arb` on deploy and `AppLabelCatalogDeployTest` checks the API serves every bundled key.
+- Local `dart format` (3.12.2) rewraps many untouched files: format only the files you edit.
+- Not yet catalogued: CV-content-language text written into the CV ("Present"/"حتى الآن", "Copy of …", "Untitled CV" metadata, achievement presets, metric pills); needs a CV-language lookup and a migration for stored values.

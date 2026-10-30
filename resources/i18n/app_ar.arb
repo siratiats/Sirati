@@ -777,6 +777,38 @@
   "@sharedOfflineShowingSaved": {
     "description": "Banner shown when cached data is displayed while offline."
   },
+  "sharedOfflineTitle": "لا يوجد اتصال بالإنترنت",
+  "@sharedOfflineTitle": {
+    "description": "Title of the full-screen offline state."
+  },
+  "sharedOfflineBody": "تحقق من الواي فاي أو بيانات الجوال. سنعيد المحاولة تلقائيًا عند عودة الاتصال.",
+  "@sharedOfflineBody": {
+    "description": "Body of the full-screen offline state; the screen retries on its own."
+  },
+  "sharedOfflineWaiting": "بانتظار الاتصال…",
+  "@sharedOfflineWaiting": {
+    "description": "Live status pill on the offline screen while it waits to retry."
+  },
+  "sharedOfflineChecking": "جارٍ التحقق…",
+  "@sharedOfflineChecking": {
+    "description": "Retry button label while the offline screen is re-checking the connection."
+  },
+  "sharedOfflineTipsTitle": "نصائح سريعة للمتابعة",
+  "@sharedOfflineTipsTitle": {
+    "description": "Heading of the tips card on the offline screen."
+  },
+  "sharedOfflineTipAirplane": "تأكد من إيقاف وضع الطيران",
+  "@sharedOfflineTipAirplane": {
+    "description": "Offline tip: airplane mode."
+  },
+  "sharedOfflineTipSignal": "اقترب من موجه الواي فاي (الراوتر) أو أعد تشغيل بيانات الجوال",
+  "@sharedOfflineTipSignal": {
+    "description": "Offline tip: move closer to the router or toggle mobile data."
+  },
+  "sharedOfflineOpenSaved": "فتح السير الذاتية المحفوظة",
+  "@sharedOfflineOpenSaved": {
+    "description": "Secondary button on the offline screen that opens CVs saved on the device."
+  },
   "sharedNoDataAvailable": "لا توجد بيانات.",
   "@sharedNoDataAvailable": {
     "description": "Error panel message when a request returned no data."
@@ -870,6 +902,15 @@
   "sharedJobTitleNoMatches": "لا توجد نتائج",
   "@sharedJobTitleNoMatches": {
     "description": "Shown when the job-title search has no results."
+  },
+  "sharedJobTitleEnterManually": "أدخل «{query}» يدويًا",
+  "@sharedJobTitleEnterManually": {
+    "description": "Option shown when the job-title search has no results; picks Other and prefills the typed text.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
   },
   "sharedNotifications": "الإشعارات",
   "@sharedNotifications": {
@@ -2000,6 +2041,34 @@
   "@authSessionExpired": {
     "description": "Notice on the sign-in screen after the session expired."
   },
+  "authSessionExpiredBadge": "حماية وأمان الحساب",
+  "@authSessionExpiredBadge": {
+    "description": "Small pill at the top of the session-expired screen."
+  },
+  "authSessionExpiredChip": "انتهت مدة الجلسة",
+  "@authSessionExpiredChip": {
+    "description": "Status chip above the session-expired title."
+  },
+  "authSessionExpiredTitle": "انتهت جلستك",
+  "@authSessionExpiredTitle": {
+    "description": "Title of the screen shown after the server rejects the session (HTTP 401)."
+  },
+  "authSessionExpiredBody": "لحمايتك، انتهت صلاحية جلسة الدخول. سجّل الدخول مجددًا للمتابعة من حيث توقفت.",
+  "@authSessionExpiredBody": {
+    "description": "Body of the session-expired screen."
+  },
+  "authSessionExpiredDataSafe": "سيرك الذاتية ونتائج الفحص محفوظة بأمان في حسابك.",
+  "@authSessionExpiredDataSafe": {
+    "description": "Reassurance card on the session-expired screen: account data is not lost."
+  },
+  "authSessionExpiredSignIn": "تسجيل الدخول مجددًا",
+  "@authSessionExpiredSignIn": {
+    "description": "Primary button on the session-expired screen; opens sign-in."
+  },
+  "authSessionExpiredHelp": "تحتاج مساعدة؟ تواصل معنا",
+  "@authSessionExpiredHelp": {
+    "description": "Footer link on the session-expired screen; opens an email to support."
+  },
   "authLoginUnexpectedError": "حدث خطأ غير متوقع أثناء تسجيل الدخول.",
   "@authLoginUnexpectedError": {
     "description": "Error when sign-in fails unexpectedly."
@@ -2007,6 +2076,15 @@
   "authSocialSignInSoon": "تسجيل الدخول عبر {provider} سيتوفر قريباً في التحديث القادم.",
   "@authSocialSignInSoon": {
     "description": "Notice that a social sign-in provider is not available yet. provider is a brand name such as Google or Apple.",
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "authSocialSignInNotConfigured": "تسجيل الدخول عبر {provider} غير مهيأ في هذه النسخة من التطبيق.",
+  "@authSocialSignInNotConfigured": {
+    "description": "Error when a social sign-in provider has no client id in this build. provider is a brand name such as Google or Apple.",
     "placeholders": {
       "provider": {
         "type": "String"
@@ -2795,6 +2873,152 @@
       }
     }
   },
+  "myCvsHeaderSubtitle": "أنشئ سيرتك، وافحصها، وأدر نسخك من مكان واحد",
+  "@myCvsHeaderSubtitle": {
+    "description": "Subtitle under the My CVs header"
+  },
+  "myCvsToolsTitle": "الأدوات",
+  "@myCvsToolsTitle": {
+    "description": "Title of the tools card on My CVs"
+  },
+  "myCvsToolCreateTitle": "إنشاء السيرة",
+  "@myCvsToolCreateTitle": {
+    "description": "Tool tile: create a CV"
+  },
+  "myCvsToolCreateBody": "متوافقة مع أنظمة الفرز الآلي ATS",
+  "@myCvsToolCreateBody": {
+    "description": "Tool tile body: create a CV"
+  },
+  "myCvsToolScanTitle": "فحص",
+  "@myCvsToolScanTitle": {
+    "description": "Tool tile: ATS scan"
+  },
+  "myCvsToolScanBody": "فحص السيرة بنظام (ATS)",
+  "@myCvsToolScanBody": {
+    "description": "Tool tile body: ATS scan"
+  },
+  "myCvsToolUploadTitle": "رفع سيرة خارجية",
+  "@myCvsToolUploadTitle": {
+    "description": "Tool tile: upload an external CV"
+  },
+  "myCvsToolUploadBody": "ارفع سيرتك الذاتية PDF وافحص توافقها مع أنظمة الفرز الآلي.",
+  "@myCvsToolUploadBody": {
+    "description": "Tool tile body: upload an external CV for an ATS scan"
+  },
+  "myCvsToolTargetTitle": "استهداف وظيفة",
+  "@myCvsToolTargetTitle": {
+    "description": "Tool tile: tailor a CV to a job"
+  },
+  "myCvsToolTargetBody": "إنشاء سيرة مطابقة لوصف وظيفي معين.",
+  "@myCvsToolTargetBody": {
+    "description": "Tool tile body: tailor a CV to a job"
+  },
+  "myCvsListTitle": "سيري الذاتية",
+  "@myCvsListTitle": {
+    "description": "Section title above the saved CV list"
+  },
+  "myCvsEmptyBody": "أنشئ أول سيرة متوافقة مع ATS، أو ارفع سيرة خارجية لتفحصها.",
+  "@myCvsEmptyBody": {
+    "description": "Empty state body on My CVs"
+  },
+  "myCvsEmptyCreate": "أنشئ سيرتك",
+  "@myCvsEmptyCreate": {
+    "description": "Empty state primary button: create a CV"
+  },
+  "myCvsEmptyUpload": "ارفع سيرة خارجية",
+  "@myCvsEmptyUpload": {
+    "description": "Empty state secondary button: upload a CV"
+  },
+  "cvCardOpen": "فتح",
+  "@cvCardOpen": {
+    "description": "CV card button that opens the CV"
+  },
+  "cvCardMore": "خيارات السيرة",
+  "@cvCardMore": {
+    "description": "Label of the CV card overflow menu"
+  },
+  "cvCardScore": "نتيجة الفرز الآلي: {score}",
+  "@cvCardScore": {
+    "description": "CV card ATS score line",
+    "placeholders": {
+      "score": {
+        "type": "int"
+      }
+    }
+  },
+  "cvCardNotScanned": "لم تُفحص بعد",
+  "@cvCardNotScanned": {
+    "description": "CV card chip when the CV has no ATS score"
+  },
+  "cvCardScanNow": "افحص الآن",
+  "@cvCardScanNow": {
+    "description": "CV card link that starts an ATS scan"
+  },
+  "cvCardNeedsWork": "تحتاج سيرتك إلى تحسينات مهمة، ابدأ بها الآن.",
+  "@cvCardNeedsWork": {
+    "description": "CV card warning for a low ATS score"
+  },
+  "settingsNotificationsFilterAll": "الكل",
+  "settingsNotificationsCategoryCv": "السيرة الذاتية",
+  "settingsNotificationsCategoryJobs": "الوظائف",
+  "settingsNotificationsCategoryAnalysis": "التحليل",
+  "settingsNotificationsCategoryLearning": "التعلّم",
+  "settingsNotificationsCategoryGeneral": "عام",
+  "settingsNotificationsToday": "اليوم",
+  "settingsNotificationsYesterday": "أمس",
+  "settingsNotificationsThisWeek": "هذا الأسبوع",
+  "settingsNotificationsEarlier": "سابقاً",
+  "settingsNotificationsNewCount": "{count, plural, one{إشعار جديد} two{إشعاران جديدان} few{{count} جديدة} many{{count} جديداً} other{{count} جديد}}",
+  "@settingsNotificationsNewCount": {
+    "description": "Inbox date-section header, end side: unread rows in the section.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "settingsNotificationsCount": "{count, plural, one{إشعار واحد} two{إشعاران} few{{count} إشعارات} many{{count} إشعاراً} other{{count} إشعار}}",
+  "@settingsNotificationsCount": {
+    "description": "Inbox date-section header, end side: rows in a section with nothing unread.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "settingsNotificationsViewCv": "عرض السيرة",
+  "settingsNotificationsScanCta": "فحص سيرتك الآن",
+  "settingsNotificationsFilterEmpty": "لا توجد إشعارات في هذا القسم.",
+  "settingsNotificationsPreviewTitle": "ماذا ستصلك هنا؟",
+  "settingsNotificationsPreviewCvTitle": "سيرتك الذاتية جاهزة",
+  "settingsNotificationsPreviewCvBody": "عندما تنتهي سيرتك وتصبح جاهزة للمراجعة والتصدير.",
+  "settingsNotificationsPreviewJobsTitle": "وظائف تناسب مسماك",
+  "settingsNotificationsPreviewJobsBody": "وظائف جديدة منشورة تطابق مسماك الوظيفي.",
+  "settingsNotificationsPreviewAnalysisTitle": "نتائج فحص سيرتك (ATS)",
+  "settingsNotificationsPreviewAnalysisBody": "درجة توافق سيرتك واقتراحات لتحسينها.",
+  "settingsNotificationsCreateCvCta": "إنشاء سيرة ذاتية",
+  "authSignInRequiredTitle": "سجّل الدخول للمتابعة",
+  "@authSignInRequiredTitle": {
+    "description": "Hero title on the page a guest sees when a feature needs an account"
+  },
+  "authSignInRequiredSubtitle": "الوظائف والتعلّم متاحة للجميع",
+  "@authSignInRequiredSubtitle": {
+    "description": "Hero subtitle: what guests can still use"
+  },
+  "authSignInRequiredCardTitle": "هذا القسم يحتاج إلى حساب",
+  "@authSignInRequiredCardTitle": {
+    "description": "Card title on the sign-in required page"
+  },
+  "authSignInRequiredBody": "أنشئ حساباً مجانياً أو سجّل الدخول لإنشاء سيرتك وفحصها، والاحتفاظ بنتائجك، وتلقي الإشعارات.",
+  "@authSignInRequiredBody": {
+    "description": "Card body on the sign-in required page"
+  },
+  "authSignInRequiredBrowseJobs": "تصفّح الوظائف",
+  "@authSignInRequiredBrowseJobs": {
+    "description": "Link back to the jobs tab from the sign-in required page"
+  },
   "jobsRegionAll": "كل المناطق",
   "@jobsRegionAll": {
     "description": "Region chip: no region filter"
@@ -2934,11 +3158,92 @@
   "homeServiceEducation": "التعليم",
   "homeSoon": "قريباً",
   "homeServiceSoonA11y": "{service}، قريباً",
+  "@homeServiceSoonA11y": {
+    "placeholders": {
+      "service": {
+        "type": "String"
+      }
+    }
+  },
   "homeMyCvTitle": "سيرتي الأخيرة",
   "homeMyCvEdited": "آخر تعديل: {time}",
+  "@homeMyCvEdited": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "homeMyCvEdit": "تعديل",
   "homeMyCvCheck": "فحص ATS",
   "homeMyCvEmptyTitle": "لا توجد سيرة بعد",
   "homeMyCvEmptyBody": "أنشئ أول سيرة متوافقة مع ATS، أو ارفع سيرة خارجية لتعديلها.",
-  "homeHonesty": "سيرتك تعكس خبرتك الحقيقية، بلا مبالغة"
+  "homeHonesty": "سيرتك تعكس خبرتك الحقيقية، بلا مبالغة",
+  "authEmailHint": "name@example.com",
+  "authPhoneHint": "05XXXXXXXX",
+  "cvPersonalEmailHint": "salem@example.com",
+  "cvPersonalPhoneHint": "+966 5X XXX XXXX",
+  "cvPersonalLinkedinHint": "linkedin.com/in/username",
+  "authSocialGoogle": "Google",
+  "authSocialApple": "Apple",
+  "authRegisterEmailHint": "example@mail.com",
+  "timeJustNow": "الآن",
+  "timeMinutesAgo": "{count, plural, =1{قبل دقيقة} =2{قبل دقيقتين} few{قبل {count} دقائق} other{قبل {count} دقيقة}}",
+  "timeHoursAgo": "{count, plural, =1{قبل ساعة} =2{قبل ساعتين} few{قبل {count} ساعات} other{قبل {count} ساعة}}",
+  "timeYesterday": "أمس",
+  "savedJustNow": "حُفظت للتو",
+  "savedAgo": "حُفظت {time}",
+  "untitledTitle": "بدون عنوان",
+  "aiErrorTooLong": "السيرة أطول من أن تُولَّد في تمريرة واحدة. اختصر نص الخبرات أو التعليم أو المهارات ثم أعد المحاولة.",
+  "aiErrorTryAgain": "يرجى المحاولة مرة أخرى.",
+  "aiGenerationFailed": "تعذر إكمال توليد السيرة بالذكاء الاصطناعي: {detail}",
+  "aiSuggestionsFailed": "تعذر إكمال توصيات الذكاء الاصطناعي: {detail}",
+  "aiLocalFallback": "تم إنشاء نسخة محلية لأن الذكاء الاصطناعي لم يكتمل: {detail}",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "@timeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "@savedAgo": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@aiGenerationFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "@aiSuggestionsFailed": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "@aiLocalFallback": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "jobNewsTitle": "أخبار الوظائف",
+  "crashMessage": "حدث خطأ. بياناتك بأمان — حاول مرة أخرى.",
+  "avatarFallbackInitial": "س"
 }
