@@ -135,6 +135,8 @@ class MobileContentController extends Controller
             return [
                 'id' => $cv->id,
                 'title' => $titles[$cv->id] ?? ($cv->target_job_title ?: $cv->full_name),
+                // The CV's own language, not the app's: templates and text direction follow it (#21).
+                'language' => $cv->language,
                 'updated_label' => $this->updatedLabel($cv->updated_at),
                 'badge' => $cv->score_total === null ? '' : 'ATS '.$cv->score_total.'%',
                 'score_total' => $cv->score_total,

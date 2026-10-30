@@ -108,3 +108,7 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 - Templated notifications store `title_key`/`body_key`/`text_params` (`App\Support\NotificationText`); the list renders them in the reader's language, pushes in `notification_preferences.language`. Admin broadcasts have no keys and show as written.
 - Bash heredocs here also turn `\` into `\` inside Python scripts and fail on some quotes: write helper scripts with the Write tool. Python on Windows writes CRLF in text mode: open with `newline='\n'`.
 - Content honesty (#15): `is_verified=1` means `is_verified` only; `dashboard.latest_news` is the newest visible job or null; education returns stored rows only (target_role = the user's own role or null).
+
+## Export paywall status + CV language on My CVs (2026-10-30, Abobker85/Sirati#21)
+- Every paywall is HTTP 402 through `SubscriptionRequiredException` (JSON: `error`/`code` reason, `feature`, `paywall`; browser routes get the 402 error page). A premium-template export throws it with reason `premium_template_locked`, feature `cv_template` and top-level `template` slug. 401/403/404 stay auth/ownership only (a stranger's CV is 404 before any paywall).
+- `/api/mobile/my-cvs` rows carry `language` = the CV's stored `generated_cvs.language`, never the request language.

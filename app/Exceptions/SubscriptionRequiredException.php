@@ -24,12 +24,16 @@ final class SubscriptionRequiredException extends HttpException
      *                              message_ar / message_en are kept for older app builds
      * @param  array<string, mixed>  $params
      * @param  array<string, mixed>  $meta
+     * @param  string  $reason  machine-readable reason (`error` and `code`), e.g. premium_template_locked
+     * @param  array<string, mixed>  $details  extra top-level fields, e.g. the locked template slug
      */
     public function __construct(
         private readonly string $feature,
         private readonly string $messageKey,
         private readonly array $params = [],
         private readonly array $meta = [],
+        private readonly string $reason = 'subscription_required',
+        private readonly array $details = [],
     ) {
         parent::__construct(self::STATUS, ServerText::t($messageKey, $params));
     }
@@ -45,9 +49,10 @@ final class SubscriptionRequiredException extends HttpException
 
         return response()->json([
             'message' => ServerText::t($this->messageKey, $this->params),
-            'error' => 'subscription_required',
-            'code' => 'subscription_required',
+            'error' => $this->reason,
+            'code' => $this->reason,
             'feature' => $this->feature,
+            ...$this->details,
             'paywall' => [
                 'title' => ServerText::t('serverPaywallTitle'),
                 'title_ar' => ServerText::t('serverPaywallTitle', [], 'ar'),
