@@ -15,7 +15,8 @@ Schedule::command('jobs:aggregate-saudi')
     ->everyThreeHours()
     ->withoutOverlapping();
 
-// Dispatch smart daily notifications based on user activity, timezone & job preferences
+// Dispatch smart daily notifications based on user activity, timezone & job preferences.
+// Registered only here; every 15 minutes so a user is reached soon after their quiet hours end.
 Schedule::command('notifications:plan-daily')
-    ->hourly()
+    ->everyFifteenMinutes()
     ->withoutOverlapping();

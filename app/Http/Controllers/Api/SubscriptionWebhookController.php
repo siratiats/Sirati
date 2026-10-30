@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SubscriptionAuditLog;
 use App\Models\SubscriptionWebhookEvent;
 use App\Models\User;
+use App\Support\FailClosed;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -13,15 +14,23 @@ use Illuminate\Support\Facades\Log;
 
 class SubscriptionWebhookController extends Controller
 {
+    /** Event types that grant or keep access until the event's expiry. */
+    private const EXPIRY_REQUIRED = [
+        'INITIAL_PURCHASE',
+        'RENEWAL',
+        'PRODUCT_CHANGE',
+        'UNCANCELLATION',
+        'NON_RENEWING_PURCHASE',
+        'CANCELLATION',
+    ];
+
     public function handleRevenueCat(Request $request): JsonResponse
     {
         // 1. Verify shared secret
         $secret = config('services.revenuecat.webhook_secret');
-        if ($secret === null || $secret === '') {
-            if (! app()->environment('local', 'testing')) {
-                Log::critical('RevenueCat webhook called but webhook secret is not configured in ['.app()->environment().']. Failing closed.');
-
-                return response()->json(['message' => 'Webhook secret unconfigured'], 503);
+        if (! is_string($secret) || trim($secret) === '') {
+            if (! FailClosed::allowsMissingConfiguration()) {
+                FailClosed::unavailable('RevenueCat webhook', 'services.revenuecat.webhook_secret', 'Webhook secret unconfigured');
             }
         } else {
             $authHeader = (string) $request->header('Authorization', '');
@@ -87,11 +96,35 @@ class SubscriptionWebhookController extends Controller
         $productId = (string) ($event['product_id'] ?? 'pro');
         $externalId = (string) ($event['original_transaction_id'] ?? $eventId);
 
-        // 4. Resolve expiration timestamp from event
+        // 4. Resolve expiration timestamp from event. Never invent one: an
+        // event that would grant or keep access without an expiry grants nothing.
         $expirationMs = $event['expiration_at_ms'] ?? $event['expires_date_ms'] ?? null;
-        $expiresAt = $expirationMs !== null
-            ? Carbon::createFromTimestampMs((int) $expirationMs)
-            : Carbon::now()->addMonth();
+        $expirationMs = is_int($expirationMs) || is_string($expirationMs)
+            ? filter_var($expirationMs, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
+            : false;
+        $expiresAt = $expirationMs !== false ? Carbon::createFromTimestampMs($expirationMs) : null;
+
+        if ($expiresAt === null && in_array($type, self::EXPIRY_REQUIRED, true)) {
+            Log::error('RevenueCat webhook: event has no valid expiry; entitlement unchanged.', [
+                'event_id' => $eventId,
+                'event_type' => $type,
+                'user_id' => $user->id,
+            ]);
+
+            SubscriptionWebhookEvent::create([
+                'event_id' => $eventId,
+                'event_type' => $type,
+                'app_user_id' => $appUserId,
+                'payload' => $payload,
+                'processed_at' => Carbon::now(),
+            ]);
+
+            return response()->json([
+                'message' => 'Event recorded without an expiry; nothing granted',
+                'event_id' => $eventId,
+                'status' => 'missing_expiry',
+            ], 200);
+        }
 
         // 5. Handle event types
         switch ($type) {

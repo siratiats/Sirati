@@ -179,7 +179,7 @@ class AppLabelScreensAdminTest extends TestCase
         config(['services.admin.emails' => []]);
         $this->app['env'] = 'production';
         foreach ($urls as $url) {
-            $this->actingAs($this->admin)->get($url)->assertForbidden();
+            $this->actingAs($this->admin)->get($url)->assertStatus(503);
         }
         $this->app['env'] = 'testing';
 

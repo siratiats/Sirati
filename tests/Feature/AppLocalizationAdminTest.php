@@ -72,14 +72,14 @@ class AppLocalizationAdminTest extends TestCase
             $this->callRoute($route)->assertForbidden();
         }
 
-        // Fails closed: an empty ADMIN_EMAILS outside local/testing denies everyone, admins included.
+        // Fails closed loudly: an empty ADMIN_EMAILS outside local/testing is a 503 for everyone, admins included.
         config(['services.admin.emails' => []]);
         $this->app['env'] = 'production';
         // CSRF is only skipped under the testing env; this check is about the admin gate.
         $this->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class);
         foreach ($routes as $route) {
             $this->actingAs($this->admin);
-            $this->callRoute($route)->assertForbidden();
+            $this->callRoute($route)->assertStatus(503);
         }
         $this->app['env'] = 'testing';
 

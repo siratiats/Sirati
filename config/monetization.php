@@ -7,15 +7,17 @@ return [
     | Master switch
     |--------------------------------------------------------------------------
     |
-    | While this is false the app behaves exactly as it did before: every user
+    | While this is explicitly false the app behaves exactly as it did before: every user
     | downloads, enhances and reads the full analysis. Turn it on only after the
     | App Store subscriptions are live and RevenueCat is delivering webhooks,
     | otherwise paying users would be locked out of features they bought.
     |
     */
 
-    // Preserve invalid values so security-sensitive gates can reject them.
-    'enabled' => env('MONETIZATION_ENABLED', false),
+    // Only an explicit true/false decides. Unset, empty or malformed fails
+    // closed outside local/testing (SubscriptionGate::isEnforced), so keep
+    // invalid values as they are and never default to false here.
+    'enabled' => env('MONETIZATION_ENABLED'),
 
     // Job Match is always premium-only, independently of the master switch.
     // Do not cast here: an empty, malformed or non-positive limit must fail closed.
