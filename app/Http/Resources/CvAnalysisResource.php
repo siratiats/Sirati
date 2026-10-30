@@ -88,20 +88,12 @@ class CvAnalysisResource extends JsonResource
         $total = array_sum($hidden);
 
         if ($unlocked || $total === 0) {
-            // Job match exists only when it was measured against a job description;
-        // otherwise null, and keyword_source says why (issue #16).
-        $keywordSource = $this->keyword_source === 'job_description' ? 'job_description' : 'category';
-
-        return [
+            return [
                 'is_locked' => false,
                 'hidden_total' => 0,
                 'hidden' => $hidden,
             ];
         }
-
-        // Job match exists only when it was measured against a job description;
-        // otherwise null, and keyword_source says why (issue #16).
-        $keywordSource = $this->keyword_source === 'job_description' ? 'job_description' : 'category';
 
         return [
             'is_locked' => true,
@@ -131,11 +123,7 @@ class CvAnalysisResource extends JsonResource
     private function mobileList(?array $value): array
     {
         if ($value === null) {
-            // Job match exists only when it was measured against a job description;
-        // otherwise null, and keyword_source says why (issue #16).
-        $keywordSource = $this->keyword_source === 'job_description' ? 'job_description' : 'category';
-
-        return [];
+            return [];
         }
 
         return array_is_list($value) ? $value : array_values($value);
