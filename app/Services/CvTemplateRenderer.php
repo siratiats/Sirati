@@ -4,12 +4,12 @@ namespace App\Services;
 
 use App\Cv\LegacySectionParser;
 use App\Cv\ResolvedCvDocument;
+use App\Exceptions\SubscriptionRequiredException;
 use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Models\User;
 use App\Services\Cv\CvMarkdownRenderer;
 use App\Services\Cv\LogicalTextMpdf;
-use App\Services\I18n\ServerText;
 use App\Support\CvMarkdownIdentityBlock;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -120,16 +120,15 @@ class CvTemplateRenderer
 
         $effectiveUser = $user ?? $generatedCv->user;
 
-        // Enforce premium entitlement at export boundary (SIRATI-49)
+        // Enforce premium entitlement at export boundary (SIRATI-49). A paywall
+        // is 402 on every route (#21): the app keys the premium lock on the status.
         if ($template->isPremium() && ! $this->entitlementService()->canExportTemplate($effectiveUser, $template)) {
-            if (request()?->wantsJson()) {
-                return response()->json([
-                    'message' => ServerText::t('serverCvTemplatePremiumOnly'),
-                    'error' => 'premium_template_locked',
-                    'template' => $template->slug,
-                ], 403);
-            }
-            abort(403, ServerText::t('serverCvTemplatePremiumOnly'));
+            throw new SubscriptionRequiredException(
+                feature: 'cv_template',
+                messageKey: 'serverCvTemplatePremiumOnly',
+                reason: 'premium_template_locked',
+                details: ['template' => $template->slug],
+            );
         }
 
         // Entitled export downloads are never watermarked

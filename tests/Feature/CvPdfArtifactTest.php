@@ -152,8 +152,8 @@ class CvPdfArtifactTest extends TestCase
         Storage::disk('cv_pdfs')->assertExists($path);
         $user->revokeSubscription();
         Sanctum::actingAs($user->fresh());
-        $this->getJson('/api/generated-cvs/'.$cv->id.'/download')->assertForbidden();
-        $this->get($signed)->assertForbidden();
+        $this->getJson('/api/generated-cvs/'.$cv->id.'/download')->assertStatus(402);
+        $this->get($signed)->assertStatus(402);
         Storage::disk('cv_pdfs')->assertExists($path);
 
         $template->update(['is_premium' => false]);

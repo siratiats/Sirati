@@ -167,6 +167,48 @@ class CvMvpTest extends TestCase
             ->assertJsonPath('data.items.0.badge', 'ATS 92%');
     }
 
+    /**
+     * Invariant (#21): each My CVs row carries the CV's own declared language,
+     * whatever language the app or the query asks the list in. The app picks
+     * PDF templates and text direction from it.
+     */
+    public function test_mobile_my_cvs_rows_carry_each_cvs_own_language_whatever_the_app_language(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $declared = [];
+        foreach (['ar', 'en', 'fr', 'ar', 'en'] as $i => $cvLanguage) {
+            $cv = GeneratedCv::create([
+                'user_id' => $user->id,
+                'full_name' => 'Salem Sayer',
+                'target_job_title' => 'Role '.$i,
+                'language' => $cvLanguage,
+                'skills_input' => 'SQL',
+                'experience_input' => 'Experience text with enough characters to pass validation and score well.',
+                'education_input' => 'Bachelor of Data Science',
+                'generated_markdown' => '# Salem Sayer',
+                'form_payload' => ['language' => $cvLanguage],
+                'ai_status' => 'not_configured',
+                'score_total' => 70,
+                'grade' => 'B',
+                'criteria' => [],
+            ]);
+            $declared[$cv->id] = $cvLanguage;
+        }
+
+        foreach ([['ar', 'ar'], ['en', 'en'], ['fr', 'en'], ['en', 'ar'], [null, null]] as [$appLanguage, $queryLanguage]) {
+            $request = $appLanguage === null ? $this : $this->withHeader('X-App-Language', $appLanguage);
+            $url = '/api/mobile/my-cvs'.($queryLanguage === null ? '' : '?lang='.$queryLanguage);
+            $rows = collect($request->getJson($url)->assertOk()->json('data.items'))->keyBy('id');
+
+            $this->assertCount(count($declared), $rows);
+            foreach ($declared as $id => $cvLanguage) {
+                $this->assertSame($cvLanguage, $rows[$id]['language'] ?? null, "cv {$id} app={$appLanguage} lang={$queryLanguage}");
+            }
+        }
+    }
+
     public function test_mobile_my_cvs_badge_is_empty_when_a_cv_has_no_score(): void
     {
         $user = User::factory()->create();
