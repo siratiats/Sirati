@@ -644,15 +644,56 @@
   "cvHubRecommended": "Recommended",
   "premiumGateAvailabilityNote": "In-app subscriptions are opening soon. You cannot buy a subscription in this version.",
   "premiumGateChoosePlan": "Choose your plan",
-  "premiumGateTrial": "{days, plural, =1{1-day free trial, then renews automatically} other{{days}-day free trial, then renews automatically}}",
+  "premiumGateTrial": "Free trial for {duration}, then renews automatically",
   "@premiumGateTrial": {
+    "description": "Trial line; duration is a premiumGateTrial* phrase.",
     "placeholders": {
-      "days": {
+      "duration": {
+        "type": "String",
+        "example": "1 month"
+      }
+    }
+  },
+  "premiumGateTrialDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@premiumGateTrialDays": {
+    "placeholders": {
+      "count": {
         "type": "int",
         "example": "3"
       }
     }
   },
+  "premiumGateTrialWeeks": "{count, plural, =1{1 week} other{{count} weeks}}",
+  "@premiumGateTrialWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateTrialMonths": "{count, plural, =1{1 month} other{{count} months}}",
+  "@premiumGateTrialMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateTrialYears": "{count, plural, =1{1 year} other{{count} years}}",
+  "@premiumGateTrialYears": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateOtherAccount": "This App Store subscription belongs to another Siratie account. Sign in with that account to use it.",
+  "premiumGateSyncingTitle": "Payment received",
+  "premiumGateSuccessSyncing": "We're activating Siratie Premium on your account. This usually takes less than a minute.",
+  "premiumGateCheckAgain": "Check again",
   "premiumGateStartTrial": "Start free trial",
   "premiumGateSubscribe": "Subscribe",
   "premiumGatePurchasing": "Subscribing...",
@@ -689,7 +730,6 @@
   "premiumGateStorePricesFailed": "Couldn't load prices from the App Store.",
   "premiumGateSuccessTitle": "You're now a Siratie Premium member",
   "premiumGateSuccessBody": "Every feature is unlocked. You can now download your CV without a watermark.",
-  "premiumGateSuccessSyncing": "Your account is still being updated. If a feature stays locked, tap Restore purchases in a minute.",
   "registerInterest": "Register interest",
   "noMatchingJobs": "No matching jobs",
   "clearFilters": "Clear filters",

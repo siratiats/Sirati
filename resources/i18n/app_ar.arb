@@ -651,15 +651,56 @@
   "cvHubRecommended": "موصى به",
   "premiumGateAvailabilityNote": "الاشتراكات داخل التطبيق ستتاح قريباً. لا يمكنك شراء اشتراك في هذا الإصدار.",
   "premiumGateChoosePlan": "اختر خطتك",
-  "premiumGateTrial": "{days, plural, =1{تجربة مجانية ليوم واحد، ثم يتجدد تلقائياً} =2{تجربة مجانية ليومين، ثم يتجدد تلقائياً} few{تجربة مجانية {days} أيام، ثم يتجدد تلقائياً} other{تجربة مجانية {days} يوماً، ثم يتجدد تلقائياً}}",
+  "premiumGateTrial": "تجربة مجانية لمدة {duration}، ثم يتجدد تلقائياً",
   "@premiumGateTrial": {
+    "description": "Trial line; duration is a premiumGateTrial* phrase.",
     "placeholders": {
-      "days": {
+      "duration": {
+        "type": "String",
+        "example": "شهر واحد"
+      }
+    }
+  },
+  "premiumGateTrialDays": "{count, plural, =1{يوم واحد} =2{يومين} few{{count} أيام} other{{count} يوماً}}",
+  "@premiumGateTrialDays": {
+    "placeholders": {
+      "count": {
         "type": "int",
         "example": "3"
       }
     }
   },
+  "premiumGateTrialWeeks": "{count, plural, =1{أسبوع واحد} =2{أسبوعين} few{{count} أسابيع} other{{count} أسبوعاً}}",
+  "@premiumGateTrialWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateTrialMonths": "{count, plural, =1{شهر واحد} =2{شهرين} few{{count} أشهر} other{{count} شهراً}}",
+  "@premiumGateTrialMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateTrialYears": "{count, plural, =1{سنة واحدة} =2{سنتين} few{{count} سنوات} other{{count} سنة}}",
+  "@premiumGateTrialYears": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateOtherAccount": "اشتراك App Store هذا مرتبط بحساب آخر في سيرتي. سجّل الدخول بذلك الحساب لاستخدامه.",
+  "premiumGateSyncingTitle": "تم استلام الدفع",
+  "premiumGateSuccessSyncing": "نفعّل الاشتراك المميز في حسابك الآن. يستغرق ذلك عادة أقل من دقيقة.",
+  "premiumGateCheckAgain": "تحقّق مرة أخرى",
   "premiumGateStartTrial": "ابدأ التجربة المجانية",
   "premiumGateSubscribe": "اشترك الآن",
   "premiumGatePurchasing": "جارٍ الاشتراك...",
@@ -696,7 +737,6 @@
   "premiumGateStorePricesFailed": "تعذّر تحميل الأسعار من App Store.",
   "premiumGateSuccessTitle": "أصبحت مشتركاً في سيرتي المميز",
   "premiumGateSuccessBody": "تم فتح كل الميزات. يمكنك الآن تحميل سيرتك بدون علامة مائية.",
-  "premiumGateSuccessSyncing": "ما زلنا نحدّث حسابك. إذا بقيت ميزة مقفلة، اضغط استعادة المشتريات بعد دقيقة.",
   "registerInterest": "سجّل اهتمامك",
   "noMatchingJobs": "لا توجد وظائف مطابقة",
   "clearFilters": "مسح عوامل التصفية",

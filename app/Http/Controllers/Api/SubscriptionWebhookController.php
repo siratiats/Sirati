@@ -66,6 +66,33 @@ class SubscriptionWebhookController extends Controller
         $type = (string) ($event['type'] ?? '');
         $appUserId = (string) ($event['app_user_id'] ?? $event['original_app_user_id'] ?? '');
 
+        // Policy: an App Store subscription stays with the Siratie account that
+        // bought it (RevenueCat restore behaviour "Keep with original App User
+        // ID"); the app tells a different account it belongs to another one.
+        // A TRANSFER therefore means the RevenueCat project is misconfigured:
+        // alert loudly and change no one's access.
+        if ($type === 'TRANSFER') {
+            Log::critical('RevenueCat webhook: TRANSFER received; set restore behaviour to "Keep with original App User ID". Access unchanged.', [
+                'event_id' => $eventId,
+                'transferred_from' => $event['transferred_from'] ?? [],
+                'transferred_to' => $event['transferred_to'] ?? [],
+            ]);
+
+            SubscriptionWebhookEvent::create([
+                'event_id' => $eventId,
+                'event_type' => $type,
+                'app_user_id' => $appUserId,
+                'payload' => $payload,
+                'processed_at' => Carbon::now(),
+            ]);
+
+            return response()->json([
+                'message' => 'Subscription transfers are not allowed; access unchanged',
+                'event_id' => $eventId,
+                'status' => 'transfer_not_allowed',
+            ], 200);
+        }
+
         // 3. Resolve user
         $user = User::query()->where('id', $appUserId)->first();
         if (! $user && ! empty($event['aliases'])) {
