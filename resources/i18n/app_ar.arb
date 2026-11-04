@@ -650,6 +650,53 @@
   "cvHubAppBar": "سيرتك الذاتية",
   "cvHubRecommended": "موصى به",
   "premiumGateAvailabilityNote": "الاشتراكات داخل التطبيق ستتاح قريباً. لا يمكنك شراء اشتراك في هذا الإصدار.",
+  "premiumGateChoosePlan": "اختر خطتك",
+  "premiumGateTrial": "{days, plural, =1{تجربة مجانية ليوم واحد، ثم يتجدد تلقائياً} =2{تجربة مجانية ليومين، ثم يتجدد تلقائياً} few{تجربة مجانية {days} أيام، ثم يتجدد تلقائياً} other{تجربة مجانية {days} يوماً، ثم يتجدد تلقائياً}}",
+  "@premiumGateTrial": {
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateStartTrial": "ابدأ التجربة المجانية",
+  "premiumGateSubscribe": "اشترك الآن",
+  "premiumGatePurchasing": "جارٍ الاشتراك...",
+  "premiumGateRenewNotice": "{price} {period}. يتجدد تلقائياً ويمكن الإلغاء في أي وقت من إعدادات Apple ID.",
+  "@premiumGateRenewNotice": {
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "99.00 ر.س"
+      },
+      "period": {
+        "type": "String",
+        "example": "كل 6 أشهر"
+      }
+    }
+  },
+  "premiumGateRenewNoticeTrial": "{price} {period} بعد التجربة المجانية. يتجدد تلقائياً ويمكن الإلغاء في أي وقت من إعدادات Apple ID.",
+  "@premiumGateRenewNoticeTrial": {
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "99.00 ر.س"
+      },
+      "period": {
+        "type": "String",
+        "example": "كل 6 أشهر"
+      }
+    }
+  },
+  "premiumGateRestore": "استعادة المشتريات",
+  "premiumGateTerms": "شروط الاستخدام",
+  "premiumGatePurchaseFailed": "تعذّر إتمام الشراء. حاول مرة أخرى.",
+  "premiumGatePurchasePending": "عملية الشراء بانتظار الموافقة. سيُفتح الاشتراك المميز بعد الموافقة.",
+  "premiumGateStorePricesFailed": "تعذّر تحميل الأسعار من App Store.",
+  "premiumGateSuccessTitle": "أصبحت مشتركاً في سيرتي المميز",
+  "premiumGateSuccessBody": "تم فتح كل الميزات. يمكنك الآن تحميل سيرتك بدون علامة مائية.",
+  "premiumGateSuccessSyncing": "ما زلنا نحدّث حسابك. إذا بقيت ميزة مقفلة، اضغط استعادة المشتريات بعد دقيقة.",
   "registerInterest": "سجّل اهتمامك",
   "noMatchingJobs": "لا توجد وظائف مطابقة",
   "clearFilters": "مسح عوامل التصفية",

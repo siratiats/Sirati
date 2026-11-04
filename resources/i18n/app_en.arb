@@ -643,6 +643,53 @@
   "cvHubAppBar": "Your CV",
   "cvHubRecommended": "Recommended",
   "premiumGateAvailabilityNote": "In-app subscriptions are opening soon. You cannot buy a subscription in this version.",
+  "premiumGateChoosePlan": "Choose your plan",
+  "premiumGateTrial": "{days, plural, =1{1-day free trial, then renews automatically} other{{days}-day free trial, then renews automatically}}",
+  "@premiumGateTrial": {
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateStartTrial": "Start free trial",
+  "premiumGateSubscribe": "Subscribe",
+  "premiumGatePurchasing": "Subscribing...",
+  "premiumGateRenewNotice": "{price} {period}. Renews automatically. Cancel anytime in your Apple ID settings.",
+  "@premiumGateRenewNotice": {
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "SAR 99.00"
+      },
+      "period": {
+        "type": "String",
+        "example": "every 6 months"
+      }
+    }
+  },
+  "premiumGateRenewNoticeTrial": "{price} {period} after the free trial. Renews automatically. Cancel anytime in your Apple ID settings.",
+  "@premiumGateRenewNoticeTrial": {
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "SAR 99.00"
+      },
+      "period": {
+        "type": "String",
+        "example": "every 6 months"
+      }
+    }
+  },
+  "premiumGateRestore": "Restore purchases",
+  "premiumGateTerms": "Terms of Use",
+  "premiumGatePurchaseFailed": "Couldn't complete the purchase. Try again.",
+  "premiumGatePurchasePending": "Your purchase is waiting for approval. Premium opens once it's approved.",
+  "premiumGateStorePricesFailed": "Couldn't load prices from the App Store.",
+  "premiumGateSuccessTitle": "You're now a Siratie Premium member",
+  "premiumGateSuccessBody": "Every feature is unlocked. You can now download your CV without a watermark.",
+  "premiumGateSuccessSyncing": "Your account is still being updated. If a feature stays locked, tap Restore purchases in a minute.",
   "registerInterest": "Register interest",
   "noMatchingJobs": "No matching jobs",
   "clearFilters": "Clear filters",
