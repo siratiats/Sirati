@@ -120,7 +120,10 @@ return [
 
     'revenuecat' => [
         'webhook_secret' => env('REVENUECAT_WEBHOOK_SECRET'),
+        // Secret (sk_) REST key: restore and transfers re-read subscribers.
         'api_key' => env('REVENUECAT_API_KEY'),
+        // Optional: count only this entitlement (empty = any entitlement).
+        'entitlement_id' => env('REVENUECAT_ENTITLEMENT_ID'),
     ],
 
 ];

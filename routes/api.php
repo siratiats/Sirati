@@ -52,7 +52,8 @@ Route::get('/generated-cvs/{generatedCv}/pdf', [GeneratedCvController::class, 'd
 Route::middleware('auth:sanctum')->group(function () {
     // Available before email verification (verify flow + session basics).
     Route::get('/auth/me', [MobileAuthController::class, 'me']);
-    Route::post('/subscriptions/restore', [SubscriptionWebhookController::class, 'restore']);
+    Route::post('/subscriptions/restore', [SubscriptionWebhookController::class, 'restore'])
+        ->middleware('throttle:6,1');
     Route::post('/auth/logout', [MobileAuthController::class, 'logout']);
     Route::post('/auth/email/verify', [MobileAuthController::class, 'verifyEmail'])
         ->middleware('throttle:10,1');

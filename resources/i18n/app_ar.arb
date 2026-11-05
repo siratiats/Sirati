@@ -650,6 +650,104 @@
   "cvHubAppBar": "سيرتك الذاتية",
   "cvHubRecommended": "موصى به",
   "premiumGateAvailabilityNote": "الاشتراكات داخل التطبيق ستتاح قريباً. لا يمكنك شراء اشتراك في هذا الإصدار.",
+  "premiumGateChoosePlan": "اختر خطتك",
+  "premiumGateTrial": "تجربة مجانية لمدة {duration}، ثم يتجدد تلقائياً",
+  "@premiumGateTrial": {
+    "description": "Trial line; duration is a premiumGateTrial* phrase.",
+    "placeholders": {
+      "duration": {
+        "type": "String",
+        "example": "شهر واحد"
+      }
+    }
+  },
+  "premiumGateTrialDays": "{count, plural, =1{يوم واحد} =2{يومين} few{{count} أيام} other{{count} يوماً}}",
+  "@premiumGateTrialDays": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateTrialWeeks": "{count, plural, =1{أسبوع واحد} =2{أسبوعين} few{{count} أسابيع} other{{count} أسبوعاً}}",
+  "@premiumGateTrialWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateTrialMonths": "{count, plural, =1{شهر واحد} =2{شهرين} few{{count} أشهر} other{{count} شهراً}}",
+  "@premiumGateTrialMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateTrialYears": "{count, plural, =1{سنة واحدة} =2{سنتين} few{{count} سنوات} other{{count} سنة}}",
+  "@premiumGateTrialYears": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "premiumGateOtherAccount": "اشتراك App Store هذا مرتبط بحساب آخر في سيرتي. سجّل الدخول بذلك الحساب لاستخدامه. لا تستطيع الوصول إليه؟ راسلنا على {email} وسنساعدك.",
+  "@premiumGateOtherAccount": {
+    "description": "Shown when the Apple ID's subscription belongs to another Siratie account.",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "support@siratie.com"
+      }
+    }
+  },
+  "premiumGateContactSupport": "تواصل مع الدعم",
+  "premiumGateSupportSubject": "سيرتي المميز: الاشتراك مرتبط بحساب آخر",
+  "premiumGateSyncingTitle": "تم استلام الدفع",
+  "premiumGateSuccessSyncing": "نفعّل الاشتراك المميز في حسابك الآن. يستغرق ذلك عادة أقل من دقيقة.",
+  "premiumGateCheckAgain": "تحقّق مرة أخرى",
+  "premiumGateStartTrial": "ابدأ التجربة المجانية",
+  "premiumGateSubscribe": "اشترك الآن",
+  "premiumGatePurchasing": "جارٍ الاشتراك...",
+  "premiumGateRenewNotice": "{price} {period}. يتجدد تلقائياً ويمكن الإلغاء في أي وقت من إعدادات Apple ID.",
+  "@premiumGateRenewNotice": {
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "99.00 ر.س"
+      },
+      "period": {
+        "type": "String",
+        "example": "كل 6 أشهر"
+      }
+    }
+  },
+  "premiumGateRenewNoticeTrial": "{price} {period} بعد التجربة المجانية. يتجدد تلقائياً ويمكن الإلغاء في أي وقت من إعدادات Apple ID.",
+  "@premiumGateRenewNoticeTrial": {
+    "placeholders": {
+      "price": {
+        "type": "String",
+        "example": "99.00 ر.س"
+      },
+      "period": {
+        "type": "String",
+        "example": "كل 6 أشهر"
+      }
+    }
+  },
+  "premiumGateRestore": "استعادة المشتريات",
+  "premiumGateTerms": "شروط الاستخدام",
+  "premiumGatePurchaseFailed": "تعذّر إتمام الشراء. حاول مرة أخرى.",
+  "premiumGatePurchasePending": "عملية الشراء بانتظار الموافقة. سيُفتح الاشتراك المميز بعد الموافقة.",
+  "premiumGateStorePricesFailed": "تعذّر تحميل الأسعار من App Store.",
+  "premiumGateSuccessTitle": "أصبحت مشتركاً في سيرتي المميز",
+  "premiumGateSuccessBody": "تم فتح كل الميزات. يمكنك الآن تحميل سيرتك بدون علامة مائية.",
   "registerInterest": "سجّل اهتمامك",
   "noMatchingJobs": "لا توجد وظائف مطابقة",
   "clearFilters": "مسح عوامل التصفية",

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Models\SubscriptionAuditLog;
 use App\Models\SubscriptionWebhookEvent;
