@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\CvTemplate;
 use App\Models\GeneratedCv;
 use App\Models\SubscriptionAuditLog;
 use App\Models\SubscriptionWebhookEvent;
@@ -10,7 +9,6 @@ use App\Models\User;
 use Database\Seeders\CvTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 class SubscriptionEntitlementTest extends TestCase
@@ -169,47 +167,6 @@ class SubscriptionEntitlementTest extends TestCase
             'event_id' => 'rc_evt_purchase_100',
             'event_type' => 'INITIAL_PURCHASE',
         ]);
-    }
-
-    public function test_transfer_webhook_changes_no_access_and_alerts(): void
-    {
-        config(['services.revenuecat.webhook_secret' => null]);
-        Log::spy();
-
-        $owner = User::factory()->create();
-        $owner->grantSubscription(
-            expiresAt: Carbon::now()->addMonth(),
-            planId: 'sirati_pro_monthly',
-            provider: 'revenuecat',
-            externalId: 'orig_tx_owner',
-        );
-        $ownerUntil = $owner->fresh()->premium_until;
-        $other = User::factory()->create();
-
-        // With and without an app_user_id: the shape varies by SDK version.
-        foreach ([[], ['app_user_id' => (string) $other->id]] as $i => $extra) {
-            $response = $this->postJson('/api/webhooks/revenuecat', [
-                'event' => [
-                    'id' => "rc_evt_transfer_{$i}",
-                    'type' => 'TRANSFER',
-                    'transferred_from' => [(string) $owner->id],
-                    'transferred_to' => [(string) $other->id],
-                    'expiration_at_ms' => Carbon::now()->addYear()->getTimestampMs(),
-                ] + $extra,
-            ]);
-
-            $response->assertOk()->assertJson(['status' => 'transfer_not_allowed']);
-            $this->assertTrue($owner->fresh()->isPremium());
-            $this->assertEquals($ownerUntil, $owner->fresh()->premium_until);
-            $this->assertFalse($other->fresh()->isPremium());
-            $this->assertDatabaseHas('subscription_webhook_events', [
-                'event_id' => "rc_evt_transfer_{$i}",
-                'event_type' => 'TRANSFER',
-            ]);
-        }
-
-        $this->assertDatabaseMissing('subscription_audit_logs', ['user_id' => $other->id]);
-        Log::shouldHaveReceived('critical')->twice();
     }
 
     public function test_renewal_webhook_extends_premium(): void

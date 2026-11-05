@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\SubscriptionAuditLog;
 use App\Models\SubscriptionWebhookEvent;
 use App\Models\User;
+use App\Services\Subscriptions\RevenueCatSubscriberSync;
+use App\Services\Subscriptions\RevenueCatUnavailableException;
 use App\Support\FailClosed;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,6 +25,8 @@ class SubscriptionWebhookController extends Controller
         'NON_RENEWING_PURCHASE',
         'CANCELLATION',
     ];
+
+    public function __construct(private readonly RevenueCatSubscriberSync $subscriberSync) {}
 
     public function handleRevenueCat(Request $request): JsonResponse
     {
@@ -70,13 +74,34 @@ class SubscriptionWebhookController extends Controller
         // bought it (RevenueCat restore behaviour "Keep with original App User
         // ID"); the app tells a different account it belongs to another one.
         // A TRANSFER therefore means the RevenueCat project is misconfigured:
-        // alert loudly and change no one's access.
+        // alert loudly, then make every involved account match RevenueCat so
+        // access follows the store. If RevenueCat cannot be read the event is
+        // not recorded and the 503 makes RevenueCat deliver it again.
         if ($type === 'TRANSFER') {
-            Log::critical('RevenueCat webhook: TRANSFER received; set restore behaviour to "Keep with original App User ID". Access unchanged.', [
+            $from = array_values(array_filter((array) ($event['transferred_from'] ?? []), 'is_scalar'));
+            $to = array_values(array_filter((array) ($event['transferred_to'] ?? []), 'is_scalar'));
+            Log::critical('RevenueCat webhook: TRANSFER received; set restore behaviour to "Keep with original App User ID". Reconciling the accounts with RevenueCat.', [
                 'event_id' => $eventId,
-                'transferred_from' => $event['transferred_from'] ?? [],
-                'transferred_to' => $event['transferred_to'] ?? [],
+                'transferred_from' => $from,
+                'transferred_to' => $to,
             ]);
+
+            $ids = RevenueCatSubscriberSync::siratieUserIds([...$from, ...$to]);
+            try {
+                foreach (User::query()->whereIn('id', $ids)->get() as $involved) {
+                    $this->subscriberSync->sync($involved, "transfer {$eventId}");
+                }
+            } catch (RevenueCatUnavailableException $e) {
+                Log::error('RevenueCat webhook: TRANSFER not reconciled; RevenueCat will retry.', [
+                    'event_id' => $eventId,
+                    'error' => $e->getMessage(),
+                ]);
+
+                return response()->json([
+                    'message' => 'RevenueCat unavailable; retry later',
+                    'event_id' => $eventId,
+                ], 503);
+            }
 
             SubscriptionWebhookEvent::create([
                 'event_id' => $eventId,
@@ -87,9 +112,9 @@ class SubscriptionWebhookController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Subscription transfers are not allowed; access unchanged',
+                'message' => 'Transfer reconciled with RevenueCat',
                 'event_id' => $eventId,
-                'status' => 'transfer_not_allowed',
+                'status' => 'transfer_reconciled',
             ], 200);
         }
 
@@ -263,9 +288,21 @@ class SubscriptionWebhookController extends Controller
         ], 200);
     }
 
+    /**
+     * Restore: re-reads the signed-in account from RevenueCat so access is
+     * repaired even when the purchase webhook was lost, then answers it.
+     */
     public function restore(Request $request): JsonResponse
     {
         $user = $request->user();
+        try {
+            $this->subscriberSync->sync($user, 'restore');
+        } catch (RevenueCatUnavailableException $e) {
+            Log::warning('RevenueCat restore sync failed', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+
+            return response()->json(['message' => 'RevenueCat unavailable; try again shortly'], 503);
+        }
+        $user->refresh();
 
         return response()->json([
             'is_premium' => $user->isPremium(),
