@@ -690,7 +690,18 @@
       }
     }
   },
-  "premiumGateOtherAccount": "This App Store subscription belongs to another Siratie account. Sign in with that account to use it.",
+  "premiumGateOtherAccount": "This App Store subscription belongs to another Siratie account. Sign in with that account to use it. Can't access it? Email {email} and we'll help.",
+  "@premiumGateOtherAccount": {
+    "description": "Shown when the Apple ID's subscription belongs to another Siratie account.",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "support@siratie.com"
+      }
+    }
+  },
+  "premiumGateContactSupport": "Contact support",
+  "premiumGateSupportSubject": "Siratie Premium: subscription on another account",
   "premiumGateSyncingTitle": "Payment received",
   "premiumGateSuccessSyncing": "We're activating Siratie Premium on your account. This usually takes less than a minute.",
   "premiumGateCheckAgain": "Check again",

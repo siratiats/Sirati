@@ -697,7 +697,18 @@
       }
     }
   },
-  "premiumGateOtherAccount": "اشتراك App Store هذا مرتبط بحساب آخر في سيرتي. سجّل الدخول بذلك الحساب لاستخدامه.",
+  "premiumGateOtherAccount": "اشتراك App Store هذا مرتبط بحساب آخر في سيرتي. سجّل الدخول بذلك الحساب لاستخدامه. لا تستطيع الوصول إليه؟ راسلنا على {email} وسنساعدك.",
+  "@premiumGateOtherAccount": {
+    "description": "Shown when the Apple ID's subscription belongs to another Siratie account.",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "support@siratie.com"
+      }
+    }
+  },
+  "premiumGateContactSupport": "تواصل مع الدعم",
+  "premiumGateSupportSubject": "سيرتي المميز: الاشتراك مرتبط بحساب آخر",
   "premiumGateSyncingTitle": "تم استلام الدفع",
   "premiumGateSuccessSyncing": "نفعّل الاشتراك المميز في حسابك الآن. يستغرق ذلك عادة أقل من دقيقة.",
   "premiumGateCheckAgain": "تحقّق مرة أخرى",
