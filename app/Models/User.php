@@ -5,11 +5,13 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -54,8 +56,15 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'is_premium' => 'boolean',
             'premium_until' => 'datetime',
+            'admin_premium_until' => 'datetime',
         ];
     }
+
+    /** Access sold through the App Store (RevenueCat). */
+    public const STORE_PROVIDER = 'revenuecat';
+
+    /** Access an admin granted by hand. */
+    public const ADMIN_PROVIDER = 'admin';
 
     public function isPremium(): bool
     {
@@ -66,13 +75,34 @@ class User extends Authenticatable implements MustVerifyEmail
         return (bool) $this->is_premium;
     }
 
+    /**
+     * Grants access from one source without ever shortening access from the
+     * other: the later of the store period and a running admin grant is the
+     * access in effect (`premium_until` / `subscription_*`), and an admin
+     * grant is also remembered on its own (`admin_premium_until`) so that a
+     * store expiry, refund or transfer cannot erase it.
+     */
     public function grantSubscription(
         \DateTimeInterface|string $expiresAt,
         string $planId = 'pro',
-        string $provider = 'revenuecat',
+        string $provider = self::STORE_PROVIDER,
         ?string $externalId = null,
     ): void {
-        $expires = is_string($expiresAt) ? \Illuminate\Support\Carbon::parse($expiresAt) : $expiresAt;
+        $expires = is_string($expiresAt) ? Carbon::parse($expiresAt) : Carbon::instance($expiresAt);
+
+        if ($provider === self::ADMIN_PROVIDER) {
+            $this->forceFill(['admin_premium_until' => $expires, 'admin_plan_id' => $planId]);
+            if ($this->hasStoreAccessBeyond($expires)) {
+                $this->save();
+
+                return;
+            }
+        } elseif ($provider === self::STORE_PROVIDER && $this->activeAdminUntil()?->greaterThanOrEqualTo($expires)) {
+            $this->applyAdminAccess();
+            $this->save();
+
+            return;
+        }
 
         $this->forceFill([
             'is_premium' => true,
@@ -83,12 +113,65 @@ class User extends Authenticatable implements MustVerifyEmail
         ])->save();
     }
 
+    /**
+     * Ends the store side of access (expiry, refund, transfer). Access from
+     * any other source is not the store's to take: it is left as it is, and an
+     * admin grant that is still running takes over from the store period.
+     */
+    public function revokeStoreSubscription(): void
+    {
+        if ($this->subscription_provider !== self::STORE_PROVIDER) {
+            return;
+        }
+        if ($this->activeAdminUntil() !== null) {
+            $this->applyAdminAccess();
+        } else {
+            $this->forceFill([
+                'is_premium' => false,
+                'premium_until' => Carbon::now()->subMinute(),
+            ]);
+        }
+        $this->save();
+    }
+
+    /** Admin revoke: ends all access, including any remembered admin grant. */
     public function revokeSubscription(): void
     {
         $this->forceFill([
             'is_premium' => false,
-            'premium_until' => \Illuminate\Support\Carbon::now()->subMinute(),
+            'premium_until' => Carbon::now()->subMinute(),
+            'admin_premium_until' => null,
+            'admin_plan_id' => null,
         ])->save();
+    }
+
+    private function activeAdminUntil(): ?Carbon
+    {
+        $until = $this->admin_premium_until;
+
+        return $until !== null && $until->isFuture() ? $until : null;
+    }
+
+    private function hasStoreAccessBeyond(Carbon $until): bool
+    {
+        return $this->subscription_provider === self::STORE_PROVIDER
+            && $this->isPremium()
+            && $this->premium_until?->greaterThan($until) === true;
+    }
+
+    private function applyAdminAccess(): void
+    {
+        if ($this->subscription_provider !== self::STORE_PROVIDER
+            && $this->premium_until?->equalTo($this->admin_premium_until)) {
+            return;
+        }
+        $this->forceFill([
+            'is_premium' => true,
+            'premium_until' => $this->admin_premium_until,
+            'subscription_plan_id' => $this->admin_plan_id ?? 'admin_grant',
+            'subscription_provider' => self::ADMIN_PROVIDER,
+            'subscription_external_id' => null,
+        ]);
     }
 
     public function jobTitle(): BelongsTo
@@ -127,7 +210,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->password !== null && $this->password !== '';
     }
 
-    public function notificationPreference(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function notificationPreference(): HasOne
     {
         return $this->hasOne(NotificationPreference::class);
     }

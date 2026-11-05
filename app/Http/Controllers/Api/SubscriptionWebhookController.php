@@ -86,9 +86,11 @@ class SubscriptionWebhookController extends Controller
                 'transferred_to' => $to,
             ]);
 
-            $ids = RevenueCatSubscriberSync::siratieUserIds([...$from, ...$to]);
+            $ids = array_map('intval', RevenueCatSubscriberSync::siratieUserIds([...$from, ...$to]));
             try {
-                foreach (User::query()->whereIn('id', $ids)->get() as $involved) {
+                // A fixed order makes a retry after a part-way failure repeat
+                // the same steps; accounts already reconciled are left as they are.
+                foreach (User::query()->whereIn('id', $ids)->orderBy('id')->get() as $involved) {
                     $this->subscriberSync->sync($involved, "transfer {$eventId}");
                 }
             } catch (RevenueCatUnavailableException $e) {
@@ -118,10 +120,16 @@ class SubscriptionWebhookController extends Controller
             ], 200);
         }
 
-        // 3. Resolve user
-        $user = User::query()->where('id', $appUserId)->first();
-        if (! $user && ! empty($event['aliases'])) {
-            $user = User::query()->whereIn('id', $event['aliases'])->first();
+        // 3. Resolve user: the app user id first, then its aliases. Only
+        // canonical Siratie ids are looked up, as integers, so an alias such as
+        // "4abc" or "4.0" can never be coerced into account 4 by the database.
+        $aliases = is_array($event['aliases'] ?? null) ? array_values($event['aliases']) : [];
+        $user = null;
+        foreach (RevenueCatSubscriberSync::siratieUserIds([$appUserId, ...$aliases]) as $candidateId) {
+            $user = User::query()->find((int) $candidateId);
+            if ($user) {
+                break;
+            }
         }
 
         if (! $user) {
@@ -207,7 +215,7 @@ class SubscriptionWebhookController extends Controller
                 break;
 
             case 'EXPIRATION':
-                $user->revokeSubscription();
+                $user->revokeStoreSubscription();
 
                 SubscriptionAuditLog::create([
                     'user_id' => $user->id,
@@ -225,7 +233,7 @@ class SubscriptionWebhookController extends Controller
             case 'CANCELLATION':
                 // Cancellation turns off auto-renew; access remains until expiration_at_ms
                 if ($expiresAt->isPast()) {
-                    $user->revokeSubscription();
+                    $user->revokeStoreSubscription();
                 } else {
                     // Retain current entitlement until the end of the paid period
                     $user->grantSubscription(
@@ -252,7 +260,7 @@ class SubscriptionWebhookController extends Controller
 
             case 'REVOCATION':
                 // Immediate store refund / chargeback
-                $user->revokeSubscription();
+                $user->revokeStoreSubscription();
 
                 SubscriptionAuditLog::create([
                     'user_id' => $user->id,
