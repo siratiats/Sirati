@@ -81,6 +81,11 @@ class User extends Authenticatable implements MustVerifyEmail
      * access in effect (`premium_until` / `subscription_*`), and an admin
      * grant is also remembered on its own (`admin_premium_until`) so that a
      * store expiry, refund or transfer cannot erase it.
+     *
+     * Access that is not the store's counts as an admin grant whatever its
+     * provider says: 'admin', the legacy 'admin_override', or a name someone
+     * set by hand (production had 'manual'). Access with no end date already
+     * covers any store period.
      */
     public function grantSubscription(
         \DateTimeInterface|string $expiresAt,
@@ -97,11 +102,19 @@ class User extends Authenticatable implements MustVerifyEmail
 
                 return;
             }
-        } elseif ($provider === self::STORE_PROVIDER && $this->activeAdminUntil()?->greaterThanOrEqualTo($expires)) {
-            $this->applyAdminAccess();
-            $this->save();
+        } elseif ($provider === self::STORE_PROVIDER) {
+            $this->rememberNonStoreAccess();
+            if ($this->hasNonStoreAccessUntil($expires)) {
+                $this->save();
 
-            return;
+                return;
+            }
+            if ($this->activeAdminUntil()?->greaterThanOrEqualTo($expires)) {
+                $this->applyAdminAccess();
+                $this->save();
+
+                return;
+            }
         }
 
         $this->forceFill([
@@ -143,6 +156,31 @@ class User extends Authenticatable implements MustVerifyEmail
             'admin_premium_until' => null,
             'admin_plan_id' => null,
         ])->save();
+    }
+
+    /**
+     * Whether the access in effect comes from a source other than the store
+     * and lasts at least until $until (access with no end date always does).
+     */
+    public function hasNonStoreAccessUntil(Carbon $until): bool
+    {
+        return $this->subscription_provider !== self::STORE_PROVIDER
+            && $this->isPremium()
+            && ($this->premium_until === null || $this->premium_until->greaterThanOrEqualTo($until));
+    }
+
+    /**
+     * Remembers running, dated access that is not the store's as the admin
+     * grant, so that a store period taking over hands it back when it ends.
+     */
+    private function rememberNonStoreAccess(): void
+    {
+        if ($this->subscription_provider !== self::STORE_PROVIDER && $this->premium_until?->isFuture() === true) {
+            $this->forceFill([
+                'admin_premium_until' => $this->premium_until,
+                'admin_plan_id' => $this->subscription_plan_id,
+            ]);
+        }
     }
 
     private function activeAdminUntil(): ?Carbon
