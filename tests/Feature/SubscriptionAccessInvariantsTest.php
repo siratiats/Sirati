@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\SubscriptionAuditLog;
 use App\Models\User;
 use App\Services\Subscriptions\RevenueCatSubscriberSync;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as HttpRequest;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
@@ -16,7 +18,9 @@ use Tests\TestCase;
  * webhooks, restore sync, admin grants):
  *  - a RevenueCat id only ever resolves the account it canonically names;
  *  - access from one source (App Store, admin) is never shortened or removed
- *    by the other source.
+ *    by the other source. Admin access includes access set by hand in the
+ *    database, under any provider name other than the store's or with no
+ *    end date.
  *
  * Run on MySQL too (phpunit.mysql.xml): MySQL coerces "4abc" to 4 in an
  * integer comparison where SQLite does not.
@@ -24,6 +28,13 @@ use Tests\TestCase;
 class SubscriptionAccessInvariantsTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * Provider names access can carry when someone set it by hand instead of
+     * through the admin panel (production had 'manual'), including near
+     * misses of the store's own name.
+     */
+    private const HAND_SET_PROVIDERS = ['manual', 'admin', 'admin_override', 'gift', 'RevenueCat', '', null];
 
     /** @var array<string, array<string, mixed>> RevenueCat answer per app user id. */
     private array $subscribers = [];
@@ -33,6 +44,9 @@ class SubscriptionAccessInvariantsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Hundreds of webhooks per test from one address in one frozen minute;
+        // rate limits are not what these tests are about.
+        $this->withoutMiddleware(ThrottleRequests::class);
         Carbon::setTestNow(Carbon::now()->startOfSecond());
         config([
             'services.revenuecat.api_key' => 'sk_test_key',
@@ -82,6 +96,31 @@ class SubscriptionAccessInvariantsTest extends TestCase
             ->assertOk();
 
         return Carbon::now()->addDays($days);
+    }
+
+    /** Premium written straight into the database; $days null = no end date. */
+    private function handSetAccess(?string $provider, ?int $days): User
+    {
+        $user = User::factory()->create();
+        $user->forceFill([
+            'is_premium' => true,
+            'premium_until' => $days === null ? null : Carbon::now()->addDays($days),
+            'subscription_provider' => $provider,
+            'subscription_plan_id' => 'hand_set',
+        ])->save();
+
+        return $user->fresh();
+    }
+
+    private function assertAccessUntil(?Carbon $until, User $user, string $case): void
+    {
+        $fresh = $user->fresh();
+        $this->assertTrue($fresh->isPremium(), $case);
+        if ($until === null) {
+            $this->assertNull($fresh->premium_until, $case);
+        } else {
+            $this->assertTrue($fresh->premium_until?->equalTo($until) === true, $case);
+        }
     }
 
     /** @return array<string, callable(User): void> every way the store side of access ends */
@@ -238,6 +277,69 @@ class SubscriptionAccessInvariantsTest extends TestCase
             $end($user);
             $this->assertFalse($user->fresh()->isPremium(), $ending);
             Carbon::setTestNow(Carbon::now()->subDays(20));
+        }
+    }
+
+    public function test_access_set_by_hand_is_never_shortened_or_ended_by_the_store(): void
+    {
+        foreach ($this->storeEndings() as $ending => $end) {
+            foreach (self::HAND_SET_PROVIDERS as $provider) {
+                // Shorter than, equal to and longer than the store month; null = no end date.
+                foreach ([10, 30, 45, 400, null] as $handDays) {
+                    $user = $this->handSetAccess($provider, $handDays);
+                    $handUntil = $user->premium_until;
+                    $storeUntil = $this->storeGrant($user, 30);
+
+                    $case = "{$ending}, provider ".json_encode($provider).', hand-set '.($handDays ?? 'no end date');
+                    $this->assertAccessUntil($handUntil?->max($storeUntil), $user, "{$case}: store grant");
+
+                    $end($user);
+                    $this->assertAccessUntil($handUntil, $user, "{$case}: store end");
+                }
+            }
+        }
+    }
+
+    public function test_a_restore_never_shortens_access_set_by_hand(): void
+    {
+        foreach (self::HAND_SET_PROVIDERS as $provider) {
+            foreach ([10, 45, null] as $handDays) {
+                $user = $this->handSetAccess($provider, $handDays);
+                $handUntil = $user->premium_until;
+                $storeUntil = Carbon::now()->addDays(30);
+                $case = 'provider '.json_encode($provider).', hand-set '.($handDays ?? 'no end date');
+
+                $this->subscribers[(string) $user->id] = ['subscriber' => ['entitlements' => [
+                    'pro' => ['expires_date' => $storeUntil->toIso8601ZuluString(), 'product_identifier' => 'sirati_pro_monthly'],
+                ]]];
+                $this->actingAs($user->fresh(), 'sanctum')->postJson('/api/subscriptions/restore')->assertOk();
+                $this->assertAccessUntil($handUntil?->max($storeUntil), $user, "{$case}: restore with a subscription");
+                // The audit log records a grant only when access changed.
+                $this->assertSame(
+                    $handUntil === null || $handUntil->greaterThanOrEqualTo($storeUntil) ? 0 : 1,
+                    SubscriptionAuditLog::where('user_id', $user->id)->where('action', 'sync_granted')->count(),
+                    "{$case}: audit",
+                );
+
+                $this->subscribers[(string) $user->id] = ['subscriber' => ['entitlements' => []]];
+                $this->actingAs($user->fresh(), 'sanctum')->postJson('/api/subscriptions/restore')->assertOk();
+                $this->assertAccessUntil($handUntil, $user, "{$case}: restore after the subscription ended");
+            }
+        }
+    }
+
+    public function test_access_set_by_hand_that_has_run_out_is_never_brought_back(): void
+    {
+        foreach ($this->storeEndings() as $ending => $end) {
+            foreach (self::HAND_SET_PROVIDERS as $provider) {
+                $user = $this->handSetAccess($provider, 10);
+                $this->storeGrant($user, 30);
+
+                Carbon::setTestNow(Carbon::now()->addDays(20));
+                $end($user);
+                $this->assertFalse($user->fresh()->isPremium(), "{$ending}, provider ".json_encode($provider));
+                Carbon::setTestNow(Carbon::now()->subDays(20));
+            }
         }
     }
 

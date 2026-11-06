@@ -85,9 +85,7 @@ class RevenueCatSubscriberSync
 
         if ($active !== null) {
             [$expiresAt, $productId] = $active;
-            $keepsLongerGrant = $user->isPremium()
-                && $user->subscription_provider !== 'revenuecat'
-                && $user->premium_until?->greaterThanOrEqualTo($expiresAt);
+            $keepsLongerGrant = $user->hasNonStoreAccessUntil($expiresAt);
             $unchanged = $user->subscription_provider === 'revenuecat'
                 && $user->subscription_plan_id === $productId
                 && $user->premium_until?->equalTo($expiresAt);
