@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\SubscriptionAuditLog;
 use App\Models\SubscriptionWebhookEvent;
 use App\Models\User;
 use App\Services\Subscriptions\RevenueCatSubscriberSync;
@@ -20,7 +21,7 @@ class RevenueCatSubscriberSyncTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @var array<string, array<string, mixed>|int> RevenueCat answer per app user id. */
+    /** @var array<string, array<mixed>|int|string> RevenueCat answer per app user id: JSON, HTTP status or raw 200 body. */
     private array $subscribers = [];
 
     protected function setUp(): void
@@ -35,7 +36,11 @@ class RevenueCatSubscriberSyncTest extends TestCase
             $id = rawurldecode(substr($request->url(), strlen(RevenueCatSubscriberSync::ENDPOINT)));
             $answer = $this->subscribers[$id] ?? ['subscriber' => ['entitlements' => []]];
 
-            return is_int($answer) ? Http::response([], $answer) : Http::response($answer);
+            return match (true) {
+                is_int($answer) => Http::response([], $answer),
+                is_string($answer) => Http::response($answer, 200, ['Content-Type' => 'text/html']),
+                default => Http::response($answer),
+            };
         });
     }
 
@@ -136,6 +141,83 @@ class RevenueCatSubscriberSyncTest extends TestCase
         }
     }
 
+    public function test_an_unreadable_successful_answer_never_changes_access(): void
+    {
+        $future = Carbon::now()->addMonth()->toIso8601ZuluString();
+        $unreadable = [
+            'not JSON' => '<html>maintenance</html>',
+            'empty object' => [],
+            'subscriber missing' => ['request_date' => $future],
+            'subscriber not an object' => ['subscriber' => 'pro'],
+            'subscriber a list' => ['subscriber' => [['entitlements' => []]]],
+            'entitlements missing' => ['subscriber' => ['original_app_user_id' => '1']],
+            'entitlements null' => ['subscriber' => ['entitlements' => null]],
+            'entitlements a string' => ['subscriber' => ['entitlements' => 'pro']],
+            'entitlements a list' => ['subscriber' => ['entitlements' => ['pro']]],
+            'entitlement not an object' => ['subscriber' => ['entitlements' => ['pro' => 'active']]],
+            'expiry not a date' => ['subscriber' => ['entitlements' => ['pro' => ['expires_date' => 'soon']]]],
+            'expiry a number' => ['subscriber' => ['entitlements' => ['pro' => ['expires_date' => 1893456000000]]]],
+            'expiry missing' => ['subscriber' => ['entitlements' => ['pro' => ['product_identifier' => 'x']]]],
+        ];
+        foreach ($unreadable as $case => $answer) {
+            $subscriber = User::factory()->create();
+            $until = Carbon::now()->addDays(9)->startOfSecond();
+            $subscriber->grantSubscription($until, 'sirati_pro_monthly', 'revenuecat', 'tx');
+            $outsider = User::factory()->create();
+            $this->subscribers[(string) $subscriber->id] = $answer;
+            $this->subscribers[(string) $outsider->id] = $answer;
+
+            $this->restore($subscriber)->assertStatus(503);
+            $this->restore($outsider)->assertStatus(503);
+            $this->assertTrue($subscriber->fresh()->premium_until->equalTo($until), "{$case}: access kept as it was");
+            $this->assertFalse($outsider->fresh()->isPremium(), "{$case}: nothing granted");
+        }
+        $this->assertDatabaseCount('subscription_audit_logs', 0);
+    }
+
+    public function test_an_empty_entitlement_object_is_a_readable_answer_with_no_access(): void
+    {
+        // RevenueCat sends "entitlements": {} for a customer without access.
+        $user = User::factory()->create();
+        $user->grantSubscription(Carbon::now()->addMonth(), 'sirati_pro_monthly', 'revenuecat', 'tx');
+        $this->subscribers[(string) $user->id] = '{"subscriber":{"entitlements":{}}}';
+
+        $this->restore($user)->assertOk()->assertJson(['is_premium' => false]);
+    }
+
+    public function test_restore_fails_closed_without_an_entitlement_id_outside_local_development(): void
+    {
+        Log::spy();
+        $user = User::factory()->create();
+        $this->storeHas($user, ['other_app' => [Carbon::now()->addYear()]]);
+        foreach (['', '  ', null] as $missing) {
+            config(['services.revenuecat.entitlement_id' => $missing]);
+            $this->app['env'] = 'production';
+            $this->restore($user)->assertStatus(503);
+            $this->app['env'] = 'testing';
+            $this->assertFalse($user->fresh()->isPremium(), 'an unrelated entitlement never grants');
+        }
+        Log::shouldHaveReceived('critical')
+            ->withArgs(fn ($message, $context = []) => ($context['configuration'] ?? null) === 'services.revenuecat.entitlement_id')
+            ->times(3);
+    }
+
+    public function test_the_entitlement_id_defaults_to_the_siratie_premium_entitlement(): void
+    {
+        $previous = getenv('REVENUECAT_ENTITLEMENT_ID');
+        putenv('REVENUECAT_ENTITLEMENT_ID');
+        unset($_ENV['REVENUECAT_ENTITLEMENT_ID'], $_SERVER['REVENUECAT_ENTITLEMENT_ID']);
+        try {
+            $services = require config_path('services.php');
+        } finally {
+            if ($previous !== false) {
+                putenv("REVENUECAT_ENTITLEMENT_ID={$previous}");
+            }
+        }
+
+        $this->assertSame('pro', $services['revenuecat']['entitlement_id']);
+    }
+
     public function test_restore_fails_closed_without_an_api_key_outside_local_development(): void
     {
         config(['services.revenuecat.api_key' => '']);
@@ -216,6 +298,39 @@ class RevenueCatSubscriberSyncTest extends TestCase
             $this->assertSame([], RevenueCatSubscriberSync::siratieUserIds($coercible), "aliases of {$n}");
         }
         $this->assertSame([], RevenueCatSubscriberSync::siratieUserIds([0, -3, '0', '', null, true, 4.0, ['4']]));
+    }
+
+    public function test_a_transfer_that_fails_part_way_converges_when_redelivered(): void
+    {
+        // Whichever account RevenueCat cannot read, the ones already reconciled
+        // stay reconciled, nothing is recorded, and redelivery finishes the job
+        // with exactly one audit entry per account that changed.
+        foreach (['second account fails' => 1, 'first account fails' => 0] as $case => $failingIndex) {
+            $accounts = [User::factory()->create(), User::factory()->create()];
+            $accounts[0]->grantSubscription(Carbon::now()->addMonth(), 'sirati_pro_monthly', 'revenuecat', 'tx');
+            $expires = Carbon::now()->addMonth()->startOfSecond();
+            $store = [[], ['pro' => [$expires]]];
+            foreach ($accounts as $i => $account) {
+                $this->storeHas($account, $store[$i]);
+            }
+            $failing = $accounts[$failingIndex];
+            $this->subscribers[(string) $failing->id] = 500;
+            $eventId = 'evt_partial_'.$failingIndex;
+
+            $this->transfer($eventId, $accounts[0], $accounts[1])->assertStatus(503);
+            $this->assertFalse(SubscriptionWebhookEvent::where('event_id', $eventId)->exists(), $case);
+
+            $this->storeHas($failing, $store[$failingIndex]);
+            $this->transfer($eventId, $accounts[0], $accounts[1])->assertOk()->assertJson(['status' => 'transfer_reconciled']);
+            $this->transfer($eventId, $accounts[0], $accounts[1])->assertOk()->assertJson(['status' => 'duplicate']);
+
+            $this->assertFalse($accounts[0]->fresh()->isPremium(), $case);
+            $this->assertTrue($accounts[1]->fresh()->premium_until->equalTo($expires), $case);
+            foreach ([[0, 'sync_revoked'], [1, 'sync_granted']] as [$i, $action]) {
+                $this->assertSame(1, SubscriptionAuditLog::where('user_id', $accounts[$i]->id)->count(), "{$case}: account {$i}");
+                $this->assertDatabaseHas('subscription_audit_logs', ['user_id' => $accounts[$i]->id, 'action' => $action]);
+            }
+        }
     }
 
     public function test_a_transfer_revenuecat_cannot_confirm_is_retried_not_recorded(): void

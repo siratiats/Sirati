@@ -25,8 +25,13 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 - Job Match with a thin CV: every added skill/experience is `needs_user_fact`; the user must tick "I confirm this is true for me" (`confirmed_fact_keys`) before it can be applied.
 - Delegation: Muse cannot write outside its own workspace or run `flutter`, so it does not fit work in the nested `flutter_app` repo; Codex/agy handle Flutter. Never kill a coder before checking its worktree for uncommitted work.
 
-## Subscriptions (decision 2026-10-19)
-- Premium is Apple in-app purchase via RevenueCat. Apple verification is pending (about 2026-10-26), so the Flutter app deliberately has NO purchase SDK, restore flow or checkout yet. Do not build or fake one: the paywall only explains premium and re-reads server entitlement (`/auth/me`). The backend plans API and RevenueCat webhook already exist.
+## Subscriptions (updated 2026-11-05)
+- Premium is Apple in-app purchase via RevenueCat. Products `com.sirati.pro.{monthly,semiannual,annual}` in group "Siratie Premium"; RevenueCat entitlement `pro`, offering `default`. The Flutter purchase flow is merged (flutter_app `main`); access is granted only by the server (`/auth/me`). Production keeps `MONETIZATION_ENABLED=false` until App Review approves the subscriptions with an app version.
+- Two access sources: App Store (`subscription_provider` `revenuecat`) and admin (`admin`; legacy `admin_override`). `premium_until`/`subscription_*` are the access in effect; `admin_premium_until`/`admin_plan_id` remember the admin grant. Use `User::grantSubscription` (never shortens the other source), `revokeStoreSubscription()` for every store ending (webhook EXPIRATION/REVOCATION/CANCELLATION, sync) and `revokeSubscription()` only for admin revoke (ends everything). Never write these columns directly.
+- RevenueCat ids reach the DB only through `RevenueCatSubscriberSync::siratieUserIds()` (canonical positive integers, then `find((int))`). Both MySQL ("4abc") and SQLite ("4.0", "+4", "04") coerce strings in integer comparisons.
+- `RevenueCatSubscriberSync` treats any malformed 200 answer as unavailable (503, access unchanged), and requires `services.revenuecat.entitlement_id` (default `pro`; empty fails closed outside local/testing).
+- MySQL tests: local XAMPP MariaDB 10.4 on 127.0.0.1:3306, database `sirati_testing` (user/pass sirati): `php vendor/bin/phpunit -c phpunit.mysql.xml --filter=...`. Run billing/id tests there too.
+- Test gotcha: `actingAs($user)` hands the controller the in-memory model; after changing the account through HTTP (webhook, admin) pass `$user->fresh()`, or the request sees stale access.
 
 ## Flutter UI work learnings (2026-10-19..21)
 - Generated l10n (`lib/l10n/generated/`) is git-ignored: run `flutter pub get && flutter gen-l10n` in every fresh checkout/worktree, or branding/l10n tests fail with stale strings ("Sirati" instead of "Siratie").

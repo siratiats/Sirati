@@ -22,6 +22,9 @@ class RevenueCatSubscriberSync
 {
     public const ENDPOINT = 'https://api.revenuecat.com/v1/subscribers/';
 
+    /** RevenueCat dates, e.g. 2026-12-05T15:03:38Z (no relative words like "tomorrow"). */
+    private const ISO_8601 = '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:?\d{2})$/D';
+
     /**
      * The canonical Siratie user ids among RevenueCat app user ids. Aliases
      * ($RCAnonymousID:…, "4abc", "04", " 4") are dropped: MySQL would coerce
@@ -57,6 +60,13 @@ class RevenueCatSubscriberSync
             }
             FailClosed::unavailable('RevenueCat subscriber sync', 'services.revenuecat.api_key');
         }
+        // Only the Siratie Premium entitlement grants access; another
+        // entitlement in the RevenueCat project must never unlock it.
+        $wanted = config('services.revenuecat.entitlement_id');
+        $wanted = is_string($wanted) ? trim($wanted) : '';
+        if ($wanted === '' && ! FailClosed::allowsMissingConfiguration()) {
+            FailClosed::unavailable('RevenueCat subscriber sync', 'services.revenuecat.entitlement_id');
+        }
 
         try {
             $response = Http::withToken(trim($key))
@@ -70,7 +80,7 @@ class RevenueCatSubscriberSync
             throw new RevenueCatUnavailableException("RevenueCat answered HTTP {$response->status()}");
         }
 
-        $active = $this->latestActiveEntitlement($response->json('subscriber.entitlements'));
+        $active = $this->latestActiveEntitlement($response->json('subscriber'), $wanted);
         $previousExpiry = $user->premium_until;
 
         if ($active !== null) {
@@ -97,7 +107,7 @@ class RevenueCatSubscriberSync
         }
 
         if ($user->subscription_provider === 'revenuecat' && $user->isPremium()) {
-            $user->revokeSubscription();
+            $user->revokeStoreSubscription();
             $this->audit($user, 'sync_revoked', $reason, $previousExpiry, null);
         }
 
@@ -105,30 +115,44 @@ class RevenueCatSubscriberSync
     }
 
     /**
-     * The furthest-expiring entitlement that is active now. An entitlement
-     * without an expiry is never granted: nothing sold here is lifetime.
+     * The furthest-expiring [$wanted] entitlement that is active now (any
+     * entitlement when $wanted is empty, which only local development allows).
+     * An entitlement whose expiry is null is never granted: nothing sold here
+     * is lifetime.
+     *
+     * An answer of any other shape is unreadable, never "no access": a
+     * changed or broken response must not revoke what a customer paid for.
      *
      * @return array{0: Carbon, 1: string}|null
+     *
+     * @throws RevenueCatUnavailableException when the answer cannot be read
      */
-    private function latestActiveEntitlement(mixed $entitlements): ?array
+    private function latestActiveEntitlement(mixed $subscriber, string $wanted): ?array
     {
-        if (! is_array($entitlements)) {
-            return null;
+        $entitlements = is_array($subscriber) && $subscriber !== [] && ! array_is_list($subscriber)
+            ? ($subscriber['entitlements'] ?? null)
+            : null;
+        // JSON {} decodes to []; a non-empty list is not an entitlement map.
+        if (! is_array($entitlements) || ($entitlements !== [] && array_is_list($entitlements))) {
+            throw new RevenueCatUnavailableException('RevenueCat answered without a readable entitlement map');
         }
-        $wanted = config('services.revenuecat.entitlement_id');
+
         $best = null;
         foreach ($entitlements as $id => $entitlement) {
-            if (is_string($wanted) && $wanted !== '' && $id !== $wanted) {
+            if ($wanted !== '' && (string) $id !== $wanted) {
                 continue;
             }
-            if (! is_array($entitlement) || ! is_string($entitlement['expires_date'] ?? null)) {
+            if (! is_array($entitlement) || ! array_key_exists('expires_date', $entitlement)) {
+                throw new RevenueCatUnavailableException("RevenueCat entitlement [{$id}] is unreadable");
+            }
+            $expires = $entitlement['expires_date'];
+            if ($expires === null) {
                 continue;
             }
-            try {
-                $expiresAt = Carbon::parse($entitlement['expires_date']);
-            } catch (\Throwable) {
-                continue;
+            if (! is_string($expires) || preg_match(self::ISO_8601, $expires) !== 1) {
+                throw new RevenueCatUnavailableException("RevenueCat entitlement [{$id}] has an unreadable expiry");
             }
+            $expiresAt = Carbon::parse($expires);
             if (! $expiresAt->isFuture()) {
                 continue;
             }
