@@ -109,7 +109,7 @@ return [
             'product_id' => env('APPLE_PRODUCT_ANNUAL', 'com.sirati.pro.annual'),
             'period' => 'P1Y',
             'period_months' => 12,
-            'price' => 179.00,
+            'price' => 179.99,
             'name_key' => 'serverPlanAnnualName',
             'badge_key' => null,
             'is_default' => false,

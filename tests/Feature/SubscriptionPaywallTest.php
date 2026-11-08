@@ -247,13 +247,28 @@ class SubscriptionPaywallTest extends TestCase
 
     public function test_plans_endpoint_is_public(): void
     {
-        $this->getJson('/api/mobile/subscription-plans')
+        $plans = $this->getJson('/api/mobile/subscription-plans')
             ->assertOk()
-            ->assertJsonCount(3, 'data.plans')
             ->assertJsonPath('data.currency', 'SAR')
-            ->assertJsonPath('data.plans.1.key', 'semiannual')
-            ->assertJsonPath('data.plans.1.price_per_month', 16.5)
-            ->assertJsonPath('data.plans.2.price_per_month', 14.92);
+            ->json('data.plans');
+
+        // The App Store Connect product identifiers the app buys, in paywall order.
+        $this->assertSame(
+            ['com.sirati.pro.monthly', 'com.sirati.pro.semiannual', 'com.sirati.pro.annual'],
+            array_column($plans, 'product_id'),
+        );
+        $configured = config('monetization.plans');
+        foreach ($plans as $i => $plan) {
+            $this->assertSame($configured[$i]['key'], $plan['key']);
+            $this->assertEquals($configured[$i]['price'], $plan['price'], $plan['key']);
+            // The per-month price is the plan price spread over its months, to the cent.
+            $this->assertEqualsWithDelta(
+                $plan['price'],
+                $plan['price_per_month'] * $plan['period_months'],
+                0.005 * $plan['period_months'],
+                $plan['key'],
+            );
+        }
     }
 
     public function test_me_reports_the_entitlement_state(): void
