@@ -4,7 +4,6 @@ namespace App\Services\Subscriptions;
 
 use App\Exceptions\SubscriptionRequiredException;
 use App\Models\CvAnalysis;
-use App\Models\GeneratedCv;
 use App\Models\User;
 use App\Services\I18n\ServerText;
 use App\Support\FailClosed;
@@ -144,9 +143,10 @@ class SubscriptionGate
         return 20;
     }
 
+    /** CVs created today, including ones deleted since (`cv_creations`). */
     public function cvGenerationsUsedToday(User $user): int
     {
-        return GeneratedCv::query()
+        return DB::table('cv_creations')
             ->where('user_id', $user->id)
             ->where('created_at', '>=', now()->startOfDay())
             ->count();

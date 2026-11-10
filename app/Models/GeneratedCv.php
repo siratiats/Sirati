@@ -8,6 +8,7 @@ use App\Enums\AiStatus;
 use App\Support\Utf8Sanitizer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 class GeneratedCv extends Model
 {
@@ -50,6 +51,23 @@ class GeneratedCv extends Model
     }
 
     private ?CvDocument $memoizedCvDocument = null;
+
+    /**
+     * Every new CV is logged in `cv_creations`; the free daily quota counts
+     * that log, so deleting a CV never frees a slot.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (GeneratedCv $cv): void {
+            if ($cv->user_id === null) {
+                return;
+            }
+            DB::table('cv_creations')->insert([
+                'user_id' => $cv->user_id,
+                'created_at' => $cv->created_at ?? now(),
+            ]);
+        });
+    }
 
     public function setAttribute($key, $value)
     {

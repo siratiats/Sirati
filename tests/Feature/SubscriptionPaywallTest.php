@@ -243,6 +243,70 @@ class SubscriptionPaywallTest extends TestCase
             ->assertJsonPath('feature', 'daily_cv_quota');
     }
 
+    /**
+     * The quota counts CVs created today, not CVs that still exist: deleting
+     * one never frees a slot, whatever the limit and however it was made.
+     */
+    public function test_deleting_a_cv_never_gives_back_a_daily_slot(): void
+    {
+        $this->enforceMonetization();
+
+        foreach ([1, 2, 3] as $limit) {
+            config(['monetization.free.daily_cv_generations' => $limit]);
+            $user = User::factory()->create();
+            Sanctum::actingAs($user);
+
+            $first = $this->postJson('/api/generated-cvs', $this->cvPayload())
+                ->assertStatus(201)->json('data.id');
+            $made = [$first];
+            while (count($made) < $limit) {
+                $made[] = $this->postJson("/api/generated-cvs/{$first}/duplicate")
+                    ->assertStatus(201)->json('data.id');
+            }
+
+            foreach ($made as $id) {
+                $this->deleteJson("/api/generated-cvs/{$id}")->assertSuccessful();
+            }
+            $this->assertSame(0, GeneratedCv::where('user_id', $user->id)->count());
+
+            $this->postJson('/api/generated-cvs', $this->cvPayload())
+                ->assertStatus(402)
+                ->assertJsonPath('feature', 'daily_cv_quota')
+                ->assertJsonPath('paywall.used', $limit, "limit {$limit}");
+        }
+    }
+
+    public function test_cvs_made_and_deleted_on_an_earlier_day_do_not_count_today(): void
+    {
+        $this->enforceMonetization();
+        config(['monetization.free.daily_cv_generations' => 1]);
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $this->travelTo(Carbon::now()->subDay()->startOfDay()->addHours(23)->addMinutes(59));
+        $id = $this->postJson('/api/generated-cvs', $this->cvPayload())->assertStatus(201)->json('data.id');
+        $this->deleteJson("/api/generated-cvs/{$id}")->assertSuccessful();
+
+        $this->travelBack();
+        $this->travelTo(Carbon::now()->startOfDay()->addMinute());
+        $this->postJson('/api/generated-cvs', $this->cvPayload())->assertStatus(201);
+        $this->postJson('/api/generated-cvs', $this->cvPayload())->assertStatus(402);
+    }
+
+    public function test_deleting_the_account_removes_its_cv_creation_log(): void
+    {
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+        $this->cv($user);
+        $this->cv($other);
+        $this->assertDatabaseCount('cv_creations', 2);
+
+        $user->delete();
+
+        $this->assertDatabaseMissing('cv_creations', ['user_id' => $user->id]);
+        $this->assertDatabaseHas('cv_creations', ['user_id' => $other->id]);
+    }
+
     // ------------------------------------------------------------- catalogue
 
     public function test_plans_endpoint_is_public(): void
