@@ -117,3 +117,7 @@ Stack: Laravel API (PHP, tests: `php vendor/bin/phpunit`, not `php artisan test`
 ## Export paywall status + CV language on My CVs (2026-10-30, Abobker85/Sirati#21)
 - Every paywall is HTTP 402 through `SubscriptionRequiredException` (JSON: `error`/`code` reason, `feature`, `paywall`; browser routes get the 402 error page). A premium-template export throws it with reason `premium_template_locked`, feature `cv_template` and top-level `template` slug. 401/403/404 stay auth/ownership only (a stranger's CV is 404 before any paywall).
 - `/api/mobile/my-cvs` rows carry `language` = the CV's stored `generated_cvs.language`, never the request language.
+
+## Latin digits + label catalog drift (2026-11-11)
+- Every number shows as 0-9 in every language. `TranslationValidator` rejects ٠-٩ / ۰-۹ in any label (admin edit, upload, import, publish), and the Flutter test `test/localization/latin_digits_test.dart` checks every bundled ARB value and the Arabic Material date/number formatters.
+- Any new or changed ARB key in the app is only editable in Admin → Labels after both ARB files are copied to `resources/i18n` and an `i18n:import-arb` migration ships. The Premium marker work skipped this and 26 keys were missing; check key parity (`app_*.arb` in both repos) before every Laravel PR that follows app label changes.

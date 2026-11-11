@@ -48,6 +48,12 @@ final class TranslationValidator
             return ["The text is longer than {$maxLength} characters."];
         }
 
+        // The app shows every number in 0-9 in all languages; a label typed on an
+        // Arabic or Persian keyboard must not bring ٠-٩ / ۰-۹ back.
+        if (preg_match_all('/[\x{0660}-\x{0669}\x{06F0}-\x{06F9}]/u', $value, $found) > 0) {
+            return ['Use the digits 0-9, not '.implode(' ', array_unique($found[0])).'.'];
+        }
+
         try {
             $parsed = $this->parser->parse($value);
         } catch (IcuSyntaxException $exception) {
