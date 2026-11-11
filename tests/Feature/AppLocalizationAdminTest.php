@@ -139,7 +139,7 @@ class AppLocalizationAdminTest extends TestCase
         $key = AppTranslationKey::query()->where('key', 'greetingName')->firstOrFail();
         $this->assertSame(['name'], $key->placeholderNames());
 
-        foreach (['Hi {nmae}', 'Hi', 'Hi {name} {extra}', 'Hi {name', '{name, plural, other{x}}'] as $bad) {
+        foreach (['Hi {nmae}', 'Hi', 'Hi {name} {extra}', 'Hi {name', '{name, plural, other{x}}', 'مرحباً {name}، لديك ٣ سير', 'Hi {name} ۲'] as $bad) {
             $this->actingAs($this->admin)
                 ->putJson(route('admin.labels.update', 'en'), ['key' => 'greetingName', 'value' => $bad])
                 ->assertStatus(422)

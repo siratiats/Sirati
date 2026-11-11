@@ -1630,5 +1630,38 @@
   "serverPlanFreeIncludesPreview": "CV preview before download",
   "serverPlanFreeIncludesDailyLimits": "{cvs} CV and {analyses} analyses per day",
   "serverPlanFreeExcludesRecommendations": "Full recommendations ({count} shown free)",
-  "serverCvDownloadLocked": "Preview is free — subscribe to download a watermark-free PDF."
+  "serverCvDownloadLocked": "Preview is free — subscribe to download a watermark-free PDF.",
+  "premiumBadgeLabel": "Premium member",
+  "subscriptionSection": "Subscription",
+  "subscriptionFreePlan": "Free plan",
+  "subscriptionActive": "Active",
+  "subscriptionActiveUntil": "Active until {date}",
+  "@subscriptionActiveUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionManage": "Manage subscription",
+  "subscriptionManageHint": "Change plan or cancel in your Apple ID settings",
+  "premiumChipLabel": "Premium",
+  "premiumFeatureLabel": "Premium feature",
+  "premiumFeatureDownloadTitle": "Download a clean PDF",
+  "premiumFeatureDownloadBody": "Premium removes the watermark, so your CV is ready to send to employers.",
+  "premiumFeatureAiTitle": "Let AI polish your CV",
+  "premiumFeatureAiBody": "Premium rewrites your summary and experience for the job you want.",
+  "premiumFeatureAnalysisTitle": "See every recommendation",
+  "premiumFeatureAnalysisBody": "Premium shows all the fixes, missing keywords and AI feedback from your analysis.",
+  "premiumFeatureJobMatchTitle": "Match your CV to any job",
+  "premiumFeatureJobMatchBody": "Premium compares your CV with a job ad and saves tailored edits to a new copy.",
+  "premiumFeatureCvLimitTitle": "You've reached today's free CV limit",
+  "premiumFeatureCvLimitBody": "Premium has no daily CV limit. On the free plan you can create more CVs tomorrow.",
+  "premiumFeatureAnalysisLimitTitle": "You've reached today's free analysis limit",
+  "premiumFeatureAnalysisLimitBody": "Premium has no daily analysis limit. On the free plan you can analyze again tomorrow.",
+  "premiumHomeTitle": "Get more with Siratie Premium",
+  "premiumHomeBody": "Clean PDFs, AI writing, full analysis and Job Match.",
+  "premiumHomeCvsToday": "{used} of {limit} free CVs today",
+  "premiumHomeAnalysesToday": "{used} of {limit} free analyses today",
+  "premiumUnlockAll": "Unlock the full analysis"
 }

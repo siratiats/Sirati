@@ -3617,7 +3617,7 @@
   "serverPaywallBenefitUnlimited": "عدد غير محدود من السير الذاتية",
   "serverJobMatchDailyLimit": "وصلت إلى الحد اليومي لمطابقة الوظائف. حاول مرة أخرى بعد تجدد الحد.",
   "serverPlanMonthlyName": "اشتراك شهري",
-  "serverPlanSixMonthsName": "اشتراك ٦ أشهر",
+  "serverPlanSixMonthsName": "اشتراك 6 أشهر",
   "serverPlanSixMonthsBadge": "الأكثر توفيراً",
   "serverPlanAnnualName": "اشتراك سنوي",
   "serverErrorUnauthenticated": "سجّل الدخول للمتابعة.",
@@ -4089,5 +4089,58 @@
       }
     }
   },
-  "serverCvDownloadLocked": "المعاينة مجانية — اشترك لتحميل نسخة PDF بدون علامة مائية."
+  "serverCvDownloadLocked": "المعاينة مجانية — اشترك لتحميل نسخة PDF بدون علامة مائية.",
+  "premiumBadgeLabel": "مشترك مميز",
+  "subscriptionSection": "الاشتراك",
+  "subscriptionFreePlan": "الخطة المجانية",
+  "subscriptionActive": "فعّال",
+  "subscriptionActiveUntil": "فعّال حتى {date}",
+  "@subscriptionActiveUntil": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "subscriptionManage": "إدارة الاشتراك",
+  "subscriptionManageHint": "غيّر الخطة أو ألغِ الاشتراك من إعدادات Apple ID",
+  "premiumChipLabel": "مميز",
+  "premiumFeatureLabel": "ميزة مميزة",
+  "premiumFeatureDownloadTitle": "حمّل سيرتك PDF بدون علامة مائية",
+  "premiumFeatureDownloadBody": "الاشتراك المميز يزيل العلامة المائية لتكون سيرتك جاهزة للإرسال لأصحاب العمل.",
+  "premiumFeatureAiTitle": "دع الذكاء الاصطناعي يحسّن سيرتك",
+  "premiumFeatureAiBody": "الاشتراك المميز يعيد صياغة نبذتك وخبراتك لتناسب الوظيفة التي تريدها.",
+  "premiumFeatureAnalysisTitle": "اطّلع على كل التوصيات",
+  "premiumFeatureAnalysisBody": "الاشتراك المميز يعرض كل التحسينات والكلمات المفتاحية الناقصة وملاحظات الذكاء الاصطناعي في تحليلك.",
+  "premiumFeatureJobMatchTitle": "طابق سيرتك مع أي وظيفة",
+  "premiumFeatureJobMatchBody": "الاشتراك المميز يقارن سيرتك بإعلان الوظيفة ويحفظ التعديلات المقترحة في نسخة جديدة.",
+  "premiumFeatureCvLimitTitle": "وصلت إلى الحد المجاني للسير الذاتية اليوم",
+  "premiumFeatureCvLimitBody": "الاشتراك المميز بلا حد يومي لإنشاء السير. في الخطة المجانية يمكنك إنشاء المزيد غداً.",
+  "premiumFeatureAnalysisLimitTitle": "وصلت إلى الحد المجاني للتحليل اليوم",
+  "premiumFeatureAnalysisLimitBody": "الاشتراك المميز بلا حد يومي للتحليل. في الخطة المجانية يمكنك التحليل مجدداً غداً.",
+  "premiumHomeTitle": "احصل على المزيد مع سيرتي المميز",
+  "premiumHomeBody": "ملفات PDF بدون علامة مائية، وكتابة بالذكاء الاصطناعي، وتحليل كامل، ومطابقة الوظائف.",
+  "premiumHomeCvsToday": "{used} من {limit} سيرة مجانية اليوم",
+  "@premiumHomeCvsToday": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "premiumHomeAnalysesToday": "{used} من {limit} تحليل مجاني اليوم",
+  "@premiumHomeAnalysesToday": {
+    "placeholders": {
+      "used": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
+  "premiumUnlockAll": "افتح التحليل الكامل"
 }

@@ -113,6 +113,35 @@ class TranslationValidatorTest extends TestCase
         }
     }
 
+    public function test_any_arabic_indic_or_persian_digit_anywhere_is_rejected(): void
+    {
+        mt_srand(20261111);
+        $validator = $this->validator();
+        $digits = [];
+        foreach ([0x0660, 0x06F0] as $zero) {
+            for ($d = 0; $d < 10; $d++) {
+                $digits[] = mb_chr($zero + $d, 'UTF-8');
+            }
+        }
+
+        for ($i = 0; $i < 300; $i++) {
+            $names = $this->pickNames();
+            $message = $this->generateMessage($names, 0);
+            $catalog = $this->catalogFor($names);
+            $chars = preg_split('//u', $message, -1, PREG_SPLIT_NO_EMPTY);
+            $digit = $digits[array_rand($digits)];
+            array_splice($chars, mt_rand(0, count($chars)), 0, [$digit]);
+            $withDigit = implode('', $chars);
+
+            $errors = $validator->validate($withDigit, $catalog);
+            $this->assertNotSame([], $errors, "Expected invalid: {$withDigit}");
+            $this->assertStringContainsString($digit, implode(' ', $errors));
+        }
+
+        // The same text with Latin digits stays valid.
+        $this->assertSame([], $validator->validate('اشتراك 6 أشهر · 2026', []));
+    }
+
     public function test_blank_values_are_valid_and_mean_no_translation(): void
     {
         $validator = $this->validator();
