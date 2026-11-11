@@ -56,6 +56,20 @@ class GeneratedCv extends Model
      * Every new CV is logged in `cv_creations`; the free daily quota counts
      * that log, so deleting a CV never frees a slot.
      */
+    /**
+     * A new CV and its `cv_creations` row are written together: if the log
+     * cannot be written the CV is not created either, so the free quota can
+     * never be skipped (fails closed).
+     */
+    public function save(array $options = []): bool
+    {
+        if ($this->exists) {
+            return parent::save($options);
+        }
+
+        return DB::transaction(fn (): bool => parent::save($options));
+    }
+
     protected static function booted(): void
     {
         static::created(function (GeneratedCv $cv): void {

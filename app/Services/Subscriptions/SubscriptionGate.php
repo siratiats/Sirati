@@ -401,6 +401,8 @@ class SubscriptionGate
         $state = [
             'enforced' => $enforced,
             'is_subscribed' => $subscribed,
+            // Where the access comes from: only 'store' can be managed in Apple's settings.
+            'source' => $subscribed ? ($user?->subscription_provider === User::STORE_PROVIDER ? 'store' : 'admin') : null,
             'plan_id' => $user?->subscription_plan_id,
             'expires_at' => $user?->premium_until?->toISOString(),
             'can_download' => $full || $this->freeAllowsDownload(),
