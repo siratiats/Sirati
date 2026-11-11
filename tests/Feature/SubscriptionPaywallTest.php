@@ -6,9 +6,14 @@ use App\Enums\AiStatus;
 use App\Models\CvAnalysis;
 use App\Models\GeneratedCv;
 use App\Models\User;
+use App\Services\I18n\ServerText;
+use App\Services\Subscriptions\SubscriptionGate;
 use Database\Seeders\CvTemplateSeeder;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -241,6 +246,150 @@ class SubscriptionPaywallTest extends TestCase
         $this->postJson("/api/generated-cvs/{$cv->id}/duplicate")
             ->assertStatus(402)
             ->assertJsonPath('feature', 'daily_cv_quota');
+    }
+
+    /**
+     * The quota counts CVs created today, not CVs that still exist: deleting
+     * one never frees a slot, whatever the limit and however it was made.
+     */
+    public function test_deleting_a_cv_never_gives_back_a_daily_slot(): void
+    {
+        $this->enforceMonetization();
+
+        foreach ([1, 2, 3] as $limit) {
+            config(['monetization.free.daily_cv_generations' => $limit]);
+            $user = User::factory()->create();
+            Sanctum::actingAs($user);
+
+            $first = $this->postJson('/api/generated-cvs', $this->cvPayload())
+                ->assertStatus(201)->json('data.id');
+            $made = [$first];
+            while (count($made) < $limit) {
+                $made[] = $this->postJson("/api/generated-cvs/{$first}/duplicate")
+                    ->assertStatus(201)->json('data.id');
+            }
+
+            foreach ($made as $id) {
+                $this->deleteJson("/api/generated-cvs/{$id}")->assertSuccessful();
+            }
+            $this->assertSame(0, GeneratedCv::where('user_id', $user->id)->count());
+
+            $this->postJson('/api/generated-cvs', $this->cvPayload())
+                ->assertStatus(402)
+                ->assertJsonPath('feature', 'daily_cv_quota')
+                ->assertJsonPath('paywall.used', $limit, "limit {$limit}");
+        }
+    }
+
+    public function test_cvs_made_and_deleted_on_an_earlier_day_do_not_count_today(): void
+    {
+        $this->enforceMonetization();
+        config(['monetization.free.daily_cv_generations' => 1]);
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $this->travelTo(Carbon::now()->subDay()->startOfDay()->addHours(23)->addMinutes(59));
+        $id = $this->postJson('/api/generated-cvs', $this->cvPayload())->assertStatus(201)->json('data.id');
+        $this->deleteJson("/api/generated-cvs/{$id}")->assertSuccessful();
+
+        $this->travelBack();
+        $this->travelTo(Carbon::now()->startOfDay()->addMinute());
+        $this->postJson('/api/generated-cvs', $this->cvPayload())->assertStatus(201);
+        $this->postJson('/api/generated-cvs', $this->cvPayload())->assertStatus(402);
+    }
+
+    /** Every creation path: if the log can't be written, no CV is created. */
+    public function test_a_cv_is_never_created_without_its_creation_log(): void
+    {
+        // Premium skips the quota check, so the request reaches the insert.
+        $this->enforceMonetization();
+        $user = User::factory()->create();
+        $user->grantSubscription(Carbon::now()->addMonth(), 'monthly');
+        Sanctum::actingAs($user);
+        $source = $this->cv($user);
+        $before = GeneratedCv::count();
+
+        $logs = DB::table('cv_creations')->count();
+        // The log write fails as a database error would (no DDL here: a
+        // dropped table would end the test transaction on MariaDB).
+        GeneratedCv::created(function (): void {
+            throw new QueryException('testing', 'insert into cv_creations', [], new \PDOException('log write failed'));
+        });
+
+        $this->postJson('/api/generated-cvs', $this->cvPayload())->assertServerError();
+        $this->postJson('/api/generated-cvs', $this->cvPayload(), ['Idempotency-Key' => 'k-1'])
+            ->assertServerError();
+        $this->postJson("/api/generated-cvs/{$source->id}/duplicate")->assertServerError();
+
+        $this->assertSame($before, GeneratedCv::count());
+        $this->assertSame($logs, DB::table('cv_creations')->count());
+    }
+
+    /**
+     * My CVs reports the same download answer the PDF link gives, and a
+     * locked link opened in a browser gets a readable page, not a bare 402.
+     */
+    public function test_my_cvs_download_flag_matches_what_the_pdf_link_does(): void
+    {
+        foreach ([[true, false], [true, true], [false, false]] as [$enforced, $premium]) {
+            $enforced ? $this->enforceMonetization() : config(['monetization.enabled' => false]);
+            $user = User::factory()->create();
+            if ($premium) {
+                $user->grantSubscription(Carbon::now()->addMonth(), 'monthly');
+            }
+            Sanctum::actingAs($user);
+            $cv = $this->cv($user, ['ai_status' => AiStatus::Completed]);
+
+            $item = collect($this->getJson('/api/mobile/my-cvs?lang=en')->assertOk()->json('data.items'))
+                ->firstWhere('id', $cv->id);
+            $allowed = ! $enforced || $premium;
+            $this->assertSame($allowed, $item['can_download'], "enforced={$enforced} premium={$premium}");
+
+            $page = $this->get(URL::temporarySignedRoute('api.generated-cvs.pdf', now()->addHour(), ['generatedCv' => $cv->id]));
+            if ($allowed) {
+                $this->assertNotSame(402, $page->status());
+            } else {
+                $page->assertStatus(402)
+                    ->assertSee(ServerText::t('serverPaywallTitle', [], 'ar'))
+                    ->assertSee(ServerText::t('serverPaywallTitle', [], 'en'));
+                $this->assertStringStartsWith('text/html', (string) $page->headers->get('content-type'));
+            }
+        }
+    }
+
+    /** Only App Store access can be managed in Apple's settings. */
+    public function test_subscription_state_says_where_access_comes_from(): void
+    {
+        $this->enforceMonetization();
+        $gate = app(SubscriptionGate::class);
+
+        $free = User::factory()->create();
+        $this->assertNull($gate->stateFor($free)['source']);
+        $this->assertNull($gate->stateFor(null)['source']);
+
+        $store = User::factory()->create();
+        $store->grantSubscription(Carbon::now()->addMonth(), 'com.sirati.pro.monthly', User::STORE_PROVIDER);
+        $this->assertSame('store', $gate->stateFor($store->refresh())['source']);
+
+        foreach (['admin', 'manual', 'admin_override', ''] as $provider) {
+            $user = User::factory()->create();
+            $user->grantSubscription(Carbon::now()->addMonth(), 'monthly', $provider);
+            $this->assertSame('admin', $gate->stateFor($user->refresh())['source'], "provider {$provider}");
+        }
+    }
+
+    public function test_deleting_the_account_removes_its_cv_creation_log(): void
+    {
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+        $this->cv($user);
+        $this->cv($other);
+        $this->assertDatabaseCount('cv_creations', 2);
+
+        $user->delete();
+
+        $this->assertDatabaseMissing('cv_creations', ['user_id' => $user->id]);
+        $this->assertDatabaseHas('cv_creations', ['user_id' => $other->id]);
     }
 
     // ------------------------------------------------------------- catalogue

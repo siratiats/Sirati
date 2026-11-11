@@ -12,10 +12,11 @@ use App\Models\JobNews;
 use App\Models\JobTitle;
 use App\Models\MobileNotification;
 use App\Models\User;
+use App\Services\I18n\ServerText;
 use App\Services\Jobs\ApplyLinkExtractor;
 use App\Services\Jobs\JobProfileMatcherService;
-use App\Services\I18n\ServerText;
 use App\Services\Jobs\SaudiCities;
+use App\Services\Subscriptions\SubscriptionGate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Carbon;
@@ -122,7 +123,10 @@ class MobileContentController extends Controller
         $publicBaseUrl = rtrim((string) config('app.public_url', 'https://siratie.com'), '/');
         $cvs = $request->user()->generatedCvs()->latest()->limit(20)->get();
         $titles = $this->displayTitles($request, $cvs);
-        $items = $cvs->map(function (GeneratedCv $cv) use ($publicBaseUrl, $titles): array {
+        // The same answer the PDF endpoint gives, so a free account sees the
+        // download as Premium before it taps it.
+        $canDownload = app(SubscriptionGate::class)->allowsDownload($request->user());
+        $items = $cvs->map(function (GeneratedCv $cv) use ($publicBaseUrl, $titles, $canDownload): array {
             $signedPath = URL::temporarySignedRoute(
                 'api.generated-cvs.pdf',
                 now()->addDays(7),
@@ -141,7 +145,7 @@ class MobileContentController extends Controller
                 'badge' => $cv->score_total === null ? '' : 'ATS '.$cv->score_total.'%',
                 'score_total' => $cv->score_total,
                 'is_draft' => $export['blocked_reason'] === CvExportGuard::BLOCKED_GENERATING,
-                'can_download' => true,
+                'can_download' => $canDownload,
                 'export' => $export,
                 'pdf_url' => $publicBaseUrl.$signedPath,
                 'template_pdf_url' => $publicBaseUrl.$signedPath,

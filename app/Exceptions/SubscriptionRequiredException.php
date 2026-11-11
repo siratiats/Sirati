@@ -6,6 +6,7 @@ use App\Services\I18n\ServerText;
 use App\Services\Subscriptions\SubscriptionGate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -38,10 +39,21 @@ final class SubscriptionRequiredException extends HttpException
         parent::__construct(self::STATUS, ServerText::t($messageKey, $params));
     }
 
-    public function render(Request $request): ?JsonResponse
+    public function render(Request $request): JsonResponse|Response
     {
+        // A locked PDF link opened in a browser gets a readable page in both
+        // languages instead of the framework's bare 402.
         if (! $request->expectsJson()) {
-            return null;
+            return response()->view('errors.subscription-required', [
+                'titles' => [
+                    'ar' => ServerText::t('serverPaywallTitle', [], 'ar'),
+                    'en' => ServerText::t('serverPaywallTitle', [], 'en'),
+                ],
+                'messages' => [
+                    'ar' => ServerText::t($this->messageKey, $this->params, 'ar'),
+                    'en' => ServerText::t($this->messageKey, $this->params, 'en'),
+                ],
+            ], self::STATUS);
         }
 
         /** @var SubscriptionGate $gate */

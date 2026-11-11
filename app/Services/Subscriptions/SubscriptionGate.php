@@ -4,7 +4,6 @@ namespace App\Services\Subscriptions;
 
 use App\Exceptions\SubscriptionRequiredException;
 use App\Models\CvAnalysis;
-use App\Models\GeneratedCv;
 use App\Models\User;
 use App\Services\I18n\ServerText;
 use App\Support\FailClosed;
@@ -144,9 +143,10 @@ class SubscriptionGate
         return 20;
     }
 
+    /** CVs created today, including ones deleted since (`cv_creations`). */
     public function cvGenerationsUsedToday(User $user): int
     {
-        return GeneratedCv::query()
+        return DB::table('cv_creations')
             ->where('user_id', $user->id)
             ->where('created_at', '>=', now()->startOfDay())
             ->count();
@@ -401,6 +401,8 @@ class SubscriptionGate
         $state = [
             'enforced' => $enforced,
             'is_subscribed' => $subscribed,
+            // Where the access comes from: only 'store' can be managed in Apple's settings.
+            'source' => $subscribed ? ($user?->subscription_provider === User::STORE_PROVIDER ? 'store' : 'admin') : null,
             'plan_id' => $user?->subscription_plan_id,
             'expires_at' => $user?->premium_until?->toISOString(),
             'can_download' => $full || $this->freeAllowsDownload(),
