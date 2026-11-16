@@ -552,11 +552,34 @@ class CvMvpTest extends TestCase
             ->assertNotFound();
     }
 
-    public function test_privacy_policy_page_is_available(): void
+    public function test_privacy_policy_link_used_by_the_app_reaches_the_privacy_page(): void
     {
-        $this->get(route('privacy-policy'))
-            ->assertOk()
-            ->assertSee('سياسة الخصوصية');
+        $this->get(route('privacy-policy'))->assertRedirect('/privacy/');
+
+        $page = file_get_contents(public_path('privacy/index.html'));
+        $this->assertStringContainsString('سياسة الخصوصية', $page);
+        $this->assertStringContainsString('info@siratie.com', $page);
+    }
+
+    public function test_old_inner_pages_redirect_to_their_landing_sections(): void
+    {
+        $sections = [
+            'about' => 'about',
+            'contact' => 'contact',
+            'ats-cv-checker' => 'ats',
+            'cv-templates' => 'templates',
+            'cv-builder' => 'templates',
+            'jobs' => 'services',
+        ];
+
+        foreach (['' => '/', 'en/' => '/en/'] as $prefix => $home) {
+            $landing = file_get_contents(public_path(ltrim($home, '/').'index.html'));
+            foreach ($sections as $oldPage => $section) {
+                $this->get('/'.$prefix.$oldPage)->assertStatus(301)->assertRedirect($home.'#'.$section);
+                $this->assertStringContainsString('id="'.$section.'"', $landing, "{$home} has no #{$section} section");
+                $this->assertFileDoesNotExist(public_path($prefix.$oldPage.'/index.html'));
+            }
+        }
     }
 
     public function test_analysis_recommendations_are_formatted_for_users(): void

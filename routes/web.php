@@ -21,7 +21,21 @@ Route::middleware('throttle:60,1')->group(function () {
         return view('welcome', ['cms' => new LandingContent()]);
     })->name('landing');
 
-    Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
+    // The public site is one landing page plus /privacy/ and /terms/ (static files in public/).
+    // Old inner pages now live as sections of the landing page; keep their URLs working.
+    Route::permanentRedirect('/privacy-policy', '/privacy/')->name('privacy-policy');
+    foreach (['' => '/', 'en/' => '/en/'] as $prefix => $home) {
+        foreach ([
+            'about' => 'about',
+            'contact' => 'contact',
+            'ats-cv-checker' => 'ats',
+            'cv-templates' => 'templates',
+            'cv-builder' => 'templates',
+            'jobs' => 'services',
+        ] as $oldPage => $section) {
+            Route::permanentRedirect('/'.$prefix.$oldPage, $home.'#'.$section);
+        }
+    }
 
     Route::post('/landing-leads', [LandingLeadController::class, 'store'])->name('landing-leads.store');
 
