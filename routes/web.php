@@ -27,10 +27,10 @@ Route::middleware('throttle:60,1')->group(function () {
     foreach (['' => '/', 'en/' => '/en/'] as $prefix => $home) {
         foreach ([
             'about' => 'about',
-            'contact' => 'contact',
-            'ats-cv-checker' => 'ats',
-            'cv-templates' => 'templates',
-            'cv-builder' => 'templates',
+            'contact' => 'footer',
+            'ats-cv-checker' => 'services',
+            'cv-templates' => 'services',
+            'cv-builder' => 'services',
             'jobs' => 'services',
         ] as $oldPage => $section) {
             Route::permanentRedirect('/'.$prefix.$oldPage, $home.'#'.$section);
