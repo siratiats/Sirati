@@ -121,7 +121,7 @@ class MobileContentController extends Controller
     public function myCvs(Request $request): array
     {
         $publicBaseUrl = rtrim((string) config('app.public_url', 'https://siratie.com'), '/');
-        $cvs = $request->user()->generatedCvs()->latest()->limit(20)->get();
+        $cvs = $request->user()->generatedCvs()->latest('updated_at')->latest('id')->limit(20)->get();
         $titles = $this->displayTitles($request, $cvs);
         // The same answer the PDF endpoint gives, so a free account sees the
         // download as Premium before it taps it.
@@ -142,6 +142,8 @@ class MobileContentController extends Controller
                 // The CV's own language, not the app's: templates and text direction follow it (#21).
                 'language' => $cv->language,
                 'updated_label' => $this->updatedLabel($cv->updated_at),
+                // The app picks Home's latest CV by this time.
+                'updated_at' => $cv->updated_at?->toIso8601String(),
                 'badge' => $cv->score_total === null ? '' : 'ATS '.$cv->score_total.'%',
                 'score_total' => $cv->score_total,
                 'is_draft' => $export['blocked_reason'] === CvExportGuard::BLOCKED_GENERATING,

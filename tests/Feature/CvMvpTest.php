@@ -209,6 +209,66 @@ class CvMvpTest extends TestCase
         }
     }
 
+    /**
+     * Invariant: My CVs lists the most recently edited CVs first, whatever
+     * order they were created in, and each row carries its edit time so the
+     * app can pick Home's "latest CV" by it. The 20-row limit keeps the 20
+     * most recently edited, so an old CV edited today is never cut off.
+     */
+    public function test_mobile_my_cvs_orders_by_last_edit_and_sends_the_edit_time(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        mt_srand(31);
+        $count = 25;
+        $editOrder = range(0, $count - 1);
+        shuffle($editOrder);
+        // The oldest-created CV is the one edited most recently.
+        $editOrder[array_search($count - 1, $editOrder, true)] = $editOrder[0];
+        $editOrder[0] = $count - 1;
+
+        $base = now()->subYear()->startOfSecond();
+        $expected = [];
+        foreach (range(0, $count - 1) as $i) {
+            $cv = GeneratedCv::create([
+                'user_id' => $user->id,
+                'full_name' => 'Salem Sayer',
+                'target_job_title' => 'Role '.$i,
+                'language' => 'en',
+                'skills_input' => 'SQL',
+                'experience_input' => 'Experience text with enough characters to pass validation and score well.',
+                'education_input' => 'Bachelor of Data Science',
+                'generated_markdown' => '# Salem Sayer',
+                'form_payload' => [],
+                'ai_status' => 'not_configured',
+                'score_total' => 70,
+                'grade' => 'B',
+                'criteria' => [],
+            ]);
+            $created = $base->copy()->addDays($i);
+            $updated = $base->copy()->addDays($count + $editOrder[$i])->addMinutes($i);
+            GeneratedCv::query()->whereKey($cv->id)->toBase()->update(['created_at' => $created, 'updated_at' => $updated]);
+            $expected[$cv->id] = $updated;
+        }
+
+        $items = collect($this->getJson('/api/mobile/my-cvs?lang=en')->assertOk()->json('data.items'));
+
+        arsort($expected);
+        $this->assertSame(
+            array_slice(array_keys($expected), 0, 20),
+            $items->pluck('id')->all(),
+            'rows must be the 20 most recently edited CVs, newest edit first',
+        );
+        foreach ($items as $item) {
+            $this->assertNotNull($item['updated_at'] ?? null, 'each row must carry its edit time');
+            $this->assertTrue(
+                $expected[$item['id']]->equalTo(\Illuminate\Support\Carbon::parse($item['updated_at'])),
+                'row '.$item['id'].' must carry its own edit time',
+            );
+        }
+    }
+
     public function test_mobile_my_cvs_badge_is_empty_when_a_cv_has_no_score(): void
     {
         $user = User::factory()->create();
