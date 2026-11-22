@@ -561,6 +561,24 @@ class CvMvpTest extends TestCase
         $this->assertStringContainsString('info@siratie.com', $page);
     }
 
+    public function test_standalone_delete_account_pages_are_served_in_arabic_and_english(): void
+    {
+        $this->get('/delete-account')->assertOk();
+        $this->get('/en/delete-account')->assertOk();
+
+        $arPage = file_get_contents(public_path('delete-account/index.html'));
+        $this->assertStringContainsString('طلب حذف الحساب والبيانات', $arPage);
+        $this->assertStringContainsString('منطقة الخطر', $arPage);
+        $this->assertStringContainsString('info@siratie.com', $arPage);
+        $this->assertStringContainsString('30 يوماً', $arPage);
+
+        $enPage = file_get_contents(public_path('en/delete-account/index.html'));
+        $this->assertStringContainsString('Delete Account', $enPage);
+        $this->assertStringContainsString('Danger zone', $enPage);
+        $this->assertStringContainsString('info@siratie.com', $enPage);
+        $this->assertStringContainsString('30 days', $enPage);
+    }
+
     public function test_old_inner_pages_redirect_to_their_landing_sections(): void
     {
         $sections = [

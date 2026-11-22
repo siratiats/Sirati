@@ -48,4 +48,20 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/terms/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/terms/"/>
   </url>
+  <url>
+    <loc>https://siratie.com/delete-account/</loc>
+    <lastmod>2026-11-22</lastmod>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/delete-account/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/delete-account/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/delete-account/"/>
+  </url>
+  <url>
+    <loc>https://siratie.com/en/delete-account/</loc>
+    <lastmod>2026-11-22</lastmod>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://siratie.com/delete-account/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://siratie.com/en/delete-account/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://siratie.com/delete-account/"/>
+  </url>
 </urlset>

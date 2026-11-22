@@ -21,9 +21,23 @@ Route::middleware('throttle:60,1')->group(function () {
         return view('welcome', ['cms' => new LandingContent()]);
     })->name('landing');
 
-    // The public site is one landing page plus /privacy/ and /terms/ (static files in public/).
+    // The public site is one landing page plus /privacy/, /terms/, and /delete-account/ (static files in public/).
     // Old inner pages now live as sections of the landing page; keep their URLs working.
     Route::permanentRedirect('/privacy-policy', '/privacy/')->name('privacy-policy');
+    Route::get('/delete-account', function () {
+        $staticPage = public_path('delete-account/index.html');
+        if (file_exists($staticPage)) {
+            return response()->file($staticPage, ['Content-Type' => 'text/html; charset=UTF-8']);
+        }
+        abort(404);
+    })->name('delete-account');
+    Route::get('/en/delete-account', function () {
+        $staticPage = public_path('en/delete-account/index.html');
+        if (file_exists($staticPage)) {
+            return response()->file($staticPage, ['Content-Type' => 'text/html; charset=UTF-8']);
+        }
+        abort(404);
+    })->name('en.delete-account');
     foreach (['' => '/', 'en/' => '/en/'] as $prefix => $home) {
         foreach ([
             'about' => 'about',
